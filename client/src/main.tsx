@@ -22,9 +22,13 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 };
 
 queryClient.getQueryCache().subscribe(event => {
+  // Skip redirect on auth.me query - let useAuth handle it
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
-    redirectToLoginIfUnauthorized(error);
+    const isAuthMeQuery = event.query.queryKey?.[0]?.[0] === "auth.me";
+    if (!isAuthMeQuery) {
+      redirectToLoginIfUnauthorized(error);
+    }
     console.error("[API Query Error]", error);
   }
 });
