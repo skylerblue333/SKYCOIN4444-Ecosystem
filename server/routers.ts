@@ -25,14 +25,6 @@ import { gocRouter } from "./goc-router";
 import { enterpriseRouter } from "./enterprise-router";
 import { blockchainRouter } from "./blockchain-router";
 import { orchestratorRouter } from "./orchestrator-router";
-import { 
-  hopeAIRealRouter, 
-  skySchoolRealRouter, 
-  socialNetworkRealRouter, 
-  miningRealRouter, 
-  charityDAORealRouter, 
-  investorPortalRealRouter 
-} from "./real-services-routers";
 import { COOKIE_NAME } from "@shared/const";
 import { social44Router } from "./social44-routes";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -4942,16 +4934,6 @@ ${input.code}`;
   enterprise: enterpriseRouter,
   blockchain: blockchainRouter,
   orchestrator: orchestratorRouter,
-  
-  // ═══════════════════════════════════════════════════════════════
-  // REAL SERVICES - 100% Functional Integrations
-  // ═══════════════════════════════════════════════════════════════
-  hopeAIReal: hopeAIRealRouter,
-  skySchoolReal: skySchoolRealRouter,
-  socialNetworkReal: socialNetworkRealRouter,
-  miningReal: miningRealRouter,
-  charityDAOReal: charityDAORealRouter,
-  investorPortalReal: investorPortalRealRouter,
   
   // Phase 1: Living Loop + Adaptive Roadmap + Multi-Agent Orchestrator
   ...phase1Routers,
