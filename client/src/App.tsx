@@ -14,6 +14,7 @@ import { QuickLaunchBar } from "./shells/os/QuickLaunchBar";
 import { AlwaysOnVoice } from "./components/AlwaysOnVoice";
 import { HopeCompanion } from "./components/HopeCompanion";
 import { AchievementToastContainer } from "./components/AchievementToast";
+import BottomSidebar from "./components/BottomSidebar";
 
 // Lazy-loaded pages — each becomes its own chunk, preventing OOM at build time
 // Core
@@ -203,6 +204,7 @@ function LegacyRouter() {
       <QuickLaunchBar />
       <BottomTabBar />
       <PriceTicker />
+      <BottomSidebar />
       <main className="pt-16 pb-20 lg:pb-0">
     <Suspense fallback={<PageLoader />}>
       <ErrorBoundary>
