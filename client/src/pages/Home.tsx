@@ -527,7 +527,7 @@ export default function Home() {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: "Platform Codebase (500K+ LOC)", value: "$2.1M", note: "3× dev cost at $140/hr" },
+                      { label: "Platform Codebase (299K+ LOC)", value: "$2.1M", note: "3× dev cost at $140/hr" },
                       { label: "AI Engine Suite (44 agents)", value: "$780K", note: "Proprietary ML pipeline" },
                       { label: "Crypto Infrastructure (SKY444)", value: "$290K", note: "Contracts + tooling" },
                       { label: "IITR LLC Brand + IP", value: "$420K", note: "Trademarks + goodwill" },
@@ -593,8 +593,8 @@ export default function Home() {
                 {/* Key achievements */}
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { value: "207+", label: "Pages Built", icon: Monitor },
-                    { value: "500K+", label: "Lines of Code", icon: Code2 },
+                    { value: "1,112", label: "Source Files", icon: Code2 },
+                    { value: "299K+", label: "Lines of Code", icon: Code2 },
                     { value: "1,851+", label: "Tests Passing", icon: CheckCircle2 },
                     { value: "~$4.0M", label: "Tech Net Worth (Honest)", icon: Diamond },
                   ].map(item => (
