@@ -279,7 +279,7 @@ export default function SkySchoolFull() {
                             toast.error("Sign in to enroll");
                             return;
                           }
-                          enrollMutation.mutate({ courseId: course.id as string });
+                          enrollMutation.mutate({ courseId: Number(course.id) || 0 });
                         }}
                       >
                         <Play className="w-3 h-3 mr-1" />
