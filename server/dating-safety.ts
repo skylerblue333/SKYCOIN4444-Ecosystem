@@ -210,25 +210,23 @@ export async function resolveReport(
     const result = await db
       .update(datingReports)
       .set({
-        status: action === 'approved' ? 'approved' : 'dismissed',
+        status: (action === 'approved' ? 'resolved' : 'dismissed') as const,
         moderatorNotes,
         resolvedAt: new Date(),
       })
-      .where(eq(datingReports.id, reportId))
-      .returning();
+      .where(eq(datingReports.id, reportId));
 
     if (action === 'approved') {
       // Suspend the user's profile
-      const report = result[0];
       await db
         .update(datingProfiles)
-        .set({ suspended: true })
-        .where(eq(datingProfiles.userId, report.reportedUserId));
+        .set({ isActive: false })
+        .where(eq(datingProfiles.id, reportId));
 
-      console.log(`[Safety] User ${report.reportedUserId} profile suspended`);
+      console.log(`[Safety] User profile suspended`);
     }
 
-    return result[0];
+    return { id: reportId, status: action === 'approved' ? 'resolved' : 'dismissed' };
   } catch (error) {
     console.error('[Resolve Report] Error:', error);
     throw error;
