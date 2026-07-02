@@ -131,6 +131,7 @@ const MiningDashboard = lazy(() => import("./pages/MiningDashboard"));
 const PresentationWithChat = lazy(() => import("./pages/PresentationWithChat"));
 const DatingDiscovery = lazy(() => import("./pages/DatingDiscovery"));
 const DatingMessages = lazy(() => import("./pages/DatingMessages"));
+const DatingProfileSetup = lazy(() => import("./pages/DatingProfileSetup"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const AIModerationQueue = lazy(() => import("./pages/AIModerationQueue"));
 const Security = lazy(() => import("./pages/Security"));
@@ -356,6 +357,7 @@ function LegacyRouter() {
         <Route path="/presentation" component={PresentationWithChat} />
 
         {/* Dating & Social Matching */}
+        <Route path="/dating/setup" component={DatingProfileSetup} />
         <Route path="/dating" component={DatingDiscovery} />
         <Route path="/dating/messages" component={DatingMessages} />
         <Route path="/admin-panel">{() => <Redirect to="/admin" />}</Route>
