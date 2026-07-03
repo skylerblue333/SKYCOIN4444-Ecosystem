@@ -169,3 +169,6 @@ export function BottomNavigation() {
     </nav>
   );
 }
+
+
+export { Navigation };
