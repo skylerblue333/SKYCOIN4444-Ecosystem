@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Search, Settings } from "lucide-react";
 
-export default function APIKeys() {
+export default function DisputeResolution() {
   const { isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +16,7 @@ export default function APIKeys() {
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>APIKeys</CardTitle>
+            <CardTitle>DisputeResolution</CardTitle>
             <CardDescription>Sign in to access this feature</CardDescription>
           </CardHeader>
           <CardContent>
@@ -32,8 +32,8 @@ export default function APIKeys() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold">APIKeys</h1>
-            <p className="text-muted-foreground mt-2">API key management</p>
+            <h1 className="text-3xl font-bold">DisputeResolution</h1>
+            <p className="text-muted-foreground mt-2">Dispute handling</p>
           </div>
           <Button>
             <Plus className="w-4 h-4 mr-2" />

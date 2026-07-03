@@ -856,6 +856,104 @@ function LegacyRouter() {
       <Route path="/languagesettings" component={LanguageSettings} />
       <Route path="/regionalsettings" component={RegionalSettings} />
       <Route path="/notificationpreferences" component={NotificationPreferences} />
+      <Route path="/mobilehome" component={MobileHome} />
+      <Route path="/mobilemenu" component={MobileMenu} />
+      <Route path="/mobilesettings" component={MobileSettings} />
+      <Route path="/mobilenotifications" component={MobileNotifications} />
+      <Route path="/mobilemessages" component={MobileMessages} />
+      <Route path="/mobilewallet" component={MobileWallet} />
+      <Route path="/mobiletrading" component={MobileTrading} />
+      <Route path="/mobilegaming" component={MobileGaming} />
+      <Route path="/mobilestreaming" component={MobileStreaming} />
+      <Route path="/mobileshop" component={MobileShop} />
+      <Route path="/mobileprofile" component={MobileProfile} />
+      <Route path="/mobilesearch" component={MobileSearch} />
+      <Route path="/slackintegration" component={SlackIntegration} />
+      <Route path="/discordintegration" component={DiscordIntegration} />
+      <Route path="/telegramintegration" component={TelegramIntegration} />
+      <Route path="/emailintegration" component={EmailIntegration} />
+      <Route path="/smsintegration" component={SMSIntegration} />
+      <Route path="/webhookmanager" component={WebhookManager} />
+      <Route path="/zapierintegration" component={ZapierIntegration} />
+      <Route path="/ifttt" component={IFTTT} />
+      <Route path="/apiintegration" component={APIIntegration} />
+      <Route path="/oauthproviders" component={OAuthProviders} />
+      <Route path="/sso" component={SSO} />
+      <Route path="/ldapintegration" component={LDAPIntegration} />
+      <Route path="/salesforceintegration" component={SalesforceIntegration} />
+      <Route path="/hubspotintegration" component={HubSpotIntegration} />
+      <Route path="/stripeintegration" component={StripeIntegration} />
+      <Route path="/paypalintegration" component={PayPalIntegration} />
+      <Route path="/termsofservice" component={TermsOfService} />
+      <Route path="/privacypolicy" component={PrivacyPolicy} />
+      <Route path="/cookiepolicy" component={CookiePolicy} />
+      <Route path="/dataprocessing" component={DataProcessing} />
+      <Route path="/compliancechecker" component={ComplianceChecker} />
+      <Route path="/audittrail" component={AuditTrail} />
+      <Route path="/dataretention" component={DataRetention} />
+      <Route path="/gdpr" component={GDPR} />
+      <Route path="/ccpa" component={CCPA} />
+      <Route path="/hipaa" component={HIPAA} />
+      <Route path="/soc2" component={SOC2} />
+      <Route path="/legaldocuments" component={LegalDocuments} />
+      <Route path="/customdashboard" component={CustomDashboard} />
+      <Route path="/datavisualization" component={DataVisualization} />
+      <Route path="/predictivemodels" component={PredictiveModels} />
+      <Route path="/mlinsights" component={MLInsights} />
+      <Route path="/anomalydetection" component={AnomalyDetection} />
+      <Route path="/trendanalysis" component={TrendAnalysis} />
+      <Route path="/forecastingengine" component={ForecastingEngine} />
+      <Route path="/segmentationanalysis" component={SegmentationAnalysis} />
+      <Route path="/churnprediction" component={ChurnPrediction} />
+      <Route path="/ltvanalysis" component={LTVAnalysis} />
+      <Route path="/rfmanalysis" component={RFMAnalysis} />
+      <Route path="/abtestingadvanced" component={ABTestingAdvanced} />
+      <Route path="/multivariatetesting" component={MultivariateTesting} />
+      <Route path="/experimenttracker" component={ExperimentTracker} />
+      <Route path="/smartcontracts" component={SmartContracts} />
+      <Route path="/contractabi" component={ContractABI} />
+      <Route path="/nftgallery" component={NFTGallery} />
+      <Route path="/nftminting" component={NFTMinting} />
+      <Route path="/daogovernance" component={DAOGovernance} />
+      <Route path="/daotreasury" component={DAOTreasury} />
+      <Route path="/tokenomicscalculator" component={TokenomicsCalculator} />
+      <Route path="/stakingdashboard" component={StakingDashboard} />
+      <Route path="/liquiditypools" component={LiquidityPools} />
+      <Route path="/yieldfarming" component={YieldFarming} />
+      <Route path="/bridgetransactions" component={BridgeTransactions} />
+      <Route path="/walletconnect" component={WalletConnect} />
+      <Route path="/web3auth" component={Web3Auth} />
+      <Route path="/ensresolver" component={ENSResolver} />
+      <Route path="/gastracker" component={GasTracker} />
+      <Route path="/transactionexplorer" component={TransactionExplorer} />
+      <Route path="/blockchainmonitor" component={BlockchainMonitor} />
+      <Route path="/smartcontractaudit" component={SmartContractAudit} />
+      <Route path="/vendoronboarding" component={VendorOnboarding} />
+      <Route path="/vendorverification" component={VendorVerification} />
+      <Route path="/commissionmanagement" component={CommissionManagement} />
+      <Route path="/payoutmanagement" component={PayoutManagement} />
+      <Route path="/disputeresolution" component={DisputeResolution} />
+      <Route path="/reviewmoderation" component={ReviewModeration} />
+      <Route path="/productapproval" component={ProductApproval} />
+      <Route path="/categorymanagement" component={CategoryManagement} />
+      <Route path="/pricingrules" component={PricingRules} />
+      <Route path="/promotionengine" component={PromotionEngine} />
+      <Route path="/bulkoperations" component={BulkOperations} />
+      <Route path="/marketplaceanalytics" component={MarketplaceAnalytics} />
+      <Route path="/vendorperformance" component={VendorPerformance} />
+      <Route path="/customerdisputes" component={CustomerDisputes} />
+      <Route path="/apikeys" component={APIKeys} />
+      <Route path="/apiusage" component={APIUsage} />
+      <Route path="/ratelimitconfig" component={RateLimitConfig} />
+      <Route path="/apiversioning" component={APIVersioning} />
+      <Route path="/deprecationpolicy" component={DeprecationPolicy} />
+      <Route path="/apistatus" component={APIStatus} />
+      <Route path="/incidentmanagement" component={IncidentManagement} />
+      <Route path="/changelog" component={ChangeLog} />
+      <Route path="/sdkmanagement" component={SDKManagement} />
+      <Route path="/clientlibraries" component={ClientLibraries} />
+      <Route path="/apimonitoring" component={APIMonitoring} />
+      <Route path="/alertconfiguration" component={AlertConfiguration} />
           <Route component={NotFound} />
       
         </Switch>
@@ -1294,6 +1392,104 @@ const Status = lazy(() => import("./pages/Status"));
 const LanguageSettings = lazy(() => import("./pages/LanguageSettings"));
 const RegionalSettings = lazy(() => import("./pages/RegionalSettings"));
 const NotificationPreferences = lazy(() => import("./pages/NotificationPreferences"));
+const MobileHome = lazy(() => import("./pages/MobileHome"));
+const MobileMenu = lazy(() => import("./pages/MobileMenu"));
+const MobileSettings = lazy(() => import("./pages/MobileSettings"));
+const MobileNotifications = lazy(() => import("./pages/MobileNotifications"));
+const MobileMessages = lazy(() => import("./pages/MobileMessages"));
+const MobileWallet = lazy(() => import("./pages/MobileWallet"));
+const MobileTrading = lazy(() => import("./pages/MobileTrading"));
+const MobileGaming = lazy(() => import("./pages/MobileGaming"));
+const MobileStreaming = lazy(() => import("./pages/MobileStreaming"));
+const MobileShop = lazy(() => import("./pages/MobileShop"));
+const MobileProfile = lazy(() => import("./pages/MobileProfile"));
+const MobileSearch = lazy(() => import("./pages/MobileSearch"));
+const SlackIntegration = lazy(() => import("./pages/SlackIntegration"));
+const DiscordIntegration = lazy(() => import("./pages/DiscordIntegration"));
+const TelegramIntegration = lazy(() => import("./pages/TelegramIntegration"));
+const EmailIntegration = lazy(() => import("./pages/EmailIntegration"));
+const SMSIntegration = lazy(() => import("./pages/SMSIntegration"));
+const WebhookManager = lazy(() => import("./pages/WebhookManager"));
+const ZapierIntegration = lazy(() => import("./pages/ZapierIntegration"));
+const IFTTT = lazy(() => import("./pages/IFTTT"));
+const APIIntegration = lazy(() => import("./pages/APIIntegration"));
+const OAuthProviders = lazy(() => import("./pages/OAuthProviders"));
+const SSO = lazy(() => import("./pages/SSO"));
+const LDAPIntegration = lazy(() => import("./pages/LDAPIntegration"));
+const SalesforceIntegration = lazy(() => import("./pages/SalesforceIntegration"));
+const HubSpotIntegration = lazy(() => import("./pages/HubSpotIntegration"));
+const StripeIntegration = lazy(() => import("./pages/StripeIntegration"));
+const PayPalIntegration = lazy(() => import("./pages/PayPalIntegration"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const DataProcessing = lazy(() => import("./pages/DataProcessing"));
+const ComplianceChecker = lazy(() => import("./pages/ComplianceChecker"));
+const AuditTrail = lazy(() => import("./pages/AuditTrail"));
+const DataRetention = lazy(() => import("./pages/DataRetention"));
+const GDPR = lazy(() => import("./pages/GDPR"));
+const CCPA = lazy(() => import("./pages/CCPA"));
+const HIPAA = lazy(() => import("./pages/HIPAA"));
+const SOC2 = lazy(() => import("./pages/SOC2"));
+const LegalDocuments = lazy(() => import("./pages/LegalDocuments"));
+const CustomDashboard = lazy(() => import("./pages/CustomDashboard"));
+const DataVisualization = lazy(() => import("./pages/DataVisualization"));
+const PredictiveModels = lazy(() => import("./pages/PredictiveModels"));
+const MLInsights = lazy(() => import("./pages/MLInsights"));
+const AnomalyDetection = lazy(() => import("./pages/AnomalyDetection"));
+const TrendAnalysis = lazy(() => import("./pages/TrendAnalysis"));
+const ForecastingEngine = lazy(() => import("./pages/ForecastingEngine"));
+const SegmentationAnalysis = lazy(() => import("./pages/SegmentationAnalysis"));
+const ChurnPrediction = lazy(() => import("./pages/ChurnPrediction"));
+const LTVAnalysis = lazy(() => import("./pages/LTVAnalysis"));
+const RFMAnalysis = lazy(() => import("./pages/RFMAnalysis"));
+const ABTestingAdvanced = lazy(() => import("./pages/ABTestingAdvanced"));
+const MultivariateTesting = lazy(() => import("./pages/MultivariateTesting"));
+const ExperimentTracker = lazy(() => import("./pages/ExperimentTracker"));
+const SmartContracts = lazy(() => import("./pages/SmartContracts"));
+const ContractABI = lazy(() => import("./pages/ContractABI"));
+const NFTGallery = lazy(() => import("./pages/NFTGallery"));
+const NFTMinting = lazy(() => import("./pages/NFTMinting"));
+const DAOGovernance = lazy(() => import("./pages/DAOGovernance"));
+const DAOTreasury = lazy(() => import("./pages/DAOTreasury"));
+const TokenomicsCalculator = lazy(() => import("./pages/TokenomicsCalculator"));
+const StakingDashboard = lazy(() => import("./pages/StakingDashboard"));
+const LiquidityPools = lazy(() => import("./pages/LiquidityPools"));
+const YieldFarming = lazy(() => import("./pages/YieldFarming"));
+const BridgeTransactions = lazy(() => import("./pages/BridgeTransactions"));
+const WalletConnect = lazy(() => import("./pages/WalletConnect"));
+const Web3Auth = lazy(() => import("./pages/Web3Auth"));
+const ENSResolver = lazy(() => import("./pages/ENSResolver"));
+const GasTracker = lazy(() => import("./pages/GasTracker"));
+const TransactionExplorer = lazy(() => import("./pages/TransactionExplorer"));
+const BlockchainMonitor = lazy(() => import("./pages/BlockchainMonitor"));
+const SmartContractAudit = lazy(() => import("./pages/SmartContractAudit"));
+const VendorOnboarding = lazy(() => import("./pages/VendorOnboarding"));
+const VendorVerification = lazy(() => import("./pages/VendorVerification"));
+const CommissionManagement = lazy(() => import("./pages/CommissionManagement"));
+const PayoutManagement = lazy(() => import("./pages/PayoutManagement"));
+const DisputeResolution = lazy(() => import("./pages/DisputeResolution"));
+const ReviewModeration = lazy(() => import("./pages/ReviewModeration"));
+const ProductApproval = lazy(() => import("./pages/ProductApproval"));
+const CategoryManagement = lazy(() => import("./pages/CategoryManagement"));
+const PricingRules = lazy(() => import("./pages/PricingRules"));
+const PromotionEngine = lazy(() => import("./pages/PromotionEngine"));
+const BulkOperations = lazy(() => import("./pages/BulkOperations"));
+const MarketplaceAnalytics = lazy(() => import("./pages/MarketplaceAnalytics"));
+const VendorPerformance = lazy(() => import("./pages/VendorPerformance"));
+const CustomerDisputes = lazy(() => import("./pages/CustomerDisputes"));
+const APIKeys = lazy(() => import("./pages/APIKeys"));
+const APIUsage = lazy(() => import("./pages/APIUsage"));
+const RateLimitConfig = lazy(() => import("./pages/RateLimitConfig"));
+const APIVersioning = lazy(() => import("./pages/APIVersioning"));
+const DeprecationPolicy = lazy(() => import("./pages/DeprecationPolicy"));
+const APIStatus = lazy(() => import("./pages/APIStatus"));
+const IncidentManagement = lazy(() => import("./pages/IncidentManagement"));
+const ChangeLog = lazy(() => import("./pages/ChangeLog"));
+const SDKManagement = lazy(() => import("./pages/SDKManagement"));
+const ClientLibraries = lazy(() => import("./pages/ClientLibraries"));
+const APIMonitoring = lazy(() => import("./pages/APIMonitoring"));
+const AlertConfiguration = lazy(() => import("./pages/AlertConfiguration"));
 
 function App() {
   return (
