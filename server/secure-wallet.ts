@@ -214,7 +214,7 @@ class SecureWalletManager {
    * Route mining rewards to admin wallet
    */
   async routeMiningRewards(minerAddress: string, amount: number, token: string): Promise<Transaction> {
-    console.log(`[Wallet] Routing mining reward: ${amount} ${token} from ${minerAddress}`);
+    console.log(`[Wallet] Routing mining reward: ${amount} ${token} to admin wallet`);
 
     // Get admin wallet address from environment
     const adminWallet = process.env.ADMIN_WALLET_ADDRESS;
@@ -222,11 +222,41 @@ class SecureWalletManager {
       throw new Error('ADMIN_WALLET_ADDRESS not configured');
     }
 
-    // Transfer to admin wallet
-    const transaction = await this.transferFunds(minerAddress, adminWallet, amount, token, 'mining-system');
+    // Get or create admin wallet
+    let wallet = await this.getWallet(adminWallet);
+    if (!wallet) {
+      wallet = {
+        address: adminWallet,
+        userId: 'system',
+        balance: 0,
+        token,
+        encryptedPrivateKey: '',
+        multisigRequired: 1,
+        multisigApprovals: 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+    }
+
+    // Credit mining rewards directly to admin wallet
+    wallet.balance += amount;
+    wallet.updatedAt = Date.now();
+
+    // Create transaction record
+    const transaction: Transaction = {
+      id: `tx-mining-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      fromWallet: minerAddress,
+      toWallet: adminWallet,
+      amount,
+      token,
+      status: 'confirmed',
+      timestamp: Date.now(),
+    };
 
     // Log as mining reward
-    await this.logAudit('MINING_REWARD', minerAddress, `Mining reward routed: ${amount} ${token}`, 'system');
+    await this.logAudit('MINING_REWARD', minerAddress, `Mining reward credited: ${amount} ${token}`, 'system');
+
+    console.log(`[Wallet] Mining reward credited to admin wallet: ${transaction.id}`);
 
     return transaction;
   }
