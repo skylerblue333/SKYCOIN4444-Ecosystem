@@ -7,7 +7,7 @@ import { Link } from "wouter";
 import {
   Crown, Hammer, Brain, Zap, Heart, Building2, CheckCircle2,
   Star, Shield, Code2, Globe, Cpu, Lock, TrendingUp, Users,
-  Award, BookOpen, Github, ExternalLink, Sparkles, ChevronRight,
+  Award, BookOpen, Github as GithubIcon, ExternalLink, Sparkles, ChevronRight,
   BarChart3, Layers, Database, Server, Flame
 } from "lucide-react";
 
@@ -159,7 +159,7 @@ export default function LegendaryStatus() {
                 </Link>
                 <a href={profile.socialLinks.github} target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" className="border-white/20 text-white/70 hover:text-white gap-2">
-                    <Github className="w-4 h-4" /> GitHub
+                    <GithubIcon className="w-4 h-4" /> GitHub
                   </Button>
                 </a>
                 <Link href="/social">

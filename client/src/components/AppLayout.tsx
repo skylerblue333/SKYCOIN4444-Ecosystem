@@ -3,7 +3,7 @@ import { Navigation } from "@/components/Navigation";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { VoiceCommandBar } from "@/components/VoiceCommandBar";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { ExternalLink, Github, Smartphone, Puzzle, Code2, Globe, Shield, Mic, Sparkles } from "lucide-react";
+import { ExternalLink, Github as GithubIcon, Smartphone, Puzzle, Code2, Globe, Shield, Mic, Sparkles } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -111,10 +111,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <ExternalLink className="h-3 w-3" /> Live Demo
                 </a>
                 <a href="https://github.com/skylerblue333/Final-intergation-shadowchat-" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white transition-colors">
-                  <Github className="h-3 w-3" /> GitHub (Final)
+                  <GithubIcon className="h-3 w-3" /> GitHub (Final)
                 </a>
                 <a href="https://github.com/skylerblue333/Skycoin-done-444-fix" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white transition-colors">
-                  <Github className="h-3 w-3" /> GitHub (Prod)
+                  <GithubIcon className="h-3 w-3" /> GitHub (Prod)
                 </a>
                 <a href="https://drive.google.com/file/d/1HKXHGjYNu2FUa41b4aiPelf75ThRZ_Za/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white transition-colors">
                   <ExternalLink className="h-3 w-3" /> Download ZIP

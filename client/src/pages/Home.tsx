@@ -70,7 +70,7 @@ import {
   Diamond,
   Rocket,
   ExternalLink,
-  Github,
+  Github as GithubIcon,
   Download,
   Globe,
   MessageSquare,
@@ -565,7 +565,7 @@ export default function Home() {
                 <div className="flex gap-3">
                   <a href="https://github.com/skylerblue333" target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border/50 hover:border-[oklch(0.72_0.28_305)]/50 bg-secondary/30 hover:bg-[oklch(0.72_0.28_305)]/10 transition-all text-sm">
-                    <Github className="w-4 h-4" /> GitHub
+                    <GithubIcon className="w-4 h-4" /> GitHub
                   </a>
                   <Link href="/investor">
                     <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[oklch(0.72_0.28_340)]/50 hover:bg-[oklch(0.72_0.28_340)]/10 transition-all text-sm text-[oklch(0.72_0.28_340)]">
@@ -1210,7 +1210,7 @@ export default function Home() {
 
             <a href="https://github.com/skylerblue333/Final-intergation-shadowchat-" target="_blank" rel="noopener noreferrer" className="stat-card group hover:border-[oklch(0.72_0.28_305)]/50 transition-all flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-[oklch(0.72_0.28_340)]/10 flex items-center justify-center shrink-0 group-hover:bg-[oklch(0.72_0.28_340)]/20 transition-colors">
-                <Github className="w-6 h-6 text-[oklch(0.72_0.28_340)]" />
+                <GithubIcon className="w-6 h-6 text-[oklch(0.72_0.28_340)]" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-semibold flex items-center gap-2">Production Repo <ExternalLink className="w-3 h-3 text-muted-foreground" /></div>
@@ -1220,7 +1220,7 @@ export default function Home() {
 
             <a href="https://github.com/skylerblue333/Skycoin-done-444-fix" target="_blank" rel="noopener noreferrer" className="stat-card group hover:border-[oklch(0.72_0.28_305)]/50 transition-all flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-[oklch(0.7_0.2_200)]/10 flex items-center justify-center shrink-0 group-hover:bg-[oklch(0.7_0.2_200)]/20 transition-colors">
-                <Github className="w-6 h-6 text-[oklch(0.7_0.2_200)]" />
+                <GithubIcon className="w-6 h-6 text-[oklch(0.7_0.2_200)]" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-semibold flex items-center gap-2">Skycoin-done-444-fix <ExternalLink className="w-3 h-3 text-muted-foreground" /></div>

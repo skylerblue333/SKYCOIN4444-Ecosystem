@@ -32,7 +32,7 @@ function GitHubSection() {
     <div className="mb-20">
       <div className="text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-bold mb-3 flex items-center justify-center gap-2">
-          <Github className="w-7 h-7" /> Open Source
+          <GithubIcon className="w-7 h-7" /> Open Source
         </h2>
         <p className="text-muted-foreground">SKYCOIN4444 is built in public. Explore the codebase.</p>
       </div>

@@ -1956,6 +1956,8 @@ const App = () => {
           <Route path="/worldsimulationcontrol" component={WorldSimulationControl} />
           <Route path="/yieldfarming" component={YieldFarming} />
           <Route path="/zapierintegration" component={ZapierIntegration} />
+          {/* Default route */}
+          <Route path="/" component={Home} />
                   {/* 404 */}
                   <Route component={NotFound} />
                 </Switch>
