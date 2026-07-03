@@ -85,10 +85,10 @@ export default function HopeAI() {
   // Persistent session ID per browser session
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).slice(2)}`);
 
-  // Load chat history from DB on mount (authenticated users only)
+  // Load chat history from DB on mount
   const { data: savedHistory } = trpc.hopeAI.getChatHistory.useQuery(
     { limit: 50, sessionId },
-    { enabled: !!user, staleTime: Infinity }
+    { staleTime: Infinity }
   );
 
   const saveMessage = trpc.hopeAI.saveChatMessage.useMutation();
@@ -125,7 +125,7 @@ export default function HopeAI() {
       setCurrentState(data.emotionalState as EmotionalState);
       setIsLoading(false);
       // Persist assistant message to DB
-      if (user) saveMessage.mutate({ role: "assistant", content: data.message, tone: data.tone, emotionalState: data.emotionalState, sessionId });
+      saveMessage.mutate({ role: "assistant", content: data.message, tone: data.tone, emotionalState: data.emotionalState, sessionId });
     },
     onError() { setIsLoading(false); },
   });
@@ -166,7 +166,7 @@ export default function HopeAI() {
     setIsLoading(true);
     setMsgCount(c => c + 1);
     // Persist user message to DB
-    if (user) saveMessage.mutate({ role: "user", content: userMsg.content, sessionId });
+    saveMessage.mutate({ role: "user", content: userMsg.content, sessionId });
     const words = userMsg.content.toLowerCase().split(/\s+/).filter(w => w.length > 4);
     setTopicHistory(prev => [...prev.slice(-9), ...words.slice(0, 2)]);
     // Fire gray area analysis in parallel
@@ -419,21 +419,21 @@ export default function HopeAI() {
                 value={input}
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
-                placeholder={user ? "Tell Hope what's on your mind..." : "Sign in to talk with Hope..."}
-                disabled={!user || isLoading}
+                placeholder="Tell Hope what's on your mind..."
+                disabled={isLoading}
                 rows={1}
                 className="resize-none bg-white/5 border-white/20 text-white placeholder:text-white/30 rounded-2xl pr-4 min-h-[48px] max-h-[200px] focus:border-fuchsia-500/50 transition-all"
                 style={{ height: "auto" }}
               />
             </div>
-            <Button onClick={handleSend} disabled={!input.trim() || isLoading || !user}
+            <Button onClick={handleSend} disabled={!input.trim() || isLoading}
               className="bg-gradient-to-r from-fuchsia-600 to-cyan-600 hover:from-fuchsia-500 hover:to-cyan-500 text-white rounded-2xl px-5 h-12 font-medium transition-all">
               {isLoading ? "..." : "Send"}
             </Button>
           </div>
           <div className="flex items-center justify-between mt-2 px-1">
             <p className="text-xs text-white/20">Enter to send · Shift+Enter for new line · Hope reads your signals</p>
-            {!user && <Link href="/login" className="text-xs text-fuchsia-400 hover:text-fuchsia-300">Sign in to unlock →</Link>}
+
           </div>
         </div>
       </div>
