@@ -25,6 +25,16 @@ interface DatingNotificationContextType {
 
 const DatingNotificationContext = createContext<DatingNotificationContextType | undefined>(undefined);
 
+// Fallback context for when WebSocket is unavailable
+const defaultContext: DatingNotificationContextType = {
+  notifications: [],
+  unreadCount: 0,
+  isConnected: false,
+  markAsRead: async () => {},
+  clearNotifications: async () => {},
+  deleteNotification: async () => {},
+};
+
 export function DatingNotificationProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<DatingNotification[]>([]);
@@ -75,6 +85,7 @@ export function DatingNotificationProvider({ children }: { children: React.React
     },
     onError: (error) => {
       console.error('[DatingNotifications] WebSocket error:', error);
+      // Don't block rendering on WebSocket error
     },
     autoReconnect: true,
     reconnectInterval: 3000,
@@ -146,7 +157,8 @@ export function DatingNotificationProvider({ children }: { children: React.React
 export function useDatingNotifications() {
   const context = useContext(DatingNotificationContext);
   if (!context) {
-    throw new Error('useDatingNotifications must be used within DatingNotificationProvider');
+    // Return default context instead of throwing error
+    return defaultContext;
   }
   return context;
 }
