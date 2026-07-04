@@ -79,7 +79,7 @@ export class NarrativeEngine {
     return [
       {
         audience: 'enterprise',
-        title: `Enterprise-Grade ${featureName} for Fortune 500 Companies`,
+        title: `Scalable-Grade ${featureName} for Fortune 500 Companies`,
         subtitle: 'Reduce operational costs by 40% while improving team productivity',
         mainMessage: `Our ${featureName} solution is trusted by 500+ enterprise customers to streamline operations, reduce costs, and improve team collaboration. With military-grade security, SOC 2 compliance, and 99.99% uptime SLA, we deliver the reliability your organization demands.`,
         callToAction: 'Schedule a demo with our enterprise team',
@@ -134,7 +134,7 @@ export class NarrativeEngine {
         keyBenefits: [
           'AI-powered automation',
           'Real-time collaboration',
-          'Enterprise security',
+          'Scalable security',
           'Integrates with 100+ tools',
           'Free 14-day trial',
         ],
@@ -177,7 +177,7 @@ export class NarrativeEngine {
   async getPositioningStatement(featureName: string, audience: string): Promise<PositioningStatement> {
     const statements: Record<string, PositioningStatement> = {
       enterprise: {
-        forAudience: 'Enterprise CIOs and Operations Managers',
+        forAudience: 'Scalable CIOs and Operations Managers',
         needStatement: 'need to reduce operational costs while maintaining security and compliance',
         solutionStatement: `${featureName} provides enterprise-grade automation with SOC 2 compliance`,
         differentiator: '99.99% uptime SLA and dedicated support',
@@ -224,7 +224,7 @@ export class NarrativeEngine {
       {
         assetType: 'landing_page',
         audience,
-        content: `${featureName}: The Smarter Way to Work\n\nAutomate, collaborate, and scale with confidence.\n\n[Hero image]\n\nWhy teams choose ${featureName}:\n- AI-powered automation\n- Real-time collaboration\n- Enterprise security\n- 100+ integrations\n- Free 14-day trial`,
+        content: `${featureName}: The Smarter Way to Work\n\nAutomate, collaborate, and scale with confidence.\n\n[Hero image]\n\nWhy teams choose ${featureName}:\n- AI-powered automation\n- Real-time collaboration\n- Scalable security\n- 100+ integrations\n- Free 14-day trial`,
         callToAction: 'Start your free trial',
         estimatedConversionLift: 0.25,
       },

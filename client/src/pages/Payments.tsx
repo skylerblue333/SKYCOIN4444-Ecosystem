@@ -23,7 +23,7 @@ const SUBSCRIPTION_PLANS = [
     features: ["Unlimited AI messages","Creator monetization tools","50 marketplace listings","Priority support","Advanced analytics","Custom channel branding"],
   },
   {
-    id: "enterprise", name: "Enterprise", price: 99.99, icon: Crown,
+    id: "enterprise", name: "Scalable", price: 99.99, icon: Crown,
     color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/5",
     features: ["Everything in Pro","White-label options","Unlimited listings","Dedicated account manager","API access","Custom integrations","SLA guarantee"],
   },

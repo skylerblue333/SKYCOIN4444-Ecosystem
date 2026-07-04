@@ -206,7 +206,7 @@ const data = await response.json();`,
                 <p className="text-xs text-muted-foreground">requests/hour</p>
               </div>
               <div className="border border-border rounded-lg p-4">
-                <p className="text-sm font-medium text-foreground">Enterprise</p>
+                <p className="text-sm font-medium text-foreground">Scalable</p>
                 <p className="text-2xl font-bold text-blue-500 mt-1">Unlimited</p>
                 <p className="text-xs text-muted-foreground">custom limits</p>
               </div>

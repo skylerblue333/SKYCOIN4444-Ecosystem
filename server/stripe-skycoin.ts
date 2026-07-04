@@ -14,7 +14,7 @@ export const STRIPE_PLANS = {
   pro: { priceId: process.env.STRIPE_PRO_PRICE_ID || "", name: "Pro", price: 999 },
   enterprise: {
     priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || "",
-    name: "Enterprise",
+    name: "Scalable",
     price: 2999,
   },
 };

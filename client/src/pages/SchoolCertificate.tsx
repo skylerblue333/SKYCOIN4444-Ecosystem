@@ -51,7 +51,7 @@ export default function SchoolCertificate() {
               <div className="text-center">
                 <div className="w-24 h-px bg-foreground/30 mb-1" />
                 <div className="text-xs text-muted-foreground">Skyler Spillers</div>
-                <div className="text-xs text-muted-foreground/60">Platform CEO</div>
+                <div className="text-xs text-muted-foreground/60">Platform Developer</div>
               </div>
             </div>
             <div className="mt-6 text-xs text-muted-foreground/50 font-mono">{shortHash}</div>

@@ -38,7 +38,7 @@ export default function Pricing() {
       highlighted: true,
     },
     {
-      name: 'Enterprise',
+      name: 'Scalable',
       price: 'Custom',
       description: 'Scale your impact',
       features: [

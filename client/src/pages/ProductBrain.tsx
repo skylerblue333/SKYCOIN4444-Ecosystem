@@ -43,7 +43,7 @@ export default function ProductBrain() {
         'Subscription Tiers',
         'In-App Purchases',
         'Creator Revenue Sharing',
-        'Enterprise Licensing',
+        'Scalable Licensing',
       ],
       lessons: [
         'Freemium model generates 3x more users',

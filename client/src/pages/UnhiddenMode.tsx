@@ -223,7 +223,7 @@ export default function UnhiddenMode() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-[oklch(0.85_0.18_90)] mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-white/90 mb-1">Enterprise Observability Layer</p>
+              <p className="text-sm font-semibold text-white/90 mb-1">Scalable Observability Layer</p>
               <p className="text-xs text-white/50 leading-relaxed">
                 Unhidden Mode provides full system transparency: live event streams, AI decision logs, simulation control, economy flows, and architecture visualization. This is the developer + power user layer — not a consumer feature. All tools are read-only or safely sandboxed.
               </p>

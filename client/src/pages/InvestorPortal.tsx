@@ -40,7 +40,7 @@ const TOKENOMICS = [
 const ROADMAP = [
   { phase: "Phase 1", title: "Foundation", status: "complete", q: "Q1–Q2 2026", items: ["Core social platform", "Live streaming (WebRTC)", "Proof-of-Engagement mining", "NFT marketplace", "Trust & Safety engine"] },
   { phase: "Phase 2", title: "Expansion", status: "active", q: "Q3–Q4 2026", items: ["Pre-Sale ICO round", "Mobile app (iOS + Android)", "Multi-chain deployment", "DEX integration", "Creator subscriptions"] },
-  { phase: "Phase 3", title: "Scale", status: "upcoming", q: "Q1–Q2 2027", items: ["Public Sale ICO round", "DEX listing (SKY444/USDC)", "Cross-chain bridge", "Enterprise API", "10 language expansion"] },
+  { phase: "Phase 3", title: "Scale", status: "upcoming", q: "Q1–Q2 2027", items: ["Public Sale ICO round", "DEX listing (SKY444/USDC)", "Cross-chain bridge", "Scalable API", "10 language expansion"] },
   { phase: "Phase 4", title: "Maturity", status: "upcoming", q: "Q3 2027+", items: ["Layer 2 deployment", "SKY444 debit card", "Metaverse integration", "AI agent marketplace", "Full DAO governance"] },
 ];
 

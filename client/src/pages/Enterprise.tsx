@@ -123,7 +123,7 @@ const PRICING_TIERS = [
     href: "/signup",
   },
   {
-    name: "Enterprise",
+    name: "Scalable",
     price: 5000,
     period: "month",
     description: "Full-scale deployment for large organizations",
@@ -231,7 +231,7 @@ const B2B_MODULES = [
   },
 ];
 
-export default function Enterprise() {
+export default function Scalable() {
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<"overview" | "pricing" | "moat" | "pipeline">("overview");
 
@@ -321,7 +321,7 @@ export default function Enterprise() {
                 <div className="space-y-3">
                   {[
                     { route: "Mid-Market Route", detail: "100 clients × $1,000/mo = $1.2M ARR", icon: Building2, color: "text-primary" },
-                    { route: "Enterprise Route", detail: "20 clients × $5,000/mo = $1.2M ARR", icon: Globe, color: "text-accent" },
+                    { route: "Scalable Route", detail: "20 clients × $5,000/mo = $1.2M ARR", icon: Globe, color: "text-accent" },
                     { route: "Hybrid Route", detail: "50 mid + 10 enterprise = $1.2M ARR", icon: Target, color: "text-success" },
                   ].map(r => (
                     <div key={r.route} className="flex items-start gap-3 p-4 rounded-xl border border-border/50 bg-card/50">
@@ -338,7 +338,7 @@ export default function Enterprise() {
 
             {/* B2B Modules */}
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-6">Enterprise Modules</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-6">Scalable Modules</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {B2B_MODULES.map(m => (
                   <Link key={m.name} href={m.href}>
@@ -385,7 +385,7 @@ export default function Enterprise() {
                   {
                     step: "03",
                     title: "Hire to Delegate",
-                    desc: "Transition from sole developer to CEO. Focus 100% on fundraising and strategy.",
+                    desc: "Transition from sole developer to Developer. Focus 100% on fundraising and strategy.",
                     icon: Users,
                     color: "text-success",
                   },
@@ -408,7 +408,7 @@ export default function Enterprise() {
         {activeTab === "pricing" && (
           <div className="space-y-8">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-foreground mb-3">Enterprise Pricing</h2>
+              <h2 className="text-3xl font-bold text-foreground mb-3">Scalable Pricing</h2>
               <p className="text-muted-foreground">Annual contracts. High-ticket B2B. Lock-in recurring revenue.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">

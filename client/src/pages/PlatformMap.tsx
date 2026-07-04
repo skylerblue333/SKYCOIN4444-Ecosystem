@@ -230,7 +230,7 @@ const PLATFORM_GROUPS: FeatureGroup[] = [
       { label: "Webhooks",           href: "/webhooks",          icon: Webhook,    desc: "Webhook manager",                                    value: 6,  rarity: "uncommon",  live: true },
       { label: "DevOps Hub",         href: "/devops",            icon: Database,   desc: "Infra & operations",                                 value: 7,  rarity: "uncommon",  live: true },
       { label: "AI Engineer",        href: "/ai-engineer",       icon: GitBranch,  desc: "AI dev tools",                                       value: 8,  rarity: "rare",      live: true },
-      { label: "Enterprise",         href: "/enterprise",        icon: Package,    desc: "Enterprise features",                                value: 7,  rarity: "uncommon",  live: false },
+      { label: "Scalable",         href: "/enterprise",        icon: Package,    desc: "Scalable features",                                value: 7,  rarity: "uncommon",  live: false },
     ],
   },
   {

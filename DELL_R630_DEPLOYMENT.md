@@ -3,7 +3,7 @@
 **Target:** Official Beta Hosting at `beta.sky444.com`
 **Hardware:** Dell PowerEdge R630
 **OS:** Ubuntu Server 24.04 LTS
-**Status:** Production Ready
+**Status:** Actively Maintained
 
 ---
 
@@ -926,6 +926,6 @@ sudo sysctl -p
 
 **Last Updated:** July 3, 2026
 **Version:** 1.0.0
-**Status:** Production Ready
+**Status:** Actively Maintained
 
 **For Support:** support@sky444.com | GitHub: https://github.com/skylerblue333/skycoin4444

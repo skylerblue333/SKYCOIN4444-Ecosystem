@@ -951,7 +951,7 @@ describe("Phase 19A: Public API Manager", () => {
     const apiKey = publicAPIManager.createAPIKey({
       ownerId: 15003,
       ownerType: "enterprise",
-      name: "Enterprise App",
+      name: "Scalable App",
       description: "Full access",
       scopes: ["creator:read", "analytics:read"],
       rateLimit: 10000,

@@ -225,8 +225,8 @@ export default function Phase2to4Dashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="bg-slate-700 rounded p-4">
-                  <p className="text-sm font-semibold text-white mb-2">Enterprise Positioning</p>
-                  <p className="text-xs text-slate-300 mb-3">Enterprise-Grade Solution for Fortune 500 Companies</p>
+                  <p className="text-sm font-semibold text-white mb-2">Scalable Positioning</p>
+                  <p className="text-xs text-slate-300 mb-3">Scalable-Grade Solution for Fortune 500 Companies</p>
                   <p className="text-xs text-slate-400">Reduce operational costs by 40% while improving team productivity</p>
                   <Button className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-xs">View Full Narrative</Button>
                 </div>

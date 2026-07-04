@@ -43,7 +43,7 @@ const WEBHOOK_EVENTS = [
 const RATE_LIMITS = [
   { tier: "Free", rpm: "60", daily: "1,000", burst: "10" },
   { tier: "Pro", rpm: "600", daily: "100,000", burst: "100" },
-  { tier: "Enterprise", rpm: "6,000", daily: "Unlimited", burst: "1,000" },
+  { tier: "Scalable", rpm: "6,000", daily: "Unlimited", burst: "1,000" },
 ];
 
 const EXAMPLE_RESPONSE = `{

@@ -34,7 +34,7 @@ export default function AdaptiveRoadmap() {
     },
     {
       id: 3,
-      title: 'Enterprise SSO Integration',
+      title: 'Scalable SSO Integration',
       quarter: 'Q3',
       priority: 72,
       impact: 'Medium',

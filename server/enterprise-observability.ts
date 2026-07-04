@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { getDb } from './db';
 
 /**
- * Enterprise Observability Engine
+ * Scalable Observability Engine
  * 
  * Capabilities:
  * - Distributed tracing across all services
@@ -59,7 +59,7 @@ interface AuditLog {
   status: 'success' | 'failure';
 }
 
-export class EnterpriseObservabilityEngine {
+export class ScalableObservabilityEngine {
   private traces: Map<string, Trace[]> = new Map();
   private metrics: Metric[] = [];
   private securityEvents: SecurityEvent[] = [];
@@ -294,11 +294,11 @@ export class EnterpriseObservabilityEngine {
 }
 
 // Singleton instance
-let instance: EnterpriseObservabilityEngine | null = null;
+let instance: ScalableObservabilityEngine | null = null;
 
-export function getEnterpriseObservabilityEngine(): EnterpriseObservabilityEngine {
+export function getScalableObservabilityEngine(): ScalableObservabilityEngine {
   if (!instance) {
-    instance = new EnterpriseObservabilityEngine();
+    instance = new ScalableObservabilityEngine();
   }
   return instance;
 }

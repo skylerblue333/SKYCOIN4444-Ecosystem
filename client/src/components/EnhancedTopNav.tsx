@@ -38,7 +38,7 @@ const navCategories = [
     ],
   },
   {
-    label: "Enterprise",
+    label: "Scalable",
     icon: Building2,
     items: [
       { label: "User Directory", path: "/userdirectory" },

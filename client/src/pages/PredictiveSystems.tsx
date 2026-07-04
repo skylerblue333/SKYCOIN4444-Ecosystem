@@ -26,10 +26,10 @@ const TREND_DATA = [
 ];
 
 const REVENUE_RISK = [
-  { segment: "Premium", risk: "low", mrr: 48200, churnProb: 0.03, action: "Upsell to Enterprise" },
+  { segment: "Premium", risk: "low", mrr: 48200, churnProb: 0.03, action: "Upsell to Scalable" },
   { segment: "Creator", risk: "medium", mrr: 22100, churnProb: 0.12, action: "Engagement campaign" },
   { segment: "Free", risk: "high", mrr: 0, churnProb: 0.34, action: "Conversion push" },
-  { segment: "Enterprise", risk: "low", mrr: 91000, churnProb: 0.01, action: "Expand seats" },
+  { segment: "Scalable", risk: "low", mrr: 91000, churnProb: 0.01, action: "Expand seats" },
 ];
 
 export default function PredictiveSystems() {

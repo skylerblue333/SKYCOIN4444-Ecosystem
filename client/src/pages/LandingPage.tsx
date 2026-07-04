@@ -19,7 +19,7 @@ const LandingPage = () => {
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 animate-fade-in-up">
-            SKY444: The $2M Enterprise Ecosystem for AI, Crypto & Web3
+            SKY444: The $2M Scalable Ecosystem for AI, Crypto & Web3
           </h1>
           <p className="text-lg md:text-xl mb-8 opacity-90 animate-fade-in-up animation-delay-200">
             Unlock a $2M enterprise-grade platform with AI-powered crypto mining, a vibrant marketplace, social connectivity, and immersive gaming. Built with 1.07M+ Lines of Code.
@@ -91,7 +91,7 @@ const LandingPage = () => {
           <Card className="bg-gray-800 border-gray-700 text-white transform hover:scale-105 transition-transform duration-300">
             <CardHeader>
               <RocketIcon className="h-10 w-10 text-sky-400 mx-auto mb-4" />
-              <CardTitle className="text-2xl">Enterprise-Grade Security</CardTitle>
+              <CardTitle className="text-2xl">Scalable-Grade Security</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription className="text-gray-300">Your assets and data are protected by state-of-the-art security protocols and blockchain technology.</CardDescription>

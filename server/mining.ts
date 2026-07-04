@@ -131,7 +131,7 @@ export const miningRouter = router({
         { name: "Early Adopter", rarity: "LEGENDARY", score: 100 },
         { name: "Mining Master", rarity: "EPIC", score: 100 },
         { name: "Crypto Whale", rarity: "EPIC", score: 100 },
-        { name: "Enterprise User", rarity: "RARE", score: 25 },
+        { name: "Scalable User", rarity: "RARE", score: 25 },
         { name: "Community Leader", rarity: "RARE", score: 25 },
         { name: "Verified Trader", rarity: "UNCOMMON", score: 5 },
       ],

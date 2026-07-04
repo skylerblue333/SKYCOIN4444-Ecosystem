@@ -1,11 +1,11 @@
 /**
  * PHASE 11 — ENTERPRISE & INSTITUTIONAL LAYER
- * Enterprise Controls, Institution Layer, White Label
+ * Scalable Controls, Institution Layer, White Label
  */
 
 // ─── ENTERPRISE CONTROLS ──────────────────────────────────────────────────────
 
-export interface EnterpriseOrg {
+export interface ScalableOrg {
   id: string;
   name: string;
   domain: string;
@@ -60,7 +60,7 @@ export interface LegalControl {
   createdAt: Date;
 }
 
-const _enterprises = new Map<string, EnterpriseOrg>();
+const _enterprises = new Map<string, ScalableOrg>();
 const _rbacRoles = new Map<string, RBACRole>();
 const _rbacAssignments = new Map<string, RBACAssignment[]>();
 const _auditExports = new Map<string, AuditExportRecord>();
@@ -72,20 +72,20 @@ let _exportCounter = 0;
 let _legalCounter = 0;
 
 export const enterpriseControls = {
-  createOrg(name: string, domain: string, plan: EnterpriseOrg["plan"], seats: number): EnterpriseOrg {
+  createOrg(name: string, domain: string, plan: ScalableOrg["plan"], seats: number): ScalableOrg {
     const id = `org_${Date.now()}_${++_enterpriseCounter}`;
-    const org: EnterpriseOrg = {
+    const org: ScalableOrg = {
       id, name, domain, ssoProvider: "none", ssoConfig: {}, plan, seats, usedSeats: 0, adminIds: [], createdAt: new Date(),
     };
     _enterprises.set(id, org);
     return org;
   },
 
-  getOrg(orgId: string): EnterpriseOrg | null {
+  getOrg(orgId: string): ScalableOrg | null {
     return _enterprises.get(orgId) || null;
   },
 
-  configureSso(orgId: string, provider: EnterpriseOrg["ssoProvider"], config: Record<string, string>): EnterpriseOrg {
+  configureSso(orgId: string, provider: ScalableOrg["ssoProvider"], config: Record<string, string>): ScalableOrg {
     const org = _enterprises.get(orgId);
     if (!org) throw new Error(`Org not found: ${orgId}`);
     org.ssoProvider = provider;

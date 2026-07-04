@@ -89,7 +89,7 @@ export default function TeamWorkspace() {
           <div className="flex items-center gap-4 mb-4">
             <Link href="/" className="text-white/40 hover:text-white/70 text-sm transition-colors">← Back</Link>
             <div className="w-px h-4 bg-white/20" />
-            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">Enterprise</Badge>
+            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">Scalable</Badge>
           </div>
           <div className="flex items-start justify-between gap-6">
             <div>
@@ -411,7 +411,7 @@ export default function TeamWorkspace() {
             { label: "CRM", href: "/crm", icon: "👥", desc: "Customer management" },
             { label: "Knowledge Base", href: "/knowledge-base", icon: "📚", desc: "Documentation hub" },
             { label: "Automation", href: "/automation-workflows", icon: "⚡", desc: "Workflow automation" },
-            { label: "Enterprise", href: "/enterprise", icon: "🏢", desc: "Organization settings" },
+            { label: "Scalable", href: "/enterprise", icon: "🏢", desc: "Organization settings" },
           ].map((link, i) => (
             <Link key={i} href={link.href}>
               <Card className="bg-white/5 border-white/10 hover:border-blue-500/30 transition-all cursor-pointer">

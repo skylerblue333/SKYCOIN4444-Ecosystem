@@ -2,16 +2,16 @@
  * PHASE 13: ENTERPRISE SOLUTIONS ENGINE
  * Real B2B Sales, Fortune 500 Deals, White-Label
  * 
- * Enterprise Features:
+ * Scalable Features:
  * - White-label platform
  * - Custom integrations
  * - Dedicated support
  * - SLA guarantees
- * - Enterprise pricing
+ * - Scalable pricing
  * - Custom features
  */
 
-export interface EnterprisePlan {
+export interface ScalablePlan {
   name: string;
   price: number;
   features: string[];
@@ -20,7 +20,7 @@ export interface EnterprisePlan {
   sla: number; // uptime percentage
 }
 
-export interface EnterpriseClient {
+export interface ScalableClient {
   id: string;
   name: string;
   industry: string;
@@ -38,9 +38,9 @@ export interface B2BSalesMetrics {
   closureRate: number;
 }
 
-export class EnterpriseSolutionsEngine {
-  private plans: Map<string, EnterprisePlan> = new Map();
-  private clients: Map<string, EnterpriseClient> = new Map();
+export class ScalableSolutionsEngine {
+  private plans: Map<string, ScalablePlan> = new Map();
+  private clients: Map<string, ScalableClient> = new Map();
   private metrics: B2BSalesMetrics = {
     totalClients: 0,
     totalAnnualValue: 0,
@@ -59,9 +59,9 @@ export class EnterpriseSolutionsEngine {
    * Initialize enterprise plans
    */
   private initializePlans(): void {
-    // Starter Enterprise
+    // Starter Scalable
     this.plans.set('starter', {
-      name: 'Starter Enterprise',
+      name: 'Starter Scalable',
       price: 50000, // $50K/year
       features: [
         'Up to 1,000 users',
@@ -76,9 +76,9 @@ export class EnterpriseSolutionsEngine {
       sla: 99.9,
     });
 
-    // Professional Enterprise
+    // Professional Scalable
     this.plans.set('professional', {
-      name: 'Professional Enterprise',
+      name: 'Professional Scalable',
       price: 250000, // $250K/year
       features: [
         'Up to 10,000 users',
@@ -94,9 +94,9 @@ export class EnterpriseSolutionsEngine {
       sla: 99.95,
     });
 
-    // Premium Enterprise
+    // Premium Scalable
     this.plans.set('premium', {
-      name: 'Premium Enterprise',
+      name: 'Premium Scalable',
       price: 1000000, // $1M/year
       features: [
         'Unlimited users',
@@ -114,9 +114,9 @@ export class EnterpriseSolutionsEngine {
       sla: 99.99,
     });
 
-    // Custom Enterprise
+    // Custom Scalable
     this.plans.set('custom', {
-      name: 'Custom Enterprise',
+      name: 'Custom Scalable',
       price: 5000000, // $5M+/year
       features: [
         'Unlimited everything',
@@ -212,21 +212,21 @@ export class EnterpriseSolutionsEngine {
   /**
    * Get all enterprise plans
    */
-  getAllPlans(): EnterprisePlan[] {
+  getAllPlans(): ScalablePlan[] {
     return Array.from(this.plans.values());
   }
 
   /**
    * Get all clients
    */
-  getAllClients(): EnterpriseClient[] {
+  getAllClients(): ScalableClient[] {
     return Array.from(this.clients.values());
   }
 
   /**
    * Get active clients
    */
-  getActiveClients(): EnterpriseClient[] {
+  getActiveClients(): ScalableClient[] {
     return Array.from(this.clients.values()).filter(c => c.status === 'active');
   }
 
@@ -240,7 +240,7 @@ export class EnterpriseSolutionsEngine {
   /**
    * Get enterprise summary
    */
-  getEnterpriseSummary(): any {
+  getScalableSummary(): any {
     const activeClients = this.getActiveClients();
     const prospects = Array.from(this.clients.values()).filter(c => c.status === 'prospect');
 
@@ -253,7 +253,7 @@ export class EnterpriseSolutionsEngine {
       closureRate: `${(this.metrics.closureRate * 100).toFixed(0)}%`,
       topClient: activeClients.sort((a, b) => b.annualValue - a.annualValue)[0]?.name || 'N/A',
       topClientValue: `$${(activeClients.sort((a, b) => b.annualValue - a.annualValue)[0]?.annualValue / 1000000 || 0).toFixed(1)}M`,
-      status: 'Enterprise solutions fully operational',
+      status: 'Scalable solutions fully operational',
     };
   }
 
@@ -312,4 +312,4 @@ export class EnterpriseSolutionsEngine {
   }
 }
 
-export const enterprise = new EnterpriseSolutionsEngine();
+export const enterprise = new ScalableSolutionsEngine();

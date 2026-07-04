@@ -32,7 +32,7 @@ const SUBSCRIPTION_PLANS = [
   },
   {
     id: "enterprise",
-    name: "Enterprise",
+    name: "Scalable",
     price: 99.99,
     period: "month",
     features: ["Everything in Pro", "White-label options", "API access", "Dedicated support", "500 GB storage", "Team management", "Custom integrations"],

@@ -1,6 +1,6 @@
 /**
  * Phase 10-14 Test Suite
- * Global Expansion | Enterprise | Autonomous Economy | AI Civilization | Platform Permanence
+ * Global Expansion | Scalable | Autonomous Economy | AI Civilization | Platform Permanence
  * Target: 200+ tests across 14 engine modules
  */
 
@@ -14,7 +14,7 @@ import {
   internationalCompliance,
 } from "./phase10-global-expansion";
 
-// ── Phase 11: Enterprise & Institutional ─────────────────────────────────────
+// ── Phase 11: Scalable & Institutional ─────────────────────────────────────
 import {
   enterpriseControls,
   institutionLayer,
@@ -264,7 +264,7 @@ describe("Phase 10D: International Compliance", () => {
 // PHASE 11: ENTERPRISE & INSTITUTIONAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe("Phase 11A: Enterprise Controls", () => {
+describe("Phase 11A: Scalable Controls", () => {
   let orgId: string;
 
   it("creates an enterprise organization", () => {

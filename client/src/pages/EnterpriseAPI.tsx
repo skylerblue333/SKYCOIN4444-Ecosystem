@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export default function EnterpriseAPI() {
+export default function ScalableAPI() {
   const [selectedAPI, setSelectedAPI] = useState<string | null>(null);
 
   const apis = [

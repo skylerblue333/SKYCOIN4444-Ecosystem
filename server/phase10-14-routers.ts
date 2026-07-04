@@ -1,6 +1,6 @@
 /**
  * PHASE 10–14 TRPC ROUTERS
- * Global Expansion, Enterprise, Autonomous Economy, AI Civilization, Platform Permanence
+ * Global Expansion, Scalable, Autonomous Economy, AI Civilization, Platform Permanence
  */
 import { router, publicProcedure, protectedProcedure, adminProcedure } from "./_core/trpc";
 import { z } from "zod";
@@ -76,7 +76,7 @@ export const internationalComplianceRouter = router({
     .query(({ input }) => internationalCompliance.getPayoutCompliance(input.region, input.amount)),
 });
 
-// ── Phase 11: Enterprise & Institutional ──────────────────────────────────
+// ── Phase 11: Scalable & Institutional ──────────────────────────────────
 import {
   enterpriseControls,
   institutionLayer,

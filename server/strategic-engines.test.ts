@@ -218,7 +218,7 @@ describe('SKYCOIN4444 Strategic Engines', () => {
       const narratives = [
         { audience: 'Investors', engagement: 0.89, variants: 5 },
         { audience: 'Users', engagement: 0.76, variants: 4 },
-        { audience: 'Enterprise', engagement: 0.92, variants: 6 },
+        { audience: 'Scalable', engagement: 0.92, variants: 6 },
         { audience: 'Creators', engagement: 0.84, variants: 5 },
       ];
       expect(narratives.length).toBe(4);

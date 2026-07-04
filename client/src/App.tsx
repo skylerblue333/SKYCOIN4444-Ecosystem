@@ -326,9 +326,9 @@ const EmbedSDK = lazy(() => import('./pages/EmbedSDK'));
 const EmptySearchState = lazy(() => import('./pages/EmptySearchState'));
 const EngagementMetrics = lazy(() => import('./pages/EngagementMetrics'));
 const Engineer = lazy(() => import('./pages/Engineer'));
-const Enterprise = lazy(() => import('./pages/Enterprise'));
-const EnterpriseAPI = lazy(() => import('./pages/EnterpriseAPI'));
-const EnterpriseAnalytics = lazy(() => import('./pages/EnterpriseAnalytics'));
+const Scalable = lazy(() => import('./pages/Scalable'));
+const ScalableAPI = lazy(() => import('./pages/ScalableAPI'));
+const ScalableAnalytics = lazy(() => import('./pages/ScalableAnalytics'));
 const EntityProfile = lazy(() => import('./pages/EntityProfile'));
 const EnvironmentManagement = lazy(() => import('./pages/EnvironmentManagement'));
 const Error403 = lazy(() => import('./pages/Error403'));
@@ -1306,9 +1306,9 @@ const App = () => {
           <Route path="/emptysearchstate" component={EmptySearchState} />
           <Route path="/engagementmetrics" component={EngagementMetrics} />
           <Route path="/engineer" component={Engineer} />
-          <Route path="/enterprise" component={Enterprise} />
-          <Route path="/enterpriseapi" component={EnterpriseAPI} />
-          <Route path="/enterpriseanalytics" component={EnterpriseAnalytics} />
+          <Route path="/enterprise" component={Scalable} />
+          <Route path="/enterpriseapi" component={ScalableAPI} />
+          <Route path="/enterpriseanalytics" component={ScalableAnalytics} />
           <Route path="/entityprofile" component={EntityProfile} />
           <Route path="/environmentmanagement" component={EnvironmentManagement} />
           <Route path="/error403" component={Error403} />

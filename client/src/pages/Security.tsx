@@ -17,7 +17,7 @@ const SECURITY_FEATURES = [
 export default function Security() {
   return (
     <div className="container py-8 max-w-5xl animate-page-in">
-      <PageHeader backHref="/dashboard" icon={Shield} title="Security Center" subtitle="Enterprise-grade security protecting your assets and data" badge="SOC 2 Ready" badgeVariant="default" />
+      <PageHeader backHref="/dashboard" icon={Shield} title="Security Center" subtitle="Robust security protecting your assets and data" badge="SOC 2 Ready" badgeVariant="default" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <StatCard icon={Shield} label="Threats Blocked" value="12,847" change={-5.2} changeLabel="this month" color="success" />
         <StatCard icon={Activity} label="Uptime" value="..." change={0.01} color="primary" />

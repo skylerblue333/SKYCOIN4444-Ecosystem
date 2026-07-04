@@ -2,7 +2,7 @@
  * Phase 7 Engines — Ecosystem Expansion Layer
  * 7A: Developer Platform | 7B: Business Layer | 7C: Brand Economy
  * 7D: Education Expansion | 7E: Financial Expansion | 7F: Partnership Infrastructure
- * 7G: Governance Expansion | 7H: Identity Expansion | 7I: Enterprise Infrastructure
+ * 7G: Governance Expansion | 7H: Identity Expansion | 7I: Scalable Infrastructure
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -778,11 +778,11 @@ export const enterpriseInfrastructure = {
     };
   },
 
-  getEnterpriseDashboard(organizationId: string): { users: number; activeUsers: number; storageUsed: number; apiCalls: number; complianceScore: number } {
+  getScalableDashboard(organizationId: string): { users: number; activeUsers: number; storageUsed: number; apiCalls: number; complianceScore: number } {
     return { users: 450, activeUsers: 312, storageUsed: 128000000000, apiCalls: 1250000, complianceScore: 0.94 };
   },
 
-  generateEnterpriseBilling(organizationId: string, period: string): { invoiceId: string; amount: number; breakdown: Record<string, number>; dueDate: Date } {
+  generateScalableBilling(organizationId: string, period: string): { invoiceId: string; amount: number; breakdown: Record<string, number>; dueDate: Date } {
     return {
       invoiceId: `einv_${organizationId}_${period}`,
       amount: 4999,
@@ -937,9 +937,9 @@ const _origExportPortableIdentity7 = identityExpansion.exportPortableIdentity.bi
   return { verified: !!linked, userId, platform, handle, verifiedAt: new Date() };
 };
 
-// enterpriseInfrastructure: add createEnterpriseAccount, addTeamMember, getEnterpriseAnalytics
+// enterpriseInfrastructure: add createScalableAccount, addTeamMember, getScalableAnalytics
 const _enterpriseAccounts = new Map<string, { id: string; ownerId: number; companyName: string; industry: string; employees: number; plan: string; ssoProvider: string; customDomain: string; createdAt: Date; members: { accountId: string; userId: number; role: string; joinedAt: Date }[] }>();
-(enterpriseInfrastructure as any).createEnterpriseAccount = function(ownerId: number, data: { companyName: string; industry: string; employees: number; plan: string; ssoProvider: string; customDomain: string }): any {
+(enterpriseInfrastructure as any).createScalableAccount = function(ownerId: number, data: { companyName: string; industry: string; employees: number; plan: string; ssoProvider: string; customDomain: string }): any {
   const id = `ent_${ownerId}_${Date.now()}`;
   const account = { id, ownerId, ...data, createdAt: new Date(), members: [] };
   _enterpriseAccounts.set(id, account);
@@ -952,7 +952,7 @@ const _enterpriseAccounts = new Map<string, { id: string; ownerId: number; compa
   account.members.push(member);
   return member;
 };
-(enterpriseInfrastructure as any).getEnterpriseAnalytics = function(accountId: string): any {
+(enterpriseInfrastructure as any).getScalableAnalytics = function(accountId: string): any {
   const account = _enterpriseAccounts.get(accountId);
   return { accountId, activeUsers: account?.members.length ?? 0, contentCreated: 0, apiCalls: 0, storageUsed: 0, complianceScore: 95, engagementRate: 0.042 };
 };

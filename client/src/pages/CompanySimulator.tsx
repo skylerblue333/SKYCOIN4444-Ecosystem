@@ -54,7 +54,7 @@ export default function CompanySimulator() {
     },
     {
       id: 'pivot',
-      name: 'Enterprise Pivot',
+      name: 'Scalable Pivot',
       description: 'Focus on enterprise segment',
       year5Revenue: 950,
       year5Users: 15,
@@ -164,7 +164,7 @@ export default function CompanySimulator() {
                 <Line type="monotone" dataKey="baseline" stroke="#3b82f6" strokeWidth={2} name="Baseline" />
                 <Line type="monotone" dataKey="aggressive" stroke="#10b981" strokeWidth={2} name="Aggressive" />
                 <Line type="monotone" dataKey="conservative" stroke="#f59e0b" strokeWidth={2} name="Conservative" />
-                <Line type="monotone" dataKey="pivot" stroke="#8b5cf6" strokeWidth={2} name="Enterprise Pivot" />
+                <Line type="monotone" dataKey="pivot" stroke="#8b5cf6" strokeWidth={2} name="Scalable Pivot" />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -191,7 +191,7 @@ export default function CompanySimulator() {
                 <Bar dataKey="baseline" fill="#3b82f6" name="Baseline" />
                 <Bar dataKey="aggressive" fill="#10b981" name="Aggressive" />
                 <Bar dataKey="conservative" fill="#f59e0b" name="Conservative" />
-                <Bar dataKey="pivot" fill="#8b5cf6" name="Enterprise Pivot" />
+                <Bar dataKey="pivot" fill="#8b5cf6" name="Scalable Pivot" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -279,7 +279,7 @@ export default function CompanySimulator() {
                   <p className="text-xs text-gray-400 mt-1">Requires 2x marketing spend but achieves $1.3B by Year 5</p>
                 </div>
                 <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
-                  <p className="text-sm text-white font-medium">✓ Enterprise pivot maintains profitability</p>
+                  <p className="text-sm text-white font-medium">✓ Scalable pivot maintains profitability</p>
                   <p className="text-xs text-gray-400 mt-1">Lower user growth but 40% ARPU increase offsets volume</p>
                 </div>
                 <div className="p-3 bg-slate-700/50 rounded border border-slate-600">

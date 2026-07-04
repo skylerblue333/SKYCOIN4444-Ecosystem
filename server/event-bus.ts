@@ -1,5 +1,5 @@
 /**
- * SKYCOIN4444 Event Bus — Enterprise Backbone
+ * SKYCOIN4444 Event Bus — Scalable Backbone
  *
  * All platform actions become typed events.
  * Events are:

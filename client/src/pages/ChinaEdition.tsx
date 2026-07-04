@@ -120,7 +120,7 @@ const MODULES = [
     border: "border-blue-500/30",
     gradient: "from-blue-500/20 to-indigo-500/10",
     zh: "企业功能",
-    en: "Enterprise Features",
+    en: "Scalable Features",
     desc_zh: "组织管理 · 团队工作区 · 权限管理 · 数据分析 · 项目管理 · 知识库 · AI智能体 · 工作流自动化",
     desc_en: "Organization Management · Team Workspaces · Permissions · Analytics · Project Management · Knowledge Base · AI Agents · Workflow Automation",
     route: "/enterprise",
@@ -135,7 +135,7 @@ const INTEGRATIONS = [
   { name: "哔哩哔哩", en: "Bilibili", icon: "📺", color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/20", desc: "Video · Community" },
   { name: "抖音", en: "Douyin", icon: "🎵", color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20", desc: "Short Video · Creator" },
   { name: "小红书", en: "Xiaohongshu", icon: "📖", color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20", desc: "Lifestyle · Creator" },
-  { name: "钉钉", en: "DingTalk", icon: "🔔", color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", desc: "Enterprise · Teams" },
+  { name: "钉钉", en: "DingTalk", icon: "🔔", color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", desc: "Scalable · Teams" },
   { name: "腾讯云", en: "Tencent Cloud", icon: "☁️", color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", desc: "Infrastructure · AI" },
   { name: "阿里云", en: "Alibaba Cloud", icon: "🌐", color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20", desc: "Cloud · Storage" },
 ];
@@ -146,7 +146,7 @@ const ADVANTAGES = [
   { icon: BookOpen, zh: "学习中心", en: "Learning Center", color: "text-green-400" },
   { icon: Star, zh: "创作者工具", en: "Creator Tools", color: "text-amber-400" },
   { icon: Globe, zh: "全球社区", en: "Global Community", color: "text-blue-400" },
-  { icon: Building2, zh: "企业服务", en: "Enterprise Services", color: "text-rose-400" },
+  { icon: Building2, zh: "企业服务", en: "Scalable Services", color: "text-rose-400" },
 ];
 
 const FEATURE_GROUPS = [
@@ -453,7 +453,7 @@ export default function ChinaEdition() {
               className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white font-bold hover:bg-white/5 transition-colors"
             >
               <Building2 className="w-4 h-4" />
-              {isZh ? "企业方案" : "Enterprise"}
+              {isZh ? "企业方案" : "Scalable"}
             </button>
           </div>
         </div>

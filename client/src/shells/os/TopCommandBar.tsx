@@ -258,7 +258,7 @@ const NAV_GROUPS = [
           { label: "API Docs",    href: "/api-docs",       icon: BookOpen,      desc: "tRPC endpoint catalog" },
           { label: "Webhooks",    href: "/webhooks",       icon: Webhook,       desc: "Webhook manager" },
           { label: "DevOps Hub",  href: "/devops",         icon: Database,      desc: "Infra & operations" },
-          { label: "Enterprise",  href: "/enterprise",     icon: Package,       desc: "Enterprise features" },
+          { label: "Scalable",  href: "/enterprise",     icon: Package,       desc: "Scalable features" },
         ],
       },
       {

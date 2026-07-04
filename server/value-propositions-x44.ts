@@ -311,7 +311,7 @@ export class ValuePropositionsX44 {
       title: 'Mentorship',
       description: 'Get mentored by industry leaders',
       metrics: { value: '1000+', unit: 'mentors', timeframe: 'available' },
-      proof: ['50K+ mentees', 'Avg 3x career growth', 'CEO-level mentors'],
+      proof: ['50K+ mentees', 'Avg 3x career growth', 'Developer-level mentors'],
       cta: 'Find Mentor',
     });
 

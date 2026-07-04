@@ -5337,7 +5337,7 @@ var init_stripe_skycoin = __esm({
       pro: { priceId: process.env.STRIPE_PRO_PRICE_ID || "", name: "Pro", price: 999 },
       enterprise: {
         priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || "",
-        name: "Enterprise",
+        name: "Scalable",
         price: 2999
       }
     };
@@ -12331,10 +12331,10 @@ var init_phase7_engines = __esm({
           generatedAt: /* @__PURE__ */ new Date()
         };
       },
-      getEnterpriseDashboard(organizationId) {
+      getScalableDashboard(organizationId) {
         return { users: 450, activeUsers: 312, storageUsed: 128e9, apiCalls: 125e4, complianceScore: 0.94 };
       },
-      generateEnterpriseBilling(organizationId, period) {
+      generateScalableBilling(organizationId, period) {
         return {
           invoiceId: `einv_${organizationId}_${period}`,
           amount: 4999,
@@ -12476,7 +12476,7 @@ var init_phase7_engines = __esm({
       return { verified: !!linked, userId, platform, handle, verifiedAt: /* @__PURE__ */ new Date() };
     };
     _enterpriseAccounts = /* @__PURE__ */ new Map();
-    enterpriseInfrastructure.createEnterpriseAccount = function(ownerId, data) {
+    enterpriseInfrastructure.createScalableAccount = function(ownerId, data) {
       const id = `ent_${ownerId}_${Date.now()}`;
       const account = { id, ownerId, ...data, createdAt: /* @__PURE__ */ new Date(), members: [] };
       _enterpriseAccounts.set(id, account);
@@ -12489,7 +12489,7 @@ var init_phase7_engines = __esm({
       account.members.push(member);
       return member;
     };
-    enterpriseInfrastructure.getEnterpriseAnalytics = function(accountId) {
+    enterpriseInfrastructure.getScalableAnalytics = function(accountId) {
       const account = _enterpriseAccounts.get(accountId);
       return { accountId, activeUsers: account?.members.length ?? 0, contentCreated: 0, apiCalls: 0, storageUsed: 0, complianceScore: 95, engagementRate: 0.042 };
     };
@@ -37064,7 +37064,7 @@ var ManiusOrchestrator = class {
     if (this.cycleInterval) return;
     void this.runCycle();
     this.cycleInterval = setInterval(() => void this.runCycle(), this.CYCLE_MS);
-    console.log("[ManiusOrchestrator] CEO brain started \u2014 60s cycle");
+    console.log("[ManiusOrchestrator] Developer brain started \u2014 60s cycle");
   }
   stop() {
     if (this.cycleInterval) {
@@ -50365,7 +50365,7 @@ var AdaptiveRoadmapEngine = class {
       },
       {
         id: "item_3",
-        name: "Enterprise API",
+        name: "Scalable API",
         description: "REST API for enterprise customers",
         currentPriority: 4,
         dynamicPriority: 6,
@@ -50494,7 +50494,7 @@ var AdaptiveRoadmapEngine = class {
         },
         {
           itemId: "item_3",
-          itemName: "Enterprise API",
+          itemName: "Scalable API",
           previousPriority: 4,
           newPriority: 6,
           reason: "Strong revenue potential (0.85 score)",
@@ -50871,7 +50871,7 @@ var CompetitiveRadarEngine = class {
         features: [
           { name: "Mobile App", has: true, maturity: "mature" },
           { name: "AI Personalization", has: true, maturity: "stable" },
-          { name: "Enterprise API", has: false, maturity: "beta" },
+          { name: "Scalable API", has: false, maturity: "beta" },
           { name: "Community Features", has: true, maturity: "mature" }
         ],
         pricing: { tiers: [{ name: "Pro", price: 99 }], avgPrice: 99, change: 0 }
@@ -50882,10 +50882,10 @@ var CompetitiveRadarEngine = class {
         features: [
           { name: "Mobile App", has: false, maturity: "beta" },
           { name: "AI Personalization", has: false, maturity: "beta" },
-          { name: "Enterprise API", has: true, maturity: "stable" },
+          { name: "Scalable API", has: true, maturity: "stable" },
           { name: "Community Features", has: false, maturity: "beta" }
         ],
-        pricing: { tiers: [{ name: "Enterprise", price: 299 }], avgPrice: 299, change: 5 }
+        pricing: { tiers: [{ name: "Scalable", price: 299 }], avgPrice: 299, change: 5 }
       }
     ];
     competitors.forEach((comp) => {
@@ -50904,7 +50904,7 @@ var CompetitiveRadarEngine = class {
             name: t2.name,
             price: t2.price,
             features: ["Core", "Advanced"],
-            targetSegment: "Enterprise"
+            targetSegment: "Scalable"
           })),
           averagePrice: comp.pricing.avgPrice,
           priceChangePercentage: comp.pricing.change,
@@ -50915,7 +50915,7 @@ var CompetitiveRadarEngine = class {
           { pattern: "AI chat sidebar", adoptionRate: 0.8, competitors: [comp.name], trend: "growing" }
         ],
         marketPosition: "Market Leader",
-        strengths: ["Strong brand", "Large user base", "Enterprise focus"],
+        strengths: ["Strong brand", "Large user base", "Scalable focus"],
         weaknesses: ["High pricing", "Complex onboarding", "Limited mobile"]
       });
     });
@@ -51320,7 +51320,7 @@ var BehavioralIntelligenceEngine = class {
         estimatedLTV: 600
       },
       {
-        personaType: "Enterprise Champion",
+        personaType: "Scalable Champion",
         description: "High engagement, team advocate",
         characteristics: ["High engagement", "Team lead", "Advocate"],
         commonPainPoints: ["Team collaboration", "Admin controls", "Compliance"],
@@ -51680,7 +51680,7 @@ var NarrativeEngine = class {
     return [
       {
         audience: "enterprise",
-        title: `Enterprise-Grade ${featureName} for Fortune 500 Companies`,
+        title: `Scalable-Grade ${featureName} for Fortune 500 Companies`,
         subtitle: "Reduce operational costs by 40% while improving team productivity",
         mainMessage: `Our ${featureName} solution is trusted by 500+ enterprise customers to streamline operations, reduce costs, and improve team collaboration. With military-grade security, SOC 2 compliance, and 99.99% uptime SLA, we deliver the reliability your organization demands.`,
         callToAction: "Schedule a demo with our enterprise team",
@@ -51734,7 +51734,7 @@ var NarrativeEngine = class {
         keyBenefits: [
           "AI-powered automation",
           "Real-time collaboration",
-          "Enterprise security",
+          "Scalable security",
           "Integrates with 100+ tools",
           "Free 14-day trial"
         ]
@@ -51774,7 +51774,7 @@ var NarrativeEngine = class {
   async getPositioningStatement(featureName, audience) {
     const statements = {
       enterprise: {
-        forAudience: "Enterprise CIOs and Operations Managers",
+        forAudience: "Scalable CIOs and Operations Managers",
         needStatement: "need to reduce operational costs while maintaining security and compliance",
         solutionStatement: `${featureName} provides enterprise-grade automation with SOC 2 compliance`,
         differentiator: "99.99% uptime SLA and dedicated support",
@@ -51848,7 +51848,7 @@ Automate, collaborate, and scale with confidence.
 Why teams choose ${featureName}:
 - AI-powered automation
 - Real-time collaboration
-- Enterprise security
+- Scalable security
 - 100+ integrations
 - Free 14-day trial`,
         callToAction: "Start your free trial",
@@ -52546,7 +52546,7 @@ var CompanySimulatorEngine = class {
         morale: 0.85,
         bottlenecks: ["Deal closure", "Proposal generation", "Contract negotiation"],
         predictedChallenges: ["Sales cycle length", "Competitive pressure", "Pricing objections"],
-        requiredResources: ["Enterprise account executive", "Sales engineer"],
+        requiredResources: ["Scalable account executive", "Sales engineer"],
         timelineImpact: 3
       }
     ];
@@ -52943,15 +52943,15 @@ var marketplaceToCreatorValueLoop = async (userId, itemId, price) => {
     sellerReward: Math.floor(price * 0.85),
     // Social: Create purchase post
     socialPostId: `post_purchase_${itemId}`,
-    // Enterprise: Track transaction
+    // Scalable: Track transaction
     transactionId: `txn_${itemId}_${userId}`,
     // Analytics: Log purchase
     purchaseMetric: "marketplace_transaction"
   };
 };
-var creatorToEnterpriseValueLoop = async (userId, earningsAmount) => {
+var creatorToScalableValueLoop = async (userId, earningsAmount) => {
   return {
-    // Enterprise: Track revenue
+    // Scalable: Track revenue
     enterpriseRevenue: earningsAmount * 0.15,
     // Platform takes 15%
     // Creator: Update score
@@ -53021,7 +53021,7 @@ var ecosystemIntegrationRouter = router({
         subscribers: 3200,
         avgEngagement: 0.15
       },
-      // Enterprise State
+      // Scalable State
       enterprise: {
         businessValue: 125e3,
         monthlyRevenue: 8500,
@@ -53079,7 +53079,7 @@ var ecosystemIntegrationRouter = router({
       social: await socialToGamingValueLoop(userId, String(input.metadata?.postId || "")),
       gaming: await gamingToCryptoValueLoop(userId, String(input.metadata?.gameId || ""), Number(input.metadata?.score || 0)),
       marketplace: await marketplaceToCreatorValueLoop(userId, String(input.metadata?.itemId || ""), Number(input.metadata?.price || 0)),
-      creator: await creatorToEnterpriseValueLoop(userId, Number(input.metadata?.earnings || 0)),
+      creator: await creatorToScalableValueLoop(userId, Number(input.metadata?.earnings || 0)),
       ai: await aiToPersonalizationValueLoop(userId, input.action)
     };
     return {
@@ -53114,7 +53114,7 @@ var ecosystemIntegrationRouter = router({
         gamingToCrypto: 0.92,
         cryptoToMarketplace: 0.85,
         marketplaceToCreator: 0.9,
-        creatorToEnterprise: 0.87,
+        creatorToScalable: 0.87,
         enterpriseToAI: 0.93,
         aiToAnalytics: 0.96,
         analyticsToGovernance: 0.82,
@@ -53154,7 +53154,7 @@ var ecosystemIntegrationRouter = router({
         focus: "Expand ecosystem reach",
         initiatives: [
           "AI-powered personalization across all features",
-          "Enterprise B2B integrations",
+          "Scalable B2B integrations",
           "Governance DAO launch"
         ],
         expectedImpact: "+100% users, +50% revenue"
@@ -57810,7 +57810,7 @@ Context: ${input.context}` : "") + "\n\nRespond concisely and helpfully. Use mar
       name: "Skyler Blue Spillers",
       title: "Founder & Architect \u2014 SKYCOIN4444",
       company: "Innovative Information Technology Resolutions LLC",
-      role: "CEO & Chief Architect",
+      role: "Developer & Chief Architect",
       faith: "God First",
       family: "Father of 3 Daughters",
       degrees: [
@@ -57822,7 +57822,7 @@ Context: ${input.context}` : "") + "\n\nRespond concisely and helpfully. Use mar
         "AI & Machine Learning Systems",
         "Web3 & Blockchain Architecture",
         "Cybersecurity & Threat Modeling",
-        "IT Consulting & Enterprise Solutions",
+        "IT Consulting & Scalable Solutions",
         "Ecosystem Design & Platform Strategy",
         "Cloud Infrastructure & DevOps",
         "Crypto Token Economics"
@@ -57844,7 +57844,7 @@ Context: ${input.context}` : "") + "\n\nRespond concisely and helpfully. Use mar
         { id: "web3_pioneer", label: "Web3 Pioneer", desc: "Full DeFi + NFT + token ecosystem", icon: "zap" },
         { id: "god_first", label: "Faith Driven", desc: "God First in all things", icon: "cross" },
         { id: "father_3", label: "Family Man", desc: "Father of 3 daughters", icon: "heart" },
-        { id: "iitr_ceo", label: "CEO", desc: "Innovative IT Resolutions LLC", icon: "building" },
+        { id: "iitr_ceo", label: "Developer", desc: "Innovative IT Resolutions LLC", icon: "building" },
         { id: "1851_tests", label: "Quality Obsessed", desc: "1,851 passing tests", icon: "check" },
         { id: "legendary_status", label: "Legendary Status", desc: "Top 0.001% platform builder", icon: "crown" }
       ],

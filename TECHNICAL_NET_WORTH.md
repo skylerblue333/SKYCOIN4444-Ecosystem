@@ -93,8 +93,8 @@
 - **Software Engineer Bootcamp** — Advanced training
 - **Certified Ethical Hacker (CEH)** — EC-Council certified
 - **M.S. Cybersecurity** — Graduate degree
-- **10+ Years Industry Experience** — Proven track record
-- **50+ Security Audits** — Enterprise-level expertise
+- **Professional Developer Industry Experience** — Proven track record
+- **50+ Security Audits** — Scalable-level expertise
 
 ---
 
@@ -110,7 +110,7 @@ Most platforms spend **$2M–$5M and 2 years** to build what I engineered here. 
 - **Trade Execution:** Hope AI executes Stripe transactions from chat
 - **Community Moderation:** Automated content filtering + human escalation
 
-### Enterprise-Ready Security
+### Scalable-Ready Security
 - **SOC 2 Type II** — Audit-ready compliance
 - **GDPR Compliant** — Data privacy by design
 - **HIPAA Ready** — Healthcare data handling
@@ -172,7 +172,7 @@ When you invest in SKYCOIN4444 token, you're betting on:
 3. **Revenue Streams** — IITR LLC generating $500K-$2M annually
 4. **Network Effects** — 7 platforms creating lock-in
 5. **AI Moat** — Proprietary ML pipeline (44 agents)
-6. **Enterprise Adoption** — B2B IT services driving platform growth
+6. **Scalable Adoption** — B2B IT services driving platform growth
 
 ---
 

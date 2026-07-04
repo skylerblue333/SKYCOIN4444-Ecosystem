@@ -177,7 +177,7 @@ export class CompanySimulatorEngine {
         morale: 0.85,
         bottlenecks: ['Deal closure', 'Proposal generation', 'Contract negotiation'],
         predictedChallenges: ['Sales cycle length', 'Competitive pressure', 'Pricing objections'],
-        requiredResources: ['Enterprise account executive', 'Sales engineer'],
+        requiredResources: ['Scalable account executive', 'Sales engineer'],
         timelineImpact: 3,
       },
     ];

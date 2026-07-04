@@ -519,10 +519,10 @@ describe("Phase 7H: Identity Expansion", () => {
   });
 });
 
-// ─── Phase 7I: Enterprise Infrastructure ─────────────────────────────────────
-describe("Phase 7I: Enterprise Infrastructure", () => {
+// ─── Phase 7I: Scalable Infrastructure ─────────────────────────────────────
+describe("Phase 7I: Scalable Infrastructure", () => {
   it("creates an enterprise account", () => {
-    const account = enterpriseInfrastructure.createEnterpriseAccount(1, {
+    const account = enterpriseInfrastructure.createScalableAccount(1, {
       companyName: "MegaCorp",
       industry: "technology",
       employees: 10000,
@@ -534,7 +534,7 @@ describe("Phase 7I: Enterprise Infrastructure", () => {
   });
 
   it("adds a team member", () => {
-    const account = enterpriseInfrastructure.createEnterpriseAccount(2, {
+    const account = enterpriseInfrastructure.createScalableAccount(2, {
       companyName: "StartupCo",
       industry: "fintech",
       employees: 25,
@@ -547,7 +547,7 @@ describe("Phase 7I: Enterprise Infrastructure", () => {
   });
 
   it("gets enterprise analytics", () => {
-    const account = enterpriseInfrastructure.createEnterpriseAccount(3, {
+    const account = enterpriseInfrastructure.createScalableAccount(3, {
       companyName: "AnalyticsCorp",
       industry: "analytics",
       employees: 100,
@@ -555,7 +555,7 @@ describe("Phase 7I: Enterprise Infrastructure", () => {
       ssoProvider: "azure",
       customDomain: "analytics.shadowchat.com",
     });
-    const analytics = enterpriseInfrastructure.getEnterpriseAnalytics(account.id);
+    const analytics = enterpriseInfrastructure.getScalableAnalytics(account.id);
     expect(analytics).toHaveProperty("activeUsers");
     expect(analytics).toHaveProperty("contentCreated");
     expect(analytics).toHaveProperty("engagementRate");

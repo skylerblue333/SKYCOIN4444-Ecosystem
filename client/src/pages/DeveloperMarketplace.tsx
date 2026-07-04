@@ -24,7 +24,7 @@ const ASSETS = [
   { id: 7, name: "Unity Cyberpunk Pack", cat: "games", price: 199, stars: 4.9, downloads: 876, lang: "C#", desc: "50+ cyberpunk assets, shaders, particle effects, UI prefabs.", badge: "PREMIUM", color: "from-cyan-600 to-blue-600" },
   { id: 8, name: "Pentest Automation Suite", cat: "security", price: 299, stars: 4.7, downloads: 1247, lang: "Python", desc: "OWASP Top 10 scanner, SQLi/XSS/CSRF detectors, report generator.", badge: "ENTERPRISE", color: "from-red-600 to-rose-600" },
   { id: 9, name: "Kafka + PostgreSQL Pipeline", cat: "data", price: 119, stars: 4.8, downloads: 2341, lang: "Python", desc: "Time-series partitioning, composite indexes, aiokafka consumer.", badge: null, color: "from-teal-600 to-emerald-600" },
-  { id: 10, name: "Multi-tenant SaaS Template", cat: "saas", price: 249, stars: 4.9, downloads: 3102, lang: "TypeScript", desc: "Org management, RBAC, SSO, SOC 2 ready. Enterprise-grade.", badge: "NEW", color: "from-indigo-600 to-blue-600" },
+  { id: 10, name: "Multi-tenant SaaS Template", cat: "saas", price: 249, stars: 4.9, downloads: 3102, lang: "TypeScript", desc: "Org management, RBAC, SSO, SOC 2 ready. Robust.", badge: "NEW", color: "from-indigo-600 to-blue-600" },
   { id: 11, name: "AI Chatbot Boilerplate", cat: "automation", price: 99, stars: 4.8, downloads: 4567, lang: "TypeScript", desc: "OpenAI/Claude streaming, memory, RAG, function calling.", badge: "HOT", color: "from-pink-600 to-rose-600" },
   { id: 12, name: "Web3 dApp Starter", cat: "saas", price: 179, stars: 4.7, downloads: 1893, lang: "TypeScript", desc: "RainbowKit, wagmi, Hardhat, ERC-20/721 contracts, IPFS.", badge: null, color: "from-amber-600 to-yellow-600" },
 ];

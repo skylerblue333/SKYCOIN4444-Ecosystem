@@ -207,7 +207,7 @@ export default function Phase1Dashboard() {
                   <div className="bg-slate-700 rounded p-3">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <p className="text-sm font-semibold text-white">Enterprise API</p>
+                        <p className="text-sm font-semibold text-white">Scalable API</p>
                         <p className="text-xs text-slate-400">Priority: 4 → 6</p>
                       </div>
                       <Badge className="bg-green-900 text-green-200">↑ +2</Badge>
@@ -247,7 +247,7 @@ export default function Phase1Dashboard() {
                     impact: 'medium',
                   },
                   {
-                    name: 'Enterprise API',
+                    name: 'Scalable API',
                     priority: 6,
                     feedback: 0.6,
                     revenue: 0.85,

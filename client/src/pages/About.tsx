@@ -5,7 +5,7 @@ import { ArrowRight, Coins, Users, Heart, Zap, Shield, Globe, Star, Play, Trophy
 
 const SKYLER_PHOTO = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400";
 const TEAM_PHOTOS = [
-  { name: "Skyler Blue", role: "Founder & CEO", photo: SKYLER_PHOTO, bio: "Software engineer turned Web3 builder. Started SkyCoin4444 to create a platform where everyone earns from what they love." },
+  { name: "Skyler Blue", role: "Lead Developer", photo: SKYLER_PHOTO, bio: "Software engineer turned Web3 builder. Started SkyCoin4444 to create a platform where everyone earns from what they love." },
   { name: "Hope AI", role: "AI Core System", photo: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400", bio: "The intelligence layer powering every recommendation, moderation decision, and personalized experience on the platform." },
 ];
 
@@ -81,7 +81,7 @@ export default function About() {
                 />
                 <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
                   <div className="font-bold">Skyler Blue</div>
-                  <div className="text-sm text-cyan-400">Founder & CEO · Software Engineer</div>
+                  <div className="text-sm text-cyan-400">Lead Developer · Software Engineer</div>
                   <div className="flex items-center gap-2 mt-2">
                     <div className="w-2 h-2 rounded-full bg-purple-600" />
                     <span className="text-xs text-gray-400">Online · Building the future</span>

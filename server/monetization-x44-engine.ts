@@ -7,7 +7,7 @@
  * - Marketplace (15% commission)
  * - Advertising (CPM-based)
  * - Affiliate (40% lifetime)
- * - Enterprise (custom)
+ * - Scalable (custom)
  * - Data insights (ethical)
  */
 
@@ -118,10 +118,10 @@ export class MonetizationX44Engine {
       targetUsers: 50000, // 50K platinum users
     });
 
-    // Tier 5: Enterprise (Custom pricing)
+    // Tier 5: Scalable (Custom pricing)
     this.addTier({
       id: 'enterprise',
-      name: 'Enterprise',
+      name: 'Scalable',
       price: 10000, // $10K/month average
       features: [
         'Everything in Platinum',
@@ -181,11 +181,11 @@ export class MonetizationX44Engine {
       growthRate: 0.25, // 25% monthly growth (viral)
     });
 
-    // Stream 5: Enterprise Licensing
+    // Stream 5: Scalable Licensing
     this.addStream({
       id: 'enterprise',
       type: 'enterprise',
-      name: 'Enterprise Licensing',
+      name: 'Scalable Licensing',
       monthlyRevenue: 1500000, // $1.5M/month
       margin: 0.65, // 65% margin
       growthRate: 0.12, // 12% monthly growth

@@ -79,7 +79,7 @@ export default function LogisticsOptimizer() {
             </div>
             <div>
               <h1 className="font-bold text-white text-lg leading-none">Logistics Route Optimizer</h1>
-              <p className="text-xs text-slate-500 mt-0.5">Dijkstra + Genetic Algorithm · Real-time fleet GPS · Enterprise SaaS</p>
+              <p className="text-xs text-slate-500 mt-0.5">Dijkstra + Genetic Algorithm · Real-time fleet GPS · Scalable SaaS</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

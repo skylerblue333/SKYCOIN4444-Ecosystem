@@ -313,7 +313,7 @@ export class BehavioralIntelligenceEngine {
         estimatedLTV: 600,
       },
       {
-        personaType: 'Enterprise Champion',
+        personaType: 'Scalable Champion',
         description: 'High engagement, team advocate',
         characteristics: ['High engagement', 'Team lead', 'Advocate'],
         commonPainPoints: ['Team collaboration', 'Admin controls', 'Compliance'],

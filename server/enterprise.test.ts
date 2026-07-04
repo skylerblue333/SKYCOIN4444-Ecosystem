@@ -1,5 +1,5 @@
 /**
- * Enterprise Engine Tests
+ * Scalable Engine Tests
  *
  * Tests cover:
  *   - Free Will Engine: goal creation, progress tracking, decision logging

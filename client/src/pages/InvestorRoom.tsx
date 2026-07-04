@@ -21,7 +21,7 @@ const ROADMAP = [
   { phase: "Phase 2", title: "Economy", status: "complete", items: ["SKY444 token launch", "Staking & yield farming", "Creator subscriptions", "Marketplace"] },
   { phase: "Phase 3", title: "GameFi", status: "active", items: ["Tournament system", "Quest board", "Achievement engine", "Season pass"] },
   { phase: "Phase 4", title: "AI & DeFi", status: "upcoming", items: ["AI content engine", "DEX integration", "Cross-chain bridge", "DAO governance"] },
-  { phase: "Phase 5", title: "Scale", status: "upcoming", items: ["Mobile apps", "Enterprise API", "Global expansion", "IPO preparation"] },
+  { phase: "Phase 5", title: "Scale", status: "upcoming", items: ["Mobile apps", "Scalable API", "Global expansion", "IPO preparation"] },
 ];
 
 export default function InvestorRoom() {

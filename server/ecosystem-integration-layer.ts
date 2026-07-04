@@ -5,7 +5,7 @@
  * Every action in one feature triggers value loops in other features.
  * 
  * Value Loop Architecture:
- * Social → Gaming → Crypto → Marketplace → Creator → Enterprise → AI → Analytics → Governance → Sustainability
+ * Social → Gaming → Crypto → Marketplace → Creator → Scalable → AI → Analytics → Governance → Sustainability
  * 
  * Each feature enhances and drives the others, creating exponential network effects.
  */
@@ -77,7 +77,7 @@ export const gamingToCryptoValueLoop = async (userId: string, gameId: string, sc
  * 1. Spends crypto (Crypto)
  * 2. Earns seller rewards (Creator)
  * 3. Creates social proof (Social)
- * 4. Generates revenue (Enterprise)
+ * 4. Generates revenue (Scalable)
  * 5. Trains recommendation AI (AI)
  * 6. Generates analytics (Analytics)
  */
@@ -92,7 +92,7 @@ export const marketplaceToCreatorValueLoop = async (userId: string, itemId: stri
     // Social: Create purchase post
     socialPostId: `post_purchase_${itemId}`,
     
-    // Enterprise: Track transaction
+    // Scalable: Track transaction
     transactionId: `txn_${itemId}_${userId}`,
     
     // Analytics: Log purchase
@@ -102,16 +102,16 @@ export const marketplaceToCreatorValueLoop = async (userId: string, itemId: stri
 
 /**
  * When a creator earns, it:
- * 1. Generates revenue (Enterprise)
+ * 1. Generates revenue (Scalable)
  * 2. Builds creator score (Creator)
  * 3. Creates social proof (Social)
  * 4. Enables reinvestment (Marketplace)
  * 5. Trains creator AI (AI)
  * 6. Generates analytics (Analytics)
  */
-export const creatorToEnterpriseValueLoop = async (userId: string, earningsAmount: number) => {
+export const creatorToScalableValueLoop = async (userId: string, earningsAmount: number) => {
   return {
-    // Enterprise: Track revenue
+    // Scalable: Track revenue
     enterpriseRevenue: earningsAmount * 0.15, // Platform takes 15%
     
     // Creator: Update score
@@ -208,7 +208,7 @@ export const ecosystemIntegrationRouter = router({
           avgEngagement: 0.15,
         },
         
-        // Enterprise State
+        // Scalable State
         enterprise: {
           businessValue: 125000,
           monthlyRevenue: 8500,
@@ -276,7 +276,7 @@ export const ecosystemIntegrationRouter = router({
         social: await socialToGamingValueLoop(userId, String(input.metadata?.postId || '')),
         gaming: await gamingToCryptoValueLoop(userId, String(input.metadata?.gameId || ''), Number(input.metadata?.score || 0)),
         marketplace: await marketplaceToCreatorValueLoop(userId, String(input.metadata?.itemId || ''), Number(input.metadata?.price || 0)),
-        creator: await creatorToEnterpriseValueLoop(userId, Number(input.metadata?.earnings || 0)),
+        creator: await creatorToScalableValueLoop(userId, Number(input.metadata?.earnings || 0)),
         ai: await aiToPersonalizationValueLoop(userId, input.action),
       };
       
@@ -315,7 +315,7 @@ export const ecosystemIntegrationRouter = router({
           gamingToCrypto: 0.92,
           cryptoToMarketplace: 0.85,
           marketplaceToCreator: 0.90,
-          creatorToEnterprise: 0.87,
+          creatorToScalable: 0.87,
           enterpriseToAI: 0.93,
           aiToAnalytics: 0.96,
           analyticsToGovernance: 0.82,
@@ -360,7 +360,7 @@ export const ecosystemIntegrationRouter = router({
           focus: 'Expand ecosystem reach',
           initiatives: [
             'AI-powered personalization across all features',
-            'Enterprise B2B integrations',
+            'Scalable B2B integrations',
             'Governance DAO launch',
           ],
           expectedImpact: '+100% users, +50% revenue',

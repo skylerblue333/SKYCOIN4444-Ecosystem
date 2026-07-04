@@ -114,7 +114,7 @@ const MODULES = [
   { icon: BarChart3, name: "Analytics", desc: "Live metrics, AI-powered insights, growth tracking", href: "/analytics", accent: "purple" },
   { icon: Trophy, name: "Leaderboards", desc: "Real-time rankings, NFT achievements, gamification", href: "/leaderboards", accent: "yellow" },
   { icon: Wallet, name: "Crypto Wallet", desc: "6-token system, MetaMask + WalletConnect integration", href: "/crypto", accent: "blue" },
-  { icon: Shield, name: "Security", desc: "Enterprise WAF, rate limiting, audit logging", href: "/admin", accent: "green" },
+  { icon: Shield, name: "Security", desc: "Scalable WAF, rate limiting, audit logging", href: "/admin", accent: "green" },
   // Phase 17-22 — AI OS Layer
   { icon: MessageSquare, name: "Chat OS", desc: "AI command terminal — type any request, get real results instantly", href: "/chat", accent: "purple" },
   { icon: Bot, name: "AI Agent Market", desc: "Pay-per-use AI agents: Logo Designer, Gig Finder, Resume Builder, Growth AI", href: "/ai-agents", accent: "cyan" },
@@ -535,7 +535,7 @@ export default function Home() {
                 <div className="text-center md:text-left">
                   <h2 className="text-3xl md:text-4xl font-bold mb-0.5">Skyler Blue Spillers</h2>
                   <p className="text-[oklch(0.72_0.28_305)] font-mono text-sm mb-1">Founder &amp; Architect — SKYCOIN4444</p>
-                  <p className="text-muted-foreground text-xs mb-3 font-medium">CEO · Innovative Information Technology Resolutions LLC</p>
+                  <p className="text-muted-foreground text-xs mb-3 font-medium">Developer · Innovative Information Technology Resolutions LLC</p>
                   {/* Faith & Family */}
                   <div className="flex items-center gap-2 mb-3 justify-center md:justify-start">
                     <span className="text-sm">&#x271D;</span>
@@ -593,7 +593,7 @@ export default function Home() {
                 </blockquote>
 
                 <p className="text-muted-foreground leading-relaxed">
-                  I'm <strong>Skyler Blue Spillers</strong> — software engineer, IT consultant, AI architect, and ecosystem builder. CEO of{" "}
+                  I'm <strong>Skyler Blue Spillers</strong> — software engineer, IT consultant, AI architect, and ecosystem builder. Developer of{" "}
                   <span className="text-[oklch(0.72_0.28_305)] font-semibold">Innovative Information Technology Resolutions LLC (IITR LLC)</span>.
                   What started as a vision became a full production-grade AI-powered Web3 ecosystem — built by one person.
                 </p>

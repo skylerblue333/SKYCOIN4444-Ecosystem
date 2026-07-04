@@ -20,7 +20,7 @@
         "PerformanceMetrics"
       ]
     },
-    "Enterprise": {
+    "Scalable": {
       "pages": 20,
       "examples": [
         "UserDirectory",

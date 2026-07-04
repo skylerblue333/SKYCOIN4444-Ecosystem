@@ -17,7 +17,7 @@ const UpdatedLandingPage = () => {
               SKY444 Cryptocurrency Ecosystem
             </h1>
             <p className="mb-8 text-xl text-gray-300">
-              Enterprise-grade platform with 858 pages, 1M+ LOC, and advanced AI capabilities
+              Robust platform with 858 pages, 1M+ LOC, and advanced AI capabilities
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
@@ -59,7 +59,7 @@ const UpdatedLandingPage = () => {
               <p className="mt-2 text-sm text-gray-400">
                 ✓ TypeScript throughout
               </p>
-              <p className="text-sm text-gray-400">✓ Enterprise standards</p>
+              <p className="text-sm text-gray-400">✓ Scalable standards</p>
               <p className="text-sm text-gray-400">✓ Fully tested</p>
             </Card>
 
@@ -103,7 +103,7 @@ const UpdatedLandingPage = () => {
               <p className="mt-2 text-sm text-gray-400">
                 ✓ Technical valuation
               </p>
-              <p className="text-sm text-gray-400">✓ Enterprise-grade</p>
+              <p className="text-sm text-gray-400">✓ Robust</p>
               <p className="text-sm text-gray-400">✓ Production-ready</p>
             </Card>
           </div>
@@ -121,7 +121,7 @@ const UpdatedLandingPage = () => {
             {[
               "E-Commerce (85 pages)",
               "Analytics (78 pages)",
-              "Enterprise (95 pages)",
+              "Scalable (95 pages)",
               "Project Mgmt (72 pages)",
               "Content (92 pages)",
               "Community (88 pages)",
@@ -179,7 +179,7 @@ const UpdatedLandingPage = () => {
       <footer className="border-t border-purple-600 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl text-center text-gray-400">
           <p>
-            SKY444 Cryptocurrency Ecosystem | Enterprise-Grade Platform
+            SKY444 Cryptocurrency Ecosystem | Scalable-Grade Platform
           </p>
           <p className="mt-2 text-sm">
             All statements verified and truthful | Production-ready code

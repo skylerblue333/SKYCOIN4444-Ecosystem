@@ -222,7 +222,7 @@ const sectors = [
   {
     icon: Shield,
     name: "Security",
-    tagline: "Enterprise-grade protection",
+    tagline: "Robust protection",
     color: "oklch(0.7 0.2 0)",
     href: "/security",
     subLinks: [

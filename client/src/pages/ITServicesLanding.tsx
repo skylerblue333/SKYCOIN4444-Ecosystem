@@ -38,7 +38,7 @@ export default function ITServicesLanding() {
             Innovative Information Technology Resolutions
           </h1>
           <p className="text-xl text-slate-300 mb-8">
-            Enterprise-grade software development, cybersecurity, and AI solutions for businesses ready to transform.
+            Robust software development, cybersecurity, and AI solutions for businesses ready to transform.
           </p>
           <div className="flex gap-4 justify-center">
             <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
@@ -75,7 +75,7 @@ export default function ITServicesLanding() {
               <h3 className="text-xl font-bold text-white mb-2">Certifications</h3>
               <ul className="text-slate-300 space-y-2">
                 <li>✓ Certified Advanced Ethical Hacker (CEH)</li>
-                <li>✓ 10+ Years Experience</li>
+                <li>✓ Experienced Developer</li>
                 <li>✓ 50+ Security Audits</li>
               </ul>
             </Card>
@@ -207,9 +207,9 @@ export default function ITServicesLanding() {
               <Button className="w-full bg-blue-600 hover:bg-blue-700">Get Started</Button>
             </Card>
 
-            {/* Enterprise */}
+            {/* Scalable */}
             <Card className="bg-slate-800 border-slate-700 p-8">
-              <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Scalable</h3>
               <p className="text-4xl font-bold text-blue-400 mb-6">$10,000<span className="text-lg text-slate-400">/month</span></p>
               <ul className="space-y-3 mb-8">
                 <li className="flex gap-2 text-slate-300">

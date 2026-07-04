@@ -95,7 +95,7 @@ export class CompetitiveRadarEngine {
         features: [
           { name: 'Mobile App', has: true, maturity: 'mature' as const },
           { name: 'AI Personalization', has: true, maturity: 'stable' as const },
-          { name: 'Enterprise API', has: false, maturity: 'beta' as const },
+          { name: 'Scalable API', has: false, maturity: 'beta' as const },
           { name: 'Community Features', has: true, maturity: 'mature' as const },
         ],
         pricing: { tiers: [{ name: 'Pro', price: 99 }], avgPrice: 99, change: 0 },
@@ -106,10 +106,10 @@ export class CompetitiveRadarEngine {
         features: [
           { name: 'Mobile App', has: false, maturity: 'beta' as const },
           { name: 'AI Personalization', has: false, maturity: 'beta' as const },
-          { name: 'Enterprise API', has: true, maturity: 'stable' as const },
+          { name: 'Scalable API', has: true, maturity: 'stable' as const },
           { name: 'Community Features', has: false, maturity: 'beta' as const },
         ],
-        pricing: { tiers: [{ name: 'Enterprise', price: 299 }], avgPrice: 299, change: 5 },
+        pricing: { tiers: [{ name: 'Scalable', price: 299 }], avgPrice: 299, change: 5 },
       },
     ];
 
@@ -129,7 +129,7 @@ export class CompetitiveRadarEngine {
             name: t.name,
             price: t.price,
             features: ['Core', 'Advanced'],
-            targetSegment: 'Enterprise',
+            targetSegment: 'Scalable',
           })),
           averagePrice: comp.pricing.avgPrice,
           priceChangePercentage: comp.pricing.change,
@@ -140,7 +140,7 @@ export class CompetitiveRadarEngine {
           { pattern: 'AI chat sidebar', adoptionRate: 0.8, competitors: [comp.name], trend: 'growing' },
         ],
         marketPosition: 'Market Leader',
-        strengths: ['Strong brand', 'Large user base', 'Enterprise focus'],
+        strengths: ['Strong brand', 'Large user base', 'Scalable focus'],
         weaknesses: ['High pricing', 'Complex onboarding', 'Limited mobile'],
       });
     });

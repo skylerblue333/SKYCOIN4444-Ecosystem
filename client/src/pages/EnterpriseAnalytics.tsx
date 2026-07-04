@@ -1,5 +1,5 @@
 /**
- * EnterpriseAnalytics — SKYCOIN4444 Platform Intelligence Dashboard
+ * ScalableAnalytics — SKYCOIN4444 Platform Intelligence Dashboard
  *
  * Real-time analytics across all platform modules:
  *   - Token velocity + emission tracking
@@ -96,7 +96,7 @@ function KPICard({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function EnterpriseAnalytics() {
+export default function ScalableAnalytics() {
   const { user } = useAuth();
 
   const analyticsQuery = trpc.enterprise.economy.healthReport.useQuery(undefined, {
@@ -133,7 +133,7 @@ export default function EnterpriseAnalytics() {
               <BarChart3 className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-base font-bold text-white">Enterprise Analytics</h1>
+              <h1 className="text-base font-bold text-white">Scalable Analytics</h1>
               <p className="text-[11px] text-zinc-500">Platform Intelligence — Real-time Ecosystem Metrics</p>
             </div>
           </div>

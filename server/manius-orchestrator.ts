@@ -1,5 +1,5 @@
 /**
- * Manius Orchestrator — CEO Brain of the SKYCOIN4444 Ecosystem
+ * Manius Orchestrator — Developer Brain of the SKYCOIN4444 Ecosystem
  *
  * The single top-level priority engine that:
  *  1. Reads all engine outputs (FreeWill, Behavior, Economy, Security, Governance, Analytics)
@@ -88,7 +88,7 @@ export class ManiusOrchestrator {
     if (this.cycleInterval) return;
     void this.runCycle(); // immediate first run
     this.cycleInterval = setInterval(() => void this.runCycle(), this.CYCLE_MS);
-    console.log("[ManiusOrchestrator] CEO brain started — 60s cycle");
+    console.log("[ManiusOrchestrator] Developer brain started — 60s cycle");
   }
 
   stop(): void {

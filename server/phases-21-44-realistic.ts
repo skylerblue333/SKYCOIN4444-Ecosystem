@@ -284,7 +284,7 @@ export class MarketLeadershipRealistic {
         'Subscription (Premium tiers)',
         'Marketplace commission (15%)',
         'Advertising (CPM-based)',
-        'Enterprise licensing',
+        'Scalable licensing',
         'API/Developer fees',
         'Data insights (anonymized)',
       ],

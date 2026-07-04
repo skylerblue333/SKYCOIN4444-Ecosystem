@@ -40,7 +40,7 @@ export const roadmapRouter = router({
     return {
       items: [
         { id: "1", title: "AI Agent Network", priority: 1, impact: 98, signals: 45 },
-        { id: "2", title: "Enterprise Features", priority: 2, impact: 87, signals: 38 },
+        { id: "2", title: "Scalable Features", priority: 2, impact: 87, signals: 38 },
         { id: "3", title: "Mobile App", priority: 3, impact: 76, signals: 32 },
       ],
       total: 3,
@@ -107,7 +107,7 @@ export const competitorsRouter = router({
       return {
         competitorId: input.competitorId,
         threats: ["Feature parity", "Price competition"],
-        opportunities: ["Market expansion", "Enterprise segment"],
+        opportunities: ["Market expansion", "Scalable segment"],
         recommendation: "Accelerate feature development",
       };
     }),
@@ -179,7 +179,7 @@ export const narrativesRouter = router({
       narratives: [
         { id: "1", audience: "Investors", engagement: 0.89, ctr: 0.045 },
         { id: "2", audience: "Users", engagement: 0.76, ctr: 0.032 },
-        { id: "3", audience: "Enterprise", engagement: 0.92, ctr: 0.058 },
+        { id: "3", audience: "Scalable", engagement: 0.92, ctr: 0.058 },
       ],
       total: 3,
       avgEngagement: 0.86,
@@ -250,7 +250,7 @@ export const productBrainRouter = router({
         version: 3,
         sections: ["Market Analysis", "Product Strategy", "Go-to-Market"],
         effectiveness: 0.89,
-        lessonsLearned: ["Focus on retention first", "Enterprise segment is key"],
+        lessonsLearned: ["Focus on retention first", "Scalable segment is key"],
       };
     }),
 });

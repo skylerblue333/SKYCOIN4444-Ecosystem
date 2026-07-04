@@ -46,7 +46,7 @@ const ComprehensiveEcosystemLanding = () => {
     },
     {
       icon: <Cpu className="h-8 w-8 text-red-500" />,
-      title: 'Enterprise Backend',
+      title: 'Scalable Backend',
       description: '14 routers, 80+ API procedures, optimized for scale and performance',
     },
     {
@@ -59,7 +59,7 @@ const ComprehensiveEcosystemLanding = () => {
   const categories = [
     { name: 'E-Commerce', pages: 15, color: 'bg-blue-500' },
     { name: 'Analytics', pages: 14, color: 'bg-green-500' },
-    { name: 'Enterprise', pages: 20, color: 'bg-purple-500' },
+    { name: 'Scalable', pages: 20, color: 'bg-purple-500' },
     { name: 'Project Mgmt', pages: 14, color: 'bg-orange-500' },
     { name: 'Content', pages: 18, color: 'bg-red-500' },
     { name: 'Community', pages: 16, color: 'bg-pink-500' },
@@ -81,7 +81,7 @@ const ComprehensiveEcosystemLanding = () => {
 
         <div className="relative z-10 max-w-6xl mx-auto text-center">
           <div className="inline-block mb-6 px-4 py-2 bg-blue-500/20 border border-blue-500/50 rounded-full">
-            <span className="text-sm font-semibold text-blue-300">🚀 Enterprise-Grade Ecosystem</span>
+            <span className="text-sm font-semibold text-blue-300">🚀 Scalable-Grade Ecosystem</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
@@ -366,7 +366,7 @@ const ComprehensiveEcosystemLanding = () => {
           </div>
         </div>
         <div className="max-w-6xl mx-auto mt-8 pt-8 border-t border-slate-800 text-center text-gray-400">
-          <p>&copy; 2026 SKY444 Ecosystem. All rights reserved. | Valued at $2,000,000+ | 1,076 Pages | Enterprise-Grade Platform</p>
+          <p>&copy; 2026 SKY444 Ecosystem. All rights reserved. | Valued at $2,000,000+ | 1,076 Pages | Scalable-Grade Platform</p>
         </div>
       </footer>
     </div>

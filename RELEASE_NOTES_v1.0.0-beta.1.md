@@ -470,7 +470,7 @@ pnpm test:coverage
 - [ ] NFT marketplace
 - [ ] Staking rewards
 - [ ] Cross-chain bridges
-- [ ] Enterprise API
+- [ ] Scalable API
 - [ ] White-label solutions
 
 ### 2027+

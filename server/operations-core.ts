@@ -1,5 +1,5 @@
 /**
- * OPERATIONS CORE ENGINE — Enterprise Business Operations
+ * OPERATIONS CORE ENGINE — Scalable Business Operations
  *
  * Architecture: Full business operations infrastructure
  *

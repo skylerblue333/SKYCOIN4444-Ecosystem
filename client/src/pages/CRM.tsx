@@ -21,7 +21,7 @@ const PIPELINE_STAGES = [
 ];
 
 const CONTACTS = [
-  { id: 1, name: "Alex Chen", company: "TechVentures", email: "alex@techventures.io", stage: "Qualified", value: 12000, score: 92, lastContact: "2h ago", tags: ["Hot Lead", "Enterprise"] },
+  { id: 1, name: "Alex Chen", company: "TechVentures", email: "alex@techventures.io", stage: "Qualified", value: 12000, score: 92, lastContact: "2h ago", tags: ["Hot Lead", "Scalable"] },
   { id: 2, name: "Maria Santos", company: "CryptoDAO", email: "maria@cryptodao.xyz", stage: "Proposal", value: 45000, score: 78, lastContact: "1d ago", tags: ["Web3", "Investor"] },
   { id: 3, name: "James Park", company: "SkyFund", email: "james@skyfund.com", stage: "Negotiation", value: 85000, score: 95, lastContact: "3h ago", tags: ["VIP", "Fund"] },
   { id: 4, name: "Priya Patel", company: "AILabs", email: "priya@ailabs.dev", stage: "Lead", value: 8000, score: 65, lastContact: "3d ago", tags: ["Developer", "API"] },

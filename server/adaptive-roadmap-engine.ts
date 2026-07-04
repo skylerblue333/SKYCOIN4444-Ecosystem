@@ -86,7 +86,7 @@ export class AdaptiveRoadmapEngine {
       },
       {
         id: 'item_3',
-        name: 'Enterprise API',
+        name: 'Scalable API',
         description: 'REST API for enterprise customers',
         currentPriority: 4,
         dynamicPriority: 6,
@@ -243,7 +243,7 @@ export class AdaptiveRoadmapEngine {
         },
         {
           itemId: 'item_3',
-          itemName: 'Enterprise API',
+          itemName: 'Scalable API',
           previousPriority: 4,
           newPriority: 6,
           reason: 'Strong revenue potential (0.85 score)',

@@ -217,7 +217,7 @@ const FEATURE_CATEGORIES = [
     name: "Security & Admin",
     count: "880+",
     features: [
-      "Enterprise WAF",
+      "Scalable WAF",
       "Rate limiting",
       "Audit logging",
       "Role-based access control",

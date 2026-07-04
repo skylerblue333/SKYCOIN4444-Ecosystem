@@ -33,10 +33,10 @@ export default function NarrativeEngine() {
     },
     {
       id: 'enterprise',
-      audience: 'Enterprise',
-      title: 'SKYCOIN4444: Enterprise Platform',
+      audience: 'Scalable',
+      title: 'SKYCOIN4444: Scalable Platform',
       focus: 'Security, compliance, ROI',
-      variant: `SKYCOIN4444 Enterprise provides SOC 2 Type II, ISO 27001, and GDPR-compliant infrastructure for 1M+ concurrent users. White-label capabilities, advanced analytics, and dedicated support enable Fortune 500 companies to launch branded digital ecosystems in weeks, not years.`,
+      variant: `SKYCOIN4444 Scalable provides SOC 2 Type II, ISO 27001, and GDPR-compliant infrastructure for 1M+ concurrent users. White-label capabilities, advanced analytics, and dedicated support enable Fortune 500 companies to launch branded digital ecosystems in weeks, not years.`,
       engagement: 0.82,
       persuasiveness: 0.88,
       ctr: 0.14,
@@ -145,7 +145,7 @@ export default function NarrativeEngine() {
                 <Legend />
                 <Bar dataKey="investor" fill="#3b82f6" name="Investors" />
                 <Bar dataKey="users" fill="#10b981" name="Users" />
-                <Bar dataKey="enterprise" fill="#f59e0b" name="Enterprise" />
+                <Bar dataKey="enterprise" fill="#f59e0b" name="Scalable" />
                 <Bar dataKey="creator" fill="#8b5cf6" name="Creators" />
               </BarChart>
             </ResponsiveContainer>
@@ -263,7 +263,7 @@ export default function NarrativeEngine() {
                   <p className="text-xs text-gray-400 mt-1">94% engagement - strong for fundraising</p>
                 </div>
                 <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
-                  <p className="text-sm text-white font-medium">⚠ Enterprise narrative needs refinement</p>
+                  <p className="text-sm text-white font-medium">⚠ Scalable narrative needs refinement</p>
                   <p className="text-xs text-gray-400 mt-1">Lower CTR (14%) - recommend emphasizing ROI</p>
                 </div>
               </CardContent>

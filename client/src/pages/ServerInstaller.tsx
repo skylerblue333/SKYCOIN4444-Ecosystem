@@ -489,7 +489,7 @@ export default function ServerInstaller() {
                 {[
                   { name: "DigitalOcean", price: "$12/mo", badge: "Recommended" },
                   { name: "Hetzner", price: "$5/mo", badge: "Budget" },
-                  { name: "AWS EC2", price: "$15/mo", badge: "Enterprise" },
+                  { name: "AWS EC2", price: "$15/mo", badge: "Scalable" },
                   { name: "Vultr", price: "$6/mo", badge: "Fast" },
                   { name: "Linode", price: "$10/mo", badge: "" },
                 ].map(provider => (

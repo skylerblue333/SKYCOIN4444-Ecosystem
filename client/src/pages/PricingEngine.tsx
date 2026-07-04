@@ -45,7 +45,7 @@ const ACTION_TIERS = [
     bg: "bg-yellow-500/10 border-yellow-500/20",
     desc: "Full workflows + agent execution",
     examples: ["Full workflows", "Agent execution", "Multi-system actions"],
-    conversion: "Enterprise, high-value users",
+    conversion: "Scalable, high-value users",
   },
 ];
 

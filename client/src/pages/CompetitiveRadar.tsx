@@ -20,7 +20,7 @@ export default function CompetitiveRadar() {
       features: 45,
       userSentiment: 0.82,
       threats: ['Voice quality', 'Community features', 'Streaming integration'],
-      opportunities: ['Mobile optimization', 'Gaming integration', 'Enterprise features'],
+      opportunities: ['Mobile optimization', 'Gaming integration', 'Scalable features'],
     },
     {
       id: 'twitch',
@@ -42,7 +42,7 @@ export default function CompetitiveRadar() {
       features: 48,
       userSentiment: 0.85,
       threats: ['Game creation', 'User-generated content', 'Monetization'],
-      opportunities: ['AI game generation', 'Cross-platform play', 'Enterprise tools'],
+      opportunities: ['AI game generation', 'Cross-platform play', 'Scalable tools'],
     },
     {
       id: 'opensea',

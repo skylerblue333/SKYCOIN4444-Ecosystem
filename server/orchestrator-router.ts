@@ -1,6 +1,6 @@
 /**
  * Orchestrator Router
- * Exposes the Manius Orchestrator (CEO Brain) via tRPC.
+ * Exposes the Manius Orchestrator (Developer Brain) via tRPC.
  * Routes: orchestrator.status | orchestrator.userIntelligence | orchestrator.decisionLog | orchestrator.runCycle
  */
 

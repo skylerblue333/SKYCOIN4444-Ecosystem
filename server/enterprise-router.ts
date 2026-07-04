@@ -1,5 +1,5 @@
 /**
- * SKYCOIN4444 Enterprise tRPC Router
+ * SKYCOIN4444 Scalable tRPC Router
  *
  * Exposes all Free Will Engine systems via tRPC procedures:
  *   - Economy Engine (token health, mint, burn, market state)
@@ -271,7 +271,7 @@ const emergentRouter = router({
     }),
 });
 
-// ─── Root Enterprise Router ───────────────────────────────────────────────────
+// ─── Root Scalable Router ───────────────────────────────────────────────────
 
 export const enterpriseRouter = router({
   economy: economyRouter,

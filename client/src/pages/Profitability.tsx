@@ -11,12 +11,12 @@ const REVENUE_STREAMS = [
   { id: 4, name: "Staking Yield Spread", icon: Zap, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/20", rate: "8% spread", monthly: 22100, annual: 265200, description: "Platform earns 8% spread on all staking rewards. Users earn 12%, protocol earns 20%, platform takes 8%.", model: "Yield spread", status: "live", growth: "+89%" },
   { id: 5, name: "AI Tool Credits", icon: Brain, color: "text-violet-400", bg: "bg-violet-500/10 border-violet-500/20", rate: "$0.01/credit", monthly: 18600, annual: 223200, description: "Pay-per-use AI credits for content generation, image creation, code assistance, voice cloning.", model: "Usage-based", status: "live", growth: "+112%" },
   { id: 6, name: "Ad Network (CPM/CPC)", icon: BarChart3, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20", rate: "$8 CPM", monthly: 15400, annual: 184800, description: "Native ads in feed, sponsored content, promoted listings. $8 CPM average across all placements.", model: "CPM/CPC", status: "live", growth: "+28%" },
-  { id: 7, name: "Platform Pro Subscriptions", icon: Sparkles, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/20", rate: "$9.99–$99.99/mo", monthly: 12800, annual: 153600, description: "Pro ($9.99), Creator Pro ($24.99), Enterprise ($99.99) monthly platform subscriptions.", model: "SaaS", status: "live", growth: "+156%" },
+  { id: 7, name: "Platform Pro Subscriptions", icon: Sparkles, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/20", rate: "$9.99–$99.99/mo", monthly: 12800, annual: 153600, description: "Pro ($9.99), Creator Pro ($24.99), Scalable ($99.99) monthly platform subscriptions.", model: "SaaS", status: "live", growth: "+156%" },
   { id: 8, name: "Charity Platform Rake", icon: Heart, color: "text-red-400", bg: "bg-red-500/10 border-red-500/20", rate: "5%", monthly: 8900, annual: 106800, description: "5% platform fee on all charity donations processed through the platform. Transparent and disclosed.", model: "Per donation", status: "live", growth: "+23%" },
   { id: 9, name: "Affiliate Commissions", icon: Share2, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20", rate: "30% of referred", monthly: 7600, annual: 91200, description: "Earn 30% of revenue from users referred by affiliates. Affiliates earn 10%, platform keeps 20%.", model: "Referral", status: "live", growth: "+78%" },
   { id: 10, name: "Data Licensing API", icon: Database, color: "text-teal-400", bg: "bg-teal-500/10 border-teal-500/20", rate: "$500–$5K/mo", monthly: 6200, annual: 74400, description: "Anonymized trend data, social signals, and market intelligence sold to research firms and hedge funds.", model: "B2B SaaS", status: "beta", growth: "+N/A" },
   { id: 11, name: "NFT Secondary Royalties", icon: Gem, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", rate: "2.5%", monthly: 4800, annual: 57600, description: "2.5% royalty on all NFT secondary sales processed through the platform marketplace.", model: "Per sale", status: "live", growth: "+34%" },
-  { id: 12, name: "Enterprise API Access", icon: Building2, color: "text-slate-400", bg: "bg-slate-500/10 border-slate-500/20", rate: "$99.99–$999/mo", monthly: 3400, annual: 40800, description: "Full API access for enterprises. 1M+ requests/month, SLA, dedicated support, white-label options.", model: "Enterprise SaaS", status: "live", growth: "+200%" },
+  { id: 12, name: "Scalable API Access", icon: Building2, color: "text-slate-400", bg: "bg-slate-500/10 border-slate-500/20", rate: "$99.99–$999/mo", monthly: 3400, annual: 40800, description: "Full API access for enterprises. 1M+ requests/month, SLA, dedicated support, white-label options.", model: "Scalable SaaS", status: "live", growth: "+200%" },
 ];
 
 const totalMonthly = REVENUE_STREAMS.reduce((s, r) => s + r.monthly, 0);
@@ -58,7 +58,7 @@ export default function Profitability() {
             {[
               { label: "Revenue Streams", value: "12", color: "text-primary" },
               { label: "Avg Monthly", value: `$${(totalMonthly / 1000).toFixed(0)}K`, color: "text-purple-400" },
-              { label: "Fastest Growing", value: "Enterprise API +200%", color: "text-violet-400" },
+              { label: "Fastest Growing", value: "Scalable API +200%", color: "text-violet-400" },
               { label: "Business Model", value: "No Cash Flow Needed", color: "text-yellow-400" },
             ].map(s => (
               <div key={s.label} className="rounded-xl border border-border/30 bg-background/50 p-3">

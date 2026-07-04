@@ -50,7 +50,7 @@ const FEATURED_PRODUCTS = [
   // Subscriptions
   { id: 27, category: "subscriptions", name: "SKYCOIN4444 Pro Monthly", price: 9.99, originalPrice: 19.99, rating: 4.9, reviews: 5621, sold: 18900, image: "⚡", badge: "Pro", tag: "Platform", sku: "SUB-001", description: "Ad-free, 2x XP, exclusive content, priority support, creator tools, 500 AI credits/mo." },
   { id: 28, category: "subscriptions", name: "Creator Pro Bundle", price: 24.99, originalPrice: 79.99, rating: 4.8, reviews: 3421, sold: 8900, image: "🌟", badge: "Creator", tag: "Creator", sku: "SUB-002", description: "Monetization tools, analytics, custom channel, merch store, 2000 AI credits/mo." },
-  { id: 29, category: "subscriptions", name: "Enterprise API Access", price: 99.99, originalPrice: 299.99, rating: 4.7, reviews: 234, sold: 890, image: "🏢", badge: "Enterprise", tag: "API", sku: "SUB-003", description: "Full API access, 1M requests/mo, dedicated support, SLA, white-label options." },
+  { id: 29, category: "subscriptions", name: "Scalable API Access", price: 99.99, originalPrice: 299.99, rating: 4.7, reviews: 234, sold: 890, image: "🏢", badge: "Scalable", tag: "API", sku: "SUB-003", description: "Full API access, 1M requests/mo, dedicated support, SLA, white-label options." },
 ];
 
 const REVIEWS_MAP: Record<number, Array<{user: string; rating: number; text: string; date: string; verified: boolean}>> = {
