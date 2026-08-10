@@ -1,11 +1,11 @@
-import { Anthropic } from '@anthropic-ai/sdk';
-import { OpenAI } from 'openai';
-import crypto from 'crypto';
-import { getDb } from './db';
+import { Anthropic } from "@anthropic-ai/sdk";
+import { OpenAI } from "openai";
+import crypto from "crypto";
+import { getDb } from "./db";
 
 /**
  * Military-Grade HOPE AI Engine
- * 
+ *
  * Specifications:
  * - Multi-model LLM orchestration (Claude 3.5 Sonnet, GPT-4, Llama 3)
  * - Reasoning layer with chain-of-thought
@@ -29,7 +29,7 @@ interface AIDecision {
 
 interface ModelConfig {
   name: string;
-  provider: 'anthropic' | 'openai' | 'local';
+  provider: "anthropic" | "openai" | "local";
   model: string;
   maxTokens: number;
   temperature: number;
@@ -38,25 +38,25 @@ interface ModelConfig {
 
 const MODEL_CONFIGS: ModelConfig[] = [
   {
-    name: 'Claude 3.5 Sonnet',
-    provider: 'anthropic',
-    model: 'claude-3-5-sonnet-20241022',
+    name: "Claude 3.5 Sonnet",
+    provider: "anthropic",
+    model: "claude-3-5-sonnet-20241022",
     maxTokens: 8192,
     temperature: 0.3,
     priority: 1,
   },
   {
-    name: 'GPT-4 Turbo',
-    provider: 'openai',
-    model: 'gpt-4-turbo',
+    name: "GPT-4 Turbo",
+    provider: "openai",
+    model: "gpt-4-turbo",
     maxTokens: 8192,
     temperature: 0.3,
     priority: 2,
   },
   {
-    name: 'Llama 3 70B',
-    provider: 'local',
-    model: 'llama-3-70b',
+    name: "Llama 3 70B",
+    provider: "local",
+    model: "llama-3-70b",
     maxTokens: 4096,
     temperature: 0.3,
     priority: 3,
@@ -79,7 +79,8 @@ export class MilitaryGradeHOPEAI {
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
-    this.signingKey = process.env.HOPE_AI_SIGNING_KEY || crypto.randomBytes(32).toString('hex');
+    this.signingKey =
+      process.env.HOPE_AI_SIGNING_KEY || crypto.randomBytes(32).toString("hex");
     this.startAuditPersistence();
   }
 
@@ -94,52 +95,76 @@ export class MilitaryGradeHOPEAI {
       timeout?: number;
     } = {}
   ): Promise<AIDecision> {
-    const { requireReasoning = true, minConfidence = 0.7, timeout = 30000 } = options;
+    const {
+      requireReasoning = true,
+      minConfidence = 0.7,
+      timeout = 30000,
+    } = options;
 
     // Rate limiting check
     if (!this.checkRateLimit()) {
-      throw new Error('Rate limit exceeded');
+      throw new Error("Rate limit exceeded");
     }
 
     const startTime = Date.now();
     let lastError: Error | null = null;
 
-    for (const config of MODEL_CONFIGS.sort((a, b) => a.priority - b.priority)) {
+    for (const config of MODEL_CONFIGS.sort(
+      (a, b) => a.priority - b.priority
+    )) {
       try {
         if (Date.now() - startTime > timeout) {
-          throw new Error('Decision timeout exceeded');
+          throw new Error("Decision timeout exceeded");
         }
 
         let response: string;
 
-        if (config.provider === 'anthropic') {
-          response = await this.callAnthropicWithThinking(context, requireReasoning);
-        } else if (config.provider === 'openai') {
-          response = await this.callOpenAIWithReasoning(context, requireReasoning);
+        if (config.provider === "anthropic") {
+          response = await this.callAnthropicWithThinking(
+            context,
+            requireReasoning
+          );
+        } else if (config.provider === "openai") {
+          response = await this.callOpenAIWithReasoning(
+            context,
+            requireReasoning
+          );
         } else {
           response = await this.callLocalModel(context);
         }
 
         // Extract reasoning if available
-        let reasoning = '';
-        if (requireReasoning && response.includes('<reasoning>')) {
-          const reasoningMatch = response.match(/<reasoning>(.*?)<\/reasoning>/s);
-          reasoning = reasoningMatch ? reasoningMatch[1].trim() : '';
+        let reasoning = "";
+        if (requireReasoning && response.includes("<reasoning>")) {
+          const reasoningMatch = response.match(
+            /<reasoning>(.*?)<\/reasoning>/s
+          );
+          reasoning = reasoningMatch ? reasoningMatch[1].trim() : "";
         }
 
         const confidence = this.calculateConfidence(response, config.model);
 
         if (confidence < minConfidence) {
-          throw new Error(`Confidence ${confidence} below threshold ${minConfidence}`);
+          throw new Error(
+            `Confidence ${confidence} below threshold ${minConfidence}`
+          );
         }
 
-        const decision = this.createSignedDecision(response, reasoning, confidence, config.model);
+        const decision = this.createSignedDecision(
+          response,
+          reasoning,
+          confidence,
+          config.model
+        );
         this.auditBuffer.push(decision);
 
         return decision;
       } catch (error) {
         lastError = error as Error;
-        console.error(`[HOPE AI] Model ${config.name} failed:`, lastError.message);
+        console.error(
+          `[HOPE AI] Model ${config.name} failed:`,
+          lastError.message
+        );
         // Continue to next model
       }
     }
@@ -150,13 +175,16 @@ export class MilitaryGradeHOPEAI {
   /**
    * Anthropic Claude with extended thinking
    */
-  private async callAnthropicWithThinking(context: string, withThinking: boolean): Promise<string> {
+  private async callAnthropicWithThinking(
+    context: string,
+    withThinking: boolean
+  ): Promise<string> {
     const response = await this.anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 16000,
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: `You are a military-grade AI decision engine. Analyze this context and provide a structured decision with high confidence.
 
 Context: ${context}
@@ -169,32 +197,35 @@ Provide your response in this format:
       ],
     } as any);
 
-    return response.content.map((block: any) => block.text || '').join('');
+    return response.content.map((block: any) => block.text || "").join("");
   }
 
   /**
    * OpenAI GPT-4 with chain-of-thought
    */
-  private async callOpenAIWithReasoning(context: string, withReasoning: boolean): Promise<string> {
+  private async callOpenAIWithReasoning(
+    context: string,
+    withReasoning: boolean
+  ): Promise<string> {
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo',
+      model: "gpt-4-turbo",
       max_tokens: 8192,
       temperature: 0.3,
       messages: [
         {
-          role: 'system',
+          role: "system",
           content: `You are a military-grade AI decision engine. Provide structured decisions with cryptographic confidence scores.`,
         },
         {
-          role: 'user',
+          role: "user",
           content: `Analyze: ${context}\n\nProvide decision in format:\n<decision>...</decision>\n<confidence>...</confidence>${
-            withReasoning ? '\n<reasoning>...</reasoning>' : ''
+            withReasoning ? "\n<reasoning>...</reasoning>" : ""
           }`,
         },
       ],
     });
 
-    return response.choices[0]?.message?.content || '';
+    return response.choices[0]?.message?.content || "";
   }
 
   /**
@@ -220,13 +251,16 @@ Provide your response in this format:
 
     // Create audit hash
     const auditData = `${id}|${decision}|${timestamp}|${model}`;
-    const auditHash = crypto.createHash('sha256').update(auditData).digest('hex');
+    const auditHash = crypto
+      .createHash("sha256")
+      .update(auditData)
+      .digest("hex");
 
     // Create HMAC signature
     const signature = crypto
-      .createHmac('sha256', this.signingKey)
+      .createHmac("sha256", this.signingKey)
       .update(auditData)
-      .digest('hex');
+      .digest("hex");
 
     return {
       id,
@@ -243,7 +277,9 @@ Provide your response in this format:
    * Calculate confidence score based on model agreement
    */
   private calculateConfidence(response: string, model: string): number {
-    const confidenceMatch = response.match(/<confidence>([\d.]+)<\/confidence>/);
+    const confidenceMatch = response.match(
+      /<confidence>([\d.]+)<\/confidence>/
+    );
     if (confidenceMatch) {
       return Math.min(1, Math.max(0, parseFloat(confidenceMatch[1])));
     }
@@ -284,7 +320,7 @@ Provide your response in this format:
         // For now, just clear the buffer
         this.auditBuffer = [];
       } catch (error) {
-        console.error('[HOPE AI] Audit persistence failed:', error);
+        console.error("[HOPE AI] Audit persistence failed:", error);
       }
     }, 5000); // Persist every 5 seconds
   }
@@ -295,9 +331,9 @@ Provide your response in this format:
   verifyDecision(decision: AIDecision): boolean {
     const auditData = `${decision.id}|${decision.reasoning}|${decision.timestamp}|${decision.model}`;
     const expectedSignature = crypto
-      .createHmac('sha256', this.signingKey)
+      .createHmac("sha256", this.signingKey)
       .update(auditData)
-      .digest('hex');
+      .digest("hex");
 
     return decision.signature === expectedSignature;
   }

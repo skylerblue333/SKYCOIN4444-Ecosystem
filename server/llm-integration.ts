@@ -1,6 +1,6 @@
 /**
  * LLM Integration Module for SKYCOIN4444
- * 
+ *
  * Integrates with OpenAI/Claude API to generate:
  * - Automated insights from all engines
  * - Recommendations based on data patterns
@@ -8,14 +8,14 @@
  * - Predictive analysis
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // LLM Configuration
 export const LLMConfig = {
-  provider: process.env.LLM_PROVIDER || 'openai', // 'openai' | 'claude' | 'custom'
+  provider: process.env.LLM_PROVIDER || "openai", // 'openai' | 'claude' | 'custom'
   apiKey: process.env.LLM_API_KEY,
   apiUrl: process.env.LLM_API_URL,
-  model: process.env.LLM_MODEL || 'gpt-4-turbo',
+  model: process.env.LLM_MODEL || "gpt-4-turbo",
   maxTokens: 1000,
   temperature: 0.7,
 };
@@ -118,7 +118,7 @@ export const LLMResponseSchema = z.object({
   insight: z.string(),
   recommendation: z.string(),
   confidence: z.number().min(0).max(1),
-  impact: z.enum(['low', 'medium', 'high', 'critical']),
+  impact: z.enum(["low", "medium", "high", "critical"]),
   actionable: z.boolean(),
   relatedMetrics: z.record(z.string(), z.any()).optional(),
 });
@@ -133,7 +133,7 @@ export async function generateInsightWithLLM(
   data: Record<string, any>
 ): Promise<LLMResponse | null> {
   if (!LLMConfig.apiKey) {
-    console.warn('LLM_API_KEY not configured, skipping insight generation');
+    console.warn("LLM_API_KEY not configured, skipping insight generation");
     return null;
   }
 
@@ -148,9 +148,9 @@ export async function generateInsightWithLLM(
 
     let response;
 
-    if (LLMConfig.provider === 'openai') {
+    if (LLMConfig.provider === "openai") {
       response = await callOpenAI(fullPrompt);
-    } else if (LLMConfig.provider === 'claude') {
+    } else if (LLMConfig.provider === "claude") {
       response = await callClaude(fullPrompt);
     } else {
       response = await callCustomLLM(fullPrompt);
@@ -168,21 +168,22 @@ export async function generateInsightWithLLM(
  */
 async function callOpenAI(prompt: string): Promise<LLMResponse | null> {
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LLMConfig.apiKey}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${LLMConfig.apiKey}`,
       },
       body: JSON.stringify({
         model: LLMConfig.model,
         messages: [
           {
-            role: 'system',
-            content: 'You are an expert business analyst. Provide insights in JSON format with fields: insight, recommendation, confidence (0-1), impact (low/medium/high/critical), actionable (true/false).',
+            role: "system",
+            content:
+              "You are an expert business analyst. Provide insights in JSON format with fields: insight, recommendation, confidence (0-1), impact (low/medium/high/critical), actionable (true/false).",
           },
           {
-            role: 'user',
+            role: "user",
             content: prompt,
           },
         ],
@@ -197,18 +198,18 @@ async function callOpenAI(prompt: string): Promise<LLMResponse | null> {
 
     const data = await response.json();
     const content = data.choices[0].message.content;
-    
+
     // Parse JSON from response
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.warn('Could not parse JSON from LLM response');
+      console.warn("Could not parse JSON from LLM response");
       return null;
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
     return LLMResponseSchema.parse(parsed);
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error("OpenAI API error:", error);
     return null;
   }
 }
@@ -218,19 +219,19 @@ async function callOpenAI(prompt: string): Promise<LLMResponse | null> {
  */
 async function callClaude(prompt: string): Promise<LLMResponse | null> {
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': LLMConfig.apiKey!,
-        'anthropic-version': '2023-06-01',
+        "Content-Type": "application/json",
+        "x-api-key": LLMConfig.apiKey!,
+        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
         model: LLMConfig.model,
         max_tokens: LLMConfig.maxTokens,
         messages: [
           {
-            role: 'user',
+            role: "user",
             content: `${prompt}\n\nRespond with JSON format: {"insight": "...", "recommendation": "...", "confidence": 0.85, "impact": "high", "actionable": true}`,
           },
         ],
@@ -243,18 +244,18 @@ async function callClaude(prompt: string): Promise<LLMResponse | null> {
 
     const data = await response.json();
     const content = data.content[0].text;
-    
+
     // Parse JSON from response
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.warn('Could not parse JSON from Claude response');
+      console.warn("Could not parse JSON from Claude response");
       return null;
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
     return LLMResponseSchema.parse(parsed);
   } catch (error) {
-    console.error('Claude API error:', error);
+    console.error("Claude API error:", error);
     return null;
   }
 }
@@ -265,10 +266,10 @@ async function callClaude(prompt: string): Promise<LLMResponse | null> {
 async function callCustomLLM(prompt: string): Promise<LLMResponse | null> {
   try {
     const response = await fetch(LLMConfig.apiUrl!, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LLMConfig.apiKey}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${LLMConfig.apiKey}`,
       },
       body: JSON.stringify({
         prompt,
@@ -284,7 +285,7 @@ async function callCustomLLM(prompt: string): Promise<LLMResponse | null> {
     const data = await response.json();
     return LLMResponseSchema.parse(data);
   } catch (error) {
-    console.error('Custom LLM API error:', error);
+    console.error("Custom LLM API error:", error);
     return null;
   }
 }
@@ -332,9 +333,9 @@ Keep the summary concise and actionable.
 
     let response;
 
-    if (LLMConfig.provider === 'openai') {
+    if (LLMConfig.provider === "openai") {
       response = await callOpenAI(summaryPrompt);
-    } else if (LLMConfig.provider === 'claude') {
+    } else if (LLMConfig.provider === "claude") {
       response = await callClaude(summaryPrompt);
     } else {
       response = await callCustomLLM(summaryPrompt);
@@ -342,7 +343,7 @@ Keep the summary concise and actionable.
 
     return response?.insight || null;
   } catch (error) {
-    console.error('Error generating ecosystem summary:', error);
+    console.error("Error generating ecosystem summary:", error);
     return null;
   }
 }

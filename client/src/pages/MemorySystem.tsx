@@ -3,22 +3,103 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
-import { Brain, Database, User, Tag, Clock, Search, Plus, Trash2, RefreshCw, Layers } from "lucide-react";
+import {
+  Brain,
+  Database,
+  User,
+  Tag,
+  Clock,
+  Search,
+  Plus,
+  Trash2,
+  RefreshCw,
+  Layers,
+} from "lucide-react";
 
 const MEMORY_CATEGORIES = [
-  { id: "preferences", label: "Preferences", icon: User, color: "text-blue-400", count: 47 },
-  { id: "context", label: "Context", icon: Layers, color: "text-purple-400", count: 128 },
-  { id: "interactions", label: "Interactions", icon: Clock, color: "text-green-400", count: 2341 },
-  { id: "knowledge", label: "Knowledge", icon: Brain, color: "text-yellow-400", count: 89 },
+  {
+    id: "preferences",
+    label: "Preferences",
+    icon: User,
+    color: "text-blue-400",
+    count: 47,
+  },
+  {
+    id: "context",
+    label: "Context",
+    icon: Layers,
+    color: "text-purple-400",
+    count: 128,
+  },
+  {
+    id: "interactions",
+    label: "Interactions",
+    icon: Clock,
+    color: "text-green-400",
+    count: 2341,
+  },
+  {
+    id: "knowledge",
+    label: "Knowledge",
+    icon: Brain,
+    color: "text-yellow-400",
+    count: 89,
+  },
 ];
 
 const SAMPLE_MEMORIES = [
-  { id: 1, type: "preference", content: "User prefers dark mode and compact layouts", confidence: 0.97, lastAccessed: "2 min ago", tags: ["UI", "display"] },
-  { id: 2, type: "context", content: "Currently building a DeFi staking dashboard with SKY444 integration", confidence: 0.94, lastAccessed: "5 min ago", tags: ["crypto", "project"] },
-  { id: 3, type: "interaction", content: "Asked about TRUMP mining 3 times this week — high interest signal", confidence: 0.88, lastAccessed: "1 hour ago", tags: ["mining", "TRUMP"] },
-  { id: 4, type: "knowledge", content: "User is a software engineer with Web3 and React expertise", confidence: 0.99, lastAccessed: "1 day ago", tags: ["skills", "background"] },
-  { id: 5, type: "preference", content: "Prefers concise responses with code examples over long explanations", confidence: 0.91, lastAccessed: "3 hours ago", tags: ["communication", "style"] },
-  { id: 6, type: "context", content: "Working on YC pitch — needs clean MVP narrative, not feature list", confidence: 0.96, lastAccessed: "30 min ago", tags: ["YC", "pitch", "startup"] },
+  {
+    id: 1,
+    type: "preference",
+    content: "User prefers dark mode and compact layouts",
+    confidence: 0.97,
+    lastAccessed: "2 min ago",
+    tags: ["UI", "display"],
+  },
+  {
+    id: 2,
+    type: "context",
+    content:
+      "Currently building a DeFi staking dashboard with SKY444 integration",
+    confidence: 0.94,
+    lastAccessed: "5 min ago",
+    tags: ["crypto", "project"],
+  },
+  {
+    id: 3,
+    type: "interaction",
+    content:
+      "Asked about TRUMP mining 3 times this week — high interest signal",
+    confidence: 0.88,
+    lastAccessed: "1 hour ago",
+    tags: ["mining", "TRUMP"],
+  },
+  {
+    id: 4,
+    type: "knowledge",
+    content: "User is a software engineer with Web3 and React expertise",
+    confidence: 0.99,
+    lastAccessed: "1 day ago",
+    tags: ["skills", "background"],
+  },
+  {
+    id: 5,
+    type: "preference",
+    content:
+      "Prefers concise responses with code examples over long explanations",
+    confidence: 0.91,
+    lastAccessed: "3 hours ago",
+    tags: ["communication", "style"],
+  },
+  {
+    id: 6,
+    type: "context",
+    content:
+      "Working on YC pitch — needs clean MVP narrative, not feature list",
+    confidence: 0.96,
+    lastAccessed: "30 min ago",
+    tags: ["YC", "pitch", "startup"],
+  },
 ];
 
 export default function MemorySystem() {
@@ -28,8 +109,16 @@ export default function MemorySystem() {
   const [newMemory, setNewMemory] = useState("");
 
   const filtered = SAMPLE_MEMORIES.filter(m => {
-    if (activeCategory !== "all" && !m.type.startsWith(activeCategory.slice(0, -1))) return false;
-    if (searchQuery && !m.content.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (
+      activeCategory !== "all" &&
+      !m.type.startsWith(activeCategory.slice(0, -1))
+    )
+      return false;
+    if (
+      searchQuery &&
+      !m.content.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+      return false;
     return true;
   });
 
@@ -47,11 +136,15 @@ export default function MemorySystem() {
         {MEMORY_CATEGORIES.map(cat => (
           <button
             key={cat.id}
-            onClick={() => setActiveCategory(activeCategory === cat.id ? "all" : cat.id)}
+            onClick={() =>
+              setActiveCategory(activeCategory === cat.id ? "all" : cat.id)
+            }
             className={`card p-4 text-left transition-all hover:border-primary/50 ${activeCategory === cat.id ? "border-primary" : ""}`}
           >
             <cat.icon className={`w-6 h-6 ${cat.color} mb-2`} />
-            <div className="text-xl font-bold">{cat.count.toLocaleString()}</div>
+            <div className="text-xl font-bold">
+              {cat.count.toLocaleString()}
+            </div>
             <div className="text-xs text-muted-foreground">{cat.label}</div>
           </button>
         ))}
@@ -95,7 +188,10 @@ export default function MemorySystem() {
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {mem.tags.map(tag => (
-                      <span key={tag} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      <span
+                        key={tag}
+                        className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full"
+                      >
                         #{tag}
                       </span>
                     ))}
@@ -152,7 +248,11 @@ export default function MemorySystem() {
             </h3>
             <div className="space-y-3">
               {[
-                { label: "Content Style", value: "Technical + Concise", bar: 0.91 },
+                {
+                  label: "Content Style",
+                  value: "Technical + Concise",
+                  bar: 0.91,
+                },
                 { label: "Response Length", value: "Short", bar: 0.78 },
                 { label: "Code Examples", value: "Always include", bar: 0.97 },
                 { label: "Topic Focus", value: "Web3 + AI", bar: 0.94 },
@@ -163,7 +263,10 @@ export default function MemorySystem() {
                     <span className="font-medium">{pref.value}</span>
                   </div>
                   <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full" style={{ width: `${pref.bar * 100}%` }} />
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full"
+                      style={{ width: `${pref.bar * 100}%` }}
+                    />
                   </div>
                 </div>
               ))}
@@ -177,7 +280,9 @@ export default function MemorySystem() {
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Active Context Window</span>
+                <span className="text-muted-foreground">
+                  Active Context Window
+                </span>
                 <span className="font-medium text-green-400">Live</span>
               </div>
               <div className="flex justify-between">

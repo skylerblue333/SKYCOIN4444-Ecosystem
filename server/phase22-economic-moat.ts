@@ -8,7 +8,17 @@
 
 export interface TokenUtilityAction {
   id: string;
-  actionType: "tip" | "governance_vote" | "marketplace_purchase" | "community_boost" | "ad_credit" | "premium_boost" | "staking_reward" | "nft_mint" | "subscription_payment" | "charity_donation";
+  actionType:
+    | "tip"
+    | "governance_vote"
+    | "marketplace_purchase"
+    | "community_boost"
+    | "ad_credit"
+    | "premium_boost"
+    | "staking_reward"
+    | "nft_mint"
+    | "subscription_payment"
+    | "charity_donation";
   userId: number;
   amount: number;
   currency: "SKY444" | "GOV_SKY" | "CREATOR_SKY";
@@ -37,7 +47,13 @@ export interface GovernanceProposal {
   proposerId: number;
   title: string;
   description: string;
-  proposalType: "fee_change" | "feature_add" | "treasury_spend" | "token_policy" | "community_rule" | "partnership";
+  proposalType:
+    | "fee_change"
+    | "feature_add"
+    | "treasury_spend"
+    | "token_policy"
+    | "community_rule"
+    | "partnership";
   status: "active" | "passed" | "rejected" | "executed" | "cancelled";
   votesFor: number;
   votesAgainst: number;
@@ -112,7 +128,12 @@ export interface StakingRewardBalance {
 export interface NFTUtilityPass {
   id: string;
   nftId: string;
-  passType: "membership" | "creator_access" | "game_unlock" | "event_pass" | "unlockable_content";
+  passType:
+    | "membership"
+    | "creator_access"
+    | "game_unlock"
+    | "event_pass"
+    | "unlockable_content";
   creatorId?: number;
   communityId?: string;
   holderId: number;
@@ -146,7 +167,12 @@ export interface NFTUnlockable {
   id: string;
   nftId: string;
   creatorId: number;
-  unlockableType: "exclusive_post" | "private_stream" | "download" | "merch_discount" | "1on1_call";
+  unlockableType:
+    | "exclusive_post"
+    | "private_stream"
+    | "download"
+    | "merch_discount"
+    | "1on1_call";
   title: string;
   description: string;
   contentUrl?: string;
@@ -173,10 +199,13 @@ const _nftUnlockables = new Map<string, NFTUnlockable>();
 // ─── TOKEN UTILITY ENGINE ─────────────────────────────────────────────────────
 
 export const tokenUtilityEngine = {
-  recordAction(params: Omit<TokenUtilityAction, "id" | "status" | "createdAt">): TokenUtilityAction {
+  recordAction(
+    params: Omit<TokenUtilityAction, "id" | "status" | "createdAt">
+  ): TokenUtilityAction {
     const id = `tua_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const action: TokenUtilityAction = {
-      ...params, id,
+      ...params,
+      id,
       status: "pending",
       createdAt: new Date(),
     };
@@ -193,10 +222,16 @@ export const tokenUtilityEngine = {
     return action;
   },
 
-  getTokenVelocity(currency: string, windowHours = 24): { totalVolume: number; actionCount: number; uniqueUsers: number } {
+  getTokenVelocity(
+    currency: string,
+    windowHours = 24
+  ): { totalVolume: number; actionCount: number; uniqueUsers: number } {
     const cutoff = new Date(Date.now() - windowHours * 3600000);
-    const actions = Array.from(_tokenActions.values()).filter(a =>
-      a.currency === currency && a.status === "confirmed" && a.createdAt >= cutoff
+    const actions = Array.from(_tokenActions.values()).filter(
+      a =>
+        a.currency === currency &&
+        a.status === "confirmed" &&
+        a.createdAt >= cutoff
     );
     return {
       totalVolume: actions.reduce((s, a) => s + a.amount, 0),
@@ -249,29 +284,52 @@ export const tokenUtilityEngine = {
   },
 
   // Governance Proposals
-  createProposal(params: Omit<GovernanceProposal, "id" | "status" | "votesFor" | "votesAgainst" | "votesAbstain">): GovernanceProposal {
+  createProposal(
+    params: Omit<
+      GovernanceProposal,
+      "id" | "status" | "votesFor" | "votesAgainst" | "votesAbstain"
+    >
+  ): GovernanceProposal {
     const id = `prop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const proposal: GovernanceProposal = {
-      ...params, id,
+      ...params,
+      id,
       status: "active",
-      votesFor: 0, votesAgainst: 0, votesAbstain: 0,
+      votesFor: 0,
+      votesAgainst: 0,
+      votesAbstain: 0,
     };
     _govProposals.set(id, proposal);
     return proposal;
   },
 
-  castVote(proposalId: string, voterId: number, vote: GovernanceVote["vote"], reason?: string): GovernanceVote | null {
+  castVote(
+    proposalId: string,
+    voterId: number,
+    vote: GovernanceVote["vote"],
+    reason?: string
+  ): GovernanceVote | null {
     const proposal = _govProposals.get(proposalId);
     if (!proposal || proposal.status !== "active") return null;
     const now = new Date();
     if (now < proposal.startAt || now > proposal.endAt) return null;
     // Prevent double voting
-    const alreadyVoted = Array.from(_govVotes.values()).some(v => v.proposalId === proposalId && v.voterId === voterId);
+    const alreadyVoted = Array.from(_govVotes.values()).some(
+      v => v.proposalId === proposalId && v.voterId === voterId
+    );
     if (alreadyVoted) return null;
     const token = _govTokens.get(voterId);
     const votingPower = token?.votingPower ?? 1;
     const id = `vote_${proposalId}_${voterId}`;
-    const govVote: GovernanceVote = { id, proposalId, voterId, vote, votingPower, reason, castAt: new Date() };
+    const govVote: GovernanceVote = {
+      id,
+      proposalId,
+      voterId,
+      vote,
+      votingPower,
+      reason,
+      castAt: new Date(),
+    };
     _govVotes.set(id, govVote);
     if (vote === "for") proposal.votesFor += votingPower;
     else if (vote === "against") proposal.votesAgainst += votingPower;
@@ -284,10 +342,15 @@ export const tokenUtilityEngine = {
   _checkProposalOutcome(proposal: GovernanceProposal): void {
     const now = new Date();
     if (now <= proposal.endAt) return;
-    const totalVotes = proposal.votesFor + proposal.votesAgainst + proposal.votesAbstain;
-    if (totalVotes < proposal.quorumRequired) { proposal.status = "rejected"; return; }
+    const totalVotes =
+      proposal.votesFor + proposal.votesAgainst + proposal.votesAbstain;
+    if (totalVotes < proposal.quorumRequired) {
+      proposal.status = "rejected";
+      return;
+    }
     const forPercent = totalVotes > 0 ? proposal.votesFor / totalVotes : 0;
-    proposal.status = forPercent >= proposal.passingThreshold ? "passed" : "rejected";
+    proposal.status =
+      forPercent >= proposal.passingThreshold ? "passed" : "rejected";
   },
 
   executeProposal(proposalId: string): GovernanceProposal | null {
@@ -300,21 +363,36 @@ export const tokenUtilityEngine = {
 
   getActiveProposals(): GovernanceProposal[] {
     const now = new Date();
-    return Array.from(_govProposals.values()).filter(p => p.status === "active" && now <= p.endAt);
+    return Array.from(_govProposals.values()).filter(
+      p => p.status === "active" && now <= p.endAt
+    );
   },
 
   getProposalVotes(proposalId: string): GovernanceVote[] {
-    return Array.from(_govVotes.values()).filter(v => v.proposalId === proposalId);
+    return Array.from(_govVotes.values()).filter(
+      v => v.proposalId === proposalId
+    );
   },
 };
 
 // ─── LIQUIDITY ENGINE ─────────────────────────────────────────────────────────
 
 export const liquidityEngine = {
-  createPool(params: Omit<LiquidityPool, "id" | "totalVolume24h" | "totalFeesCollected" | "lpProviders" | "createdAt" | "updatedAt">): LiquidityPool {
+  createPool(
+    params: Omit<
+      LiquidityPool,
+      | "id"
+      | "totalVolume24h"
+      | "totalFeesCollected"
+      | "lpProviders"
+      | "createdAt"
+      | "updatedAt"
+    >
+  ): LiquidityPool {
     const id = `pool_${params.tokenA}_${params.tokenB}_${Date.now()}`;
     const pool: LiquidityPool = {
-      ...params, id,
+      ...params,
+      id,
       totalVolume24h: 0,
       totalFeesCollected: 0,
       lpProviders: 0,
@@ -325,7 +403,12 @@ export const liquidityEngine = {
     return pool;
   },
 
-  addLiquidity(poolId: string, providerId: number, tokenAAmount: number, tokenBAmount: number): LiquidityPosition | null {
+  addLiquidity(
+    poolId: string,
+    providerId: number,
+    tokenAAmount: number,
+    tokenBAmount: number
+  ): LiquidityPosition | null {
     const pool = _liquidityPools.get(poolId);
     if (!pool) return null;
     const lpTokens = Math.sqrt(tokenAAmount * tokenBAmount);
@@ -345,8 +428,12 @@ export const liquidityEngine = {
       return existing;
     }
     const position: LiquidityPosition = {
-      id: posId, poolId, providerId, lpTokens,
-      tokenAAmount, tokenBAmount,
+      id: posId,
+      poolId,
+      providerId,
+      lpTokens,
+      tokenAAmount,
+      tokenBAmount,
       sharePercent: lpTokens / pool.totalLiquidity,
       feesEarned: 0,
       addedAt: new Date(),
@@ -356,7 +443,11 @@ export const liquidityEngine = {
     return position;
   },
 
-  removeLiquidity(poolId: string, providerId: number, lpTokens: number): { tokenAOut: number; tokenBOut: number } | null {
+  removeLiquidity(
+    poolId: string,
+    providerId: number,
+    lpTokens: number
+  ): { tokenAOut: number; tokenBOut: number } | null {
     const pool = _liquidityPools.get(poolId);
     const posId = `lp_${poolId}_${providerId}`;
     const position = _liquidityPositions.get(posId);
@@ -370,13 +461,18 @@ export const liquidityEngine = {
     position.lpTokens -= lpTokens;
     position.tokenAAmount -= tokenAOut;
     position.tokenBAmount -= tokenBOut;
-    position.sharePercent = pool.totalLiquidity > 0 ? position.lpTokens / pool.totalLiquidity : 0;
+    position.sharePercent =
+      pool.totalLiquidity > 0 ? position.lpTokens / pool.totalLiquidity : 0;
     position.updatedAt = new Date();
     pool.updatedAt = new Date();
     return { tokenAOut, tokenBOut };
   },
 
-  recordSwap(poolId: string, tokenIn: string, amountIn: number): { amountOut: number; fee: number; priceImpact: number } | null {
+  recordSwap(
+    poolId: string,
+    tokenIn: string,
+    amountIn: number
+  ): { amountOut: number; fee: number; priceImpact: number } | null {
     const pool = _liquidityPools.get(poolId);
     if (!pool) return null;
     const isTokenA = tokenIn === pool.tokenA;
@@ -385,10 +481,16 @@ export const liquidityEngine = {
     const fee = amountIn * pool.feeRate;
     const amountInAfterFee = amountIn - fee;
     // Constant product formula: x * y = k
-    const amountOut = (reserveOut * amountInAfterFee) / (reserveIn + amountInAfterFee);
+    const amountOut =
+      (reserveOut * amountInAfterFee) / (reserveIn + amountInAfterFee);
     const priceImpact = amountInAfterFee / (reserveIn + amountInAfterFee);
-    if (isTokenA) { pool.reserveA += amountIn; pool.reserveB -= amountOut; }
-    else { pool.reserveB += amountIn; pool.reserveA -= amountOut; }
+    if (isTokenA) {
+      pool.reserveA += amountIn;
+      pool.reserveB -= amountOut;
+    } else {
+      pool.reserveB += amountIn;
+      pool.reserveA -= amountOut;
+    }
     pool.totalVolume24h += amountIn;
     pool.totalFeesCollected += fee;
     pool.updatedAt = new Date();
@@ -404,11 +506,18 @@ export const liquidityEngine = {
   },
 
   getProviderPositions(providerId: number): LiquidityPosition[] {
-    return Array.from(_liquidityPositions.values()).filter(p => p.providerId === providerId);
+    return Array.from(_liquidityPositions.values()).filter(
+      p => p.providerId === providerId
+    );
   },
 
   // Staking Rewards
-  stakeTokens(poolId: string, stakerId: number, amount: number, lockPeriodDays: number): StakingRewardBalance {
+  stakeTokens(
+    poolId: string,
+    stakerId: number,
+    amount: number,
+    lockPeriodDays: number
+  ): StakingRewardBalance {
     const pool = _liquidityPools.get(poolId);
     const apr = pool?.apr ?? 0.12;
     const id = `stake_${poolId}_${stakerId}`;
@@ -419,10 +528,18 @@ export const liquidityEngine = {
       return existing;
     }
     const balance: StakingRewardBalance = {
-      id, poolId, stakerId, stakedAmount: amount,
-      pendingRewards: 0, claimedRewards: 0,
-      apr, lockPeriodDays,
-      lockedUntil: lockPeriodDays > 0 ? new Date(Date.now() + lockPeriodDays * 86400000) : undefined,
+      id,
+      poolId,
+      stakerId,
+      stakedAmount: amount,
+      pendingRewards: 0,
+      claimedRewards: 0,
+      apr,
+      lockPeriodDays,
+      lockedUntil:
+        lockPeriodDays > 0
+          ? new Date(Date.now() + lockPeriodDays * 86400000)
+          : undefined,
       stakedAt: new Date(),
       updatedAt: new Date(),
     };
@@ -435,7 +552,8 @@ export const liquidityEngine = {
     const balance = _stakingRewards.get(id);
     if (!balance) return null;
     const daysSinceStake = (Date.now() - balance.stakedAt.getTime()) / 86400000;
-    const totalRewards = balance.stakedAmount * balance.apr * (daysSinceStake / 365);
+    const totalRewards =
+      balance.stakedAmount * balance.apr * (daysSinceStake / 365);
     balance.pendingRewards = totalRewards - balance.claimedRewards;
     balance.updatedAt = new Date();
     return balance;
@@ -453,20 +571,29 @@ export const liquidityEngine = {
     return { claimed };
   },
 
-  getStakingBalance(poolId: string, stakerId: number): StakingRewardBalance | null {
+  getStakingBalance(
+    poolId: string,
+    stakerId: number
+  ): StakingRewardBalance | null {
     return _stakingRewards.get(`stake_${poolId}_${stakerId}`) ?? null;
   },
 
-  balanceStakingRewards(poolId: string): { adjustedApr: number; totalStaked: number } {
+  balanceStakingRewards(poolId: string): {
+    adjustedApr: number;
+    totalStaked: number;
+  } {
     const pool = _liquidityPools.get(poolId);
     if (!pool) return { adjustedApr: 0, totalStaked: 0 };
-    const stakes = Array.from(_stakingRewards.values()).filter(s => s.poolId === poolId);
+    const stakes = Array.from(_stakingRewards.values()).filter(
+      s => s.poolId === poolId
+    );
     const totalStaked = stakes.reduce((s, b) => s + b.stakedAmount, 0);
     // Dynamic APR: higher when less staked, lower when over-subscribed
     const targetStake = pool.totalLiquidity * 0.5;
-    const adjustedApr = totalStaked < targetStake
-      ? pool.apr * 1.5
-      : pool.apr * (targetStake / Math.max(1, totalStaked));
+    const adjustedApr =
+      totalStaked < targetStake
+        ? pool.apr * 1.5
+        : pool.apr * (targetStake / Math.max(1, totalStaked));
     pool.apr = Math.min(0.5, Math.max(0.05, adjustedApr));
     return { adjustedApr: pool.apr, totalStaked };
   },
@@ -475,10 +602,13 @@ export const liquidityEngine = {
 // ─── NFT UTILITY ENGINE ───────────────────────────────────────────────────────
 
 export const nftUtilityEngine = {
-  mintPass(params: Omit<NFTUtilityPass, "id" | "isActive" | "mintedAt">): NFTUtilityPass {
+  mintPass(
+    params: Omit<NFTUtilityPass, "id" | "isActive" | "mintedAt">
+  ): NFTUtilityPass {
     const id = `nftpass_${params.nftId}_${params.holderId}`;
     const pass: NFTUtilityPass = {
-      ...params, id,
+      ...params,
+      id,
       isActive: true,
       mintedAt: new Date(),
     };
@@ -497,20 +627,42 @@ export const nftUtilityEngine = {
     return pass;
   },
 
-  getHolderPasses(holderId: number, passType?: NFTUtilityPass["passType"]): NFTUtilityPass[] {
-    return Array.from(_nftPasses.values()).filter(p =>
-      p.holderId === holderId && p.isActive && (!passType || p.passType === passType)
+  getHolderPasses(
+    holderId: number,
+    passType?: NFTUtilityPass["passType"]
+  ): NFTUtilityPass[] {
+    return Array.from(_nftPasses.values()).filter(
+      p =>
+        p.holderId === holderId &&
+        p.isActive &&
+        (!passType || p.passType === passType)
     );
   },
 
-  checkAccess(holderId: number, resourceType: "content" | "game" | "event" | "creator", resourceId: string): boolean {
-    const passes = Array.from(_nftPasses.values()).filter(p => p.holderId === holderId && p.isActive);
+  checkAccess(
+    holderId: number,
+    resourceType: "content" | "game" | "event" | "creator",
+    resourceId: string
+  ): boolean {
+    const passes = Array.from(_nftPasses.values()).filter(
+      p => p.holderId === holderId && p.isActive
+    );
     for (const pass of passes) {
       if (pass.expiresAt && pass.expiresAt < new Date()) continue;
-      if (resourceType === "content" && pass.contentUnlocks.includes(resourceId)) return true;
-      if (resourceType === "game" && pass.gameUnlocks.includes(resourceId)) return true;
-      if (resourceType === "event" && pass.eventAccess.includes(resourceId)) return true;
-      if (resourceType === "creator" && pass.creatorId?.toString() === resourceId) return true;
+      if (
+        resourceType === "content" &&
+        pass.contentUnlocks.includes(resourceId)
+      )
+        return true;
+      if (resourceType === "game" && pass.gameUnlocks.includes(resourceId))
+        return true;
+      if (resourceType === "event" && pass.eventAccess.includes(resourceId))
+        return true;
+      if (
+        resourceType === "creator" &&
+        pass.creatorId?.toString() === resourceId
+      )
+        return true;
     }
     return false;
   },
@@ -523,14 +675,20 @@ export const nftUtilityEngine = {
   },
 
   getCreatorMemberships(creatorId: number): NFTMembership[] {
-    return Array.from(_nftMemberships.values()).filter(m => m.creatorId === creatorId && m.isActive);
+    return Array.from(_nftMemberships.values()).filter(
+      m => m.creatorId === creatorId && m.isActive
+    );
   },
 
   getHolderMemberships(holderId: number): NFTMembership[] {
-    return Array.from(_nftMemberships.values()).filter(m => m.holderId === holderId && m.isActive);
+    return Array.from(_nftMemberships.values()).filter(
+      m => m.holderId === holderId && m.isActive
+    );
   },
 
-  createUnlockable(params: Omit<NFTUnlockable, "id" | "isRevealed">): NFTUnlockable {
+  createUnlockable(
+    params: Omit<NFTUnlockable, "id" | "isRevealed">
+  ): NFTUnlockable {
     const id = `unlock_${params.nftId}_${params.unlockableType}`;
     const unlockable: NFTUnlockable = { ...params, id, isRevealed: false };
     _nftUnlockables.set(id, unlockable);
@@ -547,7 +705,8 @@ export const nftUtilityEngine = {
 
   claimUnlockable(unlockableId: string, userId: number): NFTUnlockable | null {
     const unlockable = _nftUnlockables.get(unlockableId);
-    if (!unlockable || !unlockable.isRevealed || unlockable.claimedByUserId) return null;
+    if (!unlockable || !unlockable.isRevealed || unlockable.claimedByUserId)
+      return null;
     unlockable.claimedByUserId = userId;
     unlockable.claimedAt = new Date();
     return unlockable;
@@ -566,16 +725,25 @@ export const nftUtilityEngine = {
     totalNFTPasses: number;
     totalNFTMemberships: number;
   } {
-    const confirmedActions = Array.from(_tokenActions.values()).filter(a => a.status === "confirmed");
+    const confirmedActions = Array.from(_tokenActions.values()).filter(
+      a => a.status === "confirmed"
+    );
     const pools = Array.from(_liquidityPools.values());
     return {
       totalTokenActions: confirmedActions.length,
       totalTokenVolume: confirmedActions.reduce((s, a) => s + a.amount, 0),
-      activeGovernanceProposals: Array.from(_govProposals.values()).filter(p => p.status === "active").length,
+      activeGovernanceProposals: Array.from(_govProposals.values()).filter(
+        p => p.status === "active"
+      ).length,
       totalLiquidityTVL: pools.reduce((s, p) => s + p.totalLiquidity, 0),
-      activeLPProviders: new Set(Array.from(_liquidityPositions.values()).map(p => p.providerId)).size,
-      totalNFTPasses: Array.from(_nftPasses.values()).filter(p => p.isActive).length,
-      totalNFTMemberships: Array.from(_nftMemberships.values()).filter(m => m.isActive).length,
+      activeLPProviders: new Set(
+        Array.from(_liquidityPositions.values()).map(p => p.providerId)
+      ).size,
+      totalNFTPasses: Array.from(_nftPasses.values()).filter(p => p.isActive)
+        .length,
+      totalNFTMemberships: Array.from(_nftMemberships.values()).filter(
+        m => m.isActive
+      ).length,
     };
   },
 };

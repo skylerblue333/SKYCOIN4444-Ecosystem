@@ -60,24 +60,40 @@ export const gamefiRouter = router({
     }),
 
   awardXP: protectedProcedure
-    .input(z.object({ action: z.string(), multiplier: z.number().min(0.1).max(10).optional() }))
+    .input(
+      z.object({
+        action: z.string(),
+        multiplier: z.number().min(0.1).max(10).optional(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
-      return xpEngine.awardXP((ctx as any).user.id, input.action, input.multiplier);
+      return xpEngine.awardXP(
+        (ctx as any).user.id,
+        input.action,
+        input.multiplier
+      );
     }),
 
   // Tournaments
   createTournament: protectedProcedure
-    .input(z.object({
-      name: z.string().min(3).max(100),
-      game: z.string(),
-      bracketType: z.enum(["single_elimination", "double_elimination", "round_robin", "swiss"]),
-      maxParticipants: z.number().min(4).max(1024),
-      entryFeeCents: z.number().min(0),
-      prizePoolCents: z.number().min(0),
-      registrationDeadline: z.string().datetime(),
-      startTime: z.string().datetime(),
-      rules: z.string(),
-    }))
+    .input(
+      z.object({
+        name: z.string().min(3).max(100),
+        game: z.string(),
+        bracketType: z.enum([
+          "single_elimination",
+          "double_elimination",
+          "round_robin",
+          "swiss",
+        ]),
+        maxParticipants: z.number().min(4).max(1024),
+        entryFeeCents: z.number().min(0),
+        prizePoolCents: z.number().min(0),
+        registrationDeadline: z.string().datetime(),
+        startTime: z.string().datetime(),
+        rules: z.string(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
       return tournamentEngine.create({
         ...input,
@@ -90,7 +106,11 @@ export const gamefiRouter = router({
   registerForTournament: protectedProcedure
     .input(z.object({ tournamentId: z.string(), username: z.string() }))
     .query(async ({ ctx, input }: any) => {
-      return tournamentEngine.register(input.tournamentId, (ctx as any).user.id, input.username);
+      return tournamentEngine.register(
+        input.tournamentId,
+        (ctx as any).user.id,
+        input.username
+      );
     }),
 
   checkInTournament: protectedProcedure
@@ -106,16 +126,25 @@ export const gamefiRouter = router({
     }),
 
   reportMatch: protectedProcedure
-    .input(z.object({
-      tournamentId: z.string(),
-      matchId: z.string(),
-      winnerId: z.number(),
-      score1: z.number(),
-      score2: z.number(),
-      evidenceUrl: z.string().url().optional(),
-    }))
+    .input(
+      z.object({
+        tournamentId: z.string(),
+        matchId: z.string(),
+        winnerId: z.number(),
+        score1: z.number(),
+        score2: z.number(),
+        evidenceUrl: z.string().url().optional(),
+      })
+    )
     .query(async ({ input }: any) => {
-      return tournamentEngine.reportMatch(input.tournamentId, input.matchId, input.winnerId, input.score1, input.score2, input.evidenceUrl);
+      return tournamentEngine.reportMatch(
+        input.tournamentId,
+        input.matchId,
+        input.winnerId,
+        input.score1,
+        input.score2,
+        input.evidenceUrl
+      );
     }),
 
   getTournament: publicProcedure
@@ -132,15 +161,20 @@ export const gamefiRouter = router({
 
   // Wagers
   createWager: protectedProcedure
-    .input(z.object({
-      challengeeId: z.number(),
-      game: z.string(),
-      amountCents: z.number().min(100),
-      currency: z.enum(["USD", "SKYCOIN"]),
-      expiresInHours: z.number().min(1).max(168).optional(),
-    }))
+    .input(
+      z.object({
+        challengeeId: z.number(),
+        game: z.string(),
+        amountCents: z.number().min(100),
+        currency: z.enum(["USD", "SKYCOIN"]),
+        expiresInHours: z.number().min(1).max(168).optional(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
-      return wagerSystem.createWager({ ...input, challengerId: (ctx as any).user.id });
+      return wagerSystem.createWager({
+        ...input,
+        challengerId: (ctx as any).user.id,
+      });
     }),
 
   acceptWager: protectedProcedure
@@ -152,19 +186,43 @@ export const gamefiRouter = router({
   reportWagerResult: protectedProcedure
     .input(z.object({ wagerId: z.string(), winnerId: z.number() }))
     .query(async ({ ctx, input }: any) => {
-      return wagerSystem.reportResult(input.wagerId, (ctx as any).user.id, input.winnerId);
+      return wagerSystem.reportResult(
+        input.wagerId,
+        (ctx as any).user.id,
+        input.winnerId
+      );
     }),
 
   disputeWager: protectedProcedure
     .input(z.object({ wagerId: z.string(), reason: z.string() }))
     .query(async ({ ctx, input }: any) => {
-      return wagerSystem.disputeWager(input.wagerId, (ctx as any).user.id, input.reason);
+      return wagerSystem.disputeWager(
+        input.wagerId,
+        (ctx as any).user.id,
+        input.reason
+      );
     }),
 
   getMyWagers: protectedProcedure
-    .input(z.object({ status: z.enum(["pending", "accepted", "in_progress", "completed", "disputed", "cancelled"]).optional() }))
+    .input(
+      z.object({
+        status: z
+          .enum([
+            "pending",
+            "accepted",
+            "in_progress",
+            "completed",
+            "disputed",
+            "cancelled",
+          ])
+          .optional(),
+      })
+    )
     .query(({ ctx, input }: any) => {
-      return wagerSystem.getUserWagers((ctx as any).user.id, input.status as any);
+      return wagerSystem.getUserWagers(
+        (ctx as any).user.id,
+        input.status as any
+      );
     }),
 
   // Leaderboards
@@ -204,13 +262,19 @@ export const gamefiRouter = router({
   getBattlePassProgress: protectedProcedure
     .input(z.object({ seasonId: z.string() }))
     .query(({ ctx, input }: any) => {
-      return battlePassEngine.getUserProgress((ctx as any).user.id, input.seasonId);
+      return battlePassEngine.getUserProgress(
+        (ctx as any).user.id,
+        input.seasonId
+      );
     }),
 
   purchaseBattlePass: protectedProcedure
     .input(z.object({ seasonId: z.string() }))
     .query(({ ctx, input }: any) => {
-      return battlePassEngine.purchasePremium((ctx as any).user.id, input.seasonId);
+      return battlePassEngine.purchasePremium(
+        (ctx as any).user.id,
+        input.seasonId
+      );
     }),
 
   // Anti-Cheat
@@ -229,12 +293,14 @@ export const marketplaceProductionRouter = router({
   }),
 
   addToCart: protectedProcedure
-    .input(z.object({
-      listingId: z.string(),
-      quantity: z.number().min(1),
-      unitPriceCents: z.number().min(0),
-      affiliateCode: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        listingId: z.string(),
+        quantity: z.number().min(1),
+        unitPriceCents: z.number().min(0),
+        affiliateCode: z.string().optional(),
+      })
+    )
     .query(({ ctx, input }: any) => {
       return cartSystem.addItem((ctx as any).user.id, input);
     }),
@@ -248,33 +314,50 @@ export const marketplaceProductionRouter = router({
   updateCartQuantity: protectedProcedure
     .input(z.object({ listingId: z.string(), quantity: z.number().min(0) }))
     .query(({ ctx, input }: any) => {
-      return cartSystem.updateQuantity((ctx as any).user.id, input.listingId, input.quantity);
+      return cartSystem.updateQuantity(
+        (ctx as any).user.id,
+        input.listingId,
+        input.quantity
+      );
     }),
 
   // Orders
   createOrder: protectedProcedure
-    .input(z.object({
-      sellerId: z.number(),
-      listingId: z.string(),
-      listingTitle: z.string(),
-      listingType: z.enum(["physical", "digital", "nft", "service", "subscription"]),
-      quantity: z.number().min(1),
-      unitPriceCents: z.number().min(0),
-      currency: z.enum(["USD", "SKYCOIN"]).optional(),
-      shippingAddress: z.object({
-        name: z.string(),
-        line1: z.string(),
-        line2: z.string().optional(),
-        city: z.string(),
-        state: z.string(),
-        postalCode: z.string(),
-        country: z.string(),
-      }).optional(),
-      affiliateCode: z.string().optional(),
-      paymentIntentId: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        sellerId: z.number(),
+        listingId: z.string(),
+        listingTitle: z.string(),
+        listingType: z.enum([
+          "physical",
+          "digital",
+          "nft",
+          "service",
+          "subscription",
+        ]),
+        quantity: z.number().min(1),
+        unitPriceCents: z.number().min(0),
+        currency: z.enum(["USD", "SKYCOIN"]).optional(),
+        shippingAddress: z
+          .object({
+            name: z.string(),
+            line1: z.string(),
+            line2: z.string().optional(),
+            city: z.string(),
+            state: z.string(),
+            postalCode: z.string(),
+            country: z.string(),
+          })
+          .optional(),
+        affiliateCode: z.string().optional(),
+        paymentIntentId: z.string().optional(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
-      return orderSystem.createOrder({ ...input, buyerId: (ctx as any).user.id });
+      return orderSystem.createOrder({
+        ...input,
+        buyerId: (ctx as any).user.id,
+      });
     }),
 
   confirmPayment: protectedProcedure
@@ -284,9 +367,20 @@ export const marketplaceProductionRouter = router({
     }),
 
   markShipped: protectedProcedure
-    .input(z.object({ orderId: z.string(), trackingNumber: z.string(), carrier: z.string() }))
+    .input(
+      z.object({
+        orderId: z.string(),
+        trackingNumber: z.string(),
+        carrier: z.string(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
-      return orderSystem.markShipped(input.orderId, (ctx as any).user.id, input.trackingNumber, input.carrier);
+      return orderSystem.markShipped(
+        input.orderId,
+        (ctx as any).user.id,
+        input.trackingNumber,
+        input.carrier
+      );
     }),
 
   confirmDelivery: protectedProcedure
@@ -298,7 +392,11 @@ export const marketplaceProductionRouter = router({
   cancelOrder: protectedProcedure
     .input(z.object({ orderId: z.string(), reason: z.string() }))
     .query(async ({ ctx, input }: any) => {
-      return orderSystem.cancelOrder(input.orderId, (ctx as any).user.id, input.reason);
+      return orderSystem.cancelOrder(
+        input.orderId,
+        (ctx as any).user.id,
+        input.reason
+      );
     }),
 
   getOrder: protectedProcedure
@@ -310,36 +408,67 @@ export const marketplaceProductionRouter = router({
   getMyOrders: protectedProcedure
     .input(z.object({ status: z.string().optional() }))
     .query(({ ctx, input }: any) => {
-      return orderSystem.getBuyerOrders((ctx as any).user.id, input.status as any);
+      return orderSystem.getBuyerOrders(
+        (ctx as any).user.id,
+        input.status as any
+      );
     }),
 
   getMySellerOrders: protectedProcedure
     .input(z.object({ status: z.string().optional() }))
     .query(({ ctx, input }: any) => {
-      return orderSystem.getSellerOrders((ctx as any).user.id, input.status as any);
+      return orderSystem.getSellerOrders(
+        (ctx as any).user.id,
+        input.status as any
+      );
     }),
 
   // Disputes
   openDispute: protectedProcedure
-    .input(z.object({ orderId: z.string(), reason: z.string(), description: z.string() }))
+    .input(
+      z.object({
+        orderId: z.string(),
+        reason: z.string(),
+        description: z.string(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
-      return disputeSystem.openDispute({ ...input, initiatorId: (ctx as any).user.id });
+      return disputeSystem.openDispute({
+        ...input,
+        initiatorId: (ctx as any).user.id,
+      });
     }),
 
   addDisputeEvidence: protectedProcedure
-    .input(z.object({
-      disputeId: z.string(),
-      type: z.enum(["text", "image", "document"]),
-      content: z.string(),
-    }))
+    .input(
+      z.object({
+        disputeId: z.string(),
+        type: z.enum(["text", "image", "document"]),
+        content: z.string(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
-      return disputeSystem.addEvidence(input.disputeId, (ctx as any).user.id, { type: input.type, content: input.content });
+      return disputeSystem.addEvidence(input.disputeId, (ctx as any).user.id, {
+        type: input.type,
+        content: input.content,
+      });
     }),
 
   resolveDispute: protectedProcedure
-    .input(z.object({ disputeId: z.string(), resolution: z.string(), favorBuyer: z.boolean() }))
+    .input(
+      z.object({
+        disputeId: z.string(),
+        resolution: z.string(),
+        favorBuyer: z.boolean(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
-      return disputeSystem.resolveDispute(input.disputeId, (ctx as any).user.id, input.resolution, input.favorBuyer);
+      return disputeSystem.resolveDispute(
+        input.disputeId,
+        (ctx as any).user.id,
+        input.resolution,
+        input.favorBuyer
+      );
     }),
 
   getOpenDisputes: protectedProcedure.query((_: any) => {
@@ -348,7 +477,11 @@ export const marketplaceProductionRouter = router({
 
   // Seller Dashboard
   getSellerDashboard: protectedProcedure
-    .input(z.object({ period: z.enum(["today", "week", "month", "all_time"]).optional() }))
+    .input(
+      z.object({
+        period: z.enum(["today", "week", "month", "all_time"]).optional(),
+      })
+    )
     .query(({ ctx, input }: any) => {
       return sellerDashboard.getDashboard((ctx as any).user.id, input.period);
     }),
@@ -365,9 +498,18 @@ export const marketplaceProductionRouter = router({
 
   // Affiliates
   createAffiliateLink: protectedProcedure
-    .input(z.object({ listingId: z.string().optional(), commissionPct: z.number().min(1).max(50).optional() }))
+    .input(
+      z.object({
+        listingId: z.string().optional(),
+        commissionPct: z.number().min(1).max(50).optional(),
+      })
+    )
     .query(({ ctx, input }: any) => {
-      return affiliateSystem.createLink((ctx as any).user.id, input.listingId, input.commissionPct);
+      return affiliateSystem.createLink(
+        (ctx as any).user.id,
+        input.listingId,
+        input.commissionPct
+      );
     }),
 
   trackAffiliateClick: publicProcedure
@@ -398,13 +540,15 @@ export const cryptoWeb3Router = router({
   }),
 
   connectWallet: protectedProcedure
-    .input(z.object({
-      address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
-      chainId: z.number(),
-      signature: z.string(),
-      nonce: z.string(),
-      message: z.string(),
-    }))
+    .input(
+      z.object({
+        address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+        chainId: z.number(),
+        signature: z.string(),
+        nonce: z.string(),
+        message: z.string(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
       return walletConnect.connect({
         userId: (ctx as any).user.id,
@@ -428,12 +572,14 @@ export const cryptoWeb3Router = router({
 
   // Staking
   stake: protectedProcedure
-    .input(z.object({
-      walletAddress: z.string(),
-      amountFormatted: z.number().min(100),
-      lockPeriodDays: z.number().min(7),
-      txHash: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        walletAddress: z.string(),
+        amountFormatted: z.number().min(100),
+        lockPeriodDays: z.number().min(7),
+        txHash: z.string().optional(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
       return stakingEngine.stake({ ...input, userId: (ctx as any).user.id });
     }),
@@ -457,9 +603,18 @@ export const cryptoWeb3Router = router({
     }),
 
   getMyStakes: protectedProcedure
-    .input(z.object({ status: z.enum(["active", "unstaking", "completed", "slashed"]).optional() }))
+    .input(
+      z.object({
+        status: z
+          .enum(["active", "unstaking", "completed", "slashed"])
+          .optional(),
+      })
+    )
     .query(({ ctx, input }: any) => {
-      return stakingEngine.getUserStakes((ctx as any).user.id, input.status as any);
+      return stakingEngine.getUserStakes(
+        (ctx as any).user.id,
+        input.status as any
+      );
     }),
 
   getTotalStaked: protectedProcedure.query(({ ctx }: any) => {
@@ -468,37 +623,52 @@ export const cryptoWeb3Router = router({
 
   // DEX Swaps
   getSwapQuote: protectedProcedure
-    .input(z.object({
-      fromToken: z.string(),
-      toToken: z.string(),
-      fromAmount: z.string(),
-      slippagePct: z.number().min(0.1).max(50).optional(),
-      chainId: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        fromToken: z.string(),
+        toToken: z.string(),
+        fromAmount: z.string(),
+        slippagePct: z.number().min(0.1).max(50).optional(),
+        chainId: z.number().optional(),
+      })
+    )
     .query(async ({ input }: any) => {
       return dexSwapEngine.getQuote(input as any);
     }),
 
   executeSwap: protectedProcedure
-    .input(z.object({
-      quoteId: z.string(),
-      walletAddress: z.string(),
-      txHash: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        quoteId: z.string(),
+        walletAddress: z.string(),
+        txHash: z.string().optional(),
+      })
+    )
     .query(async ({ ctx, input }: any) => {
-      return dexSwapEngine.executeSwap({ ...input, userId: (ctx as any).user.id });
+      return dexSwapEngine.executeSwap({
+        ...input,
+        userId: (ctx as any).user.id,
+      });
     }),
 
   confirmSwap: protectedProcedure
-    .input(z.object({
-      swapId: z.string(),
-      txHash: z.string(),
-      blockNumber: z.number(),
-      gasUsed: z.string(),
-      toAmount: z.string(),
-    }))
+    .input(
+      z.object({
+        swapId: z.string(),
+        txHash: z.string(),
+        blockNumber: z.number(),
+        gasUsed: z.string(),
+        toAmount: z.string(),
+      })
+    )
     .query(async ({ input }: any) => {
-      return dexSwapEngine.confirmSwap(input.swapId, input.txHash, input.blockNumber, input.gasUsed, input.toAmount);
+      return dexSwapEngine.confirmSwap(
+        input.swapId,
+        input.txHash,
+        input.blockNumber,
+        input.gasUsed,
+        input.toAmount
+      );
     }),
 
   getMySwaps: protectedProcedure
@@ -547,7 +717,10 @@ export const cryptoWeb3Router = router({
   delegateVotes: protectedProcedure
     .input(z.object({ delegateAddress: z.string() }))
     .query(async ({ ctx, input }: any) => {
-      return governanceEngine.delegate((ctx as any).user.id, input.delegateAddress);
+      return governanceEngine.delegate(
+        (ctx as any).user.id,
+        input.delegateAddress
+      );
     }),
 
   undelegateVotes: protectedProcedure.query(async ({ ctx }: any) => {

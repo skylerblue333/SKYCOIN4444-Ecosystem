@@ -8,7 +8,17 @@ import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Play, RotateCcw, ChevronRight, Cpu, Terminal, Trophy, Zap, Lock, CheckCircle } from "lucide-react";
+import {
+  Play,
+  RotateCcw,
+  ChevronRight,
+  Cpu,
+  Terminal,
+  Trophy,
+  Zap,
+  Lock,
+  CheckCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Instruction Set ──────────────────────────────────────────
@@ -153,8 +163,14 @@ const PUZZLES: Puzzle[] = [
 ];
 
 // ── Simple Assembly Interpreter ──────────────────────────────
-function parseProgram(code: string): { instructions: any[]; labels: Map<string, number> } {
-  const lines = code.split("\n").map(l => l.replace(/;.*$/, "").trim()).filter(Boolean);
+function parseProgram(code: string): {
+  instructions: any[];
+  labels: Map<string, number>;
+} {
+  const lines = code
+    .split("\n")
+    .map(l => l.replace(/;.*$/, "").trim())
+    .filter(Boolean);
   const labels = new Map<string, number>();
   const instructions: any[] = [];
 
@@ -209,26 +225,69 @@ function runProgram(
           else if (dst === "OUT") output.push(val);
           break;
         }
-        case "ADD": acc = acc + resolveVal(instr[1]); break;
-        case "SUB": acc = acc - resolveVal(instr[1]); break;
-        case "MUL": acc = acc * resolveVal(instr[1]); break;
-        case "NEG": acc = -acc; break;
-        case "SAV": bak = acc; break;
-        case "SWP": { const t = acc; acc = bak; bak = t; break; }
-        case "NOP": break;
-        case "JMP": {
-          const lbl = instr[1]?.toUpperCase();
-          if (labels.has(lbl)) { pc = labels.get(lbl)! - 1; }
+        case "ADD":
+          acc = acc + resolveVal(instr[1]);
+          break;
+        case "SUB":
+          acc = acc - resolveVal(instr[1]);
+          break;
+        case "MUL":
+          acc = acc * resolveVal(instr[1]);
+          break;
+        case "NEG":
+          acc = -acc;
+          break;
+        case "SAV":
+          bak = acc;
+          break;
+        case "SWP": {
+          const t = acc;
+          acc = bak;
+          bak = t;
           break;
         }
-        case "JEZ": if (acc === 0) { const lbl = instr[1]?.toUpperCase(); if (labels.has(lbl)) pc = labels.get(lbl)! - 1; } break;
-        case "JNZ": if (acc !== 0) { const lbl = instr[1]?.toUpperCase(); if (labels.has(lbl)) pc = labels.get(lbl)! - 1; } break;
-        case "JGZ": if (acc > 0) { const lbl = instr[1]?.toUpperCase(); if (labels.has(lbl)) pc = labels.get(lbl)! - 1; } break;
-        case "JLZ": if (acc < 0) { const lbl = instr[1]?.toUpperCase(); if (labels.has(lbl)) pc = labels.get(lbl)! - 1; } break;
-        default: throw new Error(`Unknown instruction: ${op}`);
+        case "NOP":
+          break;
+        case "JMP": {
+          const lbl = instr[1]?.toUpperCase();
+          if (labels.has(lbl)) {
+            pc = labels.get(lbl)! - 1;
+          }
+          break;
+        }
+        case "JEZ":
+          if (acc === 0) {
+            const lbl = instr[1]?.toUpperCase();
+            if (labels.has(lbl)) pc = labels.get(lbl)! - 1;
+          }
+          break;
+        case "JNZ":
+          if (acc !== 0) {
+            const lbl = instr[1]?.toUpperCase();
+            if (labels.has(lbl)) pc = labels.get(lbl)! - 1;
+          }
+          break;
+        case "JGZ":
+          if (acc > 0) {
+            const lbl = instr[1]?.toUpperCase();
+            if (labels.has(lbl)) pc = labels.get(lbl)! - 1;
+          }
+          break;
+        case "JLZ":
+          if (acc < 0) {
+            const lbl = instr[1]?.toUpperCase();
+            if (labels.has(lbl)) pc = labels.get(lbl)! - 1;
+          }
+          break;
+        default:
+          throw new Error(`Unknown instruction: ${op}`);
       }
     } catch (e) {
-      return { output, steps, error: e instanceof Error ? e.message : "Runtime error" };
+      return {
+        output,
+        steps,
+        error: e instanceof Error ? e.message : "Runtime error",
+      };
     }
     pc++;
   }
@@ -244,10 +303,19 @@ const DIFFICULTY_COLORS = {
   extreme: "text-red-400 bg-red-500/10 border-red-500/20",
 };
 
-export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: number) => void }) {
+export function AssemblyPuzzle({
+  onRewardEarned,
+}: {
+  onRewardEarned?: (amount: number) => void;
+}) {
   const [selectedPuzzle, setSelectedPuzzle] = useState<Puzzle>(PUZZLES[0]);
   const [code, setCode] = useState(PUZZLES[0].starterCode);
-  const [result, setResult] = useState<{ output: number[]; steps: number; error: string | null; passed: boolean } | null>(null);
+  const [result, setResult] = useState<{
+    output: number[];
+    steps: number;
+    error: string | null;
+    passed: boolean;
+  } | null>(null);
   const [solved, setSolved] = useState<Set<string>>(new Set());
   const [showHint, setShowHint] = useState(false);
   const [running, setRunning] = useState(false);
@@ -264,8 +332,13 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
     setRunning(true);
     setTimeout(() => {
       try {
-        const { output, steps, error } = runProgram(code, selectedPuzzle.inputs, selectedPuzzle.maxSteps);
-        const passed = !error &&
+        const { output, steps, error } = runProgram(
+          code,
+          selectedPuzzle.inputs,
+          selectedPuzzle.maxSteps
+        );
+        const passed =
+          !error &&
           output.length === selectedPuzzle.expectedOutputs.length &&
           output.every((v, i) => v === selectedPuzzle.expectedOutputs[i]);
 
@@ -273,7 +346,10 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
 
         if (passed && !solved.has(selectedPuzzle.id)) {
           setSolved(prev => new Set([...prev, selectedPuzzle.id]));
-          toast.success(`🏆 Puzzle solved! +${selectedPuzzle.reward} SKY444 earned!`, { duration: 4000 });
+          toast.success(
+            `🏆 Puzzle solved! +${selectedPuzzle.reward} SKY444 earned!`,
+            { duration: 4000 }
+          );
           onRewardEarned?.(selectedPuzzle.reward);
         } else if (passed) {
           toast.success("✅ Correct! (Already solved)");
@@ -283,7 +359,12 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
           toast.error("❌ Output doesn't match expected values");
         }
       } catch (e) {
-        setResult({ output: [], steps: 0, error: e instanceof Error ? e.message : "Parse error", passed: false });
+        setResult({
+          output: [],
+          steps: 0,
+          error: e instanceof Error ? e.message : "Parse error",
+          passed: false,
+        });
       }
       setRunning(false);
     }, 300);
@@ -294,7 +375,10 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
     setResult(null);
   };
 
-  const totalReward = PUZZLES.filter(p => solved.has(p.id)).reduce((s, p) => s + p.reward, 0);
+  const totalReward = PUZZLES.filter(p => solved.has(p.id)).reduce(
+    (s, p) => s + p.reward,
+    0
+  );
 
   return (
     <div className="h-full flex flex-col gap-4">
@@ -306,15 +390,23 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
           </div>
           <div>
             <h2 className="font-bold text-lg">Assembly Puzzles</h2>
-            <p className="text-xs text-muted-foreground">TIS-100 style — write assembly to solve computational challenges</p>
+            <p className="text-xs text-muted-foreground">
+              TIS-100 style — write assembly to solve computational challenges
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-[oklch(0.7_0.2_160)] border-[oklch(0.7_0.2_160)]/30">
+          <Badge
+            variant="outline"
+            className="text-[oklch(0.7_0.2_160)] border-[oklch(0.7_0.2_160)]/30"
+          >
             <Trophy className="w-3 h-3 mr-1" />
             {solved.size}/{PUZZLES.length} solved
           </Badge>
-          <Badge variant="outline" className="text-yellow-400 border-yellow-500/30">
+          <Badge
+            variant="outline"
+            className="text-yellow-400 border-yellow-500/30"
+          >
             <Zap className="w-3 h-3 mr-1" />
             {totalReward} SKY444
           </Badge>
@@ -336,7 +428,9 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
               )}
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold truncate">{p.title}</span>
+                <span className="text-xs font-semibold truncate">
+                  {p.title}
+                </span>
                 {solved.has(p.id) ? (
                   <CheckCircle className="w-3.5 h-3.5 text-green-400 shrink-0" />
                 ) : (
@@ -344,10 +438,17 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
                 )}
               </div>
               <div className="flex items-center gap-1.5">
-                <span className={cn("text-[10px] px-1.5 py-0.5 rounded border font-mono", DIFFICULTY_COLORS[p.difficulty])}>
+                <span
+                  className={cn(
+                    "text-[10px] px-1.5 py-0.5 rounded border font-mono",
+                    DIFFICULTY_COLORS[p.difficulty]
+                  )}
+                >
                   {p.difficulty}
                 </span>
-                <span className="text-[10px] text-yellow-400 font-mono">+{p.reward}</span>
+                <span className="text-[10px] text-yellow-400 font-mono">
+                  +{p.reward}
+                </span>
               </div>
             </button>
           ))}
@@ -358,21 +459,34 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
           {/* Puzzle Info */}
           <div className="p-3 rounded-lg bg-secondary/20 border border-border/30">
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-sm">{selectedPuzzle.title}</span>
-              <span className={cn("text-[10px] px-1.5 py-0.5 rounded border font-mono", DIFFICULTY_COLORS[selectedPuzzle.difficulty])}>
+              <span className="font-semibold text-sm">
+                {selectedPuzzle.title}
+              </span>
+              <span
+                className={cn(
+                  "text-[10px] px-1.5 py-0.5 rounded border font-mono",
+                  DIFFICULTY_COLORS[selectedPuzzle.difficulty]
+                )}
+              >
                 {selectedPuzzle.difficulty}
               </span>
-              <span className="text-[10px] text-yellow-400 ml-auto font-mono">+{selectedPuzzle.reward} SKY444</span>
+              <span className="text-[10px] text-yellow-400 ml-auto font-mono">
+                +{selectedPuzzle.reward} SKY444
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground">{selectedPuzzle.description}</p>
+            <p className="text-xs text-muted-foreground">
+              {selectedPuzzle.description}
+            </p>
             {selectedPuzzle.inputs.length > 0 && (
               <p className="text-xs text-muted-foreground mt-1 font-mono">
-                Input: [{selectedPuzzle.inputs.join(", ")}] → Expected: [{selectedPuzzle.expectedOutputs.join(", ")}]
+                Input: [{selectedPuzzle.inputs.join(", ")}] → Expected: [
+                {selectedPuzzle.expectedOutputs.join(", ")}]
               </p>
             )}
             {selectedPuzzle.inputs.length === 0 && (
               <p className="text-xs text-muted-foreground mt-1 font-mono">
-                No input stream → Expected: [{selectedPuzzle.expectedOutputs.join(", ")}]
+                No input stream → Expected: [
+                {selectedPuzzle.expectedOutputs.join(", ")}]
               </p>
             )}
           </div>
@@ -410,9 +524,14 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
               className="bg-[oklch(0.7_0.2_160)] hover:bg-[oklch(0.65_0.2_160)] text-black font-bold"
             >
               {running ? (
-                <><span className="animate-spin mr-2">⚙</span>Running...</>
+                <>
+                  <span className="animate-spin mr-2">⚙</span>Running...
+                </>
               ) : (
-                <><Play className="w-4 h-4 mr-2" />Run</>
+                <>
+                  <Play className="w-4 h-4 mr-2" />
+                  Run
+                </>
               )}
             </Button>
             <Button variant="outline" onClick={reset} size="sm">
@@ -421,17 +540,27 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
             </Button>
             {result && (
               <div className="flex items-center gap-3 ml-2">
-                <span className={cn("text-xs font-mono", result.passed ? "text-green-400" : "text-red-400")}>
+                <span
+                  className={cn(
+                    "text-xs font-mono",
+                    result.passed ? "text-green-400" : "text-red-400"
+                  )}
+                >
                   {result.passed ? "✅ PASS" : "❌ FAIL"}
                 </span>
-                <span className="text-xs text-muted-foreground font-mono">{result.steps} steps</span>
+                <span className="text-xs text-muted-foreground font-mono">
+                  {result.steps} steps
+                </span>
                 {result.output.length > 0 && (
                   <span className="text-xs text-muted-foreground font-mono">
-                    Output: [{result.output.slice(0, 8).join(", ")}{result.output.length > 8 ? "..." : ""}]
+                    Output: [{result.output.slice(0, 8).join(", ")}
+                    {result.output.length > 8 ? "..." : ""}]
                   </span>
                 )}
                 {result.error && (
-                  <span className="text-xs text-red-400 font-mono">{result.error}</span>
+                  <span className="text-xs text-red-400 font-mono">
+                    {result.error}
+                  </span>
                 )}
               </div>
             )}
@@ -439,7 +568,9 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
 
           {/* Instruction Reference */}
           <div className="p-3 rounded-lg bg-secondary/10 border border-border/20">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Instruction Set</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
+              Instruction Set
+            </p>
             <div className="grid grid-cols-4 gap-x-4 gap-y-0.5">
               {[
                 ["MOV src dst", "Move value"],
@@ -459,8 +590,12 @@ export function AssemblyPuzzle({ onRewardEarned }: { onRewardEarned?: (amount: n
                 ["NOP", "No operation"],
               ].map(([instr, desc]) => (
                 <div key={instr} className="flex gap-1.5 items-baseline">
-                  <code className="text-[10px] text-[oklch(0.7_0.2_160)] font-mono shrink-0">{instr}</code>
-                  <span className="text-[10px] text-muted-foreground">{desc}</span>
+                  <code className="text-[10px] text-[oklch(0.7_0.2_160)] font-mono shrink-0">
+                    {instr}
+                  </code>
+                  <span className="text-[10px] text-muted-foreground">
+                    {desc}
+                  </span>
                 </div>
               ))}
             </div>

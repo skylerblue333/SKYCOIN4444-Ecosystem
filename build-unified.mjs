@@ -3,7 +3,7 @@
 /**
  * SKYCOIN4444 - Unified Master Build Script
  * Compiles all 350+ pages and modules into one deployable production package
- * 
+ *
  * Usage: node build-unified.mjs [options]
  * Options:
  *   --production    Build for production (default)
@@ -12,38 +12,41 @@
  *   --verbose       Show detailed build output
  */
 
-import fs from 'fs';
-import path from 'path';
-import { execSync } from 'child_process';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { execSync } from "child_process";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const COLORS = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  cyan: '\x1b[36m',
+  reset: "\x1b[0m",
+  bright: "\x1b[1m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  cyan: "\x1b[36m",
 };
 
 const log = {
-  info: (msg) => console.log(`${COLORS.blue}ℹ${COLORS.reset} ${msg}`),
-  success: (msg) => console.log(`${COLORS.green}✓${COLORS.reset} ${msg}`),
-  warn: (msg) => console.log(`${COLORS.yellow}⚠${COLORS.reset} ${msg}`),
-  error: (msg) => console.log(`${COLORS.cyan}✗${COLORS.reset} ${msg}`),
-  section: (msg) => console.log(`\n${COLORS.bright}${COLORS.cyan}━━━ ${msg} ━━━${COLORS.reset}\n`),
+  info: msg => console.log(`${COLORS.blue}ℹ${COLORS.reset} ${msg}`),
+  success: msg => console.log(`${COLORS.green}✓${COLORS.reset} ${msg}`),
+  warn: msg => console.log(`${COLORS.yellow}⚠${COLORS.reset} ${msg}`),
+  error: msg => console.log(`${COLORS.cyan}✗${COLORS.reset} ${msg}`),
+  section: msg =>
+    console.log(
+      `\n${COLORS.bright}${COLORS.cyan}━━━ ${msg} ━━━${COLORS.reset}\n`
+    ),
 };
 
 class UnifiedBuilder {
   constructor(options = {}) {
     this.projectRoot = __dirname;
-    this.clientDir = path.join(this.projectRoot, 'client');
-    this.serverDir = path.join(this.projectRoot, 'server');
-    this.distDir = path.join(this.projectRoot, 'dist');
-    this.buildDir = path.join(this.projectRoot, 'build-output');
+    this.clientDir = path.join(this.projectRoot, "client");
+    this.serverDir = path.join(this.projectRoot, "server");
+    this.distDir = path.join(this.projectRoot, "dist");
+    this.buildDir = path.join(this.projectRoot, "build-output");
     this.production = options.production !== false;
     this.analyze = options.analyze || false;
     this.shouldClean = options.clean || false;
@@ -51,7 +54,7 @@ class UnifiedBuilder {
     this.startTime = Date.now();
   }
 
-  logMsg(msg, type = 'info') {
+  logMsg(msg, type = "info") {
     log[type](msg);
   }
 
@@ -62,12 +65,12 @@ class UnifiedBuilder {
     try {
       return execSync(command, {
         cwd: this.projectRoot,
-        stdio: this.verbose ? 'inherit' : 'pipe',
-        encoding: 'utf-8',
+        stdio: this.verbose ? "inherit" : "pipe",
+        encoding: "utf-8",
         ...options,
       });
     } catch (error) {
-      this.log(`Command failed: ${command}`, 'error');
+      this.log(`Command failed: ${command}`, "error");
       throw error;
     }
   }
@@ -75,8 +78,12 @@ class UnifiedBuilder {
   async cleanArtifacts() {
     if (!this.shouldClean) return;
 
-    this.logMsg('Cleaning Build Artifacts', 'section');
-    const dirsToClean = [this.distDir, this.buildDir, path.join(this.clientDir, 'dist')];
+    this.logMsg("Cleaning Build Artifacts", "section");
+    const dirsToClean = [
+      this.distDir,
+      this.buildDir,
+      path.join(this.clientDir, "dist"),
+    ];
 
     for (const dir of dirsToClean) {
       if (fs.existsSync(dir)) {
@@ -85,105 +92,103 @@ class UnifiedBuilder {
       }
     }
 
-    this.logMsg('Build artifacts cleaned', 'success');
+    this.logMsg("Build artifacts cleaned", "success");
   }
 
   async validateEnvironment() {
-    this.logMsg('Validating Build Environment', 'section');
+    this.logMsg("Validating Build Environment", "section");
 
     const checks = [
-      { name: 'Node.js', cmd: 'node --version' },
-      { name: 'pnpm', cmd: 'pnpm --version' },
-      { name: 'TypeScript', cmd: 'npx tsc --version' },
+      { name: "Node.js", cmd: "node --version" },
+      { name: "pnpm", cmd: "pnpm --version" },
+      { name: "TypeScript", cmd: "npx tsc --version" },
     ];
 
     for (const check of checks) {
       try {
         const version = this.exec(check.cmd).trim();
-        this.logMsg(`${check.name}: ${version}`, 'success');
+        this.logMsg(`${check.name}: ${version}`, "success");
       } catch (error) {
-        this.logMsg(`${check.name} not found`, 'error');
+        this.logMsg(`${check.name} not found`, "error");
         throw error;
       }
     }
   }
 
   async installDependencies() {
-    this.logMsg('Installing Dependencies', 'section');
-    this.logMsg('Running pnpm install...');
-    this.exec('pnpm install --frozen-lockfile');
-    this.logMsg('Dependencies installed', 'success');
+    this.logMsg("Installing Dependencies", "section");
+    this.logMsg("Running pnpm install...");
+    this.exec("pnpm install --frozen-lockfile");
+    this.logMsg("Dependencies installed", "success");
   }
 
   async runTypeScriptCheck() {
-    this.logMsg('TypeScript Type Checking', 'section');
-    this.logMsg('Checking for TypeScript errors...');
+    this.logMsg("TypeScript Type Checking", "section");
+    this.logMsg("Checking for TypeScript errors...");
     try {
-      this.exec('npx tsc --noEmit');
-      this.logMsg('No TypeScript errors found', 'success');
+      this.exec("npx tsc --noEmit");
+      this.logMsg("No TypeScript errors found", "success");
     } catch (error) {
-      this.logMsg('TypeScript errors detected', 'warn');
+      this.logMsg("TypeScript errors detected", "warn");
       throw error;
     }
   }
 
   async runTests() {
-    this.logMsg('Running Test Suite', 'section');
-    this.logMsg('Executing vitest...');
+    this.logMsg("Running Test Suite", "section");
+    this.logMsg("Executing vitest...");
     try {
-      this.exec('pnpm test --run');
-      this.logMsg('All tests passed', 'success');
+      this.exec("pnpm test --run");
+      this.logMsg("All tests passed", "success");
     } catch (error) {
-      this.logMsg('Some tests failed', 'warn');
+      this.logMsg("Some tests failed", "warn");
       // Don't throw - allow build to continue
     }
   }
 
   async buildClient() {
-    this.logMsg('Building Client Application', 'section');
-    this.logMsg('Building React + Vite frontend...');
+    this.logMsg("Building Client Application", "section");
+    this.logMsg("Building React + Vite frontend...");
 
-    const buildCmd = this.production
-      ? 'pnpm build'
-      : 'pnpm build:dev';
+    const buildCmd = this.production ? "pnpm build" : "pnpm build:dev";
 
     this.exec(buildCmd);
-    this.logMsg('Client build complete', 'success');
+    this.logMsg("Client build complete", "success");
   }
 
   async buildServer() {
-    this.logMsg('Building Server Application', 'section');
-    this.logMsg('Building Express + tRPC backend...');
+    this.logMsg("Building Server Application", "section");
+    this.logMsg("Building Express + tRPC backend...");
 
     // Server is typically built with the client in this setup
     // Verify server files are present
-    const serverFiles = ['routers.ts', 'db.ts', 'storage.ts'];
+    const serverFiles = ["routers.ts", "db.ts", "storage.ts"];
     for (const file of serverFiles) {
       const filePath = path.join(this.serverDir, file);
       if (!fs.existsSync(filePath)) {
-        this.logMsg(`Missing server file: ${file}`, 'warn');
+        this.logMsg(`Missing server file: ${file}`, "warn");
       }
     }
 
-    this.logMsg('Server build complete', 'success');
+    this.logMsg("Server build complete", "success");
   }
 
   async bundleAnalysis() {
     if (!this.analyze) return;
 
-    this.logMsg('Bundle Analysis', 'section');
-    this.logMsg('Generating bundle size report...');
+    this.logMsg("Bundle Analysis", "section");
+    this.logMsg("Generating bundle size report...");
 
     try {
-      this.exec('pnpm build:analyze');
-      this.logMsg('Bundle analysis report generated', 'success');
+      this.exec("pnpm build:analyze");
+      this.logMsg("Bundle analysis report generated", "success");
     } catch (error) {
-      this.logMsg('Bundle analysis failed', 'warn');
+      this.logMsg("Bundle analysis failed", "warn");
     }
   }
 
   async createDeploymentPackage() {
-    this.logMsg('Creating Deployment Package', 'section');
+    this.logMsg("Creating Deployment Package", "section");
 
     // Create build output directory
     if (!fs.existsSync(this.buildDir)) {
@@ -192,14 +197,25 @@ class UnifiedBuilder {
 
     // Copy essential files
     const filesToCopy = [
-      { src: path.join(this.clientDir, 'dist'), dest: path.join(this.buildDir, 'client') },
-      { src: path.join(this.distDir), dest: path.join(this.buildDir, 'server') },
-      { src: 'package.json', dest: path.join(this.buildDir, 'package.json') },
-      { src: 'pnpm-lock.yaml', dest: path.join(this.buildDir, 'pnpm-lock.yaml') },
+      {
+        src: path.join(this.clientDir, "dist"),
+        dest: path.join(this.buildDir, "client"),
+      },
+      {
+        src: path.join(this.distDir),
+        dest: path.join(this.buildDir, "server"),
+      },
+      { src: "package.json", dest: path.join(this.buildDir, "package.json") },
+      {
+        src: "pnpm-lock.yaml",
+        dest: path.join(this.buildDir, "pnpm-lock.yaml"),
+      },
     ];
 
     for (const { src, dest } of filesToCopy) {
-      const srcPath = path.isAbsolute(src) ? src : path.join(this.projectRoot, src);
+      const srcPath = path.isAbsolute(src)
+        ? src
+        : path.join(this.projectRoot, src);
       if (fs.existsSync(srcPath)) {
         this.logMsg(`Copying ${src}...`);
         this.exec(`cp -r ${srcPath} ${dest}`);
@@ -208,36 +224,36 @@ class UnifiedBuilder {
 
     // Create deployment manifest
     const manifest = {
-      name: 'SKYCOIN4444',
+      name: "SKYCOIN4444",
       version: this.getVersion(),
       buildDate: new Date().toISOString(),
-      environment: this.production ? 'production' : 'development',
+      environment: this.production ? "production" : "development",
       features: [
-        'Hope AI (12 capabilities)',
-        'Sky School (courses, quizzes, forums)',
-        'Social Network (real-time)',
-        'Mining Pool',
-        'Charity DAO',
-        'Investor Portal',
+        "Hope AI (12 capabilities)",
+        "Sky School (courses, quizzes, forums)",
+        "Social Network (real-time)",
+        "Mining Pool",
+        "Charity DAO",
+        "Investor Portal",
       ],
       stats: {
         pages: 350,
         linesOfCode: 299000,
         testsPasssing: 1851,
-        technicalNetWorth: '$4.0M',
+        technicalNetWorth: "$4.0M",
       },
     };
 
     fs.writeFileSync(
-      path.join(this.buildDir, 'MANIFEST.json'),
+      path.join(this.buildDir, "MANIFEST.json"),
       JSON.stringify(manifest, null, 2)
     );
 
-    this.logMsg('Deployment package created', 'success');
+    this.logMsg("Deployment package created", "success");
   }
 
   async generateDeploymentGuide() {
-    this.logMsg('Generating Deployment Guide', 'section');
+    this.logMsg("Generating Deployment Guide", "section");
 
     const guide = `# SKYCOIN4444 - Unified Deployment Guide
 
@@ -405,16 +421,13 @@ For issues or questions:
 Technical Net Worth: $4.0M | ICO Launch: April 24, 2027
 `;
 
-    fs.writeFileSync(
-      path.join(this.buildDir, 'DEPLOYMENT_GUIDE.md'),
-      guide
-    );
+    fs.writeFileSync(path.join(this.buildDir, "DEPLOYMENT_GUIDE.md"), guide);
 
-    this.logMsg('Deployment guide generated', 'success');
+    this.logMsg("Deployment guide generated", "success");
   }
 
   async generateBuildReport() {
-    this.logMsg('Generating Build Report', 'section');
+    this.logMsg("Generating Build Report", "section");
 
     const buildTime = ((Date.now() - this.startTime) / 1000).toFixed(2);
 
@@ -423,7 +436,7 @@ Technical Net Worth: $4.0M | ICO Launch: April 24, 2027
 ## Build Summary
 - **Status**: ✓ SUCCESS
 - **Build Time**: ${buildTime}s
-- **Environment**: ${this.production ? 'Production' : 'Development'}
+- **Environment**: ${this.production ? "Production" : "Development"}
 - **Timestamp**: ${new Date().toISOString()}
 
 ## Project Statistics
@@ -501,30 +514,29 @@ Technical Net Worth: $4.0M | ICO Launch: April 24, 2027
 Generated by Unified Build System
 `;
 
-    fs.writeFileSync(
-      path.join(this.buildDir, 'BUILD_REPORT.md'),
-      report
-    );
+    fs.writeFileSync(path.join(this.buildDir, "BUILD_REPORT.md"), report);
 
-    this.logMsg('Build report generated', 'success');
+    this.logMsg("Build report generated", "success");
   }
 
   getVersion() {
     try {
       const packageJson = JSON.parse(
-        fs.readFileSync(path.join(this.projectRoot, 'package.json'), 'utf-8')
+        fs.readFileSync(path.join(this.projectRoot, "package.json"), "utf-8")
       );
-      return packageJson.version || '1.0.0';
+      return packageJson.version || "1.0.0";
     } catch {
-      return '1.0.0';
+      return "1.0.0";
     }
   }
 
   async run() {
     try {
-      this.logMsg('SKYCOIN4444 - Unified Master Build', 'section');
+      this.logMsg("SKYCOIN4444 - Unified Master Build", "section");
       this.logMsg(`Starting unified build process...`);
-      this.logMsg(`Environment: ${this.production ? 'PRODUCTION' : 'DEVELOPMENT'}`);
+      this.logMsg(
+        `Environment: ${this.production ? "PRODUCTION" : "DEVELOPMENT"}`
+      );
 
       await this.validateEnvironment();
       await this.cleanArtifacts();
@@ -540,15 +552,21 @@ Generated by Unified Build System
 
       const totalTime = ((Date.now() - this.startTime) / 1000).toFixed(2);
 
-      this.logMsg('Build Complete', 'section');
-      this.logMsg(`✓ Unified build completed in ${totalTime}s`, 'success');
-      this.logMsg(`📦 Deployment package: ${this.buildDir}`, 'success');
-      this.logMsg(`📖 Read: ${path.join(this.buildDir, 'DEPLOYMENT_GUIDE.md')}`, 'success');
-      this.logMsg(`📊 Report: ${path.join(this.buildDir, 'BUILD_REPORT.md')}`, 'success');
+      this.logMsg("Build Complete", "section");
+      this.logMsg(`✓ Unified build completed in ${totalTime}s`, "success");
+      this.logMsg(`📦 Deployment package: ${this.buildDir}`, "success");
+      this.logMsg(
+        `📖 Read: ${path.join(this.buildDir, "DEPLOYMENT_GUIDE.md")}`,
+        "success"
+      );
+      this.logMsg(
+        `📊 Report: ${path.join(this.buildDir, "BUILD_REPORT.md")}`,
+        "success"
+      );
 
       process.exit(0);
     } catch (error) {
-      this.logMsg(`Build failed: ${error.message}`, 'error');
+      this.logMsg(`Build failed: ${error.message}`, "error");
       process.exit(1);
     }
   }
@@ -557,10 +575,10 @@ Generated by Unified Build System
 // Parse command line arguments
 const args = process.argv.slice(2);
 const options = {
-  production: !args.includes('--dev'),
-  analyze: args.includes('--analyze'),
-  clean: args.includes('--clean'),
-  verbose: args.includes('--verbose'),
+  production: !args.includes("--dev"),
+  analyze: args.includes("--analyze"),
+  clean: args.includes("--clean"),
+  verbose: args.includes("--verbose"),
 };
 
 // Run builder

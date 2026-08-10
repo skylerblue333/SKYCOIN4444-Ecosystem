@@ -195,9 +195,19 @@ export interface FraudPrediction {
   entityId: string;
   entityType: "user" | "transaction" | "nft" | "campaign";
   fraudProbability: number;
-  fraudType: "wash_trading" | "fake_engagement" | "bot_activity" | "payment_fraud" | "identity_fraud" | "market_manipulation";
+  fraudType:
+    | "wash_trading"
+    | "fake_engagement"
+    | "bot_activity"
+    | "payment_fraud"
+    | "identity_fraud"
+    | "market_manipulation";
   riskScore: number;
-  signals: Array<{ signal: string; severity: "low" | "medium" | "high"; value: unknown }>;
+  signals: Array<{
+    signal: string;
+    severity: "low" | "medium" | "high";
+    value: unknown;
+  }>;
   recommendedAction: "allow" | "review" | "flag" | "block";
   confidenceScore: number;
   generatedAt: Date;
@@ -240,7 +250,10 @@ const _treasuryPredictions: TreasuryPrediction[] = [];
 
 export const intelligenceLayer = {
   // User Analytics
-  upsertUserProfile(userId: number, updates: Partial<UserAnalyticsProfile>): UserAnalyticsProfile {
+  upsertUserProfile(
+    userId: number,
+    updates: Partial<UserAnalyticsProfile>
+  ): UserAnalyticsProfile {
     const existing = _userProfiles.get(userId);
     const profile: UserAnalyticsProfile = existing
       ? { ...existing, ...updates, updatedAt: new Date() }
@@ -291,12 +304,19 @@ export const intelligenceLayer = {
     return "casual";
   },
 
-  getUsersBySegment(segment: UserAnalyticsProfile["segment"]): UserAnalyticsProfile[] {
-    return Array.from(_userProfiles.values()).filter(p => p.segment === segment);
+  getUsersBySegment(
+    segment: UserAnalyticsProfile["segment"]
+  ): UserAnalyticsProfile[] {
+    return Array.from(_userProfiles.values()).filter(
+      p => p.segment === segment
+    );
   },
 
   // Creator Analytics
-  upsertCreatorProfile(creatorId: number, updates: Partial<CreatorAnalyticsProfile>): CreatorAnalyticsProfile {
+  upsertCreatorProfile(
+    creatorId: number,
+    updates: Partial<CreatorAnalyticsProfile>
+  ): CreatorAnalyticsProfile {
     const existing = _creatorProfiles.get(creatorId);
     const profile: CreatorAnalyticsProfile = existing
       ? { ...existing, ...updates, updatedAt: new Date() }
@@ -341,7 +361,10 @@ export const intelligenceLayer = {
   },
 
   // Community Analytics
-  upsertCommunityProfile(communityId: string, updates: Partial<CommunityAnalyticsProfile>): CommunityAnalyticsProfile {
+  upsertCommunityProfile(
+    communityId: string,
+    updates: Partial<CommunityAnalyticsProfile>
+  ): CommunityAnalyticsProfile {
     const existing = _communityProfiles.get(communityId);
     const profile: CommunityAnalyticsProfile = existing
       ? { ...existing, ...updates, updatedAt: new Date() }
@@ -372,14 +395,18 @@ export const intelligenceLayer = {
   },
 
   // Token Analytics
-  recordTokenSnapshot(snapshot: Omit<TokenAnalyticsSnapshot, "timestamp">): TokenAnalyticsSnapshot {
+  recordTokenSnapshot(
+    snapshot: Omit<TokenAnalyticsSnapshot, "timestamp">
+  ): TokenAnalyticsSnapshot {
     const full: TokenAnalyticsSnapshot = { ...snapshot, timestamp: new Date() };
     _tokenSnapshots.push(full);
     return full;
   },
 
   getLatestTokenSnapshot(): TokenAnalyticsSnapshot | null {
-    return _tokenSnapshots.length > 0 ? _tokenSnapshots[_tokenSnapshots.length - 1] : null;
+    return _tokenSnapshots.length > 0
+      ? _tokenSnapshots[_tokenSnapshots.length - 1]
+      : null;
   },
 
   getTokenHistory(limit = 30): TokenAnalyticsSnapshot[] {
@@ -387,8 +414,15 @@ export const intelligenceLayer = {
   },
 
   // NFT Analytics
-  recordNFTSnapshot(collectionId: string, snapshot: Omit<NFTAnalyticsSnapshot, "collectionId" | "timestamp">): NFTAnalyticsSnapshot {
-    const full: NFTAnalyticsSnapshot = { ...snapshot, collectionId, timestamp: new Date() };
+  recordNFTSnapshot(
+    collectionId: string,
+    snapshot: Omit<NFTAnalyticsSnapshot, "collectionId" | "timestamp">
+  ): NFTAnalyticsSnapshot {
+    const full: NFTAnalyticsSnapshot = {
+      ...snapshot,
+      collectionId,
+      timestamp: new Date(),
+    };
     if (!_nftSnapshots.has(collectionId)) _nftSnapshots.set(collectionId, []);
     _nftSnapshots.get(collectionId)!.push(full);
     return full;
@@ -396,7 +430,9 @@ export const intelligenceLayer = {
 
   getLatestNFTSnapshot(collectionId: string): NFTAnalyticsSnapshot | null {
     const snapshots = _nftSnapshots.get(collectionId);
-    return snapshots && snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
+    return snapshots && snapshots.length > 0
+      ? snapshots[snapshots.length - 1]
+      : null;
   },
 
   // Retention Cohorts
@@ -480,35 +516,54 @@ export const predictionLayer = {
     const spendScore = Math.min(1, (profile?.totalSpentUSD ?? 0) / 100);
 
     // Simple logistic-style scoring
-    const churnProb = Math.min(0.99, Math.max(0.01,
-      0.3 * (daysSinceActive / 30) +
-      0.4 * (1 - engagementScore) +
-      0.3 * (1 - spendScore)
-    ));
+    const churnProb = Math.min(
+      0.99,
+      Math.max(
+        0.01,
+        0.3 * (daysSinceActive / 30) +
+          0.4 * (1 - engagementScore) +
+          0.3 * (1 - spendScore)
+      )
+    );
 
     const riskFactors: Array<{ factor: string; weight: number }> = [];
-    if (daysSinceActive > 7) riskFactors.push({ factor: "inactivity", weight: daysSinceActive / 30 });
-    if (engagementScore < 0.3) riskFactors.push({ factor: "low_engagement", weight: 1 - engagementScore });
-    if (spendScore < 0.1) riskFactors.push({ factor: "no_monetization", weight: 0.5 });
+    if (daysSinceActive > 7)
+      riskFactors.push({ factor: "inactivity", weight: daysSinceActive / 30 });
+    if (engagementScore < 0.3)
+      riskFactors.push({
+        factor: "low_engagement",
+        weight: 1 - engagementScore,
+      });
+    if (spendScore < 0.1)
+      riskFactors.push({ factor: "no_monetization", weight: 0.5 });
 
     const churnRisk: ChurnPrediction["churnRisk"] =
-      churnProb > 0.8 ? "critical" :
-      churnProb > 0.6 ? "high" :
-      churnProb > 0.3 ? "medium" : "low";
+      churnProb > 0.8
+        ? "critical"
+        : churnProb > 0.6
+          ? "high"
+          : churnProb > 0.3
+            ? "medium"
+            : "low";
 
     const interventions: string[] = [];
-    if (daysSinceActive > 7) interventions.push("Send re-engagement push notification");
-    if (engagementScore < 0.3) interventions.push("Surface personalized content recommendations");
+    if (daysSinceActive > 7)
+      interventions.push("Send re-engagement push notification");
+    if (engagementScore < 0.3)
+      interventions.push("Surface personalized content recommendations");
     if (spendScore < 0.1) interventions.push("Offer first-purchase discount");
 
     const prediction: ChurnPrediction = {
       userId,
       churnProbability: Math.round(churnProb * 10000) / 10000,
       churnRisk,
-      predictedChurnDate: churnProb > 0.6
-        ? new Date(Date.now() + (1 - churnProb) * 30 * 86400000)
-        : undefined,
-      topRiskFactors: riskFactors.sort((a, b) => b.weight - a.weight).slice(0, 3),
+      predictedChurnDate:
+        churnProb > 0.6
+          ? new Date(Date.now() + (1 - churnProb) * 30 * 86400000)
+          : undefined,
+      topRiskFactors: riskFactors
+        .sort((a, b) => b.weight - a.weight)
+        .slice(0, 3),
       recommendedInterventions: interventions,
       confidenceScore: 0.78,
       generatedAt: new Date(),
@@ -529,12 +584,21 @@ export const predictionLayer = {
   },
 
   // Viral Prediction
-  predictVirality(contentId: string, contentType: string, initialEngagement: number, creatorFollowers: number): ViralPrediction {
-    const viralProb = Math.min(0.99, Math.max(0.01,
-      0.4 * Math.min(1, initialEngagement / 1000) +
-      0.3 * Math.min(1, creatorFollowers / 100000) +
-      0.3 * Math.random()
-    ));
+  predictVirality(
+    contentId: string,
+    contentType: string,
+    initialEngagement: number,
+    creatorFollowers: number
+  ): ViralPrediction {
+    const viralProb = Math.min(
+      0.99,
+      Math.max(
+        0.01,
+        0.4 * Math.min(1, initialEngagement / 1000) +
+          0.3 * Math.min(1, creatorFollowers / 100000) +
+          0.3 * Math.random()
+      )
+    );
     const prediction: ViralPrediction = {
       contentId,
       contentType,
@@ -562,22 +626,32 @@ export const predictionLayer = {
     const engagementRate = profile?.avgEngagementRate ?? 0;
     const revenueGrowth = profile?.revenueGrowthRate ?? 0;
 
-    const successProb = Math.min(0.99, Math.max(0.01,
-      0.3 * Math.min(1, followers / 10000) +
-      0.4 * Math.min(1, engagementRate / 0.1) +
-      0.3 * Math.min(1, revenueGrowth / 0.5)
-    ));
+    const successProb = Math.min(
+      0.99,
+      Math.max(
+        0.01,
+        0.3 * Math.min(1, followers / 10000) +
+          0.4 * Math.min(1, engagementRate / 0.1) +
+          0.3 * Math.min(1, revenueGrowth / 0.5)
+      )
+    );
 
     const trajectory: CreatorSuccessPrediction["growthTrajectory"] =
-      revenueGrowth > 0.3 ? "explosive" :
-      revenueGrowth > 0.1 ? "steady" :
-      revenueGrowth > 0 ? "plateau" : "declining";
+      revenueGrowth > 0.3
+        ? "explosive"
+        : revenueGrowth > 0.1
+          ? "steady"
+          : revenueGrowth > 0
+            ? "plateau"
+            : "declining";
 
     const prediction: CreatorSuccessPrediction = {
       creatorId,
       successProbability: Math.round(successProb * 10000) / 10000,
       predictedFollowersIn30d: Math.floor(followers * (1 + successProb * 0.3)),
-      predictedRevenueIn30d: Math.floor((profile?.totalRevenue ?? 0) * (1 + successProb * 0.2)),
+      predictedRevenueIn30d: Math.floor(
+        (profile?.totalRevenue ?? 0) * (1 + successProb * 0.2)
+      ),
       growthTrajectory: trajectory,
       keySuccessFactors: [
         { factor: "engagement_rate", score: engagementRate },
@@ -596,25 +670,41 @@ export const predictionLayer = {
     return prediction;
   },
 
-  getCreatorSuccessPrediction(creatorId: number): CreatorSuccessPrediction | null {
+  getCreatorSuccessPrediction(
+    creatorId: number
+  ): CreatorSuccessPrediction | null {
     return _creatorSuccessPredictions.get(creatorId) ?? null;
   },
 
   // Fraud Prediction
-  predictFraud(entityId: string, entityType: FraudPrediction["entityType"], signals: FraudPrediction["signals"]): FraudPrediction {
+  predictFraud(
+    entityId: string,
+    entityType: FraudPrediction["entityType"],
+    signals: FraudPrediction["signals"]
+  ): FraudPrediction {
     const highSignals = signals.filter(s => s.severity === "high").length;
     const medSignals = signals.filter(s => s.severity === "medium").length;
-    const fraudProb = Math.min(0.99, (highSignals * 0.3 + medSignals * 0.1));
+    const fraudProb = Math.min(0.99, highSignals * 0.3 + medSignals * 0.1);
     const riskScore = Math.round(fraudProb * 100);
     const action: FraudPrediction["recommendedAction"] =
-      fraudProb > 0.8 ? "block" :
-      fraudProb > 0.5 ? "flag" :
-      fraudProb > 0.2 ? "review" : "allow";
+      fraudProb > 0.8
+        ? "block"
+        : fraudProb > 0.5
+          ? "flag"
+          : fraudProb > 0.2
+            ? "review"
+            : "allow";
     const fraudTypes: FraudPrediction["fraudType"][] = [
-      "wash_trading", "fake_engagement", "bot_activity", "payment_fraud", "identity_fraud", "market_manipulation"
+      "wash_trading",
+      "fake_engagement",
+      "bot_activity",
+      "payment_fraud",
+      "identity_fraud",
+      "market_manipulation",
     ];
     const prediction: FraudPrediction = {
-      entityId, entityType,
+      entityId,
+      entityType,
       fraudProbability: Math.round(fraudProb * 10000) / 10000,
       fraudType: fraudTypes[Math.floor(Math.random() * fraudTypes.length)],
       riskScore,
@@ -633,13 +723,20 @@ export const predictionLayer = {
 
   getFlaggedEntities(limit = 50): FraudPrediction[] {
     return Array.from(_fraudPredictions.values())
-      .filter(p => p.recommendedAction === "flag" || p.recommendedAction === "block")
+      .filter(
+        p => p.recommendedAction === "flag" || p.recommendedAction === "block"
+      )
       .sort((a, b) => b.riskScore - a.riskScore)
       .slice(0, limit);
   },
 
   // Treasury Prediction
-  predictTreasury(currentMRR: number, growthRate: number, burnRate: number, cashPosition: number): TreasuryPrediction {
+  predictTreasury(
+    currentMRR: number,
+    growthRate: number,
+    burnRate: number,
+    cashPosition: number
+  ): TreasuryPrediction {
     const bearGrowth = growthRate * 0.3;
     const baseGrowth = growthRate;
     const bullGrowth = growthRate * 2.0;
@@ -656,9 +753,9 @@ export const predictionLayer = {
       },
       topGrowthDrivers: [
         { driver: "subscription_growth", contribution: 0.45 },
-        { driver: "creator_monetization", contribution: 0.30 },
+        { driver: "creator_monetization", contribution: 0.3 },
         { driver: "ad_revenue", contribution: 0.15 },
-        { driver: "nft_royalties", contribution: 0.10 },
+        { driver: "nft_royalties", contribution: 0.1 },
       ],
       topRisks: [
         { risk: "creator_churn", impact: 0.3, probability: 0.2 },
@@ -686,19 +783,26 @@ export const predictionLayer = {
     avgCreatorSuccessProb: number;
     treasuryOutlook: string;
   } {
-    const highChurn = Array.from(_churnPredictions.values())
-      .filter(p => p.churnRisk === "high" || p.churnRisk === "critical").length;
-    const viral = Array.from(_viralPredictions.values())
-      .filter(p => p.viralProbability > 0.7).length;
-    const fraudFlagged = Array.from(_fraudPredictions.values())
-      .filter(p => p.recommendedAction !== "allow").length;
+    const highChurn = Array.from(_churnPredictions.values()).filter(
+      p => p.churnRisk === "high" || p.churnRisk === "critical"
+    ).length;
+    const viral = Array.from(_viralPredictions.values()).filter(
+      p => p.viralProbability > 0.7
+    ).length;
+    const fraudFlagged = Array.from(_fraudPredictions.values()).filter(
+      p => p.recommendedAction !== "allow"
+    ).length;
     const creatorPreds = Array.from(_creatorSuccessPredictions.values());
-    const avgSuccess = creatorPreds.length > 0
-      ? creatorPreds.reduce((s, p) => s + p.successProbability, 0) / creatorPreds.length
-      : 0;
+    const avgSuccess =
+      creatorPreds.length > 0
+        ? creatorPreds.reduce((s, p) => s + p.successProbability, 0) /
+          creatorPreds.length
+        : 0;
     const treasury = this.getLatestTreasuryPrediction();
     const outlook = treasury
-      ? treasury.revenueScenarios.base > treasury.predictedMRR * 0.9 ? "positive" : "neutral"
+      ? treasury.revenueScenarios.base > treasury.predictedMRR * 0.9
+        ? "positive"
+        : "neutral"
       : "unknown";
     return {
       highChurnUsers: highChurn,

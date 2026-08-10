@@ -56,7 +56,7 @@ function writeToLogFile(source: LogSource, entries: unknown[]) {
   const logPath = path.join(LOG_DIR, `${source}.log`);
 
   // Format entries with timestamps
-  const lines = entries.map((entry) => {
+  const lines = entries.map(entry => {
     const ts = new Date().toISOString();
     return `[${ts}] ${JSON.stringify(entry)}`;
   });
@@ -132,7 +132,7 @@ function vitePluginManusDebugCollector(): Plugin {
         }
 
         let body = "";
-        req.on("data", (chunk) => {
+        req.on("data", chunk => {
           body += chunk.toString();
         });
 
@@ -150,7 +150,13 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+const plugins = [
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
+  vitePluginManusRuntime(),
+  vitePluginManusDebugCollector(),
+];
 
 export default defineConfig({
   plugins,
@@ -171,20 +177,31 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id: string) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) return 'vendor-react';
-            if (id.includes('lucide')) return 'vendor-icons';
-            if (id.includes('radix-ui') || id.includes('@radix')) return 'vendor-radix';
-            if (id.includes('trpc') || id.includes('@trpc')) return 'vendor-trpc';
-            if (id.includes('tanstack') || id.includes('@tanstack')) return 'vendor-query';
-            if (id.includes('date-fns') || id.includes('dayjs')) return 'vendor-date';
-            if (id.includes('framer-motion') || id.includes('motion')) return 'vendor-motion';
-            if (id.includes('recharts') || id.includes('d3') || id.includes('chart')) return 'vendor-charts';
-            return 'vendor-misc';
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom"))
+              return "vendor-react";
+            if (id.includes("lucide")) return "vendor-icons";
+            if (id.includes("radix-ui") || id.includes("@radix"))
+              return "vendor-radix";
+            if (id.includes("trpc") || id.includes("@trpc"))
+              return "vendor-trpc";
+            if (id.includes("tanstack") || id.includes("@tanstack"))
+              return "vendor-query";
+            if (id.includes("date-fns") || id.includes("dayjs"))
+              return "vendor-date";
+            if (id.includes("framer-motion") || id.includes("motion"))
+              return "vendor-motion";
+            if (
+              id.includes("recharts") ||
+              id.includes("d3") ||
+              id.includes("chart")
+            )
+              return "vendor-charts";
+            return "vendor-misc";
           }
-        }
-      }
-    }
+        },
+      },
+    },
   },
   server: {
     host: true,

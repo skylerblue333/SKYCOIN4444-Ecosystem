@@ -1,5 +1,16 @@
 import { useState, useMemo } from "react";
-import { Palette, Star, Download, ShoppingCart, Crown, Search, Eye, Shield, Zap, Loader2 } from "lucide-react";
+import {
+  Palette,
+  Star,
+  Download,
+  ShoppingCart,
+  Crown,
+  Search,
+  Eye,
+  Shield,
+  Zap,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +18,21 @@ import { toast } from "sonner";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 
-const SERIES_FILTERS = ["All", "Psychedelic Visions", "Crypto Dreams", "Shadow Protocol", "Digital Sovereignty", "The Chosen One", "Sky Kingdom", "Neon Genesis", "Void Walker", "Quantum Bloom", "Fractal Mind", "Acid Rain", "Ghost Signal"];
+const SERIES_FILTERS = [
+  "All",
+  "Psychedelic Visions",
+  "Crypto Dreams",
+  "Shadow Protocol",
+  "Digital Sovereignty",
+  "The Chosen One",
+  "Sky Kingdom",
+  "Neon Genesis",
+  "Void Walker",
+  "Quantum Bloom",
+  "Fractal Mind",
+  "Acid Rain",
+  "Ghost Signal",
+];
 
 const GRADIENT_COLORS = [
   "from-purple-900 to-fuchsia-900",
@@ -32,10 +57,12 @@ export default function DigitalArtStore() {
   const { data: series } = trpc.digitalArt.getSeries.useQuery();
 
   const checkoutMutation = trpc.digitalArt.checkout.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       if (data.url) {
         if (data.mock) {
-          toast.info("Demo mode: Stripe not configured. Opening mock checkout.");
+          toast.info(
+            "Demo mode: Stripe not configured. Opening mock checkout."
+          );
         } else {
           toast.success("Redirecting to Stripe checkout...");
         }
@@ -44,7 +71,7 @@ export default function DigitalArtStore() {
       }
       setIsCheckingOut(false);
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(err.message || "Checkout failed");
       setIsCheckingOut(false);
     },
@@ -52,7 +79,7 @@ export default function DigitalArtStore() {
 
   const filtered = useMemo(() => {
     if (!prints) return [];
-    return prints.filter((p) => {
+    return prints.filter(p => {
       const matchSearch =
         p.title.toLowerCase().includes(search.toLowerCase()) ||
         p.series.toLowerCase().includes(search.toLowerCase());
@@ -62,16 +89,16 @@ export default function DigitalArtStore() {
   }, [prints, search, category]);
 
   const addToCart = (item: CartItem) => {
-    if (cart.some((c) => c.id === item.id)) {
+    if (cart.some(c => c.id === item.id)) {
       toast.info("Already in cart");
       return;
     }
-    setCart((c) => [...c, item]);
+    setCart(c => [...c, item]);
     toast.success("Added to cart");
   };
 
   const removeFromCart = (id: string) => {
-    setCart((c) => c.filter((item) => item.id !== id));
+    setCart(c => c.filter(item => item.id !== id));
     toast.info("Removed from cart");
   };
 
@@ -79,7 +106,12 @@ export default function DigitalArtStore() {
     if (cart.length === 0) return;
     setIsCheckingOut(true);
     checkoutMutation.mutate({
-      items: cart.map((item) => ({ id: item.id, title: item.title, price: item.price, quantity: 1 })),
+      items: cart.map(item => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        quantity: 1,
+      })),
       successUrl: `${window.location.origin}/digital-art-store?success=1`,
       cancelUrl: `${window.location.origin}/digital-art-store`,
     });
@@ -102,7 +134,11 @@ export default function DigitalArtStore() {
           </div>
           <div className="flex items-center gap-2">
             <Link href="/marketplace">
-              <Button size="sm" variant="outline" className="border-slate-700 text-slate-400 hover:text-white text-xs">
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-slate-700 text-slate-400 hover:text-white text-xs"
+              >
                 Marketplace
               </Button>
             </Link>
@@ -135,23 +171,32 @@ export default function DigitalArtStore() {
               <Crown className="w-8 h-8 text-white" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-black text-white mb-1">144 Signed Digital Creations</h1>
+              <h1 className="text-2xl font-black text-white mb-1">
+                144 Signed Digital Creations
+              </h1>
               <p className="text-slate-400 text-sm mb-3">
-                Exclusive digital art, coded tools, and collectibles by Skyler Blue Spillers. Each signed print comes with a Certificate of Authenticity. Limited editions never reprint.
+                Exclusive digital art, coded tools, and collectibles by Skyler
+                Blue Spillers. Each signed print comes with a Certificate of
+                Authenticity. Limited editions never reprint.
               </p>
               <div className="flex gap-4 text-sm flex-wrap">
                 <span className="text-slate-400">
-                  <span className="text-white font-bold">{totalPrints}</span> products
+                  <span className="text-white font-bold">{totalPrints}</span>{" "}
+                  products
                 </span>
                 <span className="text-slate-400">
                   From <span className="text-purple-300 font-bold">$44</span>
                 </span>
                 <span className="flex items-center gap-1 text-green-400">
-                  <Shield className="w-3.5 h-3.5" />COA Included
+                  <Shield className="w-3.5 h-3.5" />
+                  COA Included
                 </span>
                 {series && (
                   <span className="text-slate-400">
-                    <span className="text-white font-bold">{series.length}</span> series
+                    <span className="text-white font-bold">
+                      {series.length}
+                    </span>{" "}
+                    series
                   </span>
                 )}
               </div>
@@ -165,7 +210,7 @@ export default function DigitalArtStore() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <Input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               placeholder="Search prints, series..."
               className="pl-9 bg-slate-900 border-slate-700 text-white placeholder:text-slate-500"
             />
@@ -174,7 +219,7 @@ export default function DigitalArtStore() {
 
         {/* Category filter */}
         <div className="flex gap-1 flex-wrap mb-6">
-          {SERIES_FILTERS.map((cat) => (
+          {SERIES_FILTERS.map(cat => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}
@@ -201,7 +246,7 @@ export default function DigitalArtStore() {
         {!isLoading && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filtered.map((product, i) => {
-              const inCart = cart.some((c) => c.id === product.id);
+              const inCart = cart.some(c => c.id === product.id);
               return (
                 <div
                   key={product.id}
@@ -214,7 +259,8 @@ export default function DigitalArtStore() {
                     {product.totalEdition <= 44 && (
                       <div className="absolute top-2 left-2">
                         <Badge className="bg-yellow-900/60 text-yellow-300 border-yellow-500/30 text-[9px] px-1.5">
-                          <Star className="w-2.5 h-2.5 mr-0.5 fill-yellow-300" />Signed
+                          <Star className="w-2.5 h-2.5 mr-0.5 fill-yellow-300" />
+                          Signed
                         </Badge>
                       </div>
                     )}
@@ -231,8 +277,12 @@ export default function DigitalArtStore() {
                   </div>
 
                   <div className="p-3">
-                    <p className="text-xs text-slate-500 mb-0.5">{product.series}</p>
-                    <p className="text-sm font-semibold text-white truncate mb-1">{product.title}</p>
+                    <p className="text-xs text-slate-500 mb-0.5">
+                      {product.series}
+                    </p>
+                    <p className="text-sm font-semibold text-white truncate mb-1">
+                      {product.title}
+                    </p>
                     <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                       <Badge className="bg-slate-800 text-slate-400 border-slate-700 text-[9px] px-1.5">
                         {product.edition} of {product.totalEdition}
@@ -247,13 +297,19 @@ export default function DigitalArtStore() {
                       )}
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-base font-black text-white">${product.price}</span>
+                      <span className="text-base font-black text-white">
+                        ${product.price}
+                      </span>
                       <Button
                         size="sm"
                         onClick={() =>
                           inCart
                             ? removeFromCart(product.id)
-                            : addToCart({ id: product.id, title: product.title, price: product.price })
+                            : addToCart({
+                                id: product.id,
+                                title: product.title,
+                                price: product.price,
+                              })
                         }
                         className={`h-7 px-2.5 text-[10px] font-bold transition-all ${
                           inCart
@@ -262,9 +318,15 @@ export default function DigitalArtStore() {
                         } text-white`}
                       >
                         {inCart ? (
-                          <><Download className="w-3 h-3 mr-1" />In Cart</>
+                          <>
+                            <Download className="w-3 h-3 mr-1" />
+                            In Cart
+                          </>
                         ) : (
-                          <><ShoppingCart className="w-3 h-3 mr-1" />Buy</>
+                          <>
+                            <ShoppingCart className="w-3 h-3 mr-1" />
+                            Buy
+                          </>
                         )}
                       </Button>
                     </div>
@@ -304,7 +366,10 @@ export default function DigitalArtStore() {
               {isCheckingOut ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <><Zap className="w-3.5 h-3.5 mr-1" />Checkout</>
+                <>
+                  <Zap className="w-3.5 h-3.5 mr-1" />
+                  Checkout
+                </>
               )}
             </Button>
           </div>

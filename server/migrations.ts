@@ -1,8 +1,8 @@
-import { migrate } from 'drizzle-orm/mysql2/migrator';
-import { db } from './db';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { migrate } from "drizzle-orm/mysql2/migrator";
+import { db } from "./db";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,19 +12,19 @@ interface MigrationLog {
   name: string;
   executedAt: Date;
   duration: number;
-  status: 'success' | 'failed';
+  status: "success" | "failed";
   error?: string;
 }
 
 class MigrationManager {
-  private migrationsDir = path.join(__dirname, '../drizzle/migrations');
+  private migrationsDir = path.join(__dirname, "../drizzle/migrations");
   private migrationLogs: MigrationLog[] = [];
 
   /**
    * Run all pending migrations
    */
   async runMigrations() {
-    console.log('🔄 Starting database migrations...');
+    console.log("🔄 Starting database migrations...");
     const startTime = Date.now();
 
     try {
@@ -39,10 +39,10 @@ class MigrationManager {
       return {
         success: true,
         duration,
-        message: 'All migrations applied successfully',
+        message: "All migrations applied successfully",
       };
     } catch (error) {
-      console.error('✗ Migration failed:', error);
+      console.error("✗ Migration failed:", error);
       throw error;
     }
   }
@@ -53,10 +53,10 @@ class MigrationManager {
   async getPendingMigrations(): Promise<string[]> {
     try {
       const files = fs.readdirSync(this.migrationsDir);
-      const sqlFiles = files.filter((f) => f.endsWith('.sql'));
+      const sqlFiles = files.filter(f => f.endsWith(".sql"));
       return sqlFiles;
     } catch (error) {
-      console.error('Error reading migrations:', error);
+      console.error("Error reading migrations:", error);
       return [];
     }
   }
@@ -76,11 +76,11 @@ class MigrationManager {
 
     try {
       const files = fs.readdirSync(this.migrationsDir);
-      const sqlFiles = files.filter((f) => f.endsWith('.sql'));
+      const sqlFiles = files.filter(f => f.endsWith(".sql"));
 
       for (const file of sqlFiles) {
         const filePath = path.join(this.migrationsDir, file);
-        const content = fs.readFileSync(filePath, 'utf-8');
+        const content = fs.readFileSync(filePath, "utf-8");
 
         // Validate SQL syntax
         if (!content.trim()) {
@@ -88,11 +88,11 @@ class MigrationManager {
         }
 
         // Check for dangerous operations without safeguards
-        if (content.includes('DROP TABLE') && !content.includes('IF EXISTS')) {
+        if (content.includes("DROP TABLE") && !content.includes("IF EXISTS")) {
           errors.push(`${file}: DROP TABLE without IF EXISTS`);
         }
 
-        if (content.includes('DELETE FROM') && !content.includes('WHERE')) {
+        if (content.includes("DELETE FROM") && !content.includes("WHERE")) {
           errors.push(`${file}: DELETE without WHERE clause`);
         }
       }
@@ -135,7 +135,7 @@ class MigrationManager {
    */
   async rollbackToMigration(migrationName: string) {
     console.log(`⚠️  Rolling back to migration: ${migrationName}`);
-    console.log('Note: Rollback functionality requires custom implementation');
+    console.log("Note: Rollback functionality requires custom implementation");
     // This would require custom rollback logic based on your migration strategy
   }
 
@@ -166,53 +166,53 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const command = process.argv[2];
 
   switch (command) {
-    case 'run':
+    case "run":
       migrationManager
         .runMigrations()
-        .then((result) => {
+        .then(result => {
           console.log(result);
           process.exit(0);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error(error);
           process.exit(1);
         });
       break;
 
-    case 'pending':
+    case "pending":
       migrationManager
         .getPendingMigrations()
-        .then((migrations) => {
-          console.log('Pending migrations:', migrations);
+        .then(migrations => {
+          console.log("Pending migrations:", migrations);
           process.exit(0);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error(error);
           process.exit(1);
         });
       break;
 
-    case 'validate':
+    case "validate":
       migrationManager
         .validateMigrations()
-        .then((result) => {
+        .then(result => {
           console.log(result);
           process.exit(result.valid ? 0 : 1);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error(error);
           process.exit(1);
         });
       break;
 
-    case 'report':
+    case "report":
       migrationManager
         .generateMigrationReport()
-        .then((report) => {
+        .then(report => {
           console.log(JSON.stringify(report, null, 2));
           process.exit(0);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error(error);
           process.exit(1);
         });

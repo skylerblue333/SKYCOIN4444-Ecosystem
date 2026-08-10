@@ -1,26 +1,82 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Images, ExternalLink, ArrowRight, Sparkles, Code2, Globe, Layers } from "lucide-react";
+import {
+  Images,
+  ExternalLink,
+  ArrowRight,
+  Sparkles,
+  Code2,
+  Globe,
+  Layers,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/PageHeader";
 
 const SCREEN_CATEGORIES = [
-  { cat: "Social",    count: 48, color: "from-cyan-500 to-blue-500",    icon: "💬", href: "/social"         },
-  { cat: "Crypto",   count: 52, color: "from-yellow-500 to-orange-500", icon: "💎", href: "/crypto-hub"     },
-  { cat: "AI",       count: 41, color: "from-purple-500 to-pink-500",   icon: "🤖", href: "/ai-brain"       },
-  { cat: "Streaming",count: 34, color: "from-red-500 to-pink-500",      icon: "📺", href: "/streaming"      },
-  { cat: "Gaming",   count: 29, color: "from-green-500 to-teal-500",    icon: "🎮", href: "/arcade"         },
-  { cat: "Creator",  count: 38, color: "from-indigo-500 to-purple-500", icon: "🎨", href: "/creator-studio" },
-  { cat: "Charity",  count: 22, color: "from-green-500 to-emerald-500", icon: "💚", href: "/charity"        },
-  { cat: "Admin",    count: 43, color: "from-slate-500 to-gray-500",    icon: "⚙️", href: "/admin"          },
+  {
+    cat: "Social",
+    count: 48,
+    color: "from-cyan-500 to-blue-500",
+    icon: "💬",
+    href: "/social",
+  },
+  {
+    cat: "Crypto",
+    count: 52,
+    color: "from-yellow-500 to-orange-500",
+    icon: "💎",
+    href: "/crypto-hub",
+  },
+  {
+    cat: "AI",
+    count: 41,
+    color: "from-purple-500 to-pink-500",
+    icon: "🤖",
+    href: "/ai-brain",
+  },
+  {
+    cat: "Streaming",
+    count: 34,
+    color: "from-red-500 to-pink-500",
+    icon: "📺",
+    href: "/streaming",
+  },
+  {
+    cat: "Gaming",
+    count: 29,
+    color: "from-green-500 to-teal-500",
+    icon: "🎮",
+    href: "/arcade",
+  },
+  {
+    cat: "Creator",
+    count: 38,
+    color: "from-indigo-500 to-purple-500",
+    icon: "🎨",
+    href: "/creator-studio",
+  },
+  {
+    cat: "Charity",
+    count: 22,
+    color: "from-green-500 to-emerald-500",
+    icon: "💚",
+    href: "/charity",
+  },
+  {
+    cat: "Admin",
+    count: 43,
+    color: "from-slate-500 to-gray-500",
+    icon: "⚙️",
+    href: "/admin",
+  },
 ];
 
 const STATS = [
   { label: "Total Screens", val: "307", icon: Images },
-  { label: "Categories",    val: "8",   icon: Layers },
-  { label: "Live Pages",    val: "120+",icon: Globe  },
-  { label: "Components",    val: "340+",icon: Code2  },
+  { label: "Categories", val: "8", icon: Layers },
+  { label: "Live Pages", val: "120+", icon: Globe },
+  { label: "Components", val: "340+", icon: Code2 },
 ];
 
 export default function GeneratedGallery() {
@@ -44,8 +100,9 @@ export default function GeneratedGallery() {
           <div>
             <h3 className="font-bold mb-1">AI-Generated Screen Library</h3>
             <p className="text-sm text-muted-foreground">
-              Every screen was designed by AI and reviewed for production readiness.
-              Click any category to navigate to the live version of that module.
+              Every screen was designed by AI and reviewed for production
+              readiness. Click any category to navigate to the live version of
+              that module.
             </p>
           </div>
         </div>
@@ -73,13 +130,17 @@ export default function GeneratedGallery() {
               onClick={() => setSelected(cat.cat)}
             >
               <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${cat.color} flex items-center justify-center text-3xl shrink-0`}>
+                <div
+                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${cat.color} flex items-center justify-center text-3xl shrink-0`}
+                >
                   {cat.icon}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold">{cat.cat}</h3>
-                    <Badge variant="outline" className="text-[10px]">{cat.count} screens</Badge>
+                    <Badge variant="outline" className="text-[10px]">
+                      {cat.count} screens
+                    </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     View live {cat.cat.toLowerCase()} screens
@@ -96,7 +157,9 @@ export default function GeneratedGallery() {
       <div className="mt-6 card p-5 flex items-center justify-between">
         <div>
           <div className="text-sm font-semibold">Download Full Codebase</div>
-          <div className="text-xs text-muted-foreground">All 307 screens + source code</div>
+          <div className="text-xs text-muted-foreground">
+            All 307 screens + source code
+          </div>
         </div>
         <a
           href="https://drive.google.com/file/d/1HKXHGjYNu2FUa41b4aiPelf75ThRZ_Za/view?usp=drivesdk"

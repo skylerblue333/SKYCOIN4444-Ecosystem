@@ -40,10 +40,10 @@ export interface SimEntity {
   type: EntityType;
   name: string;
   state: EntityState;
-  energy: number;       // 0–100: how active/influential this entity is
-  momentum: number;     // -1 to 1: direction of change
-  traits: Record<string, number>;  // personality/behavior dimensions
-  memory: string[];     // recent context
+  energy: number; // 0–100: how active/influential this entity is
+  momentum: number; // -1 to 1: direction of change
+  traits: Record<string, number>; // personality/behavior dimensions
+  memory: string[]; // recent context
   lastTick: number;
   createdAt: number;
 }
@@ -54,7 +54,7 @@ export interface WorldEvent {
   entityId: string;
   entityName: string;
   payload: Record<string, unknown>;
-  impact: number;       // 0–100: how much this affects the world
+  impact: number; // 0–100: how much this affects the world
   timestamp: number;
 }
 
@@ -113,8 +113,18 @@ const PERSONA_TEMPLATES: Omit<SimEntity, "lastTick" | "createdAt">[] = [
     state: "active",
     energy: 92,
     momentum: 0.8,
-    traits: { creativity: 95, technical: 80, social: 85, risk: 60, empathy: 70 },
-    memory: ["Analyzing feed patterns", "Generating content", "Optimizing engagement"],
+    traits: {
+      creativity: 95,
+      technical: 80,
+      social: 85,
+      risk: 60,
+      empathy: 70,
+    },
+    memory: [
+      "Analyzing feed patterns",
+      "Generating content",
+      "Optimizing engagement",
+    ],
   },
   {
     id: "cipher",
@@ -123,8 +133,18 @@ const PERSONA_TEMPLATES: Omit<SimEntity, "lastTick" | "createdAt">[] = [
     state: "active",
     energy: 88,
     momentum: 0.6,
-    traits: { creativity: 60, technical: 98, social: 50, risk: 75, empathy: 45 },
-    memory: ["Monitoring blockchain", "Analyzing market data", "Running anomaly detection"],
+    traits: {
+      creativity: 60,
+      technical: 98,
+      social: 50,
+      risk: 75,
+      empathy: 45,
+    },
+    memory: [
+      "Monitoring blockchain",
+      "Analyzing market data",
+      "Running anomaly detection",
+    ],
   },
   {
     id: "prism",
@@ -133,8 +153,18 @@ const PERSONA_TEMPLATES: Omit<SimEntity, "lastTick" | "createdAt">[] = [
     state: "active",
     energy: 85,
     momentum: 0.5,
-    traits: { creativity: 75, technical: 85, social: 90, risk: 50, empathy: 80 },
-    memory: ["Ranking feed content", "Predicting engagement", "Personalizing experience"],
+    traits: {
+      creativity: 75,
+      technical: 85,
+      social: 90,
+      risk: 50,
+      empathy: 80,
+    },
+    memory: [
+      "Ranking feed content",
+      "Predicting engagement",
+      "Personalizing experience",
+    ],
   },
   {
     id: "atlas",
@@ -143,8 +173,18 @@ const PERSONA_TEMPLATES: Omit<SimEntity, "lastTick" | "createdAt">[] = [
     state: "evolving",
     energy: 78,
     momentum: 0.3,
-    traits: { creativity: 70, technical: 90, social: 65, risk: 40, empathy: 60 },
-    memory: ["Mapping knowledge graph", "Building connections", "Synthesizing data"],
+    traits: {
+      creativity: 70,
+      technical: 90,
+      social: 65,
+      risk: 40,
+      empathy: 60,
+    },
+    memory: [
+      "Mapping knowledge graph",
+      "Building connections",
+      "Synthesizing data",
+    ],
   },
   {
     id: "echo",
@@ -153,8 +193,18 @@ const PERSONA_TEMPLATES: Omit<SimEntity, "lastTick" | "createdAt">[] = [
     state: "active",
     energy: 82,
     momentum: 0.4,
-    traits: { creativity: 85, technical: 65, social: 95, risk: 55, empathy: 90 },
-    memory: ["Monitoring conversations", "Detecting sentiment", "Amplifying signals"],
+    traits: {
+      creativity: 85,
+      technical: 65,
+      social: 95,
+      risk: 55,
+      empathy: 90,
+    },
+    memory: [
+      "Monitoring conversations",
+      "Detecting sentiment",
+      "Amplifying signals",
+    ],
   },
 ];
 
@@ -166,7 +216,18 @@ const CONTENT_TEMPLATES = [
   "AI prediction: {topic} will {direction} by {metric}% within 72h.",
 ];
 
-const TOPICS = ["Web3", "AI agents", "DeFi yields", "social reputation", "creator economy", "SKY444", "action OS", "trust scores", "dating compatibility", "feed ranking"];
+const TOPICS = [
+  "Web3",
+  "AI agents",
+  "DeFi yields",
+  "social reputation",
+  "creator economy",
+  "SKY444",
+  "action OS",
+  "trust scores",
+  "dating compatibility",
+  "feed ranking",
+];
 const INSIGHTS = [
   "behavioral signals are converging",
   "network effects are accelerating",
@@ -209,11 +270,36 @@ class SimulationEngine {
 
   private generateInitialTrends(): TrendSignal[] {
     return [
-      { topic: "#SKY444", score: 94, momentum: 0.8, relatedEntities: ["cipher", "nova"] },
-      { topic: "#AIAgents", score: 89, momentum: 0.7, relatedEntities: ["nova", "atlas"] },
-      { topic: "#Web3OS", score: 82, momentum: 0.6, relatedEntities: ["cipher", "prism"] },
-      { topic: "#ChatToEarn", score: 78, momentum: 0.5, relatedEntities: ["echo", "nova"] },
-      { topic: "#ShadowChat", score: 71, momentum: 0.4, relatedEntities: ["prism", "echo"] },
+      {
+        topic: "#SKY444",
+        score: 94,
+        momentum: 0.8,
+        relatedEntities: ["cipher", "nova"],
+      },
+      {
+        topic: "#AIAgents",
+        score: 89,
+        momentum: 0.7,
+        relatedEntities: ["nova", "atlas"],
+      },
+      {
+        topic: "#Web3OS",
+        score: 82,
+        momentum: 0.6,
+        relatedEntities: ["cipher", "prism"],
+      },
+      {
+        topic: "#ChatToEarn",
+        score: 78,
+        momentum: 0.5,
+        relatedEntities: ["echo", "nova"],
+      },
+      {
+        topic: "#ShadowChat",
+        score: 71,
+        momentum: 0.4,
+        relatedEntities: ["prism", "echo"],
+      },
     ];
   }
 
@@ -230,7 +316,8 @@ class SimulationEngine {
   }
 
   private generateContent(entity: SimEntity): string {
-    const template = CONTENT_TEMPLATES[Math.floor(Math.random() * CONTENT_TEMPLATES.length)];
+    const template =
+      CONTENT_TEMPLATES[Math.floor(Math.random() * CONTENT_TEMPLATES.length)];
     const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
     const insight = INSIGHTS[Math.floor(Math.random() * INSIGHTS.length)];
     const metric = Math.floor(Math.random() * 40 + 10);
@@ -257,8 +344,14 @@ class SimulationEngine {
             entityA: a.id,
             entityB: b.id,
             compatibility,
-            emotionalAlignment: Math.min(100, compatibility + Math.floor(Math.random() * 20 - 10)),
-            behaviorMatch: Math.min(100, compatibility + Math.floor(Math.random() * 15 - 7)),
+            emotionalAlignment: Math.min(
+              100,
+              compatibility + Math.floor(Math.random() * 20 - 10)
+            ),
+            behaviorMatch: Math.min(
+              100,
+              compatibility + Math.floor(Math.random() * 15 - 7)
+            ),
             aiReason: this.generateCompatibilityReason(a, b, compatibility),
           });
         }
@@ -270,10 +363,11 @@ class SimulationEngine {
   private computeCompatibility(a: SimEntity, b: SimEntity): number {
     const traitKeys = Object.keys(a.traits);
     if (traitKeys.length === 0) return 50;
-    const similarity = traitKeys.reduce((sum, key) => {
-      const diff = Math.abs((a.traits[key] ?? 50) - (b.traits[key] ?? 50));
-      return sum + (100 - diff);
-    }, 0) / traitKeys.length;
+    const similarity =
+      traitKeys.reduce((sum, key) => {
+        const diff = Math.abs((a.traits[key] ?? 50) - (b.traits[key] ?? 50));
+        return sum + (100 - diff);
+      }, 0) / traitKeys.length;
     // Complementary traits boost compatibility
     const complementBonus = traitKeys.reduce((sum, key) => {
       const aVal = a.traits[key] ?? 50;
@@ -282,21 +376,54 @@ class SimulationEngine {
       if ((aVal > 80 && bVal < 40) || (aVal < 40 && bVal > 80)) return sum + 5;
       return sum;
     }, 0);
-    return Math.min(100, Math.floor(similarity * 0.7 + complementBonus + Math.random() * 10));
+    return Math.min(
+      100,
+      Math.floor(similarity * 0.7 + complementBonus + Math.random() * 10)
+    );
   }
 
-  private generateCompatibilityReason(a: SimEntity, b: SimEntity, score: number): string {
-    if (score > 85) return `Exceptional alignment between ${a.name} and ${b.name}. Complementary strengths create powerful synergy.`;
-    if (score > 75) return `Strong behavioral match. ${a.name}'s ${Object.keys(a.traits)[0]} complements ${b.name}'s profile.`;
+  private generateCompatibilityReason(
+    a: SimEntity,
+    b: SimEntity,
+    score: number
+  ): string {
+    if (score > 85)
+      return `Exceptional alignment between ${a.name} and ${b.name}. Complementary strengths create powerful synergy.`;
+    if (score > 75)
+      return `Strong behavioral match. ${a.name}'s ${Object.keys(a.traits)[0]} complements ${b.name}'s profile.`;
     return `Moderate compatibility. Shared interest in technical domains creates connection points.`;
   }
 
   private generateMarketSignals(): MarketSignal[] {
     return [
-      { symbol: "SKY444", price: 0.0847, change24h: 12.4, momentum: 0.8, sentiment: 87 },
-      { symbol: "BTC", price: 67420, change24h: 2.1, momentum: 0.3, sentiment: 72 },
-      { symbol: "ETH", price: 3840, change24h: 3.7, momentum: 0.5, sentiment: 78 },
-      { symbol: "SOL", price: 184, change24h: -1.2, momentum: -0.2, sentiment: 61 },
+      {
+        symbol: "SKY444",
+        price: 0.0847,
+        change24h: 12.4,
+        momentum: 0.8,
+        sentiment: 87,
+      },
+      {
+        symbol: "BTC",
+        price: 67420,
+        change24h: 2.1,
+        momentum: 0.3,
+        sentiment: 72,
+      },
+      {
+        symbol: "ETH",
+        price: 3840,
+        change24h: 3.7,
+        momentum: 0.5,
+        sentiment: 78,
+      },
+      {
+        symbol: "SOL",
+        price: 184,
+        change24h: -1.2,
+        momentum: -0.2,
+        sentiment: 61,
+      },
     ];
   }
 
@@ -323,18 +450,25 @@ class SimulationEngine {
     const newFeedItems = this.generateNewFeedItems(updatedEntities, newEvents);
 
     // Update dating signals periodically
-    const updatedDating = this.tickCount % 10 === 0
-      ? this.generateDatingSignals(updatedEntities)
-      : this.worldState.datingSignals;
+    const updatedDating =
+      this.tickCount % 10 === 0
+        ? this.generateDatingSignals(updatedEntities)
+        : this.worldState.datingSignals;
 
     // Update market signals
     const updatedMarket = this.tickMarket(this.worldState.marketSignals);
 
     // Keep only recent events (last 50)
-    const allEvents = [...newEvents, ...this.worldState.recentEvents].slice(0, 50);
+    const allEvents = [...newEvents, ...this.worldState.recentEvents].slice(
+      0,
+      50
+    );
 
     // Keep only recent feed items (last 20)
-    const allFeedItems = [...newFeedItems, ...this.worldState.feedItems].slice(0, 20);
+    const allFeedItems = [...newFeedItems, ...this.worldState.feedItems].slice(
+      0,
+      20
+    );
 
     this.worldState = {
       tick: this.tickCount,
@@ -391,7 +525,10 @@ class SimulationEngine {
         type: "post_generated",
         entityId: entity.id,
         entityName: entity.name,
-        payload: { content: this.generateContent(entity), tags: [TOPICS[Math.floor(Math.random() * TOPICS.length)]] },
+        payload: {
+          content: this.generateContent(entity),
+          tags: [TOPICS[Math.floor(Math.random() * TOPICS.length)]],
+        },
         impact: Math.floor(entity.energy * 0.8),
         timestamp: now,
       });
@@ -404,7 +541,10 @@ class SimulationEngine {
         type: "trend_spike",
         entityId: entity.id,
         entityName: entity.name,
-        payload: { topic: TOPICS[Math.floor(Math.random() * TOPICS.length)], spike: Math.floor(entity.momentum * 50) },
+        payload: {
+          topic: TOPICS[Math.floor(Math.random() * TOPICS.length)],
+          spike: Math.floor(entity.momentum * 50),
+        },
         impact: Math.floor(entity.momentum * 100),
         timestamp: now,
       });
@@ -417,7 +557,11 @@ class SimulationEngine {
         type: "behavior_signal",
         entityId: entity.id,
         entityName: entity.name,
-        payload: { signal: entity.state, energy: entity.energy, momentum: entity.momentum },
+        payload: {
+          signal: entity.state,
+          energy: entity.energy,
+          momentum: entity.momentum,
+        },
         impact: 20,
         timestamp: now,
       });
@@ -426,16 +570,24 @@ class SimulationEngine {
     return events;
   }
 
-  private updateTrends(trends: TrendSignal[], events: WorldEvent[]): TrendSignal[] {
+  private updateTrends(
+    trends: TrendSignal[],
+    events: WorldEvent[]
+  ): TrendSignal[] {
     const trendSpikes = events.filter(e => e.type === "trend_spike");
     return trends.map(trend => {
       const relevantSpike = trendSpikes.find(s =>
-        (s.payload.topic as string)?.toLowerCase().includes(trend.topic.replace("#", "").toLowerCase())
+        (s.payload.topic as string)
+          ?.toLowerCase()
+          .includes(trend.topic.replace("#", "").toLowerCase())
       );
       if (relevantSpike) {
         return {
           ...trend,
-          score: Math.min(100, trend.score + (relevantSpike.payload.spike as number) * 0.1),
+          score: Math.min(
+            100,
+            trend.score + (relevantSpike.payload.spike as number) * 0.1
+          ),
           momentum: Math.min(1, trend.momentum + 0.05),
         };
       }
@@ -448,7 +600,10 @@ class SimulationEngine {
     });
   }
 
-  private generateNewFeedItems(entities: SimEntity[], events: WorldEvent[]): FeedItem[] {
+  private generateNewFeedItems(
+    entities: SimEntity[],
+    events: WorldEvent[]
+  ): FeedItem[] {
     return events
       .filter(e => e.type === "post_generated")
       .map(e => ({
@@ -469,8 +624,14 @@ class SimulationEngine {
         ...s,
         price: Math.max(0.001, s.price * (1 + change / 100)),
         change24h: s.change24h + (Math.random() - 0.5) * 0.5,
-        momentum: Math.max(-1, Math.min(1, s.momentum + (Math.random() - 0.5) * 0.1)),
-        sentiment: Math.max(0, Math.min(100, s.sentiment + (Math.random() - 0.5) * 2)),
+        momentum: Math.max(
+          -1,
+          Math.min(1, s.momentum + (Math.random() - 0.5) * 0.1)
+        ),
+        sentiment: Math.max(
+          0,
+          Math.min(100, s.sentiment + (Math.random() - 0.5) * 2)
+        ),
       };
     });
   }

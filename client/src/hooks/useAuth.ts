@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { trpc } from '@/lib/trpc';
+import { useQuery } from "@tanstack/react-query";
+import { trpc } from "@/lib/trpc";
 
 export function useAuth() {
   const { data: user, isLoading } = trpc.auth.me.useQuery();
-  
+
   return {
     user,
     isLoading,

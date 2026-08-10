@@ -6,7 +6,16 @@
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Heart, X, Minimize2, Maximize2, Send, Sparkles, Brain, MessageCircle } from "lucide-react";
+import {
+  Heart,
+  X,
+  Minimize2,
+  Maximize2,
+  Send,
+  Sparkles,
+  Brain,
+  MessageCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +65,7 @@ export function HopeCompanion() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isOpen) {
-        setPulseCount((c) => c + 1);
+        setPulseCount(c => c + 1);
       }
     }, 30000);
     return () => clearInterval(interval);
@@ -70,7 +79,8 @@ export function HopeCompanion() {
   // Send greeting when opened for first time
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      const greeting = HOPE_GREETINGS[Math.floor(Math.random() * HOPE_GREETINGS.length)];
+      const greeting =
+        HOPE_GREETINGS[Math.floor(Math.random() * HOPE_GREETINGS.length)];
       setMessages([
         {
           id: "greeting",
@@ -91,15 +101,18 @@ export function HopeCompanion() {
       content: input,
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
 
     try {
       const history = messages
-        .filter((m) => m.role !== "hope" || m.id !== "greeting")
+        .filter(m => m.role !== "hope" || m.id !== "greeting")
         .slice(-8)
-        .map((m) => ({ role: m.role === "user" ? "user" as const : "assistant" as const, content: m.content }));
+        .map(m => ({
+          role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+          content: m.content,
+        }));
 
       const result = await chatMutation.mutateAsync({
         messageText: input,
@@ -116,14 +129,15 @@ export function HopeCompanion() {
         emotion: result.emotionalState,
         supportType: result.tone,
       };
-      setMessages((prev) => [...prev, hopeMsg]);
+      setMessages(prev => [...prev, hopeMsg]);
     } catch {
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         {
           id: `hope-${Date.now()}`,
           role: "hope",
-          content: "I'm here with you. Sometimes words aren't enough — but I'm listening. 💜",
+          content:
+            "I'm here with you. Sometimes words aren't enough — but I'm listening. 💜",
           timestamp: new Date(),
           emotion: "hope",
         },
@@ -135,9 +149,12 @@ export function HopeCompanion() {
 
   const getDefaultResponse = (emotion?: string): string => {
     const responses: Record<string, string> = {
-      sadness: "I hear you. It's okay to feel this way. You don't have to carry this alone. 💜",
-      anxiety: "Take a breath with me. You're safe right now. Let's slow down together.",
-      anger: "That frustration makes sense. I'm not going to dismiss what you're feeling.",
+      sadness:
+        "I hear you. It's okay to feel this way. You don't have to carry this alone. 💜",
+      anxiety:
+        "Take a breath with me. You're safe right now. Let's slow down together.",
+      anger:
+        "That frustration makes sense. I'm not going to dismiss what you're feeling.",
       joy: "I love seeing you like this! What's making you feel so good right now?",
       fear: "Fear is real, and so is your strength. What's worrying you most?",
       neutral: "I'm here. Tell me more about what's going on.",
@@ -184,13 +201,20 @@ export function HopeCompanion() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-semibold text-white">Hope</span>
-                <Badge variant="outline" className="text-[10px] px-1 py-0 border-purple-500/40 text-purple-300">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-1 py-0 border-purple-500/40 text-purple-300"
+                >
                   AI
                 </Badge>
               </div>
               <div className="flex items-center gap-1">
-                <span className={`text-[10px] ${EMOTION_COLORS[currentEmotion] || "text-gray-400"}`}>
-                  {currentEmotion !== "neutral" ? `Sensing: ${currentEmotion}` : "Here for you"}
+                <span
+                  className={`text-[10px] ${EMOTION_COLORS[currentEmotion] || "text-gray-400"}`}
+                >
+                  {currentEmotion !== "neutral"
+                    ? `Sensing: ${currentEmotion}`
+                    : "Here for you"}
                 </span>
               </div>
             </div>
@@ -199,7 +223,11 @@ export function HopeCompanion() {
                 onClick={() => setIsMinimized(!isMinimized)}
                 className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
               >
-                {isMinimized ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
+                {isMinimized ? (
+                  <Maximize2 className="w-3.5 h-3.5" />
+                ) : (
+                  <Minimize2 className="w-3.5 h-3.5" />
+                )}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
@@ -214,7 +242,7 @@ export function HopeCompanion() {
             <>
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin scrollbar-thumb-purple-500/20">
-                {messages.map((msg) => (
+                {messages.map(msg => (
                   <div
                     key={msg.id}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -235,7 +263,9 @@ export function HopeCompanion() {
                       {msg.supportType && (
                         <div className="mt-1 flex items-center gap-1">
                           <Brain className="w-3 h-3 text-purple-400" />
-                          <span className="text-[10px] text-purple-400">{msg.supportType}</span>
+                          <span className="text-[10px] text-purple-400">
+                            {msg.supportType}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -261,7 +291,12 @@ export function HopeCompanion() {
 
               {/* Quick Actions */}
               <div className="px-3 pb-2 flex gap-1.5 overflow-x-auto scrollbar-none">
-                {["I need support", "I'm anxious", "Just venting", "I'm grateful"].map((chip) => (
+                {[
+                  "I need support",
+                  "I'm anxious",
+                  "Just venting",
+                  "I'm grateful",
+                ].map(chip => (
                   <button
                     key={chip}
                     onClick={() => setInput(chip)}
@@ -276,8 +311,8 @@ export function HopeCompanion() {
               <div className="p-3 pt-0 flex gap-2">
                 <Textarea
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       sendMessage();
@@ -300,7 +335,9 @@ export function HopeCompanion() {
               {/* Footer */}
               <div className="px-3 pb-3 flex items-center justify-center gap-1">
                 <Sparkles className="w-3 h-3 text-purple-400/50" />
-                <span className="text-[10px] text-gray-600">Hope AI · Emotional Intelligence Engine</span>
+                <span className="text-[10px] text-gray-600">
+                  Hope AI · Emotional Intelligence Engine
+                </span>
               </div>
             </>
           )}

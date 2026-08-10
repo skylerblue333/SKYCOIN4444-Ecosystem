@@ -29,7 +29,9 @@ export async function getLanguagePartners(filters?: {
   let query = db.select().from(languagePartners) as any;
 
   if (filters?.language) {
-    query = query.where(like(languagePartners.learningLanguages, `%${filters.language}%`));
+    query = query.where(
+      like(languagePartners.learningLanguages, `%${filters.language}%`)
+    );
   }
 
   query = query.orderBy(desc(languagePartners.rating));
@@ -156,7 +158,10 @@ export async function createPracticeSession(data: {
   });
 }
 
-export async function getPracticeSessions(userId: number, type: "student" | "teacher" = "student") {
+export async function getPracticeSessions(
+  userId: number,
+  type: "student" | "teacher" = "student"
+) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
   const condition =
@@ -204,7 +209,12 @@ export async function getProgress(userId: number, language: string) {
   return await db
     .select()
     .from(progressTracking)
-    .where(and(eq(progressTracking.userId, userId), eq(progressTracking.language, language)))
+    .where(
+      and(
+        eq(progressTracking.userId, userId),
+        eq(progressTracking.language, language)
+      )
+    )
     .then((rows: any[]) => rows[0]);
 }
 
@@ -222,7 +232,10 @@ export async function updateProgress(
       .update(progressTracking)
       .set(data)
       .where(
-        and(eq(progressTracking.userId, userId), eq(progressTracking.language, language))
+        and(
+          eq(progressTracking.userId, userId),
+          eq(progressTracking.language, language)
+        )
       );
   } else {
     return await db.insert(progressTracking).values({
@@ -252,7 +265,9 @@ export async function getBounties(filters?: {
   }
 
   if (filters?.difficulty) {
-    query = query.where(eq(translationBounties.difficulty, filters.difficulty as any));
+    query = query.where(
+      eq(translationBounties.difficulty, filters.difficulty as any)
+    );
   }
 
   query = query.orderBy(desc(translationBounties.reward));
@@ -338,7 +353,9 @@ export async function createTeacherProfile(data: {
     hourlyRate: data.hourlyRate,
     bio: data.bio,
     specialties: data.specialties ? JSON.stringify(data.specialties) : null,
-    certifications: data.certifications ? JSON.stringify(data.certifications) : null,
+    certifications: data.certifications
+      ? JSON.stringify(data.certifications)
+      : null,
     availability: data.availability,
   });
 }
@@ -402,7 +419,10 @@ export async function createTeacherBooking(data: {
   });
 }
 
-export async function getTeacherBookings(userId: number, type: "student" | "teacher" = "student") {
+export async function getTeacherBookings(
+  userId: number,
+  type: "student" | "teacher" = "student"
+) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
   const condition =
@@ -526,12 +546,12 @@ export async function createTeacherReview(data: {
 export async function getTeacherReviews(teacherId: number, limit = 10) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
-  return await db
+  return (await db
     .select()
     .from(teacherReviews)
     .where(eq(teacherReviews.teacherId, teacherId))
     .orderBy(desc(teacherReviews.createdAt))
-    .limit(limit) as any;
+    .limit(limit)) as any;
 }
 
 // ═══════════════════════════════════════════════════════════════

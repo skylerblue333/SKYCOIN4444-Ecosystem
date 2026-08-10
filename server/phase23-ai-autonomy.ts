@@ -17,7 +17,8 @@ export type AgentType =
   | "fraud_agent"
   | "support_agent";
 
-export type AgentStatus = "idle" | "running" | "paused" | "error" | "terminated";
+export type AgentStatus =
+  "idle" | "running" | "paused" | "error" | "terminated";
 
 export interface PlatformAgent {
   id: string;
@@ -68,7 +69,15 @@ export interface AgentDecision {
 
 export interface SystemAnomaly {
   id: string;
-  anomalyType: "latency_spike" | "error_rate_surge" | "traffic_anomaly" | "memory_leak" | "db_slow_query" | "queue_backup" | "fraud_spike" | "abuse_pattern";
+  anomalyType:
+    | "latency_spike"
+    | "error_rate_surge"
+    | "traffic_anomaly"
+    | "memory_leak"
+    | "db_slow_query"
+    | "queue_backup"
+    | "fraud_spike"
+    | "abuse_pattern";
   severity: "info" | "warning" | "critical" | "emergency";
   service: string;
   metric: string;
@@ -96,7 +105,12 @@ export interface RollbackRecord {
 
 export interface AbuseContainment {
   id: string;
-  containmentType: "rate_limit" | "shadow_ban" | "ip_block" | "account_freeze" | "content_quarantine";
+  containmentType:
+    | "rate_limit"
+    | "shadow_ban"
+    | "ip_block"
+    | "account_freeze"
+    | "content_quarantine";
   targetType: "user" | "ip" | "content" | "community";
   targetId: string;
   reason: string;
@@ -111,7 +125,13 @@ export interface AbuseContainment {
 
 export interface CostOptimizationAction {
   id: string;
-  actionType: "scale_down" | "cache_warm" | "query_optimize" | "cdn_purge" | "batch_compress" | "idle_terminate";
+  actionType:
+    | "scale_down"
+    | "cache_warm"
+    | "query_optimize"
+    | "cdn_purge"
+    | "batch_compress"
+    | "idle_terminate";
   service: string;
   estimatedSavingsUSD: number;
   actualSavingsUSD?: number;
@@ -124,7 +144,13 @@ export interface CostOptimizationAction {
 
 export interface AIDecisionLog {
   id: string;
-  decisionCategory: "content_surfacing" | "creator_recommendation" | "economic_action" | "fraud_escalation" | "payout_optimization" | "community_action";
+  decisionCategory:
+    | "content_surfacing"
+    | "creator_recommendation"
+    | "economic_action"
+    | "fraud_escalation"
+    | "payout_optimization"
+    | "community_action";
   inputContext: Record<string, unknown>;
   decision: string;
   reasoning: string;
@@ -148,10 +174,23 @@ const _aiDecisionLog = new Map<string, AIDecisionLog>();
 // ─── PLATFORM AGENT REGISTRY ──────────────────────────────────────────────────
 
 export const platformAgentRegistry = {
-  registerAgent(params: Omit<PlatformAgent, "id" | "status" | "totalRuns" | "successfulRuns" | "failedRuns" | "actionsExecuted" | "createdAt" | "updatedAt">): PlatformAgent {
+  registerAgent(
+    params: Omit<
+      PlatformAgent,
+      | "id"
+      | "status"
+      | "totalRuns"
+      | "successfulRuns"
+      | "failedRuns"
+      | "actionsExecuted"
+      | "createdAt"
+      | "updatedAt"
+    >
+  ): PlatformAgent {
     const id = `agent_${params.agentType}_${Date.now()}`;
     const agent: PlatformAgent = {
-      ...params, id,
+      ...params,
+      id,
       status: "idle",
       totalRuns: 0,
       successfulRuns: 0,
@@ -185,7 +224,11 @@ export const platformAgentRegistry = {
     return run;
   },
 
-  completeAgentRun(runId: string, decisions: AgentDecision[], summary: string): AgentRun | null {
+  completeAgentRun(
+    runId: string,
+    decisions: AgentDecision[],
+    summary: string
+  ): AgentRun | null {
     const run = _agentRuns.get(runId);
     if (!run) return null;
     run.status = "completed";
@@ -260,8 +303,11 @@ export const platformAgentRegistry = {
     successRate: number;
   } {
     const agents = Array.from(_agents.values());
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const todayRuns = Array.from(_agentRuns.values()).filter(r => r.startedAt >= today);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayRuns = Array.from(_agentRuns.values()).filter(
+      r => r.startedAt >= today
+    );
     const totalDecisions = todayRuns.reduce((s, r) => s + r.actionsExecuted, 0);
     const totalRuns = agents.reduce((s, a) => s + a.totalRuns, 0);
     const successfulRuns = agents.reduce((s, a) => s + a.successfulRuns, 0);
@@ -279,10 +325,16 @@ export const platformAgentRegistry = {
 // ─── SELF-HEALING ENGINE ──────────────────────────────────────────────────────
 
 export const selfHealingEngine = {
-  detectAnomaly(params: Omit<SystemAnomaly, "id" | "detectedAt" | "isResolved" | "autoRemediated">): SystemAnomaly {
+  detectAnomaly(
+    params: Omit<
+      SystemAnomaly,
+      "id" | "detectedAt" | "isResolved" | "autoRemediated"
+    >
+  ): SystemAnomaly {
     const id = `anomaly_${params.service}_${Date.now()}`;
     const anomaly: SystemAnomaly = {
-      ...params, id,
+      ...params,
+      id,
       detectedAt: new Date(),
       isResolved: false,
       autoRemediated: false,
@@ -298,14 +350,30 @@ export const selfHealingEngine = {
   _autoRemediate(anomaly: SystemAnomaly): void {
     let action = "";
     switch (anomaly.anomalyType) {
-      case "latency_spike": action = "Scale up service instances"; break;
-      case "error_rate_surge": action = "Enable circuit breaker and alert on-call"; break;
-      case "memory_leak": action = "Restart service pod and capture heap dump"; break;
-      case "db_slow_query": action = "Kill long-running queries and add index hint"; break;
-      case "queue_backup": action = "Scale consumer workers and drain queue"; break;
-      case "fraud_spike": action = "Enable enhanced fraud mode and rate limit"; break;
-      case "abuse_pattern": action = "Activate abuse containment for affected users"; break;
-      default: action = "Alert on-call team"; break;
+      case "latency_spike":
+        action = "Scale up service instances";
+        break;
+      case "error_rate_surge":
+        action = "Enable circuit breaker and alert on-call";
+        break;
+      case "memory_leak":
+        action = "Restart service pod and capture heap dump";
+        break;
+      case "db_slow_query":
+        action = "Kill long-running queries and add index hint";
+        break;
+      case "queue_backup":
+        action = "Scale consumer workers and drain queue";
+        break;
+      case "fraud_spike":
+        action = "Enable enhanced fraud mode and rate limit";
+        break;
+      case "abuse_pattern":
+        action = "Activate abuse containment for affected users";
+        break;
+      default:
+        action = "Alert on-call team";
+        break;
     }
     anomaly.autoRemediated = true;
     anomaly.remediationAction = action;
@@ -320,15 +388,26 @@ export const selfHealingEngine = {
   },
 
   getActiveAnomalies(severity?: SystemAnomaly["severity"]): SystemAnomaly[] {
-    return Array.from(_anomalies.values()).filter(a =>
-      !a.isResolved && (!severity || a.severity === severity)
+    return Array.from(_anomalies.values()).filter(
+      a => !a.isResolved && (!severity || a.severity === severity)
     );
   },
 
-  triggerRollback(service: string, fromVersion: string, toVersion: string, reason: string, triggeredBy: "auto" | "manual" = "auto"): RollbackRecord {
+  triggerRollback(
+    service: string,
+    fromVersion: string,
+    toVersion: string,
+    reason: string,
+    triggeredBy: "auto" | "manual" = "auto"
+  ): RollbackRecord {
     const id = `rollback_${service}_${Date.now()}`;
     const record: RollbackRecord = {
-      id, service, fromVersion, toVersion, reason, triggeredBy,
+      id,
+      service,
+      fromVersion,
+      toVersion,
+      reason,
+      triggeredBy,
       triggeredAt: new Date(),
       status: "pending",
     };
@@ -336,7 +415,10 @@ export const selfHealingEngine = {
     return record;
   },
 
-  completeRollback(rollbackId: string, success: boolean): RollbackRecord | null {
+  completeRollback(
+    rollbackId: string,
+    success: boolean
+  ): RollbackRecord | null {
     const record = _rollbacks.get(rollbackId);
     if (!record) return null;
     record.status = success ? "completed" : "failed";
@@ -350,10 +432,13 @@ export const selfHealingEngine = {
       .sort((a, b) => b.triggeredAt.getTime() - a.triggeredAt.getTime());
   },
 
-  containAbuse(params: Omit<AbuseContainment, "id" | "triggeredAt" | "isActive">): AbuseContainment {
+  containAbuse(
+    params: Omit<AbuseContainment, "id" | "triggeredAt" | "isActive">
+  ): AbuseContainment {
     const id = `abuse_${params.targetType}_${params.targetId}_${Date.now()}`;
     const containment: AbuseContainment = {
-      ...params, id,
+      ...params,
+      id,
       triggeredAt: new Date(),
       isActive: true,
     };
@@ -361,7 +446,10 @@ export const selfHealingEngine = {
     return containment;
   },
 
-  reviewContainment(containmentId: string, outcome: AbuseContainment["reviewOutcome"]): AbuseContainment | null {
+  reviewContainment(
+    containmentId: string,
+    outcome: AbuseContainment["reviewOutcome"]
+  ): AbuseContainment | null {
     const containment = _abuseContainments.get(containmentId);
     if (!containment) return null;
     containment.reviewedAt = new Date();
@@ -370,16 +458,21 @@ export const selfHealingEngine = {
     return containment;
   },
 
-  getActiveContainments(targetType?: AbuseContainment["targetType"]): AbuseContainment[] {
-    return Array.from(_abuseContainments.values()).filter(c =>
-      c.isActive && (!targetType || c.targetType === targetType)
+  getActiveContainments(
+    targetType?: AbuseContainment["targetType"]
+  ): AbuseContainment[] {
+    return Array.from(_abuseContainments.values()).filter(
+      c => c.isActive && (!targetType || c.targetType === targetType)
     );
   },
 
-  recordCostOptimization(params: Omit<CostOptimizationAction, "id" | "executedAt" | "status">): CostOptimizationAction {
+  recordCostOptimization(
+    params: Omit<CostOptimizationAction, "id" | "executedAt" | "status">
+  ): CostOptimizationAction {
     const id = `cost_${params.actionType}_${Date.now()}`;
     const action: CostOptimizationAction = {
-      ...params, id,
+      ...params,
+      id,
       executedAt: new Date(),
       status: "pending",
     };
@@ -387,7 +480,10 @@ export const selfHealingEngine = {
     return action;
   },
 
-  completeCostAction(actionId: string, actualSavings: number): CostOptimizationAction | null {
+  completeCostAction(
+    actionId: string,
+    actualSavings: number
+  ): CostOptimizationAction | null {
     const action = _costActions.get(actionId);
     if (!action) return null;
     action.status = "executed";
@@ -395,8 +491,14 @@ export const selfHealingEngine = {
     return action;
   },
 
-  getCostOptimizationSummary(): { totalEstimated: number; totalActual: number; actionCount: number } {
-    const actions = Array.from(_costActions.values()).filter(a => a.status === "executed");
+  getCostOptimizationSummary(): {
+    totalEstimated: number;
+    totalActual: number;
+    actionCount: number;
+  } {
+    const actions = Array.from(_costActions.values()).filter(
+      a => a.status === "executed"
+    );
     return {
       totalEstimated: actions.reduce((s, a) => s + a.estimatedSavingsUSD, 0),
       totalActual: actions.reduce((s, a) => s + (a.actualSavingsUSD ?? 0), 0),
@@ -414,7 +516,9 @@ export const aiDecisionLayer = {
     options?: string[];
   }): Promise<AIDecisionLog> {
     const contextStr = JSON.stringify(params.context).slice(0, 800);
-    const optionsStr = params.options ? `\nOptions: ${params.options.join(", ")}` : "";
+    const optionsStr = params.options
+      ? `\nOptions: ${params.options.join(", ")}`
+      : "";
     let decision = "No decision";
     let reasoning = "AI unavailable";
     let confidence = 0.75; // non-zero fallback
@@ -423,10 +527,12 @@ export const aiDecisionLayer = {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `You are an autonomous platform AI making a ${params.category} decision.\n\nContext: ${contextStr}${optionsStr}\n\nRespond with JSON only: {"decision": "string", "reasoning": "brief", "confidence": 0.0-1.0}`,
-        }],
+        messages: [
+          {
+            role: "user",
+            content: `You are an autonomous platform AI making a ${params.category} decision.\n\nContext: ${contextStr}${optionsStr}\n\nRespond with JSON only: {"decision": "string", "reasoning": "brief", "confidence": 0.0-1.0}`,
+          },
+        ],
         maxTokens: 200,
       });
       const content = (response.choices[0]?.message?.content as string) ?? "";
@@ -435,7 +541,10 @@ export const aiDecisionLayer = {
         const parsed = JSON.parse(match[0]);
         decision = parsed.decision ?? decision;
         reasoning = parsed.reasoning ?? reasoning;
-        confidence = (typeof parsed.confidence === 'number' && parsed.confidence > 0) ? parsed.confidence : 0.75;
+        confidence =
+          typeof parsed.confidence === "number" && parsed.confidence > 0
+            ? parsed.confidence
+            : 0.75;
         modelUsed = "gpt-4o-mini";
       }
     } catch {
@@ -457,7 +566,11 @@ export const aiDecisionLayer = {
     return log;
   },
 
-  recordOutcome(decisionId: string, outcome: string, feedbackScore?: number): AIDecisionLog | null {
+  recordOutcome(
+    decisionId: string,
+    outcome: string,
+    feedbackScore?: number
+  ): AIDecisionLog | null {
     const log = _aiDecisionLog.get(decisionId);
     if (!log) return null;
     log.outcome = outcome;
@@ -465,46 +578,70 @@ export const aiDecisionLayer = {
     return log;
   },
 
-  getDecisionsByCategory(category: AIDecisionLog["decisionCategory"], limit = 20): AIDecisionLog[] {
+  getDecisionsByCategory(
+    category: AIDecisionLog["decisionCategory"],
+    limit = 20
+  ): AIDecisionLog[] {
     return Array.from(_aiDecisionLog.values())
       .filter(d => d.decisionCategory === category)
       .sort((a, b) => b.executedAt.getTime() - a.executedAt.getTime())
       .slice(0, limit);
   },
 
-  getDecisionAccuracy(): Record<string, { total: number; avgConfidence: number; avgFeedback: number }> {
+  getDecisionAccuracy(): Record<
+    string,
+    { total: number; avgConfidence: number; avgFeedback: number }
+  > {
     const logs = Array.from(_aiDecisionLog.values());
     const byCategory: Record<string, AIDecisionLog[]> = {};
     for (const log of logs) {
-      if (!byCategory[log.decisionCategory]) byCategory[log.decisionCategory] = [];
+      if (!byCategory[log.decisionCategory])
+        byCategory[log.decisionCategory] = [];
       byCategory[log.decisionCategory].push(log);
     }
-    const result: Record<string, { total: number; avgConfidence: number; avgFeedback: number }> = {};
+    const result: Record<
+      string,
+      { total: number; avgConfidence: number; avgFeedback: number }
+    > = {};
     for (const [cat, catLogs] of Object.entries(byCategory)) {
       const withFeedback = catLogs.filter(l => l.feedbackScore !== undefined);
       result[cat] = {
         total: catLogs.length,
-        avgConfidence: catLogs.reduce((s, l) => s + l.confidence, 0) / catLogs.length,
-        avgFeedback: withFeedback.length > 0
-          ? withFeedback.reduce((s, l) => s + (l.feedbackScore ?? 0), 0) / withFeedback.length
-          : 0,
+        avgConfidence:
+          catLogs.reduce((s, l) => s + l.confidence, 0) / catLogs.length,
+        avgFeedback:
+          withFeedback.length > 0
+            ? withFeedback.reduce((s, l) => s + (l.feedbackScore ?? 0), 0) /
+              withFeedback.length
+            : 0,
       };
     }
     return result;
   },
 
   // Specialized decision helpers
-  async surfaceContent(userId: number, candidatePostIds: string[], userContext: Record<string, unknown>): Promise<string[]> {
+  async surfaceContent(
+    userId: number,
+    candidatePostIds: string[],
+    userContext: Record<string, unknown>
+  ): Promise<string[]> {
     const log = await this.makeDecision({
       category: "content_surfacing",
-      context: { userId, candidateCount: candidatePostIds.length, ...userContext },
+      context: {
+        userId,
+        candidateCount: candidatePostIds.length,
+        ...userContext,
+      },
       options: candidatePostIds.slice(0, 5),
     });
     // In production, parse the decision to reorder postIds
     return candidatePostIds;
   },
 
-  async recommendCreator(userId: number, candidateCreatorIds: number[]): Promise<number[]> {
+  async recommendCreator(
+    userId: number,
+    candidateCreatorIds: number[]
+  ): Promise<number[]> {
     const log = await this.makeDecision({
       category: "creator_recommendation",
       context: { userId, candidateCount: candidateCreatorIds.length },
@@ -512,7 +649,11 @@ export const aiDecisionLayer = {
     return candidateCreatorIds;
   },
 
-  async optimizePayout(creatorId: number, pendingAmount: number, context: Record<string, unknown>): Promise<{ recommendedAmount: number; timing: string; reasoning: string }> {
+  async optimizePayout(
+    creatorId: number,
+    pendingAmount: number,
+    context: Record<string, unknown>
+  ): Promise<{ recommendedAmount: number; timing: string; reasoning: string }> {
     const log = await this.makeDecision({
       category: "payout_optimization",
       context: { creatorId, pendingAmount, ...context },
@@ -524,7 +665,11 @@ export const aiDecisionLayer = {
     };
   },
 
-  async escalateFraud(userId: number, fraudSignals: string[], riskScore: number): Promise<{ action: string; reasoning: string; confidence: number }> {
+  async escalateFraud(
+    userId: number,
+    fraudSignals: string[],
+    riskScore: number
+  ): Promise<{ action: string; reasoning: string; confidence: number }> {
     const log = await this.makeDecision({
       category: "fraud_escalation",
       context: { userId, fraudSignals, riskScore },

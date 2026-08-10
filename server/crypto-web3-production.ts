@@ -20,9 +20,11 @@ const log = logger.child("crypto-web3-production");
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type ChainId = 1 | 137 | 56 | 42161 | 10 | 8453; // ETH, Polygon, BSC, Arbitrum, Optimism, Base
-export type WalletStatus = "connected" | "disconnected" | "pending_verification";
+export type WalletStatus =
+  "connected" | "disconnected" | "pending_verification";
 export type StakeStatus = "active" | "unstaking" | "completed" | "slashed";
-export type SwapStatus = "pending" | "submitted" | "confirmed" | "failed" | "reverted";
+export type SwapStatus =
+  "pending" | "submitted" | "confirmed" | "failed" | "reverted";
 
 export interface WalletConnection {
   connectionId: string;
@@ -164,11 +166,16 @@ const _votingPower = new Map<number, GovernanceVotingPower>(); // userId → pow
 
 // ─── SKYCOIN Token Economics ──────────────────────────────────────────────────
 const SKYCOIN_DECIMALS = 18;
-const SKYCOIN_TOTAL_SUPPLY = BigInt("1000000000") * BigInt(10 ** SKYCOIN_DECIMALS); // 1B tokens
+const SKYCOIN_TOTAL_SUPPLY =
+  BigInt("1000000000") * BigInt(10 ** SKYCOIN_DECIMALS); // 1B tokens
 const SKYCOIN_ADDRESS = "0xSKYCOIN_CONTRACT_ADDRESS"; // Replace with real address
 
 // APY tiers based on lock period
-const STAKING_APY_TIERS: { minDays: number; apy: number; multiplier: number }[] = [
+const STAKING_APY_TIERS: {
+  minDays: number;
+  apy: number;
+  multiplier: number;
+}[] = [
   { minDays: 7, apy: 5, multiplier: 1.0 },
   { minDays: 30, apy: 12, multiplier: 1.2 },
   { minDays: 90, apy: 20, multiplier: 1.5 },
@@ -177,7 +184,9 @@ const STAKING_APY_TIERS: { minDays: number; apy: number; multiplier: number }[] 
 ];
 
 function getStakingTier(lockDays: number): { apy: number; multiplier: number } {
-  const tier = [...STAKING_APY_TIERS].reverse().find(t => lockDays >= t.minDays);
+  const tier = [...STAKING_APY_TIERS]
+    .reverse()
+    .find(t => lockDays >= t.minDays);
   return tier ?? { apy: 3, multiplier: 1.0 };
 }
 
@@ -193,7 +202,9 @@ function parseTokenAmount(amount: number, decimals = 18): string {
   const safeAmount = isNaN(amount) ? 0 : amount;
   const whole = Math.floor(safeAmount);
   const fraction = safeAmount - whole;
-  const raw = BigInt(whole) * BigInt(10 ** decimals) + BigInt(Math.floor(fraction * 10 ** decimals));
+  const raw =
+    BigInt(whole) * BigInt(10 ** decimals) +
+    BigInt(Math.floor(fraction * 10 ** decimals));
   return raw.toString();
 }
 
@@ -229,7 +240,9 @@ export const walletConnect = {
     }
 
     const connectionId = `wallet_${crypto.randomBytes(8).toString("hex")}`;
-    const isFirstWallet = !_walletsByUser.has(params.userId) || _walletsByUser.get(params.userId)!.size === 0;
+    const isFirstWallet =
+      !_walletsByUser.has(params.userId) ||
+      _walletsByUser.get(params.userId)!.size === 0;
 
     const connection: WalletConnection = {
       connectionId,
@@ -247,15 +260,19 @@ export const walletConnect = {
     _wallets.set(connectionId, connection);
     _walletsByAddress.set(normalizedAddress, connectionId);
 
-    if (!_walletsByUser.has(params.userId)) _walletsByUser.set(params.userId, new Set());
+    if (!_walletsByUser.has(params.userId))
+      _walletsByUser.set(params.userId, new Set());
     _walletsByUser.get(params.userId)!.add(connectionId);
 
     // Invalidate user balance cache
     await cache.del(cacheKeys.userBalance(params.userId));
 
-    log.info(`Wallet connected: ${normalizedAddress} for user ${params.userId}`, {
-      data: { chainId: params.chainId, connectionId },
-    });
+    log.info(
+      `Wallet connected: ${normalizedAddress} for user ${params.userId}`,
+      {
+        data: { chainId: params.chainId, connectionId },
+      }
+    );
     return connection;
   },
 
@@ -267,11 +284,17 @@ export const walletConnect = {
     _walletsByAddress.delete(connection.address);
     _walletsByUser.get(userId)?.delete(connectionId);
 
-    log.info(`Wallet disconnected: ${connection.address}`, { data: { userId } });
+    log.info(`Wallet disconnected: ${connection.address}`, {
+      data: { userId },
+    });
     return true;
   },
 
-  async updateBalance(connectionId: string, tokenAddress: string, balance: string): Promise<void> {
+  async updateBalance(
+    connectionId: string,
+    tokenAddress: string,
+    balance: string
+  ): Promise<void> {
     const connection = _wallets.get(connectionId);
     if (!connection) return;
     connection.balances[tokenAddress] = balance;
@@ -305,8 +328,10 @@ export const stakingEngine = {
     lockPeriodDays: number;
     txHash?: string;
   }): Promise<StakePosition> {
-    if (params.amountFormatted < 100) throw new Error("Minimum stake is 100 SKYCOIN");
-    if (params.lockPeriodDays < 7) throw new Error("Minimum lock period is 7 days");
+    if (params.amountFormatted < 100)
+      throw new Error("Minimum stake is 100 SKYCOIN");
+    if (params.lockPeriodDays < 7)
+      throw new Error("Minimum lock period is 7 days");
 
     const { apy } = getStakingTier(params.lockPeriodDays);
     const stakeId = `stake_${crypto.randomBytes(8).toString("hex")}`;
@@ -315,7 +340,7 @@ export const stakingEngine = {
     const position: StakePosition = {
       stakeId,
       userId: params.userId,
-      walletAddress: (params.walletAddress ?? '').toLowerCase(),
+      walletAddress: (params.walletAddress ?? "").toLowerCase(),
       amountRaw,
       amountFormatted: params.amountFormatted,
       lockPeriodDays: params.lockPeriodDays,
@@ -330,38 +355,58 @@ export const stakingEngine = {
     };
     _stakePositions.set(stakeId, position);
 
-    if (!_stakesByUser.has(params.userId)) _stakesByUser.set(params.userId, new Set());
+    if (!_stakesByUser.has(params.userId))
+      _stakesByUser.set(params.userId, new Set());
     _stakesByUser.get(params.userId)!.add(stakeId);
 
     // Update governance voting power
     await this._updateVotingPower(params.userId);
 
     log.info(`Stake created: ${stakeId}`, {
-      data: { userId: params.userId, amountFormatted: params.amountFormatted, lockPeriodDays: params.lockPeriodDays, apy },
+      data: {
+        userId: params.userId,
+        amountFormatted: params.amountFormatted,
+        lockPeriodDays: params.lockPeriodDays,
+        apy,
+      },
     });
     return position;
   },
 
-  async accrueRewards(stakeId: string): Promise<{ rewardsAccrued: number; totalRewards: number }> {
+  async accrueRewards(
+    stakeId: string
+  ): Promise<{ rewardsAccrued: number; totalRewards: number }> {
     const position = _stakePositions.get(stakeId);
-    if (!position || position.status !== "active") throw new Error("Stake not active");
+    if (!position || position.status !== "active")
+      throw new Error("Stake not active");
 
     const now = new Date();
-    const hoursSinceLastReward = (now.getTime() - position.lastRewardAt.getTime()) / (1000 * 3600);
-    if (hoursSinceLastReward < 1) return { rewardsAccrued: 0, totalRewards: position.rewardsEarnedFormatted };
+    const hoursSinceLastReward =
+      (now.getTime() - position.lastRewardAt.getTime()) / (1000 * 3600);
+    if (hoursSinceLastReward < 1)
+      return {
+        rewardsAccrued: 0,
+        totalRewards: position.rewardsEarnedFormatted,
+      };
 
     // APY to per-hour rate: (1 + APY/100)^(1/8760) - 1
     const hourlyRate = Math.pow(1 + position.apy / 100, 1 / 8760) - 1;
-    const rewardsAccrued = position.amountFormatted * hourlyRate * hoursSinceLastReward;
+    const rewardsAccrued =
+      position.amountFormatted * hourlyRate * hoursSinceLastReward;
 
     position.rewardsEarnedFormatted += rewardsAccrued;
-    position.rewardsEarnedRaw = parseTokenAmount(position.rewardsEarnedFormatted);
+    position.rewardsEarnedRaw = parseTokenAmount(
+      position.rewardsEarnedFormatted
+    );
     position.lastRewardAt = now;
 
     return { rewardsAccrued, totalRewards: position.rewardsEarnedFormatted };
   },
 
-  async requestUnstake(stakeId: string, userId: number): Promise<{ canUnstake: boolean; penaltyPct: number; netAmount: number }> {
+  async requestUnstake(
+    stakeId: string,
+    userId: number
+  ): Promise<{ canUnstake: boolean; penaltyPct: number; netAmount: number }> {
     const position = _stakePositions.get(stakeId);
     if (!position) throw new Error(`Stake ${stakeId} not found`);
     if (position.userId !== userId) throw new Error("Not authorized");
@@ -370,7 +415,9 @@ export const stakingEngine = {
     const now = new Date();
     const isLocked = now < position.unlockAt;
     const penaltyPct = isLocked ? 15 : 0; // 15% early withdrawal penalty
-    const netAmount = position.amountFormatted * (1 - penaltyPct / 100) + position.rewardsEarnedFormatted;
+    const netAmount =
+      position.amountFormatted * (1 - penaltyPct / 100) +
+      position.rewardsEarnedFormatted;
 
     if (!isLocked) {
       position.status = "unstaking";
@@ -385,13 +432,19 @@ export const stakingEngine = {
       });
     }
 
-    log.info(`Unstake requested: ${stakeId}`, { data: { userId, isLocked, penaltyPct, netAmount } });
+    log.info(`Unstake requested: ${stakeId}`, {
+      data: { userId, isLocked, penaltyPct, netAmount },
+    });
     return { canUnstake: !isLocked, penaltyPct, netAmount };
   },
 
-  async completeUnstake(stakeId: string, txHash: string): Promise<StakePosition> {
+  async completeUnstake(
+    stakeId: string,
+    txHash: string
+  ): Promise<StakePosition> {
     const position = _stakePositions.get(stakeId);
-    if (!position || position.status !== "unstaking") throw new Error("Stake not in unstaking state");
+    if (!position || position.status !== "unstaking")
+      throw new Error("Stake not in unstaking state");
     position.status = "completed";
     position.unstakeTxHash = txHash;
     await this._updateVotingPower(position.userId);
@@ -403,12 +456,16 @@ export const stakingEngine = {
     const ids = _stakesByUser.get(userId) ?? new Set();
     return Array.from(ids)
       .map(id => _stakePositions.get(id))
-      .filter((p): p is StakePosition => !!p && (!status || p.status === status));
+      .filter(
+        (p): p is StakePosition => !!p && (!status || p.status === status)
+      );
   },
 
   getTotalStaked(userId: number): number {
-    return this.getUserStakes(userId, "active")
-      .reduce((sum, p) => sum + p.amountFormatted, 0);
+    return this.getUserStakes(userId, "active").reduce(
+      (sum, p) => sum + p.amountFormatted,
+      0
+    );
   },
 
   getStake(stakeId: string): StakePosition | null {
@@ -444,7 +501,10 @@ export const stakingEngine = {
 // Real-world: integrate with 0x API, 1inch, or Uniswap SDK
 // This layer provides the interface and state management
 
-const KNOWN_TOKENS: Record<string, { symbol: string; decimals: number; chainId: ChainId }> = {
+const KNOWN_TOKENS: Record<
+  string,
+  { symbol: string; decimals: number; chainId: ChainId }
+> = {
   "0xETH": { symbol: "ETH", decimals: 18, chainId: 1 },
   "0xUSDC": { symbol: "USDC", decimals: 6, chainId: 1 },
   "0xSKYCOIN_CONTRACT_ADDRESS": { symbol: "SKYCOIN", decimals: 18, chainId: 1 },
@@ -474,12 +534,19 @@ export const dexSwapEngine = {
 
     // Use a deterministic exchange rate based on token pair hash
     const pairHash = parseInt(
-      crypto.createHash("sha256").update(`${params.fromToken}:${params.toToken}`).digest("hex").slice(0, 8),
+      crypto
+        .createHash("sha256")
+        .update(`${params.fromToken}:${params.toToken}`)
+        .digest("hex")
+        .slice(0, 8),
       16
     );
     const baseRate = (pairHash % 1000) / 100 + 0.5; // 0.5 to 10.5
 
-    const fromAmountNum = formatTokenAmount(params.fromAmount, fromInfo.decimals);
+    const fromAmountNum = formatTokenAmount(
+      params.fromAmount,
+      fromInfo.decimals
+    );
     const toAmountNum = fromAmountNum * baseRate;
     const priceImpactPct = Math.min(5, fromAmountNum / 1000000); // Higher amounts = more impact
     const toAmountMin = toAmountNum * (1 - slippage / 100);
@@ -493,22 +560,30 @@ export const dexSwapEngine = {
       toAmountMin: parseTokenAmount(toAmountMin, toInfo.decimals),
       priceImpactPct,
       slippagePct: slippage,
-      route: [{
-        dex: "SkyDEX",
-        poolAddress: `0xpool_${pairHash.toString(16)}`,
-        fromToken: params.fromToken,
-        toToken: params.toToken,
-        portion: 1.0,
-      }],
+      route: [
+        {
+          dex: "SkyDEX",
+          poolAddress: `0xpool_${pairHash.toString(16)}`,
+          fromToken: params.fromToken,
+          toToken: params.toToken,
+          portion: 1.0,
+        },
+      ],
       gasEstimate: "150000",
-      gasCostUSD: 3.50,
+      gasCostUSD: 3.5,
       expiresAt: new Date(Date.now() + 30 * 1000), // 30 second quote validity
       dex: "SkyDEX",
     };
     _swapQuotes.set(quoteId, quote);
 
     log.info(`Swap quote generated: ${quoteId}`, {
-      data: { fromToken: fromInfo.symbol, toToken: toInfo.symbol, fromAmountNum, toAmountNum, priceImpactPct },
+      data: {
+        fromToken: fromInfo.symbol,
+        toToken: toInfo.symbol,
+        fromAmountNum,
+        toAmountNum,
+        priceImpactPct,
+      },
     });
     return quote;
   },
@@ -528,7 +603,7 @@ export const dexSwapEngine = {
       swapId,
       userId: params.userId,
       quoteId: params.quoteId,
-      walletAddress: (params.walletAddress ?? '').toLowerCase(),
+      walletAddress: (params.walletAddress ?? "").toLowerCase(),
       fromToken: quote.fromToken,
       toToken: quote.toToken,
       fromAmount: quote.fromAmount,
@@ -539,12 +614,22 @@ export const dexSwapEngine = {
     _swapExecutions.set(swapId, execution);
 
     log.info(`Swap submitted: ${swapId}`, {
-      data: { userId: params.userId, fromToken: quote.fromToken, toToken: quote.toToken },
+      data: {
+        userId: params.userId,
+        fromToken: quote.fromToken,
+        toToken: quote.toToken,
+      },
     });
     return execution;
   },
 
-  async confirmSwap(swapId: string, txHash: string, blockNumber: number, gasUsed: string, toAmount: string): Promise<SwapExecution> {
+  async confirmSwap(
+    swapId: string,
+    txHash: string,
+    blockNumber: number,
+    gasUsed: string,
+    toAmount: string
+  ): Promise<SwapExecution> {
     const execution = _swapExecutions.get(swapId);
     if (!execution) throw new Error(`Swap ${swapId} not found`);
 
@@ -581,28 +666,75 @@ export const dexSwapEngine = {
 };
 
 // ─── Treasury Management ──────────────────────────────────────────────────────
-const TREASURY_ALLOCATIONS: Omit<TreasuryAllocation, "currentPct" | "balanceUSD" | "lastRebalancedAt">[] = [
-  { allocationId: "treasury_ops", name: "Operations Reserve", description: "Platform operating expenses", walletAddress: "0xops_wallet", chainId: 1, targetPct: 20 },
-  { allocationId: "treasury_dev", name: "Development Fund", description: "Engineering and product development", walletAddress: "0xdev_wallet", chainId: 1, targetPct: 25 },
-  { allocationId: "treasury_marketing", name: "Growth & Marketing", description: "User acquisition and partnerships", walletAddress: "0xmkt_wallet", chainId: 1, targetPct: 15 },
-  { allocationId: "treasury_staking", name: "Staking Rewards Pool", description: "SKYCOIN staking reward distribution", walletAddress: "0xstake_wallet", chainId: 1, targetPct: 20 },
-  { allocationId: "treasury_charity", name: "Charity Reserve", description: "Platform charity commitments", walletAddress: "0xcharity_wallet", chainId: 1, targetPct: 5 },
-  { allocationId: "treasury_liquidity", name: "Liquidity Pool", description: "DEX liquidity provision", walletAddress: "0xlp_wallet", chainId: 1, targetPct: 15 },
+const TREASURY_ALLOCATIONS: Omit<
+  TreasuryAllocation,
+  "currentPct" | "balanceUSD" | "lastRebalancedAt"
+>[] = [
+  {
+    allocationId: "treasury_ops",
+    name: "Operations Reserve",
+    description: "Platform operating expenses",
+    walletAddress: "0xops_wallet",
+    chainId: 1,
+    targetPct: 20,
+  },
+  {
+    allocationId: "treasury_dev",
+    name: "Development Fund",
+    description: "Engineering and product development",
+    walletAddress: "0xdev_wallet",
+    chainId: 1,
+    targetPct: 25,
+  },
+  {
+    allocationId: "treasury_marketing",
+    name: "Growth & Marketing",
+    description: "User acquisition and partnerships",
+    walletAddress: "0xmkt_wallet",
+    chainId: 1,
+    targetPct: 15,
+  },
+  {
+    allocationId: "treasury_staking",
+    name: "Staking Rewards Pool",
+    description: "SKYCOIN staking reward distribution",
+    walletAddress: "0xstake_wallet",
+    chainId: 1,
+    targetPct: 20,
+  },
+  {
+    allocationId: "treasury_charity",
+    name: "Charity Reserve",
+    description: "Platform charity commitments",
+    walletAddress: "0xcharity_wallet",
+    chainId: 1,
+    targetPct: 5,
+  },
+  {
+    allocationId: "treasury_liquidity",
+    name: "Liquidity Pool",
+    description: "DEX liquidity provision",
+    walletAddress: "0xlp_wallet",
+    chainId: 1,
+    targetPct: 15,
+  },
 ];
 
 export const treasuryEngine = {
   async takeSnapshot(totalValueUSD: number): Promise<TreasurySnapshot> {
-    const allocations: TreasuryAllocation[] = TREASURY_ALLOCATIONS.map(alloc => ({
-      ...alloc,
-      currentPct: alloc.targetPct, // In production: read from on-chain
-      balanceUSD: totalValueUSD * alloc.targetPct / 100,
-      lastRebalancedAt: new Date(),
-    }));
+    const allocations: TreasuryAllocation[] = TREASURY_ALLOCATIONS.map(
+      alloc => ({
+        ...alloc,
+        currentPct: alloc.targetPct, // In production: read from on-chain
+        balanceUSD: (totalValueUSD * alloc.targetPct) / 100,
+        lastRebalancedAt: new Date(),
+      })
+    );
 
-    const stakedValueUSD = totalValueUSD * 0.20; // Staking pool
-    const liquidReserveUSD = totalValueUSD * 0.20; // Operations reserve
-    const monthlyYieldUSD = stakedValueUSD * 0.30 / 12; // 30% APY on staked portion
-    const annualizedYieldPct = (monthlyYieldUSD * 12) / totalValueUSD * 100;
+    const stakedValueUSD = totalValueUSD * 0.2; // Staking pool
+    const liquidReserveUSD = totalValueUSD * 0.2; // Operations reserve
+    const monthlyYieldUSD = (stakedValueUSD * 0.3) / 12; // 30% APY on staked portion
+    const annualizedYieldPct = ((monthlyYieldUSD * 12) / totalValueUSD) * 100;
 
     const snapshot: TreasurySnapshot = {
       snapshotId: `snapshot_${Date.now()}`,
@@ -619,7 +751,9 @@ export const treasuryEngine = {
     if (_treasurySnapshots.length > 365) _treasurySnapshots.shift(); // Keep 1 year
 
     await cache.set("treasury:latest_snapshot", snapshot, 3600);
-    log.info(`Treasury snapshot taken`, { data: { totalValueUSD, monthlyYieldUSD } });
+    log.info(`Treasury snapshot taken`, {
+      data: { totalValueUSD, monthlyYieldUSD },
+    });
     return snapshot;
   },
 
@@ -632,12 +766,18 @@ export const treasuryEngine = {
     return _treasurySnapshots.filter(s => s.timestamp >= cutoff);
   },
 
-  async checkRebalanceNeeded(): Promise<{ needed: boolean; deviations: { allocationId: string; deviation: number }[] }> {
+  async checkRebalanceNeeded(): Promise<{
+    needed: boolean;
+    deviations: { allocationId: string; deviation: number }[];
+  }> {
     const latest = this.getLatestSnapshot();
     if (!latest) return { needed: false, deviations: [] };
 
     const deviations = latest.allocations
-      .map(a => ({ allocationId: a.allocationId, deviation: Math.abs(a.currentPct - a.targetPct) }))
+      .map(a => ({
+        allocationId: a.allocationId,
+        deviation: Math.abs(a.currentPct - a.targetPct),
+      }))
       .filter(d => d.deviation > 2); // Rebalance if >2% off target
 
     return { needed: deviations.length > 0, deviations };
@@ -665,7 +805,7 @@ export const vestingEngine = {
     const schedule: VestingSchedule = {
       vestingId,
       beneficiaryId: params.beneficiaryId,
-      walletAddress: (params.walletAddress ?? '').toLowerCase(),
+      walletAddress: (params.walletAddress ?? "").toLowerCase(),
       totalAmount: params.totalAmount,
       vestedAmount: "0",
       claimedAmount: "0",
@@ -677,7 +817,10 @@ export const vestingEngine = {
     };
     _vestingSchedules.set(vestingId, schedule);
     log.info(`Vesting schedule created: ${vestingId}`, {
-      data: { beneficiaryId: params.beneficiaryId, totalAmount: params.totalAmount },
+      data: {
+        beneficiaryId: params.beneficiaryId,
+        totalAmount: params.totalAmount,
+      },
     });
     return schedule;
   },
@@ -692,10 +835,17 @@ export const vestingEngine = {
     const total = BigInt(schedule.totalAmount);
 
     if (schedule.vestingType === "linear") {
-      const totalDuration = schedule.vestingEndDate.getTime() - schedule.cliffDate.getTime();
-      const elapsed = Math.min(now.getTime() - schedule.cliffDate.getTime(), totalDuration);
+      const totalDuration =
+        schedule.vestingEndDate.getTime() - schedule.cliffDate.getTime();
+      const elapsed = Math.min(
+        now.getTime() - schedule.cliffDate.getTime(),
+        totalDuration
+      );
       const vestedFraction = elapsed / totalDuration;
-      return (total * BigInt(Math.floor(vestedFraction * 1e6)) / BigInt(1e6)).toString();
+      return (
+        (total * BigInt(Math.floor(vestedFraction * 1e6))) /
+        BigInt(1e6)
+      ).toString();
     }
 
     if (schedule.vestingType === "cliff") {
@@ -705,13 +855,19 @@ export const vestingEngine = {
     if (schedule.vestingType === "milestone" && schedule.milestones) {
       const passedMilestones = schedule.milestones.filter(m => now >= m.date);
       const totalPct = passedMilestones.reduce((sum, m) => sum + m.pct, 0);
-      return (total * BigInt(Math.floor(totalPct * 1e4)) / BigInt(1e6)).toString();
+      return (
+        (total * BigInt(Math.floor(totalPct * 1e4))) /
+        BigInt(1e6)
+      ).toString();
     }
 
     return "0";
   },
 
-  async claim(vestingId: string, userId: number): Promise<{ claimedAmount: string; txHash: string }> {
+  async claim(
+    vestingId: string,
+    userId: number
+  ): Promise<{ claimedAmount: string; txHash: string }> {
     const schedule = _vestingSchedules.get(vestingId);
     if (!schedule) throw new Error(`Vesting schedule ${vestingId} not found`);
     if (schedule.beneficiaryId !== userId) throw new Error("Not authorized");
@@ -726,7 +882,9 @@ export const vestingEngine = {
     schedule.vestedAmount = vested.toString();
 
     const txHash = `0x${crypto.randomBytes(32).toString("hex")}`;
-    log.info(`Vesting claimed: ${vestingId}`, { data: { userId, claimedAmount: claimable.toString() } });
+    log.info(`Vesting claimed: ${vestingId}`, {
+      data: { userId, claimedAmount: claimable.toString() },
+    });
     return { claimedAmount: claimable.toString(), txHash };
   },
 
@@ -735,7 +893,9 @@ export const vestingEngine = {
   },
 
   getUserSchedules(userId: number): VestingSchedule[] {
-    return Array.from(_vestingSchedules.values()).filter(s => s.beneficiaryId === userId);
+    return Array.from(_vestingSchedules.values()).filter(
+      s => s.beneficiaryId === userId
+    );
   },
 };
 
@@ -743,7 +903,8 @@ export const vestingEngine = {
 export const governanceEngine = {
   async getVotingPower(userId: number): Promise<GovernanceVotingPower> {
     const cached = _votingPower.get(userId);
-    if (cached && Date.now() - cached.lastUpdated.getTime() < 60000) return cached;
+    if (cached && Date.now() - cached.lastUpdated.getTime() < 60000)
+      return cached;
 
     const wallet = walletConnect.getPrimaryWallet(userId);
     const stakedTokens = stakingEngine.getTotalStaked(userId);
@@ -794,12 +955,24 @@ export const governanceEngine = {
 // ─── Platform Crypto Stats ────────────────────────────────────────────────────
 export const cryptoStats = {
   getPlatformStats() {
-    const activeStakes = Array.from(_stakePositions.values()).filter(p => p.status === "active");
-    const totalStaked = activeStakes.reduce((sum, p) => sum + p.amountFormatted, 0);
-    const totalRewardsDistributed = activeStakes.reduce((sum, p) => sum + p.rewardsEarnedFormatted, 0);
-    const connectedWallets = Array.from(_wallets.values()).filter(w => w.status === "connected").length;
+    const activeStakes = Array.from(_stakePositions.values()).filter(
+      p => p.status === "active"
+    );
+    const totalStaked = activeStakes.reduce(
+      (sum, p) => sum + p.amountFormatted,
+      0
+    );
+    const totalRewardsDistributed = activeStakes.reduce(
+      (sum, p) => sum + p.rewardsEarnedFormatted,
+      0
+    );
+    const connectedWallets = Array.from(_wallets.values()).filter(
+      w => w.status === "connected"
+    ).length;
     const totalSwaps = _swapExecutions.size;
-    const confirmedSwaps = Array.from(_swapExecutions.values()).filter(s => s.status === "confirmed").length;
+    const confirmedSwaps = Array.from(_swapExecutions.values()).filter(
+      s => s.status === "confirmed"
+    ).length;
 
     return {
       connectedWallets,
@@ -820,16 +993,26 @@ export const walletConnectService = walletConnect;
 export const swapEngine = dexSwapEngine;
 
 // ─── COMMANDMENT ALIASES: walletConnectService ───────────────────────────────
-(walletConnectService as any).generateChallenge = function(address: string, userId?: number) {
+(walletConnectService as any).generateChallenge = function (
+  address: string,
+  userId?: number
+) {
   const nonce = Math.random().toString(36).slice(2, 18);
   const issuedAt = new Date().toISOString();
   const message = `Sign in with Ethereum to Shadowchat.\n\nAddress: ${address}\nNonce: ${nonce}\nIssued At: ${issuedAt}\nChain ID: 1`;
-  return { message, nonce, address, userId, issuedAt, expiresAt: new Date(Date.now() + 300_000).toISOString() };
+  return {
+    message,
+    nonce,
+    address,
+    userId,
+    issuedAt,
+    expiresAt: new Date(Date.now() + 300_000).toISOString(),
+  };
 };
 
 // ─── COMMANDMENT 9H: stakingEngine.stake parameter adapter ───────────────────
 const _origStake = stakingEngine.stake.bind(stakingEngine);
-(stakingEngine as any).stake = async function(params: {
+(stakingEngine as any).stake = async function (params: {
   userId: number;
   amount?: number;
   amountFormatted?: number;
@@ -839,9 +1022,16 @@ const _origStake = stakingEngine.stake.bind(stakingEngine);
 }) {
   const amountFormatted = params.amountFormatted ?? params.amount ?? 100;
   const lockPeriodDays = params.lockPeriodDays ?? 30;
-  const walletAddress = params.walletAddress ?? `0x${params.userId.toString(16).padStart(40, "0")}`;
-  const result = await _origStake({ userId: params.userId, walletAddress, amountFormatted, lockPeriodDays });
-  const estimatedReward = amountFormatted * (result.apy / 100) * (lockPeriodDays / 365);
+  const walletAddress =
+    params.walletAddress ?? `0x${params.userId.toString(16).padStart(40, "0")}`;
+  const result = await _origStake({
+    userId: params.userId,
+    walletAddress,
+    amountFormatted,
+    lockPeriodDays,
+  });
+  const estimatedReward =
+    amountFormatted * (result.apy / 100) * (lockPeriodDays / 365);
   return {
     ...result,
     positionId: result.stakeId,

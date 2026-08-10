@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Heart, X, MessageCircle, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useAuth } from '@/_core/hooks/useAuth';
+import React, { useState, useEffect } from "react";
+import { Heart, X, MessageCircle, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface Profile {
   id: string;
@@ -31,11 +31,11 @@ export default function DatingDiscovery() {
     setLoading(true);
     try {
       // Fetch recommended profiles
-      const response = await fetch('/api/dating/discover');
+      const response = await fetch("/api/dating/discover");
       const data = await response.json();
       setProfiles(data.profiles || []);
     } catch (error) {
-      console.error('Failed to load profiles:', error);
+      console.error("Failed to load profiles:", error);
     } finally {
       setLoading(false);
     }
@@ -46,16 +46,16 @@ export default function DatingDiscovery() {
   const handleLike = async () => {
     if (!currentProfile) return;
 
-    setLiked((prev) => new Set(prev).add(currentProfile.id));
+    setLiked(prev => new Set(prev).add(currentProfile.id));
 
     try {
-      await fetch('/api/dating/like', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toUserId: currentProfile.id, likeType: 'like' }),
+      await fetch("/api/dating/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ toUserId: currentProfile.id, likeType: "like" }),
       });
     } catch (error) {
-      console.error('Failed to like profile:', error);
+      console.error("Failed to like profile:", error);
     }
 
     nextProfile();
@@ -64,16 +64,19 @@ export default function DatingDiscovery() {
   const handleSuperLike = async () => {
     if (!currentProfile) return;
 
-    setSuperLiked((prev) => new Set(prev).add(currentProfile.id));
+    setSuperLiked(prev => new Set(prev).add(currentProfile.id));
 
     try {
-      await fetch('/api/dating/like', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toUserId: currentProfile.id, likeType: 'superlike' }),
+      await fetch("/api/dating/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toUserId: currentProfile.id,
+          likeType: "superlike",
+        }),
       });
     } catch (error) {
-      console.error('Failed to super like profile:', error);
+      console.error("Failed to super like profile:", error);
     }
 
     nextProfile();
@@ -83,20 +86,20 @@ export default function DatingDiscovery() {
     if (!currentProfile) return;
 
     try {
-      await fetch('/api/dating/like', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toUserId: currentProfile.id, likeType: 'pass' }),
+      await fetch("/api/dating/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ toUserId: currentProfile.id, likeType: "pass" }),
       });
     } catch (error) {
-      console.error('Failed to pass profile:', error);
+      console.error("Failed to pass profile:", error);
     }
 
     nextProfile();
   };
 
   const nextProfile = () => {
-    setCurrentIndex((prev) => (prev + 1) % profiles.length);
+    setCurrentIndex(prev => (prev + 1) % profiles.length);
   };
 
   if (loading) {
@@ -153,14 +156,16 @@ export default function DatingDiscovery() {
                 {currentProfile.displayName}, {currentProfile.age}
               </h2>
               <p className="text-pink-100 mb-4">{currentProfile.location}</p>
-              <p className="text-sm text-gray-200 line-clamp-3">{currentProfile.bio}</p>
+              <p className="text-sm text-gray-200 line-clamp-3">
+                {currentProfile.bio}
+              </p>
             </div>
           </div>
 
           {/* Interests */}
           <div className="p-4 bg-white">
             <div className="flex flex-wrap gap-2">
-              {currentProfile.interests.map((interest) => (
+              {currentProfile.interests.map(interest => (
                 <span
                   key={interest}
                   className="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-sm"

@@ -103,7 +103,11 @@ export interface RarityScore {
 
 export interface PriceHistory {
   listingId: number;
-  prices: { price: number; timestamp: Date; type: "sale" | "listing" | "bid" }[];
+  prices: {
+    price: number;
+    timestamp: Date;
+    type: "sale" | "listing" | "bid";
+  }[];
   floorPrice: number;
   ceilingPrice: number;
   avgPrice: number;
@@ -129,15 +133,19 @@ export interface Offer {
 // ═══════════════════════════════════════════════════════════════
 
 export class AuctionService {
-  async createAuction(sellerId: number, listingId: number, config: {
-    type: "english" | "dutch" | "sealed";
-    startPrice: number;
-    reservePrice?: number;
-    buyNowPrice?: number;
-    durationHours: number;
-    minIncrement?: number;
-    autoExtend?: boolean;
-  }): Promise<Auction | null> {
+  async createAuction(
+    sellerId: number,
+    listingId: number,
+    config: {
+      type: "english" | "dutch" | "sealed";
+      startPrice: number;
+      reservePrice?: number;
+      buyNowPrice?: number;
+      durationHours: number;
+      minIncrement?: number;
+      autoExtend?: boolean;
+    }
+  ): Promise<Auction | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -149,13 +157,18 @@ export class AuctionService {
     if (!listing || listing.sellerId !== sellerId) return null;
 
     const startTime = new Date();
-    const endTime = new Date(startTime.getTime() + config.durationHours * 60 * 60 * 1000);
+    const endTime = new Date(
+      startTime.getTime() + config.durationHours * 60 * 60 * 1000
+    );
 
     // Update listing status to auction
-    await db.update(schema.listings).set({
-      isAuction: true,
-      status: "active",
-    }).where(eq(schema.listings.id, listingId));
+    await db
+      .update(schema.listings)
+      .set({
+        isAuction: true,
+        status: "active",
+      })
+      .where(eq(schema.listings.id, listingId));
 
     return {
       id: Date.now(),
@@ -165,7 +178,8 @@ export class AuctionService {
       currentBid: config.startPrice,
       reservePrice: config.reservePrice,
       buyNowPrice: config.buyNowPrice,
-      minIncrement: config.minIncrement || Math.max(1, config.startPrice * 0.05),
+      minIncrement:
+        config.minIncrement || Math.max(1, config.startPrice * 0.05),
       startTime,
       endTime,
       bidCount: 0,
@@ -175,7 +189,12 @@ export class AuctionService {
     };
   }
 
-  async placeBid(auctionId: number, bidderId: number, amount: number, maxAutoBid?: number): Promise<Bid | null> {
+  async placeBid(
+    auctionId: number,
+    bidderId: number,
+    amount: number,
+    maxAutoBid?: number
+  ): Promise<Bid | null> {
     // Validate bid amount
     if (amount <= 0) return null;
 
@@ -191,7 +210,9 @@ export class AuctionService {
     };
   }
 
-  async endAuction(auctionId: number): Promise<{ winnerId?: number; finalPrice: number; status: string }> {
+  async endAuction(
+    auctionId: number
+  ): Promise<{ winnerId?: number; finalPrice: number; status: string }> {
     return {
       winnerId: undefined,
       finalPrice: 0,
@@ -229,7 +250,11 @@ export class EscrowService {
   private readonly PLATFORM_FEE_PERCENT = 2.5;
   private readonly DEFAULT_ROYALTY_PERCENT = 5;
 
-  async createEscrow(listingId: number, buyerId: number, amount: number): Promise<EscrowTransaction | null> {
+  async createEscrow(
+    listingId: number,
+    buyerId: number,
+    amount: number
+  ): Promise<EscrowTransaction | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -280,11 +305,20 @@ export class EscrowService {
     return true;
   }
 
-  async disputeEscrow(escrowId: number, userId: number, reason: string): Promise<boolean> {
+  async disputeEscrow(
+    escrowId: number,
+    userId: number,
+    reason: string
+  ): Promise<boolean> {
     return true;
   }
 
-  calculateFees(amount: number): { platformFee: number; royaltyFee: number; sellerReceives: number; total: number } {
+  calculateFees(amount: number): {
+    platformFee: number;
+    royaltyFee: number;
+    sellerReceives: number;
+    total: number;
+  } {
     const platformFee = amount * (this.PLATFORM_FEE_PERCENT / 100);
     const royaltyFee = amount * (this.DEFAULT_ROYALTY_PERCENT / 100);
     const sellerReceives = amount - platformFee - royaltyFee;
@@ -297,11 +331,15 @@ export class EscrowService {
 // ═══════════════════════════════════════════════════════════════
 
 export class ReviewService {
-  async createReview(reviewerId: number, listingId: number, data: {
-    rating: number;
-    title: string;
-    content: string;
-  }): Promise<Review | null> {
+  async createReview(
+    reviewerId: number,
+    listingId: number,
+    data: {
+      rating: number;
+      title: string;
+      content: string;
+    }
+  ): Promise<Review | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -345,7 +383,11 @@ export class ReviewService {
     return [];
   }
 
-  async getSellerRating(sellerId: number): Promise<{ avgRating: number; totalReviews: number; distribution: number[] }> {
+  async getSellerRating(sellerId: number): Promise<{
+    avgRating: number;
+    totalReviews: number;
+    distribution: number[];
+  }> {
     return {
       avgRating: 0,
       totalReviews: 0,
@@ -357,7 +399,11 @@ export class ReviewService {
     return true;
   }
 
-  async reportReview(reviewId: number, userId: number, reason: string): Promise<boolean> {
+  async reportReview(
+    reviewId: number,
+    userId: number,
+    reason: string
+  ): Promise<boolean> {
     return true;
   }
 }
@@ -367,12 +413,15 @@ export class ReviewService {
 // ═══════════════════════════════════════════════════════════════
 
 export class CollectionService {
-  async createCollection(creatorId: number, data: {
-    name: string;
-    description: string;
-    coverImageUrl?: string;
-    royaltyPercent?: number;
-  }): Promise<Collection | null> {
+  async createCollection(
+    creatorId: number,
+    data: {
+      name: string;
+      description: string;
+      coverImageUrl?: string;
+      royaltyPercent?: number;
+    }
+  ): Promise<Collection | null> {
     return {
       id: Date.now(),
       creatorId,
@@ -388,7 +437,10 @@ export class CollectionService {
     };
   }
 
-  async getCollections(limit = 20, sortBy: "volume" | "floor" | "newest" = "volume"): Promise<Collection[]> {
+  async getCollections(
+    limit = 20,
+    sortBy: "volume" | "floor" | "newest" = "volume"
+  ): Promise<Collection[]> {
     return [];
   }
 
@@ -412,7 +464,11 @@ export class CollectionService {
 // ═══════════════════════════════════════════════════════════════
 
 export class RarityEngine {
-  calculateRarity(traits: { trait: string; value: string }[], collectionTraits: Map<string, Map<string, number>>, totalItems: number): RarityScore {
+  calculateRarity(
+    traits: { trait: string; value: string }[],
+    collectionTraits: Map<string, Map<string, number>>,
+    totalItems: number
+  ): RarityScore {
     let totalScore = 0;
     const traitScores: { trait: string; value: string; rarity: number }[] = [];
 
@@ -422,10 +478,15 @@ export class RarityEngine {
       const count = traitMap.get(value) || 1;
       const rarity = 1 / (count / totalItems);
       totalScore += rarity;
-      traitScores.push({ trait, value, rarity: Math.round(rarity * 100) / 100 });
+      traitScores.push({
+        trait,
+        value,
+        rarity: Math.round(rarity * 100) / 100,
+      });
     }
 
-    const normalizedScore = Math.round((totalScore / Math.max(1, traits.length)) * 100) / 100;
+    const normalizedScore =
+      Math.round((totalScore / Math.max(1, traits.length)) * 100) / 100;
 
     let tier: RarityScore["tier"];
     if (normalizedScore >= 100) tier = "mythic";
@@ -458,7 +519,14 @@ export class RarityEngine {
   }
 
   getTierMultiplier(tier: RarityScore["tier"]): number {
-    const multipliers = { common: 1, uncommon: 1.5, rare: 3, epic: 7, legendary: 15, mythic: 50 };
+    const multipliers = {
+      common: 1,
+      uncommon: 1.5,
+      rare: 3,
+      epic: 7,
+      legendary: 15,
+      mythic: 50,
+    };
     return multipliers[tier];
   }
 }
@@ -468,14 +536,23 @@ export class RarityEngine {
 // ═══════════════════════════════════════════════════════════════
 
 export class OfferService {
-  async makeOffer(offererId: number, listingId: number, amount: number, expiresInHours = 72, message?: string): Promise<Offer | null> {
+  async makeOffer(
+    offererId: number,
+    listingId: number,
+    amount: number,
+    expiresInHours = 72,
+    message?: string
+  ): Promise<Offer | null> {
     const db = await getDb();
     if (!db) return null;
 
     if (amount <= 0) return null;
 
     const [listing] = await db
-      .select({ sellerId: schema.listings.sellerId, price: schema.listings.price })
+      .select({
+        sellerId: schema.listings.sellerId,
+        price: schema.listings.price,
+      })
       .from(schema.listings)
       .where(eq(schema.listings.id, listingId));
 
@@ -512,7 +589,11 @@ export class OfferService {
     return true;
   }
 
-  async counterOffer(offerId: number, sellerId: number, counterAmount: number): Promise<Offer | null> {
+  async counterOffer(
+    offerId: number,
+    sellerId: number,
+    counterAmount: number
+  ): Promise<Offer | null> {
     return null;
   }
 
@@ -551,7 +632,14 @@ export class PriceAnalyticsService {
     topCollections: { name: string; volume: number }[];
   }> {
     const db = await getDb();
-    if (!db) return { totalVolume24h: 0, totalListings: 0, activeAuctions: 0, avgPrice: 0, topCollections: [] };
+    if (!db)
+      return {
+        totalVolume24h: 0,
+        totalListings: 0,
+        activeAuctions: 0,
+        avgPrice: 0,
+        topCollections: [],
+      };
 
     const [stats] = await db
       .select({
@@ -577,7 +665,11 @@ export class PriceAnalyticsService {
 // ═══════════════════════════════════════════════════════════════
 
 export class WatchlistService {
-  async addToWatchlist(userId: number, listingId: number, priceAlert?: number): Promise<boolean> {
+  async addToWatchlist(
+    userId: number,
+    listingId: number,
+    priceAlert?: number
+  ): Promise<boolean> {
     const db = await getDb();
     if (!db) return false;
 
@@ -594,26 +686,37 @@ export class WatchlistService {
     return true;
   }
 
-  async removeFromWatchlist(userId: number, listingId: number): Promise<boolean> {
+  async removeFromWatchlist(
+    userId: number,
+    listingId: number
+  ): Promise<boolean> {
     const db = await getDb();
     if (!db) return false;
 
-    await db.delete(schema.notifications).where(
-      and(
-        eq(schema.notifications.userId, userId),
-        sql`${schema.notifications.title} = ${`watchlist:${listingId}`}`
-      )
-    );
+    await db
+      .delete(schema.notifications)
+      .where(
+        and(
+          eq(schema.notifications.userId, userId),
+          sql`${schema.notifications.title} = ${`watchlist:${listingId}`}`
+        )
+      );
 
     return true;
   }
 
-  async getWatchlist(userId: number): Promise<{ listingId: number; priceAlert?: number }[]> {
+  async getWatchlist(
+    userId: number
+  ): Promise<{ listingId: number; priceAlert?: number }[]> {
     const db = await getDb();
     if (!db) return [];
 
     const items = await db
-      .select({ title: schema.notifications.title, message: schema.notifications.message, targetId: schema.notifications.targetId })
+      .select({
+        title: schema.notifications.title,
+        message: schema.notifications.message,
+        targetId: schema.notifications.targetId,
+      })
       .from(schema.notifications)
       .where(
         and(
@@ -624,7 +727,9 @@ export class WatchlistService {
 
     return items.map((item: any) => ({
       listingId: item.targetId || 0,
-      priceAlert: item.message?.startsWith("Alert at ") ? parseFloat(item.message.replace("Alert at ", "")) : undefined,
+      priceAlert: item.message?.startsWith("Alert at ")
+        ? parseFloat(item.message.replace("Alert at ", ""))
+        : undefined,
     }));
   }
 }

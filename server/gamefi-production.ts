@@ -18,10 +18,19 @@ import { logger, cache, cacheKeys, queues } from "./queue-workers";
 const log = logger.child("gamefi-production");
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-export type TournamentStatus = "registration" | "seeding" | "in_progress" | "completed" | "cancelled";
-export type BracketType = "single_elimination" | "double_elimination" | "round_robin" | "swiss";
-export type WagerStatus = "pending" | "accepted" | "in_progress" | "completed" | "disputed" | "cancelled";
-export type RewardType = "skycoin" | "nft" | "badge" | "title" | "premium_days" | "merchandise";
+export type TournamentStatus =
+  "registration" | "seeding" | "in_progress" | "completed" | "cancelled";
+export type BracketType =
+  "single_elimination" | "double_elimination" | "round_robin" | "swiss";
+export type WagerStatus =
+  | "pending"
+  | "accepted"
+  | "in_progress"
+  | "completed"
+  | "disputed"
+  | "cancelled";
+export type RewardType =
+  "skycoin" | "nft" | "badge" | "title" | "premium_days" | "merchandise";
 
 export interface Tournament {
   id: string;
@@ -170,7 +179,10 @@ const _userProfiles = new Map<number, UserGameProfile>();
 const _xpEvents = new Map<number, XPEvent[]>(); // userId → events
 const _dailyChallenges = new Map<string, DailyChallenge>(); // date → challenge
 const _battlePassSeasons = new Map<string, BattlePassSeason>();
-const _escrows = new Map<string, { amount: number; currency: string; status: "held" | "released" | "refunded" }>();
+const _escrows = new Map<
+  string,
+  { amount: number; currency: string; status: "held" | "released" | "refunded" }
+>();
 
 // ─── XP Engine ────────────────────────────────────────────────────────────────
 const XP_ACTIONS: Record<string, number> = {
@@ -219,7 +231,12 @@ function calculateTier(level: number): UserGameProfile["tier"] {
 }
 
 export const xpEngine = {
-  async awardXP(userId: number, action: string, multiplier = 1.0, metadata?: Record<string, unknown>): Promise<{
+  async awardXP(
+    userId: number,
+    action: string,
+    multiplier = 1.0,
+    metadata?: Record<string, unknown>
+  ): Promise<{
     xpAwarded: number;
     newTotal: number;
     leveledUp: boolean;
@@ -260,7 +277,9 @@ export const xpEngine = {
 
     const leveledUp = level > oldLevel;
     if (leveledUp) {
-      log.info(`User ${userId} leveled up to ${level}!`, { data: { userId, oldLevel, newLevel: level } });
+      log.info(`User ${userId} leveled up to ${level}!`, {
+        data: { userId, oldLevel, newLevel: level },
+      });
       // Queue level-up notification
       await queues.notifications.add("in_app", {
         type: "in_app",
@@ -324,7 +343,10 @@ export const tournamentEngine = {
     rules: string;
   }): Promise<Tournament> {
     const id = `tournament_${crypto.randomBytes(8).toString("hex")}`;
-    const prizeDistribution = this._generatePrizeDistribution(params.prizePoolCents, params.maxParticipants);
+    const prizeDistribution = this._generatePrizeDistribution(
+      params.prizePoolCents,
+      params.maxParticipants
+    );
 
     const tournament: Tournament = {
       id,
@@ -347,22 +369,38 @@ export const tournamentEngine = {
       createdAt: new Date(),
     };
     _tournaments.set(id, tournament);
-    log.info(`Tournament created: ${id}`, { data: { name: params.name, game: params.game, maxParticipants: params.maxParticipants } });
+    log.info(`Tournament created: ${id}`, {
+      data: {
+        name: params.name,
+        game: params.game,
+        maxParticipants: params.maxParticipants,
+      },
+    });
     return tournament;
   },
 
-  async register(tournamentId: string, userId: number, username: string): Promise<{ success: boolean; position: number }> {
+  async register(
+    tournamentId: string,
+    userId: number,
+    username: string
+  ): Promise<{ success: boolean; position: number }> {
     const tournament = _tournaments.get(tournamentId);
     if (!tournament) throw new Error(`Tournament ${tournamentId} not found`);
-    if (tournament.status !== "registration") throw new Error("Registration is closed");
-    if (new Date() > tournament.registrationDeadline) throw new Error("Registration deadline passed");
-    if (tournament.currentParticipants >= tournament.maxParticipants) throw new Error("Tournament is full");
-    if (tournament.participants.some(p => p.userId === userId)) throw new Error("Already registered");
+    if (tournament.status !== "registration")
+      throw new Error("Registration is closed");
+    if (new Date() > tournament.registrationDeadline)
+      throw new Error("Registration deadline passed");
+    if (tournament.currentParticipants >= tournament.maxParticipants)
+      throw new Error("Tournament is full");
+    if (tournament.participants.some(p => p.userId === userId))
+      throw new Error("Already registered");
 
     // Collect entry fee
     if (tournament.entryFeeCents > 0) {
       // Production: deduct from user wallet or Stripe
-      log.info(`Entry fee collected: ${tournament.entryFeeCents} cents from user ${userId}`);
+      log.info(
+        `Entry fee collected: ${tournament.entryFeeCents} cents from user ${userId}`
+      );
     }
 
     tournament.participants.push({
@@ -376,7 +414,9 @@ export const tournamentEngine = {
     tournament.currentParticipants++;
 
     await xpEngine.awardXP(userId, "tournament_entered");
-    log.info(`User ${userId} registered for tournament ${tournamentId}`, { data: { position: tournament.currentParticipants } });
+    log.info(`User ${userId} registered for tournament ${tournamentId}`, {
+      data: { position: tournament.currentParticipants },
+    });
     return { success: true, position: tournament.currentParticipants };
   },
 
@@ -402,16 +442,30 @@ export const tournamentEngine = {
       const profileB = xpEngine.getProfile(b.userId);
       return profileB.xp - profileA.xp;
     });
-    checkedIn.forEach((p, i) => { p.seed = i + 1; });
+    checkedIn.forEach((p, i) => {
+      p.seed = i + 1;
+    });
 
     // Generate bracket
-    tournament.rounds = this._generateBracket(checkedIn, tournament.bracketType);
+    tournament.rounds = this._generateBracket(
+      checkedIn,
+      tournament.bracketType
+    );
     tournament.status = "in_progress";
-    log.info(`Tournament ${tournamentId} seeded with ${checkedIn.length} players`);
+    log.info(
+      `Tournament ${tournamentId} seeded with ${checkedIn.length} players`
+    );
     return tournament;
   },
 
-  async reportMatch(tournamentId: string, matchId: string, winnerId: number, score1: number, score2: number, evidenceUrl?: string): Promise<{ advanced: boolean; nextMatchId?: string }> {
+  async reportMatch(
+    tournamentId: string,
+    matchId: string,
+    winnerId: number,
+    score1: number,
+    score2: number,
+    evidenceUrl?: string
+  ): Promise<{ advanced: boolean; nextMatchId?: string }> {
     const tournament = _tournaments.get(tournamentId);
     if (!tournament) throw new Error(`Tournament ${tournamentId} not found`);
 
@@ -422,7 +476,8 @@ export const tournamentEngine = {
     }
     if (!match) throw new Error(`Match ${matchId} not found`);
     if (match.winnerId) throw new Error("Match already reported");
-    if (match.player1Id !== winnerId && match.player2Id !== winnerId) throw new Error("Winner must be a match participant");
+    if (match.player1Id !== winnerId && match.player2Id !== winnerId)
+      throw new Error("Winner must be a match participant");
 
     match.winnerId = winnerId;
     match.score1 = score1;
@@ -430,15 +485,20 @@ export const tournamentEngine = {
     match.completedAt = new Date();
     match.evidenceUrl = evidenceUrl;
 
-    const loserId = match.player1Id === winnerId ? match.player2Id! : match.player1Id;
-    const loserParticipant = tournament.participants.find(p => p.userId === loserId);
+    const loserId =
+      match.player1Id === winnerId ? match.player2Id! : match.player1Id;
+    const loserParticipant = tournament.participants.find(
+      p => p.userId === loserId
+    );
     if (loserParticipant) loserParticipant.eliminated = true;
 
     // Award XP for the win
     await xpEngine.awardXP(winnerId, "wager_win");
 
     // Check if tournament is complete
-    const allMatchesDone = tournament.rounds.every(r => r.matches.every(m => m.winnerId !== undefined || m.player2Id === null));
+    const allMatchesDone = tournament.rounds.every(r =>
+      r.matches.every(m => m.winnerId !== undefined || m.player2Id === null)
+    );
     if (allMatchesDone) {
       await this._completeTournament(tournament);
     }
@@ -475,7 +535,9 @@ export const tournamentEngine = {
       }
     }
 
-    log.info(`Tournament ${tournament.id} completed`, { data: { name: tournament.name, winner: winner?.userId } });
+    log.info(`Tournament ${tournament.id} completed`, {
+      data: { name: tournament.name, winner: winner?.userId },
+    });
   },
 
   getTournament(id: string): Tournament | null {
@@ -484,35 +546,89 @@ export const tournamentEngine = {
 
   getActiveTournaments(game?: string): Tournament[] {
     return Array.from(_tournaments.values())
-      .filter(t => (t.status === "registration" || t.status === "in_progress") && (!game || t.game === game))
+      .filter(
+        t =>
+          (t.status === "registration" || t.status === "in_progress") &&
+          (!game || t.game === game)
+      )
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
   },
 
-  _generatePrizeDistribution(totalPrizeCents: number, maxParticipants: number): PrizeDistribution[] {
+  _generatePrizeDistribution(
+    totalPrizeCents: number,
+    maxParticipants: number
+  ): PrizeDistribution[] {
     const platformFee = Math.floor(totalPrizeCents * 0.1);
     const netPrize = totalPrizeCents - platformFee;
 
     if (maxParticipants <= 4) {
       return [
-        { rank: 1, rankLabel: "1st Place", prizeCents: Math.floor(netPrize * 0.6), prizePercent: 60, rewardType: "skycoin" },
-        { rank: 2, rankLabel: "2nd Place", prizeCents: Math.floor(netPrize * 0.3), prizePercent: 30, rewardType: "skycoin" },
-        { rank: 3, rankLabel: "3rd Place", prizeCents: Math.floor(netPrize * 0.1), prizePercent: 10, rewardType: "skycoin" },
+        {
+          rank: 1,
+          rankLabel: "1st Place",
+          prizeCents: Math.floor(netPrize * 0.6),
+          prizePercent: 60,
+          rewardType: "skycoin",
+        },
+        {
+          rank: 2,
+          rankLabel: "2nd Place",
+          prizeCents: Math.floor(netPrize * 0.3),
+          prizePercent: 30,
+          rewardType: "skycoin",
+        },
+        {
+          rank: 3,
+          rankLabel: "3rd Place",
+          prizeCents: Math.floor(netPrize * 0.1),
+          prizePercent: 10,
+          rewardType: "skycoin",
+        },
       ];
     }
     return [
-      { rank: 1, rankLabel: "1st Place", prizeCents: Math.floor(netPrize * 0.5), prizePercent: 50, rewardType: "skycoin" },
-      { rank: 2, rankLabel: "2nd Place", prizeCents: Math.floor(netPrize * 0.25), prizePercent: 25, rewardType: "skycoin" },
-      { rank: 3, rankLabel: "3rd Place", prizeCents: Math.floor(netPrize * 0.15), prizePercent: 15, rewardType: "skycoin" },
-      { rank: 4, rankLabel: "Top 8", prizeCents: Math.floor(netPrize * 0.1 / 5), prizePercent: 2, rewardType: "skycoin" },
+      {
+        rank: 1,
+        rankLabel: "1st Place",
+        prizeCents: Math.floor(netPrize * 0.5),
+        prizePercent: 50,
+        rewardType: "skycoin",
+      },
+      {
+        rank: 2,
+        rankLabel: "2nd Place",
+        prizeCents: Math.floor(netPrize * 0.25),
+        prizePercent: 25,
+        rewardType: "skycoin",
+      },
+      {
+        rank: 3,
+        rankLabel: "3rd Place",
+        prizeCents: Math.floor(netPrize * 0.15),
+        prizePercent: 15,
+        rewardType: "skycoin",
+      },
+      {
+        rank: 4,
+        rankLabel: "Top 8",
+        prizeCents: Math.floor((netPrize * 0.1) / 5),
+        prizePercent: 2,
+        rewardType: "skycoin",
+      },
     ];
   },
 
-  _generateBracket(participants: TournamentParticipant[], type: BracketType): TournamentRound[] {
+  _generateBracket(
+    participants: TournamentParticipant[],
+    type: BracketType
+  ): TournamentRound[] {
     if (type === "round_robin") return this._generateRoundRobin(participants);
     return this._generateSingleElimination(participants);
   },
 
-  _generateSingleElimination(participants: TournamentParticipant[]): TournamentRound[] {
+  _generateSingleElimination(
+    participants: TournamentParticipant[]
+  ): TournamentRound[] {
     const rounds: TournamentRound[] = [];
     let currentPlayers = [...participants];
     let roundNumber = 1;
@@ -528,16 +644,33 @@ export const tournamentEngine = {
 
         if (!player2) {
           // Bye
-          matches.push({ matchId, player1Id: player1.userId, player2Id: null, winnerId: player1.userId, disputed: false, completedAt: new Date() });
+          matches.push({
+            matchId,
+            player1Id: player1.userId,
+            player2Id: null,
+            winnerId: player1.userId,
+            disputed: false,
+            completedAt: new Date(),
+          });
           nextRoundPlayers.push(player1);
         } else {
-          matches.push({ matchId, player1Id: player1.userId, player2Id: player2.userId, disputed: false });
+          matches.push({
+            matchId,
+            player1Id: player1.userId,
+            player2Id: player2.userId,
+            disputed: false,
+          });
         }
       }
 
       rounds.push({
         roundNumber,
-        name: currentPlayers.length === 2 ? "Grand Final" : currentPlayers.length === 4 ? "Semi-Finals" : `Round ${roundNumber}`,
+        name:
+          currentPlayers.length === 2
+            ? "Grand Final"
+            : currentPlayers.length === 4
+              ? "Semi-Finals"
+              : `Round ${roundNumber}`,
         matches,
       });
       roundNumber++;
@@ -547,7 +680,9 @@ export const tournamentEngine = {
     return rounds;
   },
 
-  _generateRoundRobin(participants: TournamentParticipant[]): TournamentRound[] {
+  _generateRoundRobin(
+    participants: TournamentParticipant[]
+  ): TournamentRound[] {
     const matches: TournamentMatch[] = [];
     for (let i = 0; i < participants.length; i++) {
       for (let j = i + 1; j < participants.length; j++) {
@@ -574,13 +709,18 @@ export const wagerSystem = {
     expiresInHours?: number;
   }): Promise<Wager> {
     if (params.amountCents < 100) throw new Error("Minimum wager is $1.00");
-    if (params.challengerId === params.challengeeId) throw new Error("Cannot wager against yourself");
+    if (params.challengerId === params.challengeeId)
+      throw new Error("Cannot wager against yourself");
 
     const wagerId = `wager_${crypto.randomBytes(8).toString("hex")}`;
     const escrowId = `escrow_${crypto.randomBytes(8).toString("hex")}`;
 
     // Hold challenger's funds in escrow
-    _escrows.set(escrowId, { amount: params.amountCents, currency: params.currency, status: "held" });
+    _escrows.set(escrowId, {
+      amount: params.amountCents,
+      currency: params.currency,
+      status: "held",
+    });
 
     const wager: Wager = {
       wagerId,
@@ -591,19 +731,29 @@ export const wagerSystem = {
       currency: params.currency,
       status: "pending",
       escrowId,
-      expiresAt: new Date(Date.now() + (params.expiresInHours ?? 24) * 3600 * 1000),
+      expiresAt: new Date(
+        Date.now() + (params.expiresInHours ?? 24) * 3600 * 1000
+      ),
       createdAt: new Date(),
     };
     _wagers.set(wagerId, wager);
-    log.info(`Wager created: ${wagerId}`, { data: { challengerId: params.challengerId, challengeeId: params.challengeeId, amountCents: params.amountCents } });
+    log.info(`Wager created: ${wagerId}`, {
+      data: {
+        challengerId: params.challengerId,
+        challengeeId: params.challengeeId,
+        amountCents: params.amountCents,
+      },
+    });
     return wager;
   },
 
   async acceptWager(wagerId: string, userId: number): Promise<Wager> {
     const wager = _wagers.get(wagerId);
     if (!wager) throw new Error(`Wager ${wagerId} not found`);
-    if (wager.challengeeId !== userId) throw new Error("Only the challengee can accept");
-    if (wager.status !== "pending") throw new Error("Wager is no longer pending");
+    if (wager.challengeeId !== userId)
+      throw new Error("Only the challengee can accept");
+    if (wager.status !== "pending")
+      throw new Error("Wager is no longer pending");
     if (new Date() > wager.expiresAt) throw new Error("Wager has expired");
 
     // Hold challengee's funds in escrow too
@@ -615,16 +765,23 @@ export const wagerSystem = {
     return wager;
   },
 
-  async reportResult(wagerId: string, reporterId: number, winnerId: number): Promise<{ payoutCents: number }> {
+  async reportResult(
+    wagerId: string,
+    reporterId: number,
+    winnerId: number
+  ): Promise<{ payoutCents: number }> {
     const wager = _wagers.get(wagerId);
     if (!wager) throw new Error(`Wager ${wagerId} not found`);
-    if (wager.status !== "accepted" && wager.status !== "in_progress") throw new Error("Wager not active");
-    if (reporterId !== wager.challengerId && reporterId !== wager.challengeeId) throw new Error("Not a wager participant");
-    if (winnerId !== wager.challengerId && winnerId !== wager.challengeeId) throw new Error("Winner must be a participant");
+    if (wager.status !== "accepted" && wager.status !== "in_progress")
+      throw new Error("Wager not active");
+    if (reporterId !== wager.challengerId && reporterId !== wager.challengeeId)
+      throw new Error("Not a wager participant");
+    if (winnerId !== wager.challengerId && winnerId !== wager.challengeeId)
+      throw new Error("Winner must be a participant");
 
     const platformFeePct = 5; // 5% platform fee
     const totalPot = wager.amountCents * 2;
-    const platformFee = Math.floor(totalPot * platformFeePct / 100);
+    const platformFee = Math.floor((totalPot * platformFeePct) / 100);
     const payoutCents = totalPot - platformFee;
 
     wager.winnerId = winnerId;
@@ -650,22 +807,31 @@ export const wagerSystem = {
     const profile = xpEngine.getProfile(winnerId);
     profile.wins++;
     profile.totalEarningsCents += payoutCents;
-    const loser = winnerId === wager.challengerId ? wager.challengeeId : wager.challengerId;
+    const loser =
+      winnerId === wager.challengerId ? wager.challengeeId : wager.challengerId;
     const loserProfile = xpEngine.getProfile(loser);
     loserProfile.losses++;
-    loserProfile.winRate = loserProfile.wins / (loserProfile.wins + loserProfile.losses);
+    loserProfile.winRate =
+      loserProfile.wins / (loserProfile.wins + loserProfile.losses);
     profile.winRate = profile.wins / (profile.wins + profile.losses);
 
     log.info(`Wager ${wagerId} completed`, { data: { winnerId, payoutCents } });
     return { payoutCents };
   },
 
-  async disputeWager(wagerId: string, userId: number, reason: string): Promise<boolean> {
+  async disputeWager(
+    wagerId: string,
+    userId: number,
+    reason: string
+  ): Promise<boolean> {
     const wager = _wagers.get(wagerId);
     if (!wager) return false;
-    if (userId !== wager.challengerId && userId !== wager.challengeeId) return false;
+    if (userId !== wager.challengerId && userId !== wager.challengeeId)
+      return false;
     wager.status = "disputed";
-    log.warn(`Wager ${wagerId} disputed by user ${userId}`, { data: { reason } });
+    log.warn(`Wager ${wagerId} disputed by user ${userId}`, {
+      data: { reason },
+    });
     return true;
   },
 
@@ -675,21 +841,37 @@ export const wagerSystem = {
 
   getUserWagers(userId: number, status?: WagerStatus): Wager[] {
     return Array.from(_wagers.values())
-      .filter(w => (w.challengerId === userId || w.challengeeId === userId) && (!status || w.status === status))
+      .filter(
+        w =>
+          (w.challengerId === userId || w.challengeeId === userId) &&
+          (!status || w.status === status)
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   },
 };
 
 // ─── Leaderboard Engine ───────────────────────────────────────────────────────
 export const leaderboardEngine = {
-  async getGlobalXPLeaderboard(limit = 100): Promise<{ rank: number; userId: number; xp: number; level: number; tier: string }[]> {
-    const cached = await cache.get<ReturnType<typeof this.getGlobalXPLeaderboard>>(cacheKeys.leaderboard("xp"));
+  async getGlobalXPLeaderboard(
+    limit = 100
+  ): Promise<
+    { rank: number; userId: number; xp: number; level: number; tier: string }[]
+  > {
+    const cached = await cache.get<
+      ReturnType<typeof this.getGlobalXPLeaderboard>
+    >(cacheKeys.leaderboard("xp"));
     if (cached) return cached;
 
     const profiles = Array.from(_userProfiles.values())
       .sort((a, b) => b.xp - a.xp)
       .slice(0, limit)
-      .map((p, i) => ({ rank: i + 1, userId: p.userId, xp: p.xp, level: p.level, tier: p.tier }));
+      .map((p, i) => ({
+        rank: i + 1,
+        userId: p.userId,
+        xp: p.xp,
+        level: p.level,
+        tier: p.tier,
+      }));
 
     // Update rank on profiles
     profiles.forEach(p => {
@@ -701,27 +883,63 @@ export const leaderboardEngine = {
     return profiles;
   },
 
-  async getWinRateLeaderboard(limit = 50): Promise<{ rank: number; userId: number; wins: number; losses: number; winRate: number }[]> {
+  async getWinRateLeaderboard(limit = 50): Promise<
+    {
+      rank: number;
+      userId: number;
+      wins: number;
+      losses: number;
+      winRate: number;
+    }[]
+  > {
     return Array.from(_userProfiles.values())
       .filter(p => p.wins + p.losses >= 5) // Minimum 5 games
       .sort((a, b) => b.winRate - a.winRate || b.wins - a.wins)
       .slice(0, limit)
-      .map((p, i) => ({ rank: i + 1, userId: p.userId, wins: p.wins, losses: p.losses, winRate: p.winRate }));
+      .map((p, i) => ({
+        rank: i + 1,
+        userId: p.userId,
+        wins: p.wins,
+        losses: p.losses,
+        winRate: p.winRate,
+      }));
   },
 
-  async getEarningsLeaderboard(limit = 50): Promise<{ rank: number; userId: number; totalEarningsCents: number }[]> {
+  async getEarningsLeaderboard(
+    limit = 50
+  ): Promise<{ rank: number; userId: number; totalEarningsCents: number }[]> {
     return Array.from(_userProfiles.values())
       .sort((a, b) => b.totalEarningsCents - a.totalEarningsCents)
       .slice(0, limit)
-      .map((p, i) => ({ rank: i + 1, userId: p.userId, totalEarningsCents: p.totalEarningsCents }));
+      .map((p, i) => ({
+        rank: i + 1,
+        userId: p.userId,
+        totalEarningsCents: p.totalEarningsCents,
+      }));
   },
 
-  async getTournamentLeaderboard(limit = 50): Promise<{ rank: number; userId: number; tournamentsWon: number; tournamentsEntered: number }[]> {
+  async getTournamentLeaderboard(limit = 50): Promise<
+    {
+      rank: number;
+      userId: number;
+      tournamentsWon: number;
+      tournamentsEntered: number;
+    }[]
+  > {
     return Array.from(_userProfiles.values())
       .filter(p => p.tournamentsEntered > 0)
-      .sort((a, b) => b.tournamentsWon - a.tournamentsWon || b.tournamentsEntered - a.tournamentsEntered)
+      .sort(
+        (a, b) =>
+          b.tournamentsWon - a.tournamentsWon ||
+          b.tournamentsEntered - a.tournamentsEntered
+      )
       .slice(0, limit)
-      .map((p, i) => ({ rank: i + 1, userId: p.userId, tournamentsWon: p.tournamentsWon, tournamentsEntered: p.tournamentsEntered }));
+      .map((p, i) => ({
+        rank: i + 1,
+        userId: p.userId,
+        tournamentsWon: p.tournamentsWon,
+        tournamentsEntered: p.tournamentsEntered,
+      }));
   },
 };
 
@@ -731,13 +949,46 @@ export const dailyChallengeEngine = {
     if (_dailyChallenges.has(date)) return _dailyChallenges.get(date)!;
 
     // Deterministic challenge generation based on date hash
-    const dateHash = parseInt(crypto.createHash("md5").update(date).digest("hex").slice(0, 8), 16);
+    const dateHash = parseInt(
+      crypto.createHash("md5").update(date).digest("hex").slice(0, 8),
+      16
+    );
     const challengeTypes = [
-      { title: "Social Butterfly", description: "Make 5 posts today", requirements: [{ action: "post_created", target: 5, current: 0 }], xpReward: 100, tokenReward: 10 },
-      { title: "Engagement King", description: "Get 20 likes on your posts", requirements: [{ action: "like_received", target: 20, current: 0 }], xpReward: 150, tokenReward: 15 },
-      { title: "Community Builder", description: "Comment on 10 posts", requirements: [{ action: "comment_made", target: 10, current: 0 }], xpReward: 80, tokenReward: 8 },
-      { title: "Streamer", description: "Go live for 30 minutes", requirements: [{ action: "stream_started", target: 1, current: 0 }], xpReward: 200, tokenReward: 25 },
-      { title: "Trader", description: "Complete 3 marketplace transactions", requirements: [{ action: "nft_minted", target: 3, current: 0 }], xpReward: 120, tokenReward: 20 },
+      {
+        title: "Social Butterfly",
+        description: "Make 5 posts today",
+        requirements: [{ action: "post_created", target: 5, current: 0 }],
+        xpReward: 100,
+        tokenReward: 10,
+      },
+      {
+        title: "Engagement King",
+        description: "Get 20 likes on your posts",
+        requirements: [{ action: "like_received", target: 20, current: 0 }],
+        xpReward: 150,
+        tokenReward: 15,
+      },
+      {
+        title: "Community Builder",
+        description: "Comment on 10 posts",
+        requirements: [{ action: "comment_made", target: 10, current: 0 }],
+        xpReward: 80,
+        tokenReward: 8,
+      },
+      {
+        title: "Streamer",
+        description: "Go live for 30 minutes",
+        requirements: [{ action: "stream_started", target: 1, current: 0 }],
+        xpReward: 200,
+        tokenReward: 25,
+      },
+      {
+        title: "Trader",
+        description: "Complete 3 marketplace transactions",
+        requirements: [{ action: "nft_minted", target: 3, current: 0 }],
+        xpReward: 120,
+        tokenReward: 20,
+      },
     ];
 
     const challenge = challengeTypes[dateHash % challengeTypes.length];
@@ -760,16 +1011,26 @@ export const dailyChallengeEngine = {
     return this.generateChallenge(today);
   },
 
-  async completeChallenge(userId: number, date: string): Promise<{ xpAwarded: number; tokenAwarded: number }> {
+  async completeChallenge(
+    userId: number,
+    date: string
+  ): Promise<{ xpAwarded: number; tokenAwarded: number }> {
     const challenge = _dailyChallenges.get(date);
     if (!challenge) throw new Error("Challenge not found");
-    if (challenge.completedBy.has(userId)) throw new Error("Already completed today's challenge");
-    if (new Date() > challenge.expiresAt) throw new Error("Challenge has expired");
+    if (challenge.completedBy.has(userId))
+      throw new Error("Already completed today's challenge");
+    if (new Date() > challenge.expiresAt)
+      throw new Error("Challenge has expired");
 
     challenge.completedBy.add(userId);
-    const { xpAwarded } = await xpEngine.awardXP(userId, "daily_challenge_complete");
+    const { xpAwarded } = await xpEngine.awardXP(
+      userId,
+      "daily_challenge_complete"
+    );
 
-    log.info(`Daily challenge completed by user ${userId}`, { data: { date, xpAwarded, tokenAwarded: challenge.tokenReward } });
+    log.info(`Daily challenge completed by user ${userId}`, {
+      data: { date, xpAwarded, tokenAwarded: challenge.tokenReward },
+    });
     return { xpAwarded, tokenAwarded: challenge.tokenReward };
   },
 
@@ -794,8 +1055,12 @@ export const battlePassEngine = {
       tiers.push({
         tier,
         xpRequired: tier * 500,
-        freeReward: tier % 10 === 0 ? { type: "skycoin", value: tier * 10 } : undefined,
-        premiumReward: { type: tier % 25 === 0 ? "nft" : "skycoin", value: tier * 25 },
+        freeReward:
+          tier % 10 === 0 ? { type: "skycoin", value: tier * 10 } : undefined,
+        premiumReward: {
+          type: tier % 25 === 0 ? "nft" : "skycoin",
+          value: tier * 25,
+        },
       });
     }
 
@@ -821,7 +1086,15 @@ export const battlePassEngine = {
     return null;
   },
 
-  getUserProgress(userId: number, seasonId: string): { currentTier: number; xp: number; isPremium: boolean; claimedTiers: number[] } {
+  getUserProgress(
+    userId: number,
+    seasonId: string
+  ): {
+    currentTier: number;
+    xp: number;
+    isPremium: boolean;
+    claimedTiers: number[];
+  } {
     const profile = xpEngine.getProfile(userId);
     const season = _battlePassSeasons.get(seasonId);
     if (!season) throw new Error("Season not found");
@@ -846,7 +1119,9 @@ export const battlePassEngine = {
     const season = _battlePassSeasons.get(seasonId);
     if (!season) return false;
     season.activeUsers.add(userId);
-    log.info(`User ${userId} purchased premium battle pass for season ${seasonId}`);
+    log.info(
+      `User ${userId} purchased premium battle pass for season ${seasonId}`
+    );
     return true;
   },
 };
@@ -862,21 +1137,34 @@ interface TelemetryEvent {
 const _telemetry = new Map<number, TelemetryEvent[]>();
 
 export const antiCheatEngine = {
-  recordEvent(userId: number, action: string, metadata: Record<string, unknown>): void {
+  recordEvent(
+    userId: number,
+    action: string,
+    metadata: Record<string, unknown>
+  ): void {
     if (!_telemetry.has(userId)) _telemetry.set(userId, []);
     const events = _telemetry.get(userId)!;
     if (events.length > 1000) events.shift();
     events.push({ userId, action, timestamp: new Date(), metadata });
   },
 
-  analyzePlayer(userId: number): { riskScore: number; flags: string[]; recommendation: "allow" | "monitor" | "suspend" } {
+  analyzePlayer(userId: number): {
+    riskScore: number;
+    flags: string[];
+    recommendation: "allow" | "monitor" | "suspend";
+  } {
     const events = _telemetry.get(userId) ?? [];
     const flags: string[] = [];
     let riskScore = 0;
 
     // Check for XP farming (too many events in short time)
-    const last5Min = events.filter(e => Date.now() - e.timestamp.getTime() < 5 * 60 * 1000);
-    if (last5Min.length > 100) { flags.push("high_frequency_actions"); riskScore += 30; }
+    const last5Min = events.filter(
+      e => Date.now() - e.timestamp.getTime() < 5 * 60 * 1000
+    );
+    if (last5Min.length > 100) {
+      flags.push("high_frequency_actions");
+      riskScore += 30;
+    }
 
     // Check for win rate anomaly
     const profile = _userProfiles.get(userId);
@@ -887,13 +1175,16 @@ export const antiCheatEngine = {
 
     // Check for rapid level progression
     const xpEvents = _xpEvents.get(userId) ?? [];
-    const last1Hour = xpEvents.filter(e => Date.now() - e.createdAt.getTime() < 3600 * 1000);
+    const last1Hour = xpEvents.filter(
+      e => Date.now() - e.createdAt.getTime() < 3600 * 1000
+    );
     if (last1Hour.reduce((sum, e) => sum + e.xpAwarded, 0) > 5000) {
       flags.push("rapid_xp_gain");
       riskScore += 25;
     }
 
-    const recommendation = riskScore >= 70 ? "suspend" : riskScore >= 40 ? "monitor" : "allow";
+    const recommendation =
+      riskScore >= 70 ? "suspend" : riskScore >= 40 ? "monitor" : "allow";
     return { riskScore, flags, recommendation };
   },
 };
@@ -904,18 +1195,71 @@ export const questEngine = dailyChallengeEngine;
 export const wagerEscrow = wagerSystem;
 
 // ─── COMMANDMENT 9B-9D: Method aliases ───────────────────────────────────────
-const _cmdTournaments = new Map<string, {id: string; name: string; status: string; gameType: string; entryFee: number; maxParticipants: number; participants: number[]; prizePool: number; startTime: Date}>();
-const _cmdQuests = new Map<string, {id: string; name: string; description: string; category: string; xpReward: number; requirements: {action: string; count: number}[]; isDaily: boolean}>();
-const _cmdQuestProgress = new Map<string, {questId: string; userId: number; progress: number; completed: boolean; completedAt?: Date}>();
+const _cmdTournaments = new Map<
+  string,
+  {
+    id: string;
+    name: string;
+    status: string;
+    gameType: string;
+    entryFee: number;
+    maxParticipants: number;
+    participants: number[];
+    prizePool: number;
+    startTime: Date;
+  }
+>();
+const _cmdQuests = new Map<
+  string,
+  {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    xpReward: number;
+    requirements: { action: string; count: number }[];
+    isDaily: boolean;
+  }
+>();
+const _cmdQuestProgress = new Map<
+  string,
+  {
+    questId: string;
+    userId: number;
+    progress: number;
+    completed: boolean;
+    completedAt?: Date;
+  }
+>();
 
 // Patch gameFiEngine with createTournament and joinTournament
-(gameFiEngine as any).createTournament = async function(params: {name: string; gameType: string; entryFee: number; maxParticipants: number; startTime: Date; prizePool: number}) {
+(gameFiEngine as any).createTournament = async function (params: {
+  name: string;
+  gameType: string;
+  entryFee: number;
+  maxParticipants: number;
+  startTime: Date;
+  prizePool: number;
+}) {
   const id = `tournament_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const t = { id, name: params.name, status: "registration", gameType: params.gameType, entryFee: params.entryFee, maxParticipants: params.maxParticipants, participants: [], prizePool: params.prizePool, startTime: params.startTime };
+  const t = {
+    id,
+    name: params.name,
+    status: "registration",
+    gameType: params.gameType,
+    entryFee: params.entryFee,
+    maxParticipants: params.maxParticipants,
+    participants: [],
+    prizePool: params.prizePool,
+    startTime: params.startTime,
+  };
   _cmdTournaments.set(id, t);
   return t;
 };
-(gameFiEngine as any).joinTournament = async function(tournamentId: string, userId: number) {
+(gameFiEngine as any).joinTournament = async function (
+  tournamentId: string,
+  userId: number
+) {
   const t = _cmdTournaments.get(tournamentId);
   if (!t) throw new Error("Tournament not found");
   t.participants.push(userId);
@@ -924,29 +1268,57 @@ const _cmdQuestProgress = new Map<string, {questId: string; userId: number; prog
 };
 
 // Patch questEngine with createQuest and updateProgress
-(questEngine as any).createQuest = async function(params: {name: string; description: string; category: string; xpReward: number; requirements: {action: string; count: number}[]; isDaily: boolean}) {
+(questEngine as any).createQuest = async function (params: {
+  name: string;
+  description: string;
+  category: string;
+  xpReward: number;
+  requirements: { action: string; count: number }[];
+  isDaily: boolean;
+}) {
   const id = `quest_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const q = { id, ...params };
   _cmdQuests.set(id, q);
   return q;
 };
-(questEngine as any).updateProgress = async function(questId: string, userId: number, action: string) {
+(questEngine as any).updateProgress = async function (
+  questId: string,
+  userId: number,
+  action: string
+) {
   const key = `${questId}_${userId}`;
-  const existing = _cmdQuestProgress.get(key) ?? { questId, userId, progress: 0, completed: false };
+  const existing = _cmdQuestProgress.get(key) ?? {
+    questId,
+    userId,
+    progress: 0,
+    completed: false,
+  };
   const quest = _cmdQuests.get(questId);
-  const required = quest?.requirements.find((r: {action: string; count: number}) => r.action === action)?.count ?? 1;
+  const required =
+    quest?.requirements.find(
+      (r: { action: string; count: number }) => r.action === action
+    )?.count ?? 1;
   existing.progress = Math.min(existing.progress + 1, required);
   existing.completed = existing.progress >= required;
-  if (existing.completed && !existing.completedAt) existing.completedAt = new Date();
+  if (existing.completed && !existing.completedAt)
+    existing.completedAt = new Date();
   _cmdQuestProgress.set(key, existing);
   return existing;
 };
 
 // Patch xpEngine.awardXP to return userId and handle xpOverride as direct XP amount
 const _origAwardXP2 = xpEngine.awardXP.bind(xpEngine);
-(xpEngine as any).awardXP = async function(userId: number, action: string, xpOverride?: number) {
+(xpEngine as any).awardXP = async function (
+  userId: number,
+  action: string,
+  xpOverride?: number
+) {
   // If xpOverride is an integer >= 10, treat as direct XP amount (not a multiplier)
-  if (xpOverride !== undefined && Number.isInteger(xpOverride) && xpOverride >= 20) {
+  if (
+    xpOverride !== undefined &&
+    Number.isInteger(xpOverride) &&
+    xpOverride >= 20
+  ) {
     const customAction = `_custom_${action}_${xpOverride}`;
     (XP_ACTIONS as any)[customAction] = xpOverride;
     const result = await _origAwardXP2(userId, customAction, 1.0);

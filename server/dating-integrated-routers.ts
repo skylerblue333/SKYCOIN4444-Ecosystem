@@ -1,9 +1,9 @@
-import { router, protectedProcedure } from './server/_core/trpc';
-import { z } from 'zod';
-import * as datingIntegration from './dating-integration-hub';
-import * as datingPhotos from './dating-photos';
-import * as datingVideochat from './dating-videochat';
-import { TRPCError } from '@trpc/server';
+import { router, protectedProcedure } from "./server/_core/trpc";
+import { z } from "zod";
+import * as datingIntegration from "./dating-integration-hub";
+import * as datingPhotos from "./dating-photos";
+import * as datingVideochat from "./dating-videochat";
+import { TRPCError } from "@trpc/server";
 
 export const datingIntegratedRouter = router({
   // ═══════════════════════════════════════════════════════════════
@@ -11,7 +11,7 @@ export const datingIntegratedRouter = router({
   // ═══════════════════════════════════════════════════════════════
 
   subscribeToPremium: protectedProcedure
-    .input(z.object({ tier: z.enum(['premium', 'vip', 'elite']) }))
+    .input(z.object({ tier: z.enum(["premium", "vip", "elite"]) }))
     .mutation(async ({ input, ctx }) => {
       try {
         const tierPrices: Record<string, number> = {
@@ -29,17 +29,17 @@ export const datingIntegratedRouter = router({
         if (result.success) {
           await datingIntegration.trackDatingMetrics({
             userId: ctx.user.id,
-            action: 'subscribe',
+            action: "subscribe",
             metadata: { tier: input.tier },
           });
         }
 
         return result;
       } catch (error) {
-        console.error('[Dating Subscribe] Error:', error);
+        console.error("[Dating Subscribe] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to process subscription',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to process subscription",
         });
       }
     }),
@@ -59,10 +59,10 @@ export const datingIntegratedRouter = router({
 
         return { insights };
       } catch (error) {
-        console.error('[Dating Insights] Error:', error);
+        console.error("[Dating Insights] Error:", error);
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Match not found',
+          code: "NOT_FOUND",
+          message: "Match not found",
         });
       }
     }),
@@ -78,10 +78,10 @@ export const datingIntegratedRouter = router({
 
         return { starters };
       } catch (error) {
-        console.error('[Dating Starters] Error:', error);
+        console.error("[Dating Starters] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to generate conversation starters',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate conversation starters",
         });
       }
     }),
@@ -96,16 +96,16 @@ export const datingIntegratedRouter = router({
       try {
         await datingIntegration.notifyDatingEvent(
           input.matchId,
-          'match',
+          "match",
           ctx.user.id
         );
 
         return { success: true };
       } catch (error) {
-        console.error('[Dating Notify] Error:', error);
+        console.error("[Dating Notify] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to send notification',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to send notification",
         });
       }
     }),
@@ -125,16 +125,16 @@ export const datingIntegratedRouter = router({
 
         await datingIntegration.trackDatingMetrics({
           userId: ctx.user.id,
-          action: 'profile_update',
+          action: "profile_update",
           metadata: { postId: post.id },
         });
 
         return { post };
       } catch (error) {
-        console.error('[Dating Share] Error:', error);
+        console.error("[Dating Share] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to share profile',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to share profile",
         });
       }
     }),
@@ -150,10 +150,10 @@ export const datingIntegratedRouter = router({
 
         return { story };
       } catch (error) {
-        console.error('[Dating Story] Error:', error);
+        console.error("[Dating Story] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to publish story',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to publish story",
         });
       }
     }),
@@ -175,16 +175,16 @@ export const datingIntegratedRouter = router({
         await datingIntegration.trackDatingMetrics({
           userId: ctx.user.id,
           matchId: input.matchId,
-          action: 'stream',
+          action: "stream",
           metadata: { streamId: stream.id },
         });
 
         return { stream };
       } catch (error) {
-        console.error('[Dating Video] Error:', error);
+        console.error("[Dating Video] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to start video date',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to start video date",
         });
       }
     }),
@@ -202,16 +202,16 @@ export const datingIntegratedRouter = router({
         await datingIntegration.trackDatingMetrics({
           userId: ctx.user.id,
           matchId: input.matchId,
-          action: 'stream',
+          action: "stream",
           metadata: { callId: session.id },
         });
 
         return { session };
       } catch (error) {
-        console.error('[Dating Call] Error:', error);
+        console.error("[Dating Call] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to initiate video call',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to initiate video call",
         });
       }
     }),
@@ -228,16 +228,16 @@ export const datingIntegratedRouter = router({
 
       await datingIntegration.trackDatingMetrics({
         userId: ctx.user.id,
-        action: 'profile_update',
+        action: "profile_update",
         metadata: { verified: verification.success },
       });
 
       return verification;
     } catch (error) {
-      console.error('[Dating Verify] Error:', error);
+      console.error("[Dating Verify] Error:", error);
       throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to verify profile',
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to verify profile",
       });
     }
   }),
@@ -254,10 +254,10 @@ export const datingIntegratedRouter = router({
 
         return { report };
       } catch (error) {
-        console.error('[Dating Report] Error:', error);
+        console.error("[Dating Report] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to report activity',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to report activity",
         });
       }
     }),
@@ -277,10 +277,10 @@ export const datingIntegratedRouter = router({
 
         return { orchestration };
       } catch (error) {
-        console.error('[Dating Orchestrate] Error:', error);
+        console.error("[Dating Orchestrate] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to orchestrate match',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to orchestrate match",
         });
       }
     }),
@@ -297,10 +297,10 @@ export const datingIntegratedRouter = router({
 
         return { orchestration };
       } catch (error) {
-        console.error('[Dating Message Orchestrate] Error:', error);
+        console.error("[Dating Message Orchestrate] Error:", error);
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to process message',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to process message",
         });
       }
     }),
@@ -314,10 +314,10 @@ export const datingIntegratedRouter = router({
       const health = await datingIntegration.checkDatingIntegrationHealth();
       return health;
     } catch (error) {
-      console.error('[Dating Health] Error:', error);
+      console.error("[Dating Health] Error:", error);
       throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to check health',
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to check health",
       });
     }
   }),

@@ -56,14 +56,18 @@ export function Signin() {
             SKYCOIN4444
           </div>
           <CardTitle className="text-xl text-white">Sign In</CardTitle>
-          <p className="text-sm text-slate-400">Welcome back to the ecosystem</p>
+          <p className="text-sm text-slate-400">
+            Welcome back to the ecosystem
+          </p>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Email</label>
+              <label className="text-sm font-medium text-slate-300">
+                Email
+              </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
                 <Input
@@ -80,7 +84,9 @@ export function Signin() {
 
             {/* Password */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Password</label>
+              <label className="text-sm font-medium text-slate-300">
+                Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
                 <Input
@@ -125,10 +131,17 @@ export function Signin() {
 
             {/* Demo Credentials */}
             <div className="mt-6 pt-6 border-t border-slate-700 space-y-2">
-              <p className="text-xs font-semibold text-slate-300">🧪 Demo Credentials:</p>
+              <p className="text-xs font-semibold text-slate-300">
+                🧪 Demo Credentials:
+              </p>
               <div className="bg-slate-800 p-3 rounded text-xs text-slate-300 space-y-1">
-                <div><span className="text-slate-500">Email:</span> demo@skycoin.com</div>
-                <div><span className="text-slate-500">Password:</span> demo1234</div>
+                <div>
+                  <span className="text-slate-500">Email:</span>{" "}
+                  demo@skycoin.com
+                </div>
+                <div>
+                  <span className="text-slate-500">Password:</span> demo1234
+                </div>
               </div>
             </div>
           </form>

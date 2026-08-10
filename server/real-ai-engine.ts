@@ -1,6 +1,6 @@
 /**
  * REAL AI ENGINE FOR SKYCOIN4444
- * 
+ *
  * Implements actual intelligent AI with:
  * - OpenAI GPT-4 / Claude integration
  * - Context management & memory
@@ -10,26 +10,26 @@
  * - Rate limiting
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // AI Configuration
 export const AIConfig = {
   providers: {
     openai: {
       apiKey: process.env.OPENAI_API_KEY,
-      model: 'gpt-4-turbo-preview',
+      model: "gpt-4-turbo-preview",
       maxTokens: 2000,
       temperature: 0.7,
       topP: 0.9,
     },
     claude: {
       apiKey: process.env.ANTHROPIC_API_KEY,
-      model: 'claude-3-opus-20240229',
+      model: "claude-3-opus-20240229",
       maxTokens: 2000,
       temperature: 0.7,
     },
   },
-  defaultProvider: (process.env.AI_PROVIDER || 'openai') as 'openai' | 'claude',
+  defaultProvider: (process.env.AI_PROVIDER || "openai") as "openai" | "claude",
   retryAttempts: 3,
   retryDelay: 1000,
   timeout: 30000,
@@ -38,7 +38,7 @@ export const AIConfig = {
 // Conversation Message Schema
 export const MessageSchema = z.object({
   id: z.string(),
-  role: z.enum(['user', 'assistant', 'system']),
+  role: z.enum(["user", "assistant", "system"]),
   content: z.string(),
   timestamp: z.number(),
   metadata: z.record(z.string(), z.any()).optional(),
@@ -108,7 +108,7 @@ export class RealAIEngine {
       // Add user message to history
       const userMsg: Message = {
         id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        role: 'user',
+        role: "user",
         content: userMessage,
         timestamp: Date.now(),
       };
@@ -133,13 +133,13 @@ export class RealAIEngine {
       }
 
       if (!aiResponse) {
-        throw lastError || new Error('Failed to generate AI response');
+        throw lastError || new Error("Failed to generate AI response");
       }
 
       // Add AI response to history
       const assistantMsg: Message = {
         id: aiResponse.id,
-        role: 'assistant',
+        role: "assistant",
         content: aiResponse.content,
         timestamp: aiResponse.timestamp,
         metadata: { confidence: aiResponse.confidence },
@@ -160,7 +160,7 @@ export class RealAIEngine {
 
       return aiResponse;
     } catch (error) {
-      console.error('AI Engine Error:', error);
+      console.error("AI Engine Error:", error);
       throw new Error(`Failed to process message: ${(error as Error).message}`);
     }
   }
@@ -182,7 +182,7 @@ export class RealAIEngine {
     // Build message history for LLM
     const messages = this.buildMessageHistory(conversation);
 
-    if (provider === 'openai') {
+    if (provider === "openai") {
       return this.generateOpenAIResponse(
         responseId,
         conversation.conversationId,
@@ -190,7 +190,7 @@ export class RealAIEngine {
         messages,
         timestamp
       );
-    } else if (provider === 'claude') {
+    } else if (provider === "claude") {
       return this.generateClaudeResponse(
         responseId,
         conversation.conversationId,
@@ -215,32 +215,34 @@ export class RealAIEngine {
   ): Promise<AIResponse> {
     const apiKey = AIConfig.providers.openai.apiKey;
     if (!apiKey) {
-      throw new Error('OpenAI API key not configured');
+      throw new Error("OpenAI API key not configured");
     }
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: AIConfig.providers.openai.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...messages,
-          ],
-          max_tokens: AIConfig.providers.openai.maxTokens,
-          temperature: AIConfig.providers.openai.temperature,
-          top_p: AIConfig.providers.openai.topP,
-        }),
-        signal: AbortSignal.timeout(AIConfig.timeout),
-      });
+      const response = await fetch(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: AIConfig.providers.openai.model,
+            messages: [{ role: "system", content: systemPrompt }, ...messages],
+            max_tokens: AIConfig.providers.openai.maxTokens,
+            temperature: AIConfig.providers.openai.temperature,
+            top_p: AIConfig.providers.openai.topP,
+          }),
+          signal: AbortSignal.timeout(AIConfig.timeout),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`OpenAI API Error: ${error.error?.message || 'Unknown error'}`);
+        throw new Error(
+          `OpenAI API Error: ${error.error?.message || "Unknown error"}`
+        );
       }
 
       const data = await response.json();
@@ -255,9 +257,9 @@ export class RealAIEngine {
         conversationId,
         content,
         confidence,
-        sources: ['OpenAI GPT-4'],
+        sources: ["OpenAI GPT-4"],
         metadata: {
-          provider: 'openai',
+          provider: "openai",
           model: AIConfig.providers.openai.model,
         },
         timestamp,
@@ -265,7 +267,7 @@ export class RealAIEngine {
         tokensUsed,
       };
     } catch (error) {
-      console.error('OpenAI Error:', error);
+      console.error("OpenAI Error:", error);
       throw error;
     }
   }
@@ -282,16 +284,16 @@ export class RealAIEngine {
   ): Promise<AIResponse> {
     const apiKey = AIConfig.providers.claude.apiKey;
     if (!apiKey) {
-      throw new Error('Claude API key not configured');
+      throw new Error("Claude API key not configured");
     }
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
           model: AIConfig.providers.claude.model,
@@ -304,7 +306,9 @@ export class RealAIEngine {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Claude API Error: ${error.error?.message || 'Unknown error'}`);
+        throw new Error(
+          `Claude API Error: ${error.error?.message || "Unknown error"}`
+        );
       }
 
       const data = await response.json();
@@ -319,9 +323,9 @@ export class RealAIEngine {
         conversationId,
         content,
         confidence,
-        sources: ['Claude 3 Opus'],
+        sources: ["Claude 3 Opus"],
         metadata: {
-          provider: 'claude',
+          provider: "claude",
           model: AIConfig.providers.claude.model,
         },
         timestamp,
@@ -329,7 +333,7 @@ export class RealAIEngine {
         tokensUsed,
       };
     } catch (error) {
-      console.error('Claude Error:', error);
+      console.error("Claude Error:", error);
       throw error;
     }
   }
@@ -352,8 +356,8 @@ Context:
 - User ID: ${conversation.userId}
 - Conversation ID: ${conversation.conversationId}
 - Message count: ${conversation.messages.length}
-${conversation.summary ? `- Conversation summary: ${conversation.summary}` : ''}
-${conversation.context ? `- Additional context: ${JSON.stringify(conversation.context)}` : ''}
+${conversation.summary ? `- Conversation summary: ${conversation.summary}` : ""}
+${conversation.context ? `- Additional context: ${JSON.stringify(conversation.context)}` : ""}
 
 Guidelines:
 - Be concise but thorough
@@ -374,7 +378,7 @@ Guidelines:
     // Keep last 10 messages for context window efficiency
     const recentMessages = conversation.messages.slice(-10);
 
-    return recentMessages.map((msg) => ({
+    return recentMessages.map(msg => ({
       role: msg.role,
       content: msg.content,
     }));
@@ -397,7 +401,7 @@ Guidelines:
     }
 
     // Check for coherence (basic heuristic)
-    const sentences = content.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
     if (sentences.length < 2) {
       confidence -= 0.15;
     }
@@ -409,7 +413,7 @@ Guidelines:
       /\b(recommend|suggest|propose|advise)\b/i,
     ];
 
-    const matchedIndicators = qualityIndicators.filter((indicator) =>
+    const matchedIndicators = qualityIndicators.filter(indicator =>
       indicator.test(content)
     ).length;
 
@@ -422,12 +426,14 @@ Guidelines:
   /**
    * Generate conversation summary
    */
-  private async generateSummary(conversation: ConversationContext): Promise<string> {
+  private async generateSummary(
+    conversation: ConversationContext
+  ): Promise<string> {
     const recentMessages = conversation.messages.slice(-5);
     const topics = recentMessages
-      .filter((m) => m.role === 'user')
-      .map((m) => m.content.substring(0, 50))
-      .join(', ');
+      .filter(m => m.role === "user")
+      .map(m => m.content.substring(0, 50))
+      .join(", ");
 
     return `Conversation covering: ${topics}`;
   }
@@ -456,7 +462,7 @@ Guidelines:
     if (limit && now < limit.resetTime) {
       if (limit.count >= 100) {
         // 100 requests per minute
-        throw new Error('Rate limit exceeded. Please try again later.');
+        throw new Error("Rate limit exceeded. Please try again later.");
       }
     }
   }
@@ -480,7 +486,7 @@ Guidelines:
    * Utility: delay for retry logic
    */
   private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 

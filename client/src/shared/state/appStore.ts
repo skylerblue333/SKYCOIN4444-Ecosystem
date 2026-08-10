@@ -56,47 +56,48 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       // Shell
       shell: "legacy",
-      setShell: (shell) => set({ shell }),
-      toggleShell: () => set((s) => ({ shell: s.shell === "os" ? "legacy" : "os" })),
+      setShell: shell => set({ shell }),
+      toggleShell: () =>
+        set(s => ({ shell: s.shell === "os" ? "legacy" : "os" })),
 
       // OS mode
       mode: "discover",
-      setMode: (mode) => set({ mode }),
+      setMode: mode => set({ mode }),
 
       // Overlays
       chatOverlayOpen: false,
-      setChatOverlayOpen: (open) => set({ chatOverlayOpen: open }),
+      setChatOverlayOpen: open => set({ chatOverlayOpen: open }),
 
       actionDrawerOpen: false,
-      setActionDrawerOpen: (open) => set({ actionDrawerOpen: open }),
+      setActionDrawerOpen: open => set({ actionDrawerOpen: open }),
 
       profilePanelOpen: false,
-      setProfilePanelOpen: (open) => set({ profilePanelOpen: open }),
+      setProfilePanelOpen: open => set({ profilePanelOpen: open }),
 
       // Context
       activeChatId: null,
-      setActiveChatId: (id) => set({ activeChatId: id }),
+      setActiveChatId: id => set({ activeChatId: id }),
 
       activeProfileId: null,
-      setActiveProfileId: (id) => set({ activeProfileId: id }),
+      setActiveProfileId: id => set({ activeProfileId: id }),
 
       // Pending action
       pendingActionText: "",
-      setPendingActionText: (text) => set({ pendingActionText: text }),
+      setPendingActionText: text => set({ pendingActionText: text }),
 
       // Feed
       feedFilter: "all",
-      setFeedFilter: (filter) => set({ feedFilter: filter }),
+      setFeedFilter: filter => set({ feedFilter: filter }),
 
       // Notifications
       unreadCount: 0,
-      setUnreadCount: (count) => set({ unreadCount: count }),
-      incrementUnread: () => set((s) => ({ unreadCount: s.unreadCount + 1 })),
+      setUnreadCount: count => set({ unreadCount: count }),
+      incrementUnread: () => set(s => ({ unreadCount: s.unreadCount + 1 })),
       clearUnread: () => set({ unreadCount: 0 }),
     }),
     {
       name: "shadowchat-app-store",
-      partialize: (state) => ({
+      partialize: state => ({
         shell: state.shell,
         mode: state.mode,
         feedFilter: state.feedFilter,

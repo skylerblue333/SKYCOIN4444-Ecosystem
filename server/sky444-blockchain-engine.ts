@@ -1,6 +1,6 @@
 /**
  * SKY444 BLOCKCHAIN ENGINE - Best Practices Implementation
- * 
+ *
  * Features:
  * - Multi-chain support (Ethereum, Solana, Bitcoin)
  * - Smart contract integration
@@ -11,13 +11,13 @@
  * - Transaction monitoring
  */
 
-import { getDb } from './db.js';
-import { invokeLLM } from './server/_core/llm.js';
+import { getDb } from "./db.js";
+import { invokeLLM } from "./server/_core/llm.js";
 
 // ─── SKY444 Token Configuration ────────────────────────────────────────
 
 export const SKY444_CONFIG = {
-  tokenSymbol: 'SKY444',
+  tokenSymbol: "SKY444",
   decimals: 18,
   maxSupply: 1_000_000_000, // 1 billion
   initialSupply: 100_000_000, // 100 million
@@ -33,24 +33,24 @@ export const SKY444_CONFIG = {
 export const SUPPORTED_NETWORKS = {
   ethereum: {
     chainId: 1,
-    name: 'Ethereum Mainnet',
-    rpcUrl: 'https://eth-mainnet.alchemyapi.io/v2/',
-    explorerUrl: 'https://etherscan.io',
-    nativeCurrency: 'ETH',
+    name: "Ethereum Mainnet",
+    rpcUrl: "https://eth-mainnet.alchemyapi.io/v2/",
+    explorerUrl: "https://etherscan.io",
+    nativeCurrency: "ETH",
   },
   solana: {
     chainId: 101,
-    name: 'Solana Mainnet',
-    rpcUrl: 'https://api.mainnet-beta.solana.com',
-    explorerUrl: 'https://solscan.io',
-    nativeCurrency: 'SOL',
+    name: "Solana Mainnet",
+    rpcUrl: "https://api.mainnet-beta.solana.com",
+    explorerUrl: "https://solscan.io",
+    nativeCurrency: "SOL",
   },
   polygon: {
     chainId: 137,
-    name: 'Polygon Mainnet',
-    rpcUrl: 'https://polygon-rpc.com',
-    explorerUrl: 'https://polygonscan.com',
-    nativeCurrency: 'MATIC',
+    name: "Polygon Mainnet",
+    rpcUrl: "https://polygon-rpc.com",
+    explorerUrl: "https://polygonscan.com",
+    nativeCurrency: "MATIC",
   },
 };
 
@@ -60,15 +60,18 @@ export class TokenEconomicsEngine {
   /**
    * Calculate emission for current period
    */
-  static calculateEmission(currentSupply: number, period: 'daily' | 'monthly' | 'yearly' = 'daily'): number {
+  static calculateEmission(
+    currentSupply: number,
+    period: "daily" | "monthly" | "yearly" = "daily"
+  ): number {
     const annualEmission = currentSupply * SKY444_CONFIG.emissionRate;
-    
+
     switch (period) {
-      case 'daily':
+      case "daily":
         return annualEmission / 365;
-      case 'monthly':
+      case "monthly":
         return annualEmission / 12;
-      case 'yearly':
+      case "yearly":
         return annualEmission;
       default:
         return 0;
@@ -78,7 +81,10 @@ export class TokenEconomicsEngine {
   /**
    * Calculate staking rewards
    */
-  static calculateStakingRewards(stakedAmount: number, stakingDays: number): number {
+  static calculateStakingRewards(
+    stakedAmount: number,
+    stakingDays: number
+  ): number {
     const dailyRate = SKY444_CONFIG.stakingAPY / 365;
     return stakedAmount * dailyRate * stakingDays;
   }
@@ -93,7 +99,10 @@ export class TokenEconomicsEngine {
   /**
    * Calculate token burn amount (deflationary mechanism)
    */
-  static calculateBurnAmount(transactionVolume: number, burnRate: number = 0.001): number {
+  static calculateBurnAmount(
+    transactionVolume: number,
+    burnRate: number = 0.001
+  ): number {
     return transactionVolume * burnRate;
   }
 }
@@ -113,20 +122,20 @@ export class SmartContractEngine {
     let score = 100;
 
     // Check for common vulnerabilities
-    if (code.includes('delegatecall')) {
-      issues.push('Potential delegatecall vulnerability');
+    if (code.includes("delegatecall")) {
+      issues.push("Potential delegatecall vulnerability");
       score -= 20;
     }
-    if (code.includes('selfdestruct')) {
-      issues.push('Contract uses selfdestruct');
+    if (code.includes("selfdestruct")) {
+      issues.push("Contract uses selfdestruct");
       score -= 15;
     }
-    if (!code.includes('require') && !code.includes('assert')) {
-      issues.push('No input validation detected');
+    if (!code.includes("require") && !code.includes("assert")) {
+      issues.push("No input validation detected");
       score -= 10;
     }
-    if (!code.includes('SafeMath') && !code.includes('unchecked')) {
-      issues.push('No overflow/underflow protection');
+    if (!code.includes("SafeMath") && !code.includes("unchecked")) {
+      issues.push("No overflow/underflow protection");
       score -= 15;
     }
 
@@ -140,7 +149,10 @@ export class SmartContractEngine {
   /**
    * Generate audit report
    */
-  static async generateAuditReport(contractAddress: string, code: string): Promise<string> {
+  static async generateAuditReport(
+    contractAddress: string,
+    code: string
+  ): Promise<string> {
     const validation = this.validateContractCode(code);
 
     const prompt = `
@@ -148,7 +160,7 @@ export class SmartContractEngine {
       
       Address: ${contractAddress}
       Validation Score: ${validation.score}/100
-      Issues Found: ${validation.issues.join(', ')}
+      Issues Found: ${validation.issues.join(", ")}
       
       Provide:
       1. Overall security assessment
@@ -161,15 +173,18 @@ export class SmartContractEngine {
     try {
       const response = await invokeLLM({
         messages: [
-          { role: 'system', content: 'You are a blockchain security auditor.' },
-          { role: 'user', content: prompt },
+          { role: "system", content: "You are a blockchain security auditor." },
+          { role: "user", content: prompt },
         ],
       });
 
-      return response.choices[0]?.message?.content || 'Audit report generation failed';
+      return (
+        response.choices[0]?.message?.content ||
+        "Audit report generation failed"
+      );
     } catch (error) {
-      console.error('Audit report error:', error);
-      return 'Audit report generation failed';
+      console.error("Audit report error:", error);
+      return "Audit report generation failed";
     }
   }
 }
@@ -184,7 +199,7 @@ export class StakingGovernanceEngine {
     proposerId: string,
     title: string,
     description: string,
-    proposalType: 'parameter' | 'upgrade' | 'treasury' | 'other'
+    proposalType: "parameter" | "upgrade" | "treasury" | "other"
   ) {
     const db = getDb();
 
@@ -194,7 +209,7 @@ export class StakingGovernanceEngine {
       title,
       description,
       proposalType,
-      status: 'active',
+      status: "active",
       votesFor: 0,
       votesAgainst: 0,
       createdAt: new Date(),
@@ -213,12 +228,14 @@ export class StakingGovernanceEngine {
   static async castVote(
     proposalId: string,
     voterId: string,
-    vote: 'for' | 'against',
+    vote: "for" | "against",
     weight: number
   ) {
     // Validate voter has minimum tokens
     if (weight < SKY444_CONFIG.governanceThreshold) {
-      throw new Error(`Insufficient tokens to vote. Minimum: ${SKY444_CONFIG.governanceThreshold}`);
+      throw new Error(
+        `Insufficient tokens to vote. Minimum: ${SKY444_CONFIG.governanceThreshold}`
+      );
     }
 
     // Record vote
@@ -264,7 +281,8 @@ export class StakingGovernanceEngine {
 // ─── Price Feed & Oracle ────────────────────────────────────────────────
 
 export class PriceFeedEngine {
-  private static priceCache: Map<string, { price: number; timestamp: number }> = new Map();
+  private static priceCache: Map<string, { price: number; timestamp: number }> =
+    new Map();
   private static cacheExpiry = 60 * 1000; // 1 minute
 
   /**
@@ -295,7 +313,10 @@ export class PriceFeedEngine {
   /**
    * Get price history
    */
-  static async getPriceHistory(symbol: string, days: number = 30): Promise<Array<[number, number]>> {
+  static async getPriceHistory(
+    symbol: string,
+    days: number = 30
+  ): Promise<Array<[number, number]>> {
     try {
       const response = await fetch(
         `https://api.coingecko.com/api/v3/coins/${symbol.toLowerCase()}/market_chart?vs_currency=usd&days=${days}`
@@ -311,8 +332,11 @@ export class PriceFeedEngine {
   /**
    * Calculate price change percentage
    */
-  static async getPriceChange(symbol: string, period: '24h' | '7d' | '30d' = '24h'): Promise<number> {
-    const days = period === '24h' ? 1 : period === '7d' ? 7 : 30;
+  static async getPriceChange(
+    symbol: string,
+    period: "24h" | "7d" | "30d" = "24h"
+  ): Promise<number> {
+    const days = period === "24h" ? 1 : period === "7d" ? 7 : 30;
     const history = await this.getPriceHistory(symbol, days);
 
     if (history.length < 2) return 0;
@@ -333,9 +357,9 @@ export class SecurityAuditEngine {
   static async logTransaction(
     userId: string,
     txHash: string,
-    type: 'transfer' | 'swap' | 'stake' | 'unstake' | 'mint' | 'burn',
+    type: "transfer" | "swap" | "stake" | "unstake" | "mint" | "burn",
     amount: number,
-    status: 'pending' | 'confirmed' | 'failed'
+    status: "pending" | "confirmed" | "failed"
   ) {
     const auditEntry = {
       id: `audit_${Date.now()}`,
@@ -345,8 +369,8 @@ export class SecurityAuditEngine {
       amount,
       status,
       timestamp: new Date(),
-      ipAddress: 'TBD', // Get from request context
-      userAgent: 'TBD',
+      ipAddress: "TBD", // Get from request context
+      userAgent: "TBD",
     };
 
     // Log to database
@@ -360,7 +384,7 @@ export class SecurityAuditEngine {
    */
   static async detectSuspiciousActivity(userId: string): Promise<{
     isSuspicious: boolean;
-    riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    riskLevel: "low" | "medium" | "high" | "critical";
     indicators: string[];
   }> {
     // Check for:
@@ -371,7 +395,7 @@ export class SecurityAuditEngine {
 
     return {
       isSuspicious: false,
-      riskLevel: 'low',
+      riskLevel: "low",
       indicators: [],
     };
   }
@@ -394,15 +418,20 @@ export class SecurityAuditEngine {
     try {
       const response = await invokeLLM({
         messages: [
-          { role: 'system', content: 'You are a blockchain compliance officer.' },
-          { role: 'user', content: prompt },
+          {
+            role: "system",
+            content: "You are a blockchain compliance officer.",
+          },
+          { role: "user", content: prompt },
         ],
       });
 
-      return response.choices[0]?.message?.content || 'Report generation failed';
+      return (
+        response.choices[0]?.message?.content || "Report generation failed"
+      );
     } catch (error) {
-      console.error('Compliance report error:', error);
-      return 'Report generation failed';
+      console.error("Compliance report error:", error);
+      return "Report generation failed";
     }
   }
 }

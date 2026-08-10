@@ -18,8 +18,28 @@
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 export type RiskLevel = "none" | "low" | "medium" | "high" | "critical";
-export type EscalationAction = "log" | "flag" | "rate_limit" | "challenge" | "suspend" | "ban" | "block_wallet" | "freeze_funds" | "alert_admin";
-export type ThreatCategory = "sybil" | "bot" | "fraud" | "exploit" | "abuse" | "spam" | "phishing" | "wash_trading" | "pump_dump" | "credential_stuffing" | "ddos";
+export type EscalationAction =
+  | "log"
+  | "flag"
+  | "rate_limit"
+  | "challenge"
+  | "suspend"
+  | "ban"
+  | "block_wallet"
+  | "freeze_funds"
+  | "alert_admin";
+export type ThreatCategory =
+  | "sybil"
+  | "bot"
+  | "fraud"
+  | "exploit"
+  | "abuse"
+  | "spam"
+  | "phishing"
+  | "wash_trading"
+  | "pump_dump"
+  | "credential_stuffing"
+  | "ddos";
 
 export interface DeviceFingerprint {
   id: string;
@@ -107,7 +127,14 @@ export interface WalletAnomalyAlert {
   id: string;
   walletAddress: string;
   userId?: number;
-  anomalyType: "velocity" | "pattern" | "amount" | "counterparty" | "timing" | "wash_trade" | "layering";
+  anomalyType:
+    | "velocity"
+    | "pattern"
+    | "amount"
+    | "counterparty"
+    | "timing"
+    | "wash_trade"
+    | "layering";
   description: string;
   transactionHash?: string;
   amount?: number;
@@ -120,7 +147,17 @@ export interface ExploitAttempt {
   id: string;
   userId?: number;
   ipAddress: string;
-  attackType: "reentrancy" | "flash_loan" | "price_manipulation" | "front_running" | "sandwich" | "sql_injection" | "xss" | "csrf" | "path_traversal" | "rate_bypass";
+  attackType:
+    | "reentrancy"
+    | "flash_loan"
+    | "price_manipulation"
+    | "front_running"
+    | "sandwich"
+    | "sql_injection"
+    | "xss"
+    | "csrf"
+    | "path_traversal"
+    | "rate_bypass";
   payload?: string;
   endpoint?: string;
   blocked: boolean;
@@ -139,7 +176,23 @@ class AntiSybilEngine {
     hash: string,
     userAgent: string,
     ipAddress: string,
-    options: Partial<Pick<DeviceFingerprint, "screenResolution" | "timezone" | "language" | "platform" | "canvas" | "webgl" | "isVPN" | "isProxy" | "isTor" | "isDatacenter" | "country" | "isp">> = {}
+    options: Partial<
+      Pick<
+        DeviceFingerprint,
+        | "screenResolution"
+        | "timezone"
+        | "language"
+        | "platform"
+        | "canvas"
+        | "webgl"
+        | "isVPN"
+        | "isProxy"
+        | "isTor"
+        | "isDatacenter"
+        | "country"
+        | "isp"
+      >
+    > = {}
   ): DeviceFingerprint {
     const existing = this.fingerprints.get(hash);
     if (existing) {
@@ -194,12 +247,18 @@ class AntiSybilEngine {
     if (fp.isProxy) score += 30;
     if (fp.isTor) score += 50;
     if (fp.isDatacenter) score += 40;
-    if (fp.associatedUserIds.length > 3) score += (fp.associatedUserIds.length - 3) * 15;
+    if (fp.associatedUserIds.length > 3)
+      score += (fp.associatedUserIds.length - 3) * 15;
     if (fp.associatedUserIds.length > 10) score += 30;
     return Math.min(100, score);
   }
 
-  detectSybilCluster(userId: number): { isSybil: boolean; confidence: number; clusterSize: number; evidence: string[] } {
+  detectSybilCluster(userId: number): {
+    isSybil: boolean;
+    confidence: number;
+    clusterSize: number;
+    evidence: string[];
+  } {
     const userFps = this.userFingerprints.get(userId) || [];
     const evidence: string[] = [];
     let maxClusterSize = 1;
@@ -212,20 +271,43 @@ class AntiSybilEngine {
       const cluster = this.clusterMap.get(clusterKey);
       if (cluster && cluster.size > maxClusterSize) {
         maxClusterSize = cluster.size;
-        if (cluster.size > 5) { evidence.push(`Shared device with ${cluster.size - 1} other accounts`); confidence += 40; }
-        if (cluster.size > 10) { evidence.push(`High-density cluster of ${cluster.size} accounts`); confidence += 30; }
+        if (cluster.size > 5) {
+          evidence.push(
+            `Shared device with ${cluster.size - 1} other accounts`
+          );
+          confidence += 40;
+        }
+        if (cluster.size > 10) {
+          evidence.push(`High-density cluster of ${cluster.size} accounts`);
+          confidence += 30;
+        }
       }
-      if (fp.isDatacenter) { evidence.push("Device fingerprint from datacenter IP"); confidence += 25; }
-      if (fp.associatedUserIds.length > 5) { evidence.push(`Device shared by ${fp.associatedUserIds.length} accounts`); confidence += 20; }
+      if (fp.isDatacenter) {
+        evidence.push("Device fingerprint from datacenter IP");
+        confidence += 25;
+      }
+      if (fp.associatedUserIds.length > 5) {
+        evidence.push(
+          `Device shared by ${fp.associatedUserIds.length} accounts`
+        );
+        confidence += 20;
+      }
     }
 
-    return { isSybil: confidence >= 60, confidence: Math.min(100, confidence), clusterSize: maxClusterSize, evidence };
+    return {
+      isSybil: confidence >= 60,
+      confidence: Math.min(100, confidence),
+      clusterSize: maxClusterSize,
+      evidence,
+    };
   }
 
   getUserDeviceRisk(userId: number): number {
     const userFps = this.userFingerprints.get(userId) || [];
     if (userFps.length === 0) return 0;
-    const scores = userFps.map(hash => this.fingerprints.get(hash)?.riskScore || 0);
+    const scores = userFps.map(
+      hash => this.fingerprints.get(hash)?.riskScore || 0
+    );
     return Math.max(...scores);
   }
 }
@@ -234,7 +316,10 @@ class AntiSybilEngine {
 
 class AntiBotEngine {
   private profiles = new Map<string, BehaviorProfile>();
-  private requestCounts = new Map<string, { count: number; window: number; lastReset: number }>();
+  private requestCounts = new Map<
+    string,
+    { count: number; window: number; lastReset: number }
+  >();
 
   analyzeBehavior(
     sessionId: string,
@@ -287,13 +372,24 @@ class AntiBotEngine {
   private calculateVariance(values: number[]): number {
     if (values.length === 0) return 0;
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    return values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+    return (
+      values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      values.length
+    );
   }
 
-  checkRateLimit(identifier: string, maxRequests: number, windowSeconds: number): { allowed: boolean; remaining: number; resetAt: number } {
+  checkRateLimit(
+    identifier: string,
+    maxRequests: number,
+    windowSeconds: number
+  ): { allowed: boolean; remaining: number; resetAt: number } {
     const now = Date.now();
     const windowMs = windowSeconds * 1000;
-    const entry = this.requestCounts.get(identifier) || { count: 0, window: windowMs, lastReset: now };
+    const entry = this.requestCounts.get(identifier) || {
+      count: 0,
+      window: windowMs,
+      lastReset: now,
+    };
 
     if (now - entry.lastReset > windowMs) {
       entry.count = 0;
@@ -313,9 +409,21 @@ class AntiBotEngine {
 
   isKnownBotUserAgent(userAgent: string): boolean {
     const botPatterns = [
-      /bot/i, /crawler/i, /spider/i, /scraper/i, /curl/i, /wget/i,
-      /python-requests/i, /axios/i, /node-fetch/i, /go-http/i,
-      /headless/i, /phantom/i, /selenium/i, /puppeteer/i, /playwright/i,
+      /bot/i,
+      /crawler/i,
+      /spider/i,
+      /scraper/i,
+      /curl/i,
+      /wget/i,
+      /python-requests/i,
+      /axios/i,
+      /node-fetch/i,
+      /go-http/i,
+      /headless/i,
+      /phantom/i,
+      /selenium/i,
+      /puppeteer/i,
+      /playwright/i,
     ];
     return botPatterns.some(pattern => pattern.test(userAgent));
   }
@@ -326,14 +434,78 @@ class AntiBotEngine {
 class FraudEscalationEngine {
   private signals: FraudSignal[] = [];
   private escalationRules: EscalationRule[] = [
-    { id: "low_fraud", category: "fraud", minRiskScore: 20, maxRiskScore: 40, actions: ["log", "flag"], cooldownMinutes: 60, requiresManualReview: false },
-    { id: "medium_fraud", category: "fraud", minRiskScore: 40, maxRiskScore: 70, actions: ["flag", "rate_limit", "challenge"], cooldownMinutes: 30, requiresManualReview: false },
-    { id: "high_fraud", category: "fraud", minRiskScore: 70, maxRiskScore: 90, actions: ["challenge", "suspend", "alert_admin"], cooldownMinutes: 0, requiresManualReview: true },
-    { id: "critical_fraud", category: "fraud", minRiskScore: 90, maxRiskScore: 100, actions: ["ban", "block_wallet", "freeze_funds", "alert_admin"], cooldownMinutes: 0, requiresManualReview: true },
-    { id: "sybil_medium", category: "sybil", minRiskScore: 50, maxRiskScore: 80, actions: ["flag", "rate_limit", "challenge"], cooldownMinutes: 60, requiresManualReview: false },
-    { id: "sybil_high", category: "sybil", minRiskScore: 80, maxRiskScore: 100, actions: ["suspend", "block_wallet", "alert_admin"], cooldownMinutes: 0, requiresManualReview: true },
-    { id: "exploit_any", category: "exploit", minRiskScore: 0, maxRiskScore: 100, actions: ["block_wallet", "ban", "alert_admin"], cooldownMinutes: 0, requiresManualReview: true },
-    { id: "wash_trading", category: "wash_trading", minRiskScore: 60, maxRiskScore: 100, actions: ["flag", "freeze_funds", "alert_admin"], cooldownMinutes: 0, requiresManualReview: true },
+    {
+      id: "low_fraud",
+      category: "fraud",
+      minRiskScore: 20,
+      maxRiskScore: 40,
+      actions: ["log", "flag"],
+      cooldownMinutes: 60,
+      requiresManualReview: false,
+    },
+    {
+      id: "medium_fraud",
+      category: "fraud",
+      minRiskScore: 40,
+      maxRiskScore: 70,
+      actions: ["flag", "rate_limit", "challenge"],
+      cooldownMinutes: 30,
+      requiresManualReview: false,
+    },
+    {
+      id: "high_fraud",
+      category: "fraud",
+      minRiskScore: 70,
+      maxRiskScore: 90,
+      actions: ["challenge", "suspend", "alert_admin"],
+      cooldownMinutes: 0,
+      requiresManualReview: true,
+    },
+    {
+      id: "critical_fraud",
+      category: "fraud",
+      minRiskScore: 90,
+      maxRiskScore: 100,
+      actions: ["ban", "block_wallet", "freeze_funds", "alert_admin"],
+      cooldownMinutes: 0,
+      requiresManualReview: true,
+    },
+    {
+      id: "sybil_medium",
+      category: "sybil",
+      minRiskScore: 50,
+      maxRiskScore: 80,
+      actions: ["flag", "rate_limit", "challenge"],
+      cooldownMinutes: 60,
+      requiresManualReview: false,
+    },
+    {
+      id: "sybil_high",
+      category: "sybil",
+      minRiskScore: 80,
+      maxRiskScore: 100,
+      actions: ["suspend", "block_wallet", "alert_admin"],
+      cooldownMinutes: 0,
+      requiresManualReview: true,
+    },
+    {
+      id: "exploit_any",
+      category: "exploit",
+      minRiskScore: 0,
+      maxRiskScore: 100,
+      actions: ["block_wallet", "ban", "alert_admin"],
+      cooldownMinutes: 0,
+      requiresManualReview: true,
+    },
+    {
+      id: "wash_trading",
+      category: "wash_trading",
+      minRiskScore: 60,
+      maxRiskScore: 100,
+      actions: ["flag", "freeze_funds", "alert_admin"],
+      cooldownMinutes: 0,
+      requiresManualReview: true,
+    },
   ];
 
   reportSignal(
@@ -364,21 +536,38 @@ class FraudEscalationEngine {
   }
 
   private severityToScore(severity: RiskLevel): number {
-    const map: Record<RiskLevel, number> = { none: 0, low: 25, medium: 55, high: 80, critical: 95 };
+    const map: Record<RiskLevel, number> = {
+      none: 0,
+      low: 25,
+      medium: 55,
+      high: 80,
+      critical: 95,
+    };
     return map[severity];
   }
 
-  private determineActions(category: ThreatCategory, riskScore: number): EscalationAction[] {
-    const applicableRules = this.escalationRules.filter(r =>
-      r.category === category && riskScore >= r.minRiskScore && riskScore <= r.maxRiskScore
+  private determineActions(
+    category: ThreatCategory,
+    riskScore: number
+  ): EscalationAction[] {
+    const applicableRules = this.escalationRules.filter(
+      r =>
+        r.category === category &&
+        riskScore >= r.minRiskScore &&
+        riskScore <= r.maxRiskScore
     );
     if (applicableRules.length === 0) return ["log"];
     const allActions = new Set<EscalationAction>();
-    for (const rule of applicableRules) rule.actions.forEach(a => allActions.add(a));
+    for (const rule of applicableRules)
+      rule.actions.forEach(a => allActions.add(a));
     return Array.from(allActions);
   }
 
-  resolveSignal(signalId: string, resolvedBy: number, isFalsePositive = false): void {
+  resolveSignal(
+    signalId: string,
+    resolvedBy: number,
+    isFalsePositive = false
+  ): void {
     const signal = this.signals.find(s => s.id === signalId);
     if (signal) {
       signal.resolved = true;
@@ -389,14 +578,21 @@ class FraudEscalationEngine {
   }
 
   getActiveSignals(userId?: number): FraudSignal[] {
-    return this.signals.filter(s => !s.resolved && (!userId || s.userId === userId));
+    return this.signals.filter(
+      s => !s.resolved && (!userId || s.userId === userId)
+    );
   }
 
   getSignalHistory(userId: number, limit = 50): FraudSignal[] {
     return this.signals.filter(s => s.userId === userId).slice(-limit);
   }
 
-  getFraudStats(): { total: number; active: number; byCategory: Record<string, number>; bySeverity: Record<string, number> } {
+  getFraudStats(): {
+    total: number;
+    active: number;
+    byCategory: Record<string, number>;
+    bySeverity: Record<string, number>;
+  } {
     const active = this.signals.filter(s => !s.resolved);
     const byCategory: Record<string, number> = {};
     const bySeverity: Record<string, number> = {};
@@ -404,7 +600,12 @@ class FraudEscalationEngine {
       byCategory[sig.category] = (byCategory[sig.category] || 0) + 1;
       bySeverity[sig.severity] = (bySeverity[sig.severity] || 0) + 1;
     }
-    return { total: this.signals.length, active: active.length, byCategory, bySeverity };
+    return {
+      total: this.signals.length,
+      active: active.length,
+      byCategory,
+      bySeverity,
+    };
   }
 }
 
@@ -412,37 +613,89 @@ class FraudEscalationEngine {
 
 class WalletAnomalyDetector {
   private alerts: WalletAnomalyAlert[] = [];
-  private transactionHistory = new Map<string, { amount: number; timestamp: Date; counterparty: string }[]>();
+  private transactionHistory = new Map<
+    string,
+    { amount: number; timestamp: Date; counterparty: string }[]
+  >();
 
-  recordTransaction(walletAddress: string, amount: number, counterparty: string, txHash: string): WalletAnomalyAlert[] {
+  recordTransaction(
+    walletAddress: string,
+    amount: number,
+    counterparty: string,
+    txHash: string
+  ): WalletAnomalyAlert[] {
     const history = this.transactionHistory.get(walletAddress) || [];
     history.push({ amount, timestamp: new Date(), counterparty });
     this.transactionHistory.set(walletAddress, history);
     return this.detectAnomalies(walletAddress, amount, counterparty, txHash);
   }
 
-  private detectAnomalies(walletAddress: string, amount: number, counterparty: string, txHash: string): WalletAnomalyAlert[] {
+  private detectAnomalies(
+    walletAddress: string,
+    amount: number,
+    counterparty: string,
+    txHash: string
+  ): WalletAnomalyAlert[] {
     const alerts: WalletAnomalyAlert[] = [];
     const history = this.transactionHistory.get(walletAddress) || [];
-    const recent = history.filter(tx => Date.now() - tx.timestamp.getTime() < 3600000);
+    const recent = history.filter(
+      tx => Date.now() - tx.timestamp.getTime() < 3600000
+    );
 
     if (recent.length > 20) {
-      alerts.push(this.createAlert(walletAddress, "velocity", `${recent.length} transactions in the last hour`, txHash, amount, 75));
+      alerts.push(
+        this.createAlert(
+          walletAddress,
+          "velocity",
+          `${recent.length} transactions in the last hour`,
+          txHash,
+          amount,
+          75
+        )
+      );
     }
 
-    const avgAmount = history.length > 5 ? history.slice(-10).reduce((s, t) => s + t.amount, 0) / Math.min(10, history.length) : 0;
+    const avgAmount =
+      history.length > 5
+        ? history.slice(-10).reduce((s, t) => s + t.amount, 0) /
+          Math.min(10, history.length)
+        : 0;
     if (avgAmount > 0 && amount > avgAmount * 10) {
-      alerts.push(this.createAlert(walletAddress, "amount", `Transaction amount ${amount} is 10x above average ${avgAmount.toFixed(2)}`, txHash, amount, 70));
+      alerts.push(
+        this.createAlert(
+          walletAddress,
+          "amount",
+          `Transaction amount ${amount} is 10x above average ${avgAmount.toFixed(2)}`,
+          txHash,
+          amount,
+          70
+        )
+      );
     }
 
-    const counterpartyTxs = history.filter(tx => tx.counterparty === counterparty);
+    const counterpartyTxs = history.filter(
+      tx => tx.counterparty === counterparty
+    );
     if (counterpartyTxs.length > 5) {
       const backAndForth = counterpartyTxs.filter(tx => {
-        const reverse = history.find(h => h.counterparty === walletAddress && Math.abs(h.timestamp.getTime() - tx.timestamp.getTime()) < 600000);
+        const reverse = history.find(
+          h =>
+            h.counterparty === walletAddress &&
+            Math.abs(h.timestamp.getTime() - tx.timestamp.getTime()) < 600000
+        );
         return !!reverse;
       });
       if (backAndForth.length >= 3) {
-        alerts.push(this.createAlert(walletAddress, "wash_trade", `Detected circular trading pattern with ${counterparty}`, txHash, amount, 85));
+        alerts.push(
+          this.createAlert(
+            walletAddress,
+            "wash_trade",
+            `Detected circular trading pattern with ${counterparty}`,
+            txHash,
+            amount,
+            85
+          )
+        );
       }
     }
 
@@ -472,13 +725,21 @@ class WalletAnomalyDetector {
   }
 
   getWalletRiskScore(walletAddress: string): number {
-    const walletAlerts = this.alerts.filter(a => a.walletAddress === walletAddress && !a.investigated);
+    const walletAlerts = this.alerts.filter(
+      a => a.walletAddress === walletAddress && !a.investigated
+    );
     if (walletAlerts.length === 0) return 0;
-    return Math.min(100, walletAlerts.reduce((max, a) => Math.max(max, a.riskScore), 0));
+    return Math.min(
+      100,
+      walletAlerts.reduce((max, a) => Math.max(max, a.riskScore), 0)
+    );
   }
 
   getActiveAlerts(walletAddress?: string): WalletAnomalyAlert[] {
-    return this.alerts.filter(a => !a.investigated && (!walletAddress || a.walletAddress === walletAddress));
+    return this.alerts.filter(
+      a =>
+        !a.investigated && (!walletAddress || a.walletAddress === walletAddress)
+    );
   }
 
   investigateAlert(alertId: string): void {
@@ -492,24 +753,62 @@ class WalletAnomalyDetector {
 class ExploitDetector {
   private attempts: ExploitAttempt[] = [];
 
-  private readonly SQL_PATTERNS = [/(\bUNION\b|\bSELECT\b|\bDROP\b|\bINSERT\b|\bDELETE\b|\bUPDATE\b)/i, /('|--|;|\/\*|\*\/|xp_)/];
-  private readonly XSS_PATTERNS = [/<script[\s\S]*?>[\s\S]*?<\/script>/i, /javascript:/i, /on\w+\s*=/i, /<iframe/i];
-  private readonly PATH_TRAVERSAL_PATTERNS = [/\.\.\//g, /\.\.\\/, /%2e%2e/i, /%252e/i];
+  private readonly SQL_PATTERNS = [
+    /(\bUNION\b|\bSELECT\b|\bDROP\b|\bINSERT\b|\bDELETE\b|\bUPDATE\b)/i,
+    /('|--|;|\/\*|\*\/|xp_)/,
+  ];
+  private readonly XSS_PATTERNS = [
+    /<script[\s\S]*?>[\s\S]*?<\/script>/i,
+    /javascript:/i,
+    /on\w+\s*=/i,
+    /<iframe/i,
+  ];
+  private readonly PATH_TRAVERSAL_PATTERNS = [
+    /\.\.\//g,
+    /\.\.\\/,
+    /%2e%2e/i,
+    /%252e/i,
+  ];
 
   scanRequest(
     endpoint: string,
     payload: string,
     ipAddress: string,
     userId?: number
-  ): { safe: boolean; attackType?: ExploitAttempt["attackType"]; blocked: boolean } {
+  ): {
+    safe: boolean;
+    attackType?: ExploitAttempt["attackType"];
+    blocked: boolean;
+  } {
     if (this.SQL_PATTERNS.some(p => p.test(payload))) {
-      return this.recordAttempt("sql_injection", endpoint, payload, ipAddress, userId, true);
+      return this.recordAttempt(
+        "sql_injection",
+        endpoint,
+        payload,
+        ipAddress,
+        userId,
+        true
+      );
     }
     if (this.XSS_PATTERNS.some(p => p.test(payload))) {
-      return this.recordAttempt("xss", endpoint, payload, ipAddress, userId, true);
+      return this.recordAttempt(
+        "xss",
+        endpoint,
+        payload,
+        ipAddress,
+        userId,
+        true
+      );
     }
     if (this.PATH_TRAVERSAL_PATTERNS.some(p => p.test(payload))) {
-      return this.recordAttempt("path_traversal", endpoint, payload, ipAddress, userId, true);
+      return this.recordAttempt(
+        "path_traversal",
+        endpoint,
+        payload,
+        ipAddress,
+        userId,
+        true
+      );
     }
     return { safe: true, blocked: false };
   }
@@ -521,7 +820,11 @@ class ExploitDetector {
     ipAddress: string,
     userId: number | undefined,
     blocked: boolean
-  ): { safe: boolean; attackType: ExploitAttempt["attackType"]; blocked: boolean } {
+  ): {
+    safe: boolean;
+    attackType: ExploitAttempt["attackType"];
+    blocked: boolean;
+  } {
     const attempt: ExploitAttempt = {
       id: `exploit_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       userId,
@@ -536,10 +839,15 @@ class ExploitDetector {
     return { safe: false, attackType, blocked };
   }
 
-  detectFlashLoanPattern(txSequence: { type: string; amount: number; protocol: string }[]): boolean {
-    const hasLargeBorrow = txSequence.some(tx => tx.type === "borrow" && tx.amount > 100000);
+  detectFlashLoanPattern(
+    txSequence: { type: string; amount: number; protocol: string }[]
+  ): boolean {
+    const hasLargeBorrow = txSequence.some(
+      tx => tx.type === "borrow" && tx.amount > 100000
+    );
     const hasRepay = txSequence.some(tx => tx.type === "repay");
-    const hasArbitrage = txSequence.filter(tx => tx.type === "swap").length >= 2;
+    const hasArbitrage =
+      txSequence.filter(tx => tx.type === "swap").length >= 2;
     return hasLargeBorrow && hasRepay && hasArbitrage && txSequence.length >= 4;
   }
 
@@ -552,7 +860,12 @@ class ExploitDetector {
     return false;
   }
 
-  getAttemptStats(): { total: number; blocked: number; byType: Record<string, number>; byIp: Record<string, number> } {
+  getAttemptStats(): {
+    total: number;
+    blocked: number;
+    byType: Record<string, number>;
+    byIp: Record<string, number>;
+  } {
     const blocked = this.attempts.filter(a => a.blocked).length;
     const byType: Record<string, number> = {};
     const byIp: Record<string, number> = {};
@@ -593,10 +906,20 @@ class AbuseScorer {
     const walletRiskScore = inputs.walletRiskScore;
     const behaviorScore = Math.min(100, inputs.reportCount * 10);
 
-    const ageMultiplier = inputs.accountAgeDays < 7 ? 1.5 : inputs.accountAgeDays < 30 ? 1.2 : 1.0;
-    const composite = Math.min(100, Math.round(
-      (spamScore * 0.15 + fraudScore * 0.25 + botScore * 0.20 + sybilScore * 0.20 + walletRiskScore * 0.10 + behaviorScore * 0.10) * ageMultiplier
-    ));
+    const ageMultiplier =
+      inputs.accountAgeDays < 7 ? 1.5 : inputs.accountAgeDays < 30 ? 1.2 : 1.0;
+    const composite = Math.min(
+      100,
+      Math.round(
+        (spamScore * 0.15 +
+          fraudScore * 0.25 +
+          botScore * 0.2 +
+          sybilScore * 0.2 +
+          walletRiskScore * 0.1 +
+          behaviorScore * 0.1) *
+          ageMultiplier
+      )
+    );
 
     const flags: string[] = [];
     if (spamScore > 50) flags.push("high_spam");
@@ -606,12 +929,28 @@ class AbuseScorer {
     if (walletRiskScore > 60) flags.push("wallet_risk");
     if (inputs.accountAgeDays < 7) flags.push("new_account");
 
-    const riskLevel: RiskLevel = composite >= 80 ? "critical" : composite >= 60 ? "high" : composite >= 40 ? "medium" : composite >= 20 ? "low" : "none";
+    const riskLevel: RiskLevel =
+      composite >= 80
+        ? "critical"
+        : composite >= 60
+          ? "high"
+          : composite >= 40
+            ? "medium"
+            : composite >= 20
+              ? "low"
+              : "none";
 
     const score: AbuseScore = {
       userId,
       composite,
-      components: { spamScore, fraudScore, botScore, sybilScore, walletRiskScore, behaviorScore },
+      components: {
+        spamScore,
+        fraudScore,
+        botScore,
+        sybilScore,
+        walletRiskScore,
+        behaviorScore,
+      },
       riskLevel,
       flags,
       lastUpdated: new Date(),
@@ -625,7 +964,9 @@ class AbuseScorer {
   }
 
   getHighRiskUsers(minScore = 60): AbuseScore[] {
-    return Array.from(this.scores.values()).filter(s => s.composite >= minScore).sort((a, b) => b.composite - a.composite);
+    return Array.from(this.scores.values())
+      .filter(s => s.composite >= minScore)
+      .sort((a, b) => b.composite - a.composite);
   }
 
   getCriticalUsers(): AbuseScore[] {
@@ -638,7 +979,10 @@ class AbuseScorer {
 class IPReputationService {
   private blockedIPs = new Set<string>();
   private blockedCountries = new Set<string>();
-  private ipScores = new Map<string, { score: number; reason: string; blockedAt?: Date }>();
+  private ipScores = new Map<
+    string,
+    { score: number; reason: string; blockedAt?: Date }
+  >();
 
   blockIP(ip: string, reason: string): void {
     this.blockedIPs.add(ip);
@@ -654,9 +998,15 @@ class IPReputationService {
     this.blockedCountries.add(countryCode.toUpperCase());
   }
 
-  isBlocked(ip: string, countryCode?: string): { blocked: boolean; reason?: string } {
+  isBlocked(
+    ip: string,
+    countryCode?: string
+  ): { blocked: boolean; reason?: string } {
     if (this.blockedIPs.has(ip)) {
-      return { blocked: true, reason: this.ipScores.get(ip)?.reason || "blocked" };
+      return {
+        blocked: true,
+        reason: this.ipScores.get(ip)?.reason || "blocked",
+      };
     }
     if (countryCode && this.blockedCountries.has(countryCode.toUpperCase())) {
       return { blocked: true, reason: `Country ${countryCode} is blocked` };

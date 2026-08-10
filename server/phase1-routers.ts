@@ -1,8 +1,8 @@
-import { router, protectedProcedure } from './_core/trpc';
-import { z } from 'zod';
-import { livingLoopEngine } from './living-loop-engine';
-import { adaptiveRoadmapEngine } from './adaptive-roadmap-engine';
-import { multiAgentOrchestrator } from './multi-agent-orchestrator';
+import { router, protectedProcedure } from "./_core/trpc";
+import { z } from "zod";
+import { livingLoopEngine } from "./living-loop-engine";
+import { adaptiveRoadmapEngine } from "./adaptive-roadmap-engine";
+import { multiAgentOrchestrator } from "./multi-agent-orchestrator";
 
 /**
  * Phase 1 tRPC Routers
@@ -27,7 +27,8 @@ export const phase1Routers = {
           String(ctx.user.id),
           input.rating,
           input.comment,
-          input.category as 'feature_quality' | 'user_experience' | 'performance' | 'other'
+          input.category as
+            "feature_quality" | "user_experience" | "performance" | "other"
         );
         return { success: true, feedback };
       }),
@@ -40,7 +41,10 @@ export const phase1Routers = {
         })
       )
       .query(async ({ input }) => {
-        return livingLoopEngine.getFeedbackSummary(input.featureId, input.periodDays);
+        return livingLoopEngine.getFeedbackSummary(
+          input.featureId,
+          input.periodDays
+        );
       }),
 
     getAutoUpdatedRoadmap: protectedProcedure.query(async () => {
@@ -55,7 +59,10 @@ export const phase1Routers = {
         })
       )
       .query(async ({ input }) => {
-        return livingLoopEngine.getFeedbackTrends(input.featureId, input.periodDays);
+        return livingLoopEngine.getFeedbackTrends(
+          input.featureId,
+          input.periodDays
+        );
       }),
 
     getChurnRiskSignals: protectedProcedure.query(async ({ ctx }) => {
@@ -97,7 +104,10 @@ export const phase1Routers = {
         })
       )
       .mutation(async ({ input }) => {
-        await adaptiveRoadmapEngine.addFeedbackSignal(input.itemId, input.feedbackScore);
+        await adaptiveRoadmapEngine.addFeedbackSignal(
+          input.itemId,
+          input.feedbackScore
+        );
         return { success: true };
       }),
   }),
@@ -114,17 +124,20 @@ export const phase1Routers = {
       .input(
         z.object({
           agentRole: z.enum([
-            'Market Analyst',
-            'UX Designer',
-            'Backend Architect',
-            'Growth Marketer',
-            'QA / Risk',
+            "Market Analyst",
+            "UX Designer",
+            "Backend Architect",
+            "Growth Marketer",
+            "QA / Risk",
           ]),
           prompt: z.string(),
         })
       )
       .query(async ({ input }) => {
-        return multiAgentOrchestrator.getAgentPerspective(input.agentRole, input.prompt);
+        return multiAgentOrchestrator.getAgentPerspective(
+          input.agentRole,
+          input.prompt
+        );
       }),
 
     simulateDiscussion: protectedProcedure

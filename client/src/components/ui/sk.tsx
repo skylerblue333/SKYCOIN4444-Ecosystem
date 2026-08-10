@@ -13,7 +13,15 @@ export const ACCENTS = {
 
 export type Accent = keyof typeof ACCENTS;
 
-export function IconTile({ icon: Icon, accent = "cyan", className = "" }: { icon: LucideIcon; accent?: Accent; className?: string }) {
+export function IconTile({
+  icon: Icon,
+  accent = "cyan",
+  className = "",
+}: {
+  icon: LucideIcon;
+  accent?: Accent;
+  className?: string;
+}) {
   const a = ACCENTS[accent];
   return (
     <span className={`sk-tile ${className}`} style={{ background: a.bg }}>
@@ -22,20 +30,43 @@ export function IconTile({ icon: Icon, accent = "cyan", className = "" }: { icon
   );
 }
 
-export function Card({ children, className = "", hover = false }: { children: ReactNode; className?: string; hover?: boolean }) {
-  return <div className={`sk-card ${hover ? "sk-card-hover" : ""} ${className}`}>{children}</div>;
+export function Card({
+  children,
+  className = "",
+  hover = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  hover?: boolean;
+}) {
+  return (
+    <div className={`sk-card ${hover ? "sk-card-hover" : ""} ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 export function ChangePill({ value }: { value: number }) {
   const up = value >= 0;
   return (
     <span className={up ? "sk-pill-up" : "sk-pill-down"}>
-      {up ? "+" : ""}{value.toFixed(1)}%
+      {up ? "+" : ""}
+      {value.toFixed(1)}%
     </span>
   );
 }
 
-export function StatCard({ icon, accent = "cyan", label, value }: { icon: LucideIcon; accent?: Accent; label: string; value: ReactNode }) {
+export function StatCard({
+  icon,
+  accent = "cyan",
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  accent?: Accent;
+  label: string;
+  value: ReactNode;
+}) {
   return (
     <Card className="p-5 flex items-center gap-4" hover>
       <IconTile icon={icon} accent={accent} />
@@ -48,7 +79,19 @@ export function StatCard({ icon, accent = "cyan", label, value }: { icon: Lucide
 }
 
 /* Module tile like the reference dashboard cards (icon + title + subtext) */
-export function ModuleTile({ icon, accent, title, subtitle, onClick }: { icon: LucideIcon; accent: Accent; title: string; subtitle: string; onClick?: () => void }) {
+export function ModuleTile({
+  icon,
+  accent,
+  title,
+  subtitle,
+  onClick,
+}: {
+  icon: LucideIcon;
+  accent: Accent;
+  title: string;
+  subtitle: string;
+  onClick?: () => void;
+}) {
   return (
     <button onClick={onClick} className="w-full text-left">
       <Card className="p-6 h-full" hover>
@@ -61,20 +104,44 @@ export function ModuleTile({ icon, accent, title, subtitle, onClick }: { icon: L
 }
 
 /* Tiny SVG sparkline used in token cards */
-export function Sparkline({ points, color, height = 64 }: { points: number[]; color: string; height?: number }) {
+export function Sparkline({
+  points,
+  color,
+  height = 64,
+}: {
+  points: number[];
+  color: string;
+  height?: number;
+}) {
   const w = 320;
   const min = Math.min(...points);
   const max = Math.max(...points);
   const span = max - min || 1;
   const step = w / (points.length - 1);
   const path = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${(i * step).toFixed(1)} ${(height - ((p - min) / span) * (height - 8) - 4).toFixed(1)}`)
+    .map(
+      (p, i) =>
+        `${i === 0 ? "M" : "L"} ${(i * step).toFixed(1)} ${(height - ((p - min) / span) * (height - 8) - 4).toFixed(1)}`
+    )
     .join(" ");
   const lastX = (points.length - 1) * step;
-  const lastY = height - ((points[points.length - 1] - min) / span) * (height - 8) - 4;
+  const lastY =
+    height - ((points[points.length - 1] - min) / span) * (height - 8) - 4;
   return (
-    <svg viewBox={`0 0 ${w} ${height}`} className="w-full" style={{ height }} preserveAspectRatio="none">
-      <path d={path} fill="none" stroke={color} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+    <svg
+      viewBox={`0 0 ${w} ${height}`}
+      className="w-full"
+      style={{ height }}
+      preserveAspectRatio="none"
+    >
+      <path
+        d={path}
+        fill="none"
+        stroke={color}
+        strokeWidth={2.5}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
       <circle cx={lastX} cy={lastY} r={4} fill={color} />
     </svg>
   );

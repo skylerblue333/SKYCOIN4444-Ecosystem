@@ -4,10 +4,23 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Zap, Clock, CheckCircle, Award, TrendingUp, Users, Target } from "lucide-react";
+import {
+  Zap,
+  Clock,
+  CheckCircle,
+  Award,
+  TrendingUp,
+  Users,
+  Target,
+} from "lucide-react";
 
 interface Bounty {
   id: string;
@@ -53,7 +66,8 @@ const MOCK_BOUNTIES: Bounty[] = [
     difficulty: "medium",
     deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     status: "open",
-    description: "Translate a technical blog post about AI and machine learning",
+    description:
+      "Translate a technical blog post about AI and machine learning",
     requiredQualifications: ["B2 English", "B1 Chinese", "Tech vocabulary"],
   },
   {
@@ -66,8 +80,13 @@ const MOCK_BOUNTIES: Bounty[] = [
     difficulty: "hard",
     deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
     status: "open",
-    description: "Translate comprehensive product documentation for a SaaS platform",
-    requiredQualifications: ["C1 English", "B2 Spanish", "Business terminology"],
+    description:
+      "Translate comprehensive product documentation for a SaaS platform",
+    requiredQualifications: [
+      "C1 English",
+      "B2 Spanish",
+      "Business terminology",
+    ],
   },
   {
     id: "b3",
@@ -202,7 +221,8 @@ export function BountySystem() {
     { retry: 1 }
   );
 
-  const completeBountyMutation = trpc.languageExchange.completeBounty.useMutation();
+  const completeBountyMutation =
+    trpc.languageExchange.completeBounty.useMutation();
 
   const handleAcceptBounty = (bounty: Bounty) => {
     setSelectedBounty(bounty);
@@ -222,7 +242,7 @@ export function BountySystem() {
         notes,
       },
       {
-        onSuccess: (result) => {
+        onSuccess: result => {
           toast.success(`Translation submitted! +${result.xpEarned} XP earned`);
           setShowSubmitDialog(false);
           setTranslatedText("");
@@ -246,7 +266,8 @@ export function BountySystem() {
             Translation Bounty System
           </h1>
           <p className="text-gray-400">
-            Earn rewards by translating content and helping global businesses communicate
+            Earn rewards by translating content and helping global businesses
+            communicate
           </p>
         </div>
 
@@ -254,19 +275,27 @@ export function BountySystem() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card className="bg-gradient-to-br from-purple-900/50 to-blue-900/50 border-purple-500/30 p-6">
             <p className="text-gray-400 text-sm mb-1">Bounties Completed</p>
-            <p className="text-3xl font-bold text-purple-400">{MOCK_STATS.totalBountiesCompleted}</p>
+            <p className="text-3xl font-bold text-purple-400">
+              {MOCK_STATS.totalBountiesCompleted}
+            </p>
           </Card>
           <Card className="bg-gradient-to-br from-green-900/50 to-emerald-900/50 border-green-500/30 p-6">
             <p className="text-gray-400 text-sm mb-1">Total Earned</p>
-            <p className="text-3xl font-bold text-green-400">${MOCK_STATS.totalEarned}</p>
+            <p className="text-3xl font-bold text-green-400">
+              ${MOCK_STATS.totalEarned}
+            </p>
           </Card>
           <Card className="bg-gradient-to-br from-yellow-900/50 to-orange-900/50 border-yellow-500/30 p-6">
             <p className="text-gray-400 text-sm mb-1">Average Rating</p>
-            <p className="text-3xl font-bold text-yellow-400">{MOCK_STATS.averageRating.toFixed(1)}</p>
+            <p className="text-3xl font-bold text-yellow-400">
+              {MOCK_STATS.averageRating.toFixed(1)}
+            </p>
           </Card>
           <Card className="bg-gradient-to-br from-red-900/50 to-pink-900/50 border-red-500/30 p-6">
             <p className="text-gray-400 text-sm mb-1">Current Streak</p>
-            <p className="text-3xl font-bold text-red-400">{MOCK_STATS.currentStreak} days</p>
+            <p className="text-3xl font-bold text-red-400">
+              {MOCK_STATS.currentStreak} days
+            </p>
           </Card>
         </div>
 
@@ -282,19 +311,27 @@ export function BountySystem() {
           <TabsContent value="available" className="space-y-4">
             <div className="space-y-4">
               {bounties
-                .filter((b) => b.status === "open")
-                .map((bounty) => (
+                .filter(b => b.status === "open")
+                .map(bounty => (
                   <Card
                     key={bounty.id}
                     className="bg-slate-800/50 border-slate-700 p-6 hover:border-purple-500/50 transition"
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-white mb-2">{bounty.title}</h3>
-                        <p className="text-gray-400 text-sm mb-3">{bounty.description}</p>
+                        <h3 className="text-xl font-bold text-white mb-2">
+                          {bounty.title}
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-3">
+                          {bounty.description}
+                        </p>
                         <div className="flex flex-wrap gap-2 mb-4">
                           {bounty.requiredQualifications?.map((qual, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
+                            <Badge
+                              key={i}
+                              variant="outline"
+                              className="text-xs"
+                            >
                               {qual}
                             </Badge>
                           ))}
@@ -304,8 +341,11 @@ export function BountySystem() {
                         <div className="text-3xl font-bold text-yellow-400 mb-2">
                           ${bounty.reward}
                         </div>
-                        <Badge className={getDifficultyColor(bounty.difficulty)}>
-                          {getDifficultyIcon(bounty.difficulty)} {bounty.difficulty}
+                        <Badge
+                          className={getDifficultyColor(bounty.difficulty)}
+                        >
+                          {getDifficultyIcon(bounty.difficulty)}{" "}
+                          {bounty.difficulty}
                         </Badge>
                       </div>
                     </div>
@@ -319,13 +359,16 @@ export function BountySystem() {
                       </div>
                       <div>
                         <p className="text-gray-400 text-xs">Word Count</p>
-                        <p className="text-white font-bold text-sm">{bounty.wordCount} words</p>
+                        <p className="text-white font-bold text-sm">
+                          {bounty.wordCount} words
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-400 text-xs">Deadline</p>
                         <p className="text-white font-bold text-sm">
                           {Math.ceil(
-                            (bounty.deadline.getTime() - Date.now()) / (24 * 60 * 60 * 1000)
+                            (bounty.deadline.getTime() - Date.now()) /
+                              (24 * 60 * 60 * 1000)
                           )}{" "}
                           days
                         </p>
@@ -354,13 +397,18 @@ export function BountySystem() {
 
           {/* Completed */}
           <TabsContent value="completed" className="space-y-4">
-            {COMPLETED_BOUNTIES.map((completed) => (
-              <Card key={completed.id} className="bg-slate-800/50 border-slate-700 p-6">
+            {COMPLETED_BOUNTIES.map(completed => (
+              <Card
+                key={completed.id}
+                className="bg-slate-800/50 border-slate-700 p-6"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="w-5 h-5 text-green-400" />
-                      <h3 className="text-lg font-bold text-white">{completed.title}</h3>
+                      <h3 className="text-lg font-bold text-white">
+                        {completed.title}
+                      </h3>
                     </div>
                     <p className="text-gray-400 text-sm">
                       Completed {completed.completedAt.toLocaleDateString()}
@@ -370,7 +418,9 @@ export function BountySystem() {
                     <div className="text-2xl font-bold text-yellow-400 mb-1">
                       +${completed.reward}
                     </div>
-                    <div className="text-sm text-purple-400">+{completed.xpEarned} XP</div>
+                    <div className="text-sm text-purple-400">
+                      +{completed.xpEarned} XP
+                    </div>
                   </div>
                 </div>
 
@@ -381,7 +431,9 @@ export function BountySystem() {
                   </div>
                 </div>
 
-                <p className="text-gray-400 text-sm italic">"{completed.feedback}"</p>
+                <p className="text-gray-400 text-sm italic">
+                  "{completed.feedback}"
+                </p>
               </Card>
             ))}
           </TabsContent>
@@ -393,41 +445,52 @@ export function BountySystem() {
         <Dialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
           <DialogContent className="bg-slate-900 border-slate-700 max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-white">{selectedBounty.title}</DialogTitle>
+              <DialogTitle className="text-white">
+                {selectedBounty.title}
+              </DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4">
               <div className="bg-slate-800/50 p-4 rounded">
-                <p className="text-gray-400 text-sm mb-2">Original Text (Sample)</p>
+                <p className="text-gray-400 text-sm mb-2">
+                  Original Text (Sample)
+                </p>
                 <p className="text-white">
-                  "Artificial Intelligence is transforming how we work and live. From healthcare to
-                  finance, AI applications are revolutionizing industries..."
+                  "Artificial Intelligence is transforming how we work and live.
+                  From healthcare to finance, AI applications are
+                  revolutionizing industries..."
                 </p>
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 block mb-2">Your Translation</label>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Your Translation
+                </label>
                 <Textarea
                   placeholder="Paste your translation here..."
                   value={translatedText}
-                  onChange={(e) => setTranslatedText(e.target.value)}
+                  onChange={e => setTranslatedText(e.target.value)}
                   className="bg-slate-800 border-slate-700 min-h-32"
                 />
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 block mb-2">Notes (Optional)</label>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Notes (Optional)
+                </label>
                 <Textarea
                   placeholder="Any notes about your translation, terminology choices, etc."
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  onChange={e => setNotes(e.target.value)}
                   className="bg-slate-800 border-slate-700 min-h-20"
                 />
               </div>
 
               <div className="bg-slate-800/50 p-4 rounded">
                 <p className="text-gray-400 text-sm mb-2">Reward</p>
-                <p className="text-2xl font-bold text-yellow-400">${selectedBounty.reward}</p>
+                <p className="text-2xl font-bold text-yellow-400">
+                  ${selectedBounty.reward}
+                </p>
               </div>
 
               <Button
@@ -435,7 +498,9 @@ export function BountySystem() {
                 onClick={handleSubmitTranslation}
                 disabled={completeBountyMutation.isPending}
               >
-                {completeBountyMutation.isPending ? "Submitting..." : "Submit Translation"}
+                {completeBountyMutation.isPending
+                  ? "Submitting..."
+                  : "Submit Translation"}
               </Button>
             </div>
           </DialogContent>

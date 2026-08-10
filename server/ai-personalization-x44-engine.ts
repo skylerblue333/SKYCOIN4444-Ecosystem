@@ -1,14 +1,14 @@
 /**
  * AI PERSONALIZATION x44 ENGINE
  * Hyper-Personalized Everything
- * 
+ *
  * Personalization Features:
  * - User behavior analysis (ML)
  * - Content recommendation (collaborative filtering)
  * - Dynamic UI customization
  * - Personalized pricing (AI-optimized)
  * - Predictive notifications
- * 
+ *
  * Results:
  * - 50% higher engagement
  * - 3x higher conversion
@@ -74,7 +74,7 @@ export class AIPersonalizationX44Engine {
 
     for (const interest of profile.interests) {
       recommendations.push({
-        type: 'content',
+        type: "content",
         category: interest,
         score: Math.random() * 100,
         personalizationScore: 95 + Math.random() * 5, // 95-100
@@ -98,7 +98,7 @@ export class AIPersonalizationX44Engine {
     // - Demand elasticity
 
     const lifetimeValueFactor = Math.min(profile.lifetimeValue / 10000, 2); // Max 2x
-    const churnRiskFactor = 1 - (profile.churnRisk * 0.1); // Discount for churn risk
+    const churnRiskFactor = 1 - profile.churnRisk * 0.1; // Discount for churn risk
 
     return Math.floor(basePrice * lifetimeValueFactor * churnRiskFactor);
   }
@@ -154,10 +154,11 @@ export class AIPersonalizationX44Engine {
     const daysSinceLogin = Math.random() * 30;
     churnScore += Math.min(daysSinceLogin / 30, 1) * 40; // 0-40 points
 
-    const sessionFrequency = (profile.behaviors.get('sessions_per_week') || 0) / 5;
+    const sessionFrequency =
+      (profile.behaviors.get("sessions_per_week") || 0) / 5;
     churnScore += (1 - sessionFrequency) * 30; // 0-30 points
 
-    const featureUsage = (profile.behaviors.get('features_used') || 0) / 10;
+    const featureUsage = (profile.behaviors.get("features_used") || 0) / 10;
     churnScore += (1 - featureUsage) * 20; // 0-20 points
 
     const ltv = Math.min(profile.lifetimeValue / 1000, 1);
@@ -175,13 +176,13 @@ export class AIPersonalizationX44Engine {
     if (!profile) return {};
 
     return {
-      theme: profile.preferences.get('theme') || 'dark',
-      language: profile.preferences.get('language') || 'en',
-      layout: profile.preferences.get('layout') || 'default',
+      theme: profile.preferences.get("theme") || "dark",
+      language: profile.preferences.get("language") || "en",
+      layout: profile.preferences.get("layout") || "default",
       contentOrder: this.getPersonalizedRecommendations(userId),
       featuredContent: this.getPersonalizedRecommendations(userId).slice(0, 5),
-      shortcuts: profile.preferences.get('shortcuts') || [],
-      notifications: profile.preferences.get('notifications') || 'all',
+      shortcuts: profile.preferences.get("shortcuts") || [],
+      notifications: profile.preferences.get("notifications") || "all",
     };
   }
 
@@ -216,16 +217,16 @@ export class AIPersonalizationX44Engine {
       conversion: `${(this.metrics.conversion * 100).toFixed(0)}% higher`,
       sessionDuration: `${(this.metrics.sessionDuration * 100).toFixed(0)}% longer`,
       churn: `${((1 - this.metrics.churn) * 100).toFixed(0)}% lower`,
-      status: 'Hyper-personalization activated',
+      status: "Hyper-personalization activated",
       features: [
-        'Content recommendation (95%+ accuracy)',
-        'AI-optimized pricing',
-        'Predictive notifications',
-        'Churn prediction (90%+ accuracy)',
-        'Dynamic UI customization',
-        'Behavioral analysis',
-        'Preference learning',
-        'Lifetime value optimization',
+        "Content recommendation (95%+ accuracy)",
+        "AI-optimized pricing",
+        "Predictive notifications",
+        "Churn prediction (90%+ accuracy)",
+        "Dynamic UI customization",
+        "Behavioral analysis",
+        "Preference learning",
+        "Lifetime value optimization",
       ],
     };
   }

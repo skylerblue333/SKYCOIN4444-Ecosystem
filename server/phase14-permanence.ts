@@ -7,7 +7,8 @@
 
 export interface ArchivalRecord {
   id: string;
-  entityType: "post" | "community" | "creator" | "event" | "governance" | "transaction";
+  entityType:
+    "post" | "community" | "creator" | "event" | "governance" | "transaction";
   entityId: string;
   data: Record<string, unknown>;
   hash: string;
@@ -74,17 +75,24 @@ function computeHash(data: unknown): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return `0x${Math.abs(hash).toString(16).padStart(16, "0")}`;
 }
 
 export const durabilityLayer = {
-  archiveEntity(entityType: ArchivalRecord["entityType"], entityId: string, data: Record<string, unknown>): ArchivalRecord {
+  archiveEntity(
+    entityType: ArchivalRecord["entityType"],
+    entityId: string,
+    data: Record<string, unknown>
+  ): ArchivalRecord {
     const id = `archive_${Date.now()}_${++_archiveCounter}`;
     const record: ArchivalRecord = {
-      id, entityType, entityId, data,
+      id,
+      entityType,
+      entityId,
+      data,
       hash: computeHash({ entityType, entityId, data }),
       archivedAt: new Date(),
       immutable: true,
@@ -104,11 +112,26 @@ export const durabilityLayer = {
     );
   },
 
-  recordImmutableEvent(eventType: string, actorId: string, targetId: string, data: Record<string, unknown>): ImmutableEvent {
+  recordImmutableEvent(
+    eventType: string,
+    actorId: string,
+    targetId: string,
+    data: Record<string, unknown>
+  ): ImmutableEvent {
     const id = `event_${Date.now()}_${++_eventCounter}`;
     const event: ImmutableEvent = {
-      id, eventType, actorId, targetId, data,
-      hash: computeHash({ eventType, actorId, targetId, data, timestamp: Date.now() }),
+      id,
+      eventType,
+      actorId,
+      targetId,
+      data,
+      hash: computeHash({
+        eventType,
+        actorId,
+        targetId,
+        data,
+        timestamp: Date.now(),
+      }),
       blockHeight: 18000000 + _eventCounter,
       timestamp: new Date(),
     };
@@ -122,18 +145,34 @@ export const durabilityLayer = {
 
   getEventHistory(entityId: string, eventType?: string): ImmutableEvent[] {
     return Array.from(_immutableEvents.values()).filter(
-      e => (e.actorId === entityId || e.targetId === entityId) && (!eventType || e.eventType === eventType)
+      e =>
+        (e.actorId === entityId || e.targetId === entityId) &&
+        (!eventType || e.eventType === eventType)
     );
   },
 
-  requestHistoricalReplay(entityType: string, entityId: string, fromDate: Date, toDate: Date): HistoricalReplay {
+  requestHistoricalReplay(
+    entityType: string,
+    entityId: string,
+    fromDate: Date,
+    toDate: Date
+  ): HistoricalReplay {
     const id = `replay_${Date.now()}_${++_replayCounter}`;
     const events = Array.from(_immutableEvents.values()).filter(
-      e => (e.actorId === entityId || e.targetId === entityId) &&
-           e.timestamp >= fromDate && e.timestamp <= toDate
+      e =>
+        (e.actorId === entityId || e.targetId === entityId) &&
+        e.timestamp >= fromDate &&
+        e.timestamp <= toDate
     );
     const replay: HistoricalReplay = {
-      id, entityType, entityId, fromDate, toDate, events, status: "ready", createdAt: new Date(),
+      id,
+      entityType,
+      entityId,
+      fromDate,
+      toDate,
+      events,
+      status: "ready",
+      createdAt: new Date(),
     };
     _historicalReplays.set(id, replay);
     return replay;
@@ -170,9 +209,17 @@ export const durabilityLayer = {
     return vault;
   },
 
-  archiveCommunity(communityId: string, name: string, memberCount: number, postCount: number): CommunityArchive {
+  archiveCommunity(
+    communityId: string,
+    name: string,
+    memberCount: number,
+    postCount: number
+  ): CommunityArchive {
     const archive: CommunityArchive = {
-      communityId, name, memberCount, postCount,
+      communityId,
+      name,
+      memberCount,
+      postCount,
       archiveHash: computeHash({ communityId, name, memberCount, postCount }),
       archiveUrl: `https://archives.shadowchat.io/communities/${communityId}`,
       archivedAt: new Date(),
@@ -186,7 +233,13 @@ export const durabilityLayer = {
     return _communityArchives.get(communityId) || null;
   },
 
-  getDurabilityStats(): { totalArchives: number; totalImmutableEvents: number; totalVaults: number; totalCommunityArchives: number; storageUsedGB: number } {
+  getDurabilityStats(): {
+    totalArchives: number;
+    totalImmutableEvents: number;
+    totalVaults: number;
+    totalCommunityArchives: number;
+    storageUsedGB: number;
+  } {
     return {
       totalArchives: _archivalRecords.size,
       totalImmutableEvents: _immutableEvents.size,
@@ -241,17 +294,43 @@ let _treasuryHistoryCounter = 0;
 
 // Initialize constitutional articles
 const constitutionalArticles = [
-  { article: 1, section: 1, title: "Platform Purpose", text: "Shadowchat exists to empower creators, communities, and users through decentralized social infrastructure." },
-  { article: 1, section: 2, title: "Creator Rights", text: "All creators retain ownership of their content and have the right to monetize their work." },
-  { article: 2, section: 1, title: "Governance", text: "Platform governance is conducted through transparent, on-chain voting by SKY444 token holders." },
-  { article: 2, section: 2, title: "Treasury", text: "The community treasury is governed by token holders and managed transparently." },
-  { article: 3, section: 1, title: "User Privacy", text: "User data is protected and never sold to third parties without explicit consent." },
+  {
+    article: 1,
+    section: 1,
+    title: "Platform Purpose",
+    text: "Shadowchat exists to empower creators, communities, and users through decentralized social infrastructure.",
+  },
+  {
+    article: 1,
+    section: 2,
+    title: "Creator Rights",
+    text: "All creators retain ownership of their content and have the right to monetize their work.",
+  },
+  {
+    article: 2,
+    section: 1,
+    title: "Governance",
+    text: "Platform governance is conducted through transparent, on-chain voting by SKY444 token holders.",
+  },
+  {
+    article: 2,
+    section: 2,
+    title: "Treasury",
+    text: "The community treasury is governed by token holders and managed transparently.",
+  },
+  {
+    article: 3,
+    section: 1,
+    title: "User Privacy",
+    text: "User data is protected and never sold to third parties without explicit consent.",
+  },
 ];
 
 for (const art of constitutionalArticles) {
   const id = `rule_${++_ruleCounter}`;
   _constitutionalRules.set(id, {
-    id, ...art,
+    id,
+    ...art,
     ratifiedAt: new Date("2024-01-01"),
     ratifiedBy: [1, 2, 3],
     immutable: true,
@@ -268,7 +347,13 @@ export const governancePermanence = {
     return _constitutionalRules.get(ruleId) || null;
   },
 
-  proposeConstitutionalAmendment(article: number, section: number, title: string, text: string, proposedBy: number): { proposalId: string; status: string; requiredApprovals: number } {
+  proposeConstitutionalAmendment(
+    article: number,
+    section: number,
+    title: string,
+    text: string,
+    proposedBy: number
+  ): { proposalId: string; status: string; requiredApprovals: number } {
     return {
       proposalId: `amendment_${Date.now()}`,
       status: "pending_ratification",
@@ -276,11 +361,26 @@ export const governancePermanence = {
     };
   },
 
-  recordGovernanceAction(proposalId: string, action: GovernanceRecord["action"], actorId: string, data: Record<string, unknown>): GovernanceRecord {
+  recordGovernanceAction(
+    proposalId: string,
+    action: GovernanceRecord["action"],
+    actorId: string,
+    data: Record<string, unknown>
+  ): GovernanceRecord {
     const id = `gov_${Date.now()}_${++_govRecordCounter}`;
     const record: GovernanceRecord = {
-      id, proposalId, action, actorId, data,
-      hash: computeHash({ proposalId, action, actorId, data, timestamp: Date.now() }),
+      id,
+      proposalId,
+      action,
+      actorId,
+      data,
+      hash: computeHash({
+        proposalId,
+        action,
+        actorId,
+        data,
+        timestamp: Date.now(),
+      }),
       timestamp: new Date(),
     };
     _governanceRecords.set(id, record);
@@ -288,14 +388,33 @@ export const governancePermanence = {
   },
 
   getGovernanceHistory(proposalId: string): GovernanceRecord[] {
-    return Array.from(_governanceRecords.values()).filter(r => r.proposalId === proposalId);
+    return Array.from(_governanceRecords.values()).filter(
+      r => r.proposalId === proposalId
+    );
   },
 
-  recordTreasuryAction(action: TreasuryHistoryRecord["action"], amount: number, currency: string, authorizedBy: string, region?: string): TreasuryHistoryRecord {
+  recordTreasuryAction(
+    action: TreasuryHistoryRecord["action"],
+    amount: number,
+    currency: string,
+    authorizedBy: string,
+    region?: string
+  ): TreasuryHistoryRecord {
     const id = `treasury_${Date.now()}_${++_treasuryHistoryCounter}`;
     const record: TreasuryHistoryRecord = {
-      id, action, amount, currency, region, authorizedBy,
-      hash: computeHash({ action, amount, currency, authorizedBy, timestamp: Date.now() }),
+      id,
+      action,
+      amount,
+      currency,
+      region,
+      authorizedBy,
+      hash: computeHash({
+        action,
+        amount,
+        currency,
+        authorizedBy,
+        timestamp: Date.now(),
+      }),
       timestamp: new Date(),
     };
     _treasuryHistory.set(id, record);
@@ -307,13 +426,29 @@ export const governancePermanence = {
     return region ? records.filter(r => r.region === region) : records;
   },
 
-  verifyGovernanceIntegrity(): { valid: boolean; totalRecords: number; tamperedRecords: number; lastVerified: Date } {
+  verifyGovernanceIntegrity(): {
+    valid: boolean;
+    totalRecords: number;
+    tamperedRecords: number;
+    lastVerified: Date;
+  } {
     const records = Array.from(_governanceRecords.values());
     const tampered = records.filter(r => {
-      const expected = computeHash({ proposalId: r.proposalId, action: r.action, actorId: r.actorId, data: r.data, timestamp: r.timestamp.getTime() });
+      const expected = computeHash({
+        proposalId: r.proposalId,
+        action: r.action,
+        actorId: r.actorId,
+        data: r.data,
+        timestamp: r.timestamp.getTime(),
+      });
       return false; // In production, would compare hashes
     });
-    return { valid: true, totalRecords: records.length, tamperedRecords: tampered.length, lastVerified: new Date() };
+    return {
+      valid: true,
+      totalRecords: records.length,
+      tamperedRecords: tampered.length,
+      lastVerified: new Date(),
+    };
   },
 };
 
@@ -360,31 +495,56 @@ let _successionCounter = 0;
 let _transferCounter = 0;
 
 export const legacySystems = {
-  createCreatorInheritance(creatorId: number, beneficiaryId: number, assets: CreatorInheritance["assets"], conditions: string): CreatorInheritance {
+  createCreatorInheritance(
+    creatorId: number,
+    beneficiaryId: number,
+    assets: CreatorInheritance["assets"],
+    conditions: string
+  ): CreatorInheritance {
     const id = `inherit_${Date.now()}_${++_inheritanceCounter}`;
     const inheritance: CreatorInheritance = {
-      id, creatorId, beneficiaryId, assets, conditions, status: "active", createdAt: new Date(),
+      id,
+      creatorId,
+      beneficiaryId,
+      assets,
+      conditions,
+      status: "active",
+      createdAt: new Date(),
     };
     _creatorInheritances.set(id, inheritance);
     return inheritance;
   },
 
   getCreatorInheritance(creatorId: number): CreatorInheritance | null {
-    return Array.from(_creatorInheritances.values()).find(i => i.creatorId === creatorId) || null;
+    return (
+      Array.from(_creatorInheritances.values()).find(
+        i => i.creatorId === creatorId
+      ) || null
+    );
   },
 
   triggerInheritance(inheritanceId: string): CreatorInheritance {
     const inheritance = _creatorInheritances.get(inheritanceId);
-    if (!inheritance) throw new Error(`Inheritance not found: ${inheritanceId}`);
+    if (!inheritance)
+      throw new Error(`Inheritance not found: ${inheritanceId}`);
     inheritance.status = "triggered";
     inheritance.triggeredAt = new Date();
     return inheritance;
   },
 
-  createTreasurySuccession(currentCustodian: string, successors: TreasurySuccession["successors"], triggerConditions: string[]): TreasurySuccession {
+  createTreasurySuccession(
+    currentCustodian: string,
+    successors: TreasurySuccession["successors"],
+    triggerConditions: string[]
+  ): TreasurySuccession {
     const id = `succession_${Date.now()}_${++_successionCounter}`;
     const succession: TreasurySuccession = {
-      id, currentCustodian, successors, triggerConditions, status: "active", createdAt: new Date(),
+      id,
+      currentCustodian,
+      successors,
+      triggerConditions,
+      status: "active",
+      createdAt: new Date(),
     };
     _treasurySuccessions.set(id, succession);
     return succession;
@@ -394,16 +554,32 @@ export const legacySystems = {
     return _treasurySuccessions.get(successionId) || null;
   },
 
-  initiateOwnershipTransfer(communityId: string, fromOwnerId: number, toOwnerId: number, reason: string): CommunityOwnershipTransfer {
+  initiateOwnershipTransfer(
+    communityId: string,
+    fromOwnerId: number,
+    toOwnerId: number,
+    reason: string
+  ): CommunityOwnershipTransfer {
     const id = `transfer_${Date.now()}_${++_transferCounter}`;
     const transfer: CommunityOwnershipTransfer = {
-      id, communityId, fromOwnerId, toOwnerId, reason, status: "pending", votesFor: 0, votesAgainst: 0, createdAt: new Date(),
+      id,
+      communityId,
+      fromOwnerId,
+      toOwnerId,
+      reason,
+      status: "pending",
+      votesFor: 0,
+      votesAgainst: 0,
+      createdAt: new Date(),
     };
     _ownershipTransfers.set(id, transfer);
     return transfer;
   },
 
-  voteOnTransfer(transferId: string, vote: "for" | "against"): CommunityOwnershipTransfer {
+  voteOnTransfer(
+    transferId: string,
+    vote: "for" | "against"
+  ): CommunityOwnershipTransfer {
     const transfer = _ownershipTransfers.get(transferId);
     if (!transfer) throw new Error(`Transfer not found: ${transferId}`);
     if (vote === "for") transfer.votesFor++;
@@ -417,17 +593,29 @@ export const legacySystems = {
   executeOwnershipTransfer(transferId: string): CommunityOwnershipTransfer {
     const transfer = _ownershipTransfers.get(transferId);
     if (!transfer) throw new Error(`Transfer not found: ${transferId}`);
-    if (transfer.status !== "approved") throw new Error("Transfer not approved");
+    if (transfer.status !== "approved")
+      throw new Error("Transfer not approved");
     transfer.status = "executed";
     transfer.executedAt = new Date();
     return transfer;
   },
 
-  getInstitutionalContinuityTools(): { tools: string[]; lastDrillDate: Date; nextDrillDate: Date; continuityScore: number } {
+  getInstitutionalContinuityTools(): {
+    tools: string[];
+    lastDrillDate: Date;
+    nextDrillDate: Date;
+    continuityScore: number;
+  } {
     const nextDrill = new Date();
     nextDrill.setMonth(nextDrill.getMonth() + 3);
     return {
-      tools: ["succession_planning", "asset_transfer", "key_rotation", "multi_sig_governance", "emergency_council"],
+      tools: [
+        "succession_planning",
+        "asset_transfer",
+        "key_rotation",
+        "multi_sig_governance",
+        "emergency_council",
+      ],
       lastDrillDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
       nextDrillDate: nextDrill,
       continuityScore: 0.94,
@@ -501,23 +689,35 @@ export const disasterRecovery = {
     return _replicationConfigs.get("primary") || null;
   },
 
-  updateReplicationConfig(config: Partial<ReplicationConfig>): ReplicationConfig {
+  updateReplicationConfig(
+    config: Partial<ReplicationConfig>
+  ): ReplicationConfig {
     const existing = _replicationConfigs.get("primary") || {
-      primaryRegion: "us-east-1", replicaRegions: [], replicationLag: 0,
-      syncFrequency: "real-time", lastSyncedAt: new Date(), status: "healthy" as const,
+      primaryRegion: "us-east-1",
+      replicaRegions: [],
+      replicationLag: 0,
+      syncFrequency: "real-time",
+      lastSyncedAt: new Date(),
+      status: "healthy" as const,
     };
     const updated = { ...existing, ...config };
     _replicationConfigs.set("primary", updated);
     return updated;
   },
 
-  createColdStorageBackup(type: ColdStorageBackup["type"], region: string): ColdStorageBackup {
+  createColdStorageBackup(
+    type: ColdStorageBackup["type"],
+    region: string
+  ): ColdStorageBackup {
     const id = `backup_${Date.now()}_${++_backupCounter}`;
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 7);
     const backup: ColdStorageBackup = {
-      id, type, region,
-      sizeGB: type === "full" ? 500 + Math.random() * 200 : 50 + Math.random() * 50,
+      id,
+      type,
+      region,
+      sizeGB:
+        type === "full" ? 500 + Math.random() * 200 : 50 + Math.random() * 50,
       encryptionKey: `bk_key_${id}`,
       storageClass: type === "full" ? "deep_archive" : "glacier",
       status: "creating",
@@ -565,7 +765,11 @@ export const disasterRecovery = {
     return Array.from(_recoveryDrills.values());
   },
 
-  configureFailover(service: string, primaryEndpoint: string, failoverEndpoints: string[]): FailoverConfig {
+  configureFailover(
+    service: string,
+    primaryEndpoint: string,
+    failoverEndpoints: string[]
+  ): FailoverConfig {
     const config: FailoverConfig = {
       primaryEndpoint,
       failoverEndpoints,
@@ -580,7 +784,8 @@ export const disasterRecovery = {
 
   triggerFailover(service: string): FailoverConfig {
     const config = _failoverConfigs.get(service);
-    if (!config) throw new Error(`Failover config not found for service: ${service}`);
+    if (!config)
+      throw new Error(`Failover config not found for service: ${service}`);
     config.status = "active";
     config.lastFailoverAt = new Date();
     return config;
@@ -590,7 +795,14 @@ export const disasterRecovery = {
     return _failoverConfigs.get(service) || null;
   },
 
-  getDisasterRecoveryStatus(): { replicationHealth: string; coldBackups: number; lastDrillPassed: boolean; failoverReady: boolean; rtoMinutes: number; rpoMinutes: number } {
+  getDisasterRecoveryStatus(): {
+    replicationHealth: string;
+    coldBackups: number;
+    lastDrillPassed: boolean;
+    failoverReady: boolean;
+    rtoMinutes: number;
+    rpoMinutes: number;
+  } {
     const replication = _replicationConfigs.get("primary");
     const drills = Array.from(_recoveryDrills.values());
     const lastDrill = drills[drills.length - 1];
@@ -608,7 +820,11 @@ export const disasterRecovery = {
 // ─── PHASE 14 WRAPPER FIXES ───────────────────────────────────────────────────
 // Fix archiveEntity: add checksum field
 const _origArchiveEntity = durabilityLayer.archiveEntity.bind(durabilityLayer);
-(durabilityLayer as any).archiveEntity = (entityType: string, entityId: string, data: Record<string, unknown>) => {
+(durabilityLayer as any).archiveEntity = (
+  entityType: string,
+  entityId: string,
+  data: Record<string, unknown>
+) => {
   const r = _origArchiveEntity(entityType as any, entityId, data);
   return { ...r, checksum: r.hash };
 };
@@ -622,14 +838,21 @@ const _origGetArchive = durabilityLayer.getArchive.bind(durabilityLayer);
 };
 
 // Fix recordImmutableEvent: add immutable field
-const _origRecordImmutable = durabilityLayer.recordImmutableEvent.bind(durabilityLayer);
-(durabilityLayer as any).recordImmutableEvent = (eventType: string, actorId: string, targetId: string, data: Record<string, unknown>) => {
+const _origRecordImmutable =
+  durabilityLayer.recordImmutableEvent.bind(durabilityLayer);
+(durabilityLayer as any).recordImmutableEvent = (
+  eventType: string,
+  actorId: string,
+  targetId: string,
+  data: Record<string, unknown>
+) => {
   const r = _origRecordImmutable(eventType, actorId, targetId, data);
   return { ...r, immutable: true };
 };
 
 // Fix createCreatorVault: add contents field
-const _origCreateVault = durabilityLayer.createCreatorVault.bind(durabilityLayer);
+const _origCreateVault =
+  durabilityLayer.createCreatorVault.bind(durabilityLayer);
 (durabilityLayer as any).createCreatorVault = (creatorId: number) => {
   const r = _origCreateVault(creatorId);
   return { ...r, contents: { posts: 0, videos: 0, nfts: 0, revenue: 0 } };
@@ -640,18 +863,36 @@ const _origGetVault = durabilityLayer.getCreatorVault.bind(durabilityLayer);
 (durabilityLayer as any).getCreatorVault = (creatorId: number) => {
   const r = _origGetVault(creatorId);
   if (!r) return null;
-  return { ...r, contents: (r as any).contents || { posts: 0, videos: 0, nfts: 0, revenue: 0 } };
+  return {
+    ...r,
+    contents: (r as any).contents || {
+      posts: 0,
+      videos: 0,
+      nfts: 0,
+      revenue: 0,
+    },
+  };
 };
 
 // Fix sealCreatorVault: add sealedAt field
 const _origSealVault = durabilityLayer.sealCreatorVault.bind(durabilityLayer);
 (durabilityLayer as any).sealCreatorVault = (creatorId: number) => {
   const r = _origSealVault(creatorId);
-  return { ...r, sealedAt: new Date(), contents: (r as any).contents || { posts: 0, videos: 0, nfts: 0, revenue: 0 } };
+  return {
+    ...r,
+    sealedAt: new Date(),
+    contents: (r as any).contents || {
+      posts: 0,
+      videos: 0,
+      nfts: 0,
+      revenue: 0,
+    },
+  };
 };
 
 // Fix triggerInheritance: change status to "executed"
-const _origTriggerInheritance = legacySystems.triggerInheritance.bind(legacySystems);
+const _origTriggerInheritance =
+  legacySystems.triggerInheritance.bind(legacySystems);
 (legacySystems as any).triggerInheritance = (inheritanceId: string) => {
   const r = _origTriggerInheritance(inheritanceId);
   return { ...r, status: "executed", executedAt: r.triggeredAt || new Date() };
@@ -659,16 +900,25 @@ const _origTriggerInheritance = legacySystems.triggerInheritance.bind(legacySyst
 
 // Fix voteOnTransfer: add votes object
 const _origVoteOnTransfer = legacySystems.voteOnTransfer.bind(legacySystems);
-(legacySystems as any).voteOnTransfer = (transferId: string, vote: "for" | "against") => {
+(legacySystems as any).voteOnTransfer = (
+  transferId: string,
+  vote: "for" | "against"
+) => {
   const r = _origVoteOnTransfer(transferId, vote);
-  return { ...r, votes: { for: r.votesFor || 0, against: r.votesAgainst || 0 } };
+  return {
+    ...r,
+    votes: { for: r.votesFor || 0, against: r.votesAgainst || 0 },
+  };
 };
 
 // Fix executeOwnershipTransfer: auto-approve if enough votes
-const _origExecuteTransfer = legacySystems.executeOwnershipTransfer.bind(legacySystems);
+const _origExecuteTransfer =
+  legacySystems.executeOwnershipTransfer.bind(legacySystems);
 (legacySystems as any).executeOwnershipTransfer = (transferId: string) => {
   // Find the transfer and force-approve it before executing
-  const transfer = Array.from(_ownershipTransfers.values()).find(t => t.id === transferId);
+  const transfer = Array.from(_ownershipTransfers.values()).find(
+    t => t.id === transferId
+  );
   if (transfer && transfer.status === "pending") {
     transfer.status = "approved";
   }
@@ -684,21 +934,33 @@ const _origRunDrill = disasterRecovery.runRecoveryDrill.bind(disasterRecovery);
 };
 
 // Fix configureFailover: add service field
-const _origConfigureFailover = disasterRecovery.configureFailover.bind(disasterRecovery);
-(disasterRecovery as any).configureFailover = (service: string, primaryEndpoint: string, failoverEndpoints: string[]) => {
+const _origConfigureFailover =
+  disasterRecovery.configureFailover.bind(disasterRecovery);
+(disasterRecovery as any).configureFailover = (
+  service: string,
+  primaryEndpoint: string,
+  failoverEndpoints: string[]
+) => {
   const r = _origConfigureFailover(service, primaryEndpoint, failoverEndpoints);
   return { ...r, service };
 };
 
 // Fix triggerFailover: add service and isFailedOver fields
-const _origTriggerFailover = disasterRecovery.triggerFailover.bind(disasterRecovery);
+const _origTriggerFailover =
+  disasterRecovery.triggerFailover.bind(disasterRecovery);
 (disasterRecovery as any).triggerFailover = (service: string) => {
   const r = _origTriggerFailover(service);
-  return { ...r, service, isFailedOver: true, activeEndpoint: r.failoverEndpoints?.[0] || r.primaryEndpoint };
+  return {
+    ...r,
+    service,
+    isFailedOver: true,
+    activeEndpoint: r.failoverEndpoints?.[0] || r.primaryEndpoint,
+  };
 };
 
 // Fix getFailoverConfig: add service field
-const _origGetFailoverConfig = disasterRecovery.getFailoverConfig.bind(disasterRecovery);
+const _origGetFailoverConfig =
+  disasterRecovery.getFailoverConfig.bind(disasterRecovery);
 (disasterRecovery as any).getFailoverConfig = (service: string) => {
   const r = _origGetFailoverConfig(service);
   if (!r) return null;
@@ -708,8 +970,17 @@ const _origGetFailoverConfig = disasterRecovery.getFailoverConfig.bind(disasterR
 // ─── PHASE 14B WRAPPER FIXES ───────────────────────────────────────────────────
 // Fix proposeConstitutionalAmendment: use counter to avoid Date.now() collisions
 let _govProposalCounter = 0;
-const _origProposeAmendment = governancePermanence.proposeConstitutionalAmendment.bind(governancePermanence);
-(governancePermanence as any).proposeConstitutionalAmendment = (article: number, section: number, title: string, text: string, proposedBy: number) => {
+const _origProposeAmendment =
+  governancePermanence.proposeConstitutionalAmendment.bind(
+    governancePermanence
+  );
+(governancePermanence as any).proposeConstitutionalAmendment = (
+  article: number,
+  section: number,
+  title: string,
+  text: string,
+  proposedBy: number
+) => {
   const proposalId = `amendment_${Date.now()}_${++_govProposalCounter}`;
   return { proposalId, status: "pending_ratification", requiredApprovals: 100 };
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Heart,
   MessageCircle,
@@ -13,7 +13,7 @@ import {
   TrendingUp,
   Users,
   Bookmark,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface Post {
   id: string;
@@ -37,23 +37,24 @@ interface Trend {
   id: string;
   title: string;
   posts: number;
-  trend: 'up' | 'down';
+  trend: "up" | "down";
   category: string;
 }
 
 const SocialFeed: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([
     {
-      id: '1',
+      id: "1",
       author: {
-        name: 'Alex Chen',
-        username: '@alexchen_creator',
-        avatar: '👨‍💻',
+        name: "Alex Chen",
+        username: "@alexchen_creator",
+        avatar: "👨‍💻",
         verified: true,
       },
-      content: 'Just launched my new NFT collection! The response has been incredible 🚀 #NFT #Web3 #Creator',
-      media: ['🎨'],
-      timestamp: '2 hours ago',
+      content:
+        "Just launched my new NFT collection! The response has been incredible 🚀 #NFT #Web3 #Creator",
+      media: ["🎨"],
+      timestamp: "2 hours ago",
       likes: 12450,
       comments: 892,
       shares: 3421,
@@ -61,16 +62,17 @@ const SocialFeed: React.FC = () => {
       bookmarked: false,
     },
     {
-      id: '2',
+      id: "2",
       author: {
-        name: 'Jordan Smith',
-        username: '@jordansmith',
-        avatar: '👩‍🎨',
+        name: "Jordan Smith",
+        username: "@jordansmith",
+        avatar: "👩‍🎨",
         verified: true,
       },
-      content: 'The future of commerce is here. Decentralized, transparent, and fair for everyone. #DeFi #Marketplace',
-      media: ['💼'],
-      timestamp: '4 hours ago',
+      content:
+        "The future of commerce is here. Decentralized, transparent, and fair for everyone. #DeFi #Marketplace",
+      media: ["💼"],
+      timestamp: "4 hours ago",
       likes: 8934,
       comments: 567,
       shares: 2341,
@@ -78,16 +80,17 @@ const SocialFeed: React.FC = () => {
       bookmarked: false,
     },
     {
-      id: '3',
+      id: "3",
       author: {
-        name: 'Taylor Moon',
-        username: '@taylor_moon',
-        avatar: '🌙',
+        name: "Taylor Moon",
+        username: "@taylor_moon",
+        avatar: "🌙",
         verified: false,
       },
-      content: 'Building something amazing with the community. Can\'t wait to share more soon! 🔥',
-      media: ['🛠️'],
-      timestamp: '6 hours ago',
+      content:
+        "Building something amazing with the community. Can't wait to share more soon! 🔥",
+      media: ["🛠️"],
+      timestamp: "6 hours ago",
       likes: 5234,
       comments: 234,
       shares: 1234,
@@ -96,20 +99,50 @@ const SocialFeed: React.FC = () => {
     },
   ]);
 
-  const [newPostContent, setNewPostContent] = useState('');
+  const [newPostContent, setNewPostContent] = useState("");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   const trends: Trend[] = [
-    { id: '1', title: '#Web3Revolution', posts: 245000, trend: 'up', category: 'Technology' },
-    { id: '2', title: '#CreatorEconomy', posts: 189000, trend: 'up', category: 'Business' },
-    { id: '3', title: '#NFTArt', posts: 156000, trend: 'down', category: 'Art' },
-    { id: '4', title: '#DeFi', posts: 134000, trend: 'up', category: 'Finance' },
-    { id: '5', title: '#Crypto', posts: 98000, trend: 'down', category: 'Technology' },
+    {
+      id: "1",
+      title: "#Web3Revolution",
+      posts: 245000,
+      trend: "up",
+      category: "Technology",
+    },
+    {
+      id: "2",
+      title: "#CreatorEconomy",
+      posts: 189000,
+      trend: "up",
+      category: "Business",
+    },
+    {
+      id: "3",
+      title: "#NFTArt",
+      posts: 156000,
+      trend: "down",
+      category: "Art",
+    },
+    {
+      id: "4",
+      title: "#DeFi",
+      posts: 134000,
+      trend: "up",
+      category: "Finance",
+    },
+    {
+      id: "5",
+      title: "#Crypto",
+      posts: 98000,
+      trend: "down",
+      category: "Technology",
+    },
   ];
 
   const handleLike = (postId: string) => {
     setPosts(
-      posts.map((post) =>
+      posts.map(post =>
         post.id === postId
           ? {
               ...post,
@@ -123,7 +156,7 @@ const SocialFeed: React.FC = () => {
 
   const handleBookmark = (postId: string) => {
     setPosts(
-      posts.map((post) =>
+      posts.map(post =>
         post.id === postId ? { ...post, bookmarked: !post.bookmarked } : post
       )
     );
@@ -134,13 +167,13 @@ const SocialFeed: React.FC = () => {
       const newPost: Post = {
         id: `${posts.length + 1}`,
         author: {
-          name: 'You',
-          username: '@yourprofile',
-          avatar: '👤',
+          name: "You",
+          username: "@yourprofile",
+          avatar: "👤",
           verified: false,
         },
         content: newPostContent,
-        timestamp: 'just now',
+        timestamp: "just now",
         likes: 0,
         comments: 0,
         shares: 0,
@@ -148,7 +181,7 @@ const SocialFeed: React.FC = () => {
         bookmarked: false,
       };
       setPosts([newPost, ...posts]);
-      setNewPostContent('');
+      setNewPostContent("");
     }
   };
 
@@ -167,7 +200,7 @@ const SocialFeed: React.FC = () => {
                 <input
                   type="text"
                   value={newPostContent}
-                  onChange={(e) => setNewPostContent(e.target.value)}
+                  onChange={e => setNewPostContent(e.target.value)}
                   placeholder="What's on your mind?"
                   className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
                 />
@@ -195,7 +228,7 @@ const SocialFeed: React.FC = () => {
 
             {/* Posts Feed */}
             <div className="space-y-4">
-              {posts.map((post) => (
+              {posts.map(post => (
                 <div
                   key={post.id}
                   className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition"
@@ -215,8 +248,12 @@ const SocialFeed: React.FC = () => {
                             </div>
                           )}
                         </div>
-                        <p className="text-sm text-slate-400">{post.author.username}</p>
-                        <p className="text-xs text-slate-500 mt-1">{post.timestamp}</p>
+                        <p className="text-sm text-slate-400">
+                          {post.author.username}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {post.timestamp}
+                        </p>
                       </div>
                     </div>
                     <button className="p-2 hover:bg-slate-700 rounded-lg transition">
@@ -249,11 +286,13 @@ const SocialFeed: React.FC = () => {
                       onClick={() => handleLike(post.id)}
                       className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition ${
                         post.liked
-                          ? 'text-red-400 hover:bg-red-500/10'
-                          : 'text-slate-400 hover:bg-slate-700'
+                          ? "text-red-400 hover:bg-red-500/10"
+                          : "text-slate-400 hover:bg-slate-700"
                       }`}
                     >
-                      <Heart className={`h-5 w-5 ${post.liked ? 'fill-red-400' : ''}`} />
+                      <Heart
+                        className={`h-5 w-5 ${post.liked ? "fill-red-400" : ""}`}
+                      />
                       <span className="text-sm">Like</span>
                     </button>
                     <button
@@ -271,11 +310,13 @@ const SocialFeed: React.FC = () => {
                       onClick={() => handleBookmark(post.id)}
                       className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition ${
                         post.bookmarked
-                          ? 'text-yellow-400 hover:bg-yellow-500/10'
-                          : 'text-slate-400 hover:bg-slate-700'
+                          ? "text-yellow-400 hover:bg-yellow-500/10"
+                          : "text-slate-400 hover:bg-slate-700"
                       }`}
                     >
-                      <Bookmark className={`h-5 w-5 ${post.bookmarked ? 'fill-yellow-400' : ''}`} />
+                      <Bookmark
+                        className={`h-5 w-5 ${post.bookmarked ? "fill-yellow-400" : ""}`}
+                      />
                       <span className="text-sm">Save</span>
                     </button>
                   </div>
@@ -303,20 +344,24 @@ const SocialFeed: React.FC = () => {
                 <h2 className="text-xl font-bold">Trending Now</h2>
               </div>
               <div className="space-y-3">
-                {trends.map((trend) => (
+                {trends.map(trend => (
                   <div
                     key={trend.id}
                     className="p-3 hover:bg-slate-700/50 rounded-lg transition cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <p className="font-semibold text-purple-400">{trend.title}</p>
-                      {trend.trend === 'up' ? (
+                      <p className="font-semibold text-purple-400">
+                        {trend.title}
+                      </p>
+                      {trend.trend === "up" ? (
                         <Flame className="h-4 w-4 text-red-400" />
                       ) : (
                         <TrendingUp className="h-4 w-4 text-blue-400" />
                       )}
                     </div>
-                    <p className="text-xs text-slate-400">{trend.posts.toLocaleString()} posts</p>
+                    <p className="text-xs text-slate-400">
+                      {trend.posts.toLocaleString()} posts
+                    </p>
                     <p className="text-xs text-slate-500">{trend.category}</p>
                   </div>
                 ))}
@@ -331,18 +376,38 @@ const SocialFeed: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {[
-                  { name: 'Sam Rivera', username: '@samrivera', followers: '234K', avatar: '🎬' },
-                  { name: 'Casey Moon', username: '@casey_moon', followers: '189K', avatar: '🌙' },
-                  { name: 'Morgan Blake', username: '@morganblake', followers: '156K', avatar: '⚡' },
+                  {
+                    name: "Sam Rivera",
+                    username: "@samrivera",
+                    followers: "234K",
+                    avatar: "🎬",
+                  },
+                  {
+                    name: "Casey Moon",
+                    username: "@casey_moon",
+                    followers: "189K",
+                    avatar: "🌙",
+                  },
+                  {
+                    name: "Morgan Blake",
+                    username: "@morganblake",
+                    followers: "156K",
+                    avatar: "⚡",
+                  },
                 ].map((creator, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 hover:bg-slate-700/50 rounded-lg transition">
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 hover:bg-slate-700/50 rounded-lg transition"
+                  >
                     <div className="flex items-center gap-2 flex-1">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm">
                         {creator.avatar}
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-semibold">{creator.name}</p>
-                        <p className="text-xs text-slate-400">{creator.username}</p>
+                        <p className="text-xs text-slate-400">
+                          {creator.username}
+                        </p>
                       </div>
                     </div>
                     <button className="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded-full text-xs font-semibold transition">
@@ -379,7 +444,9 @@ const SocialFeed: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <p className="font-bold">{selectedPost.author.name}</p>
-                    <p className="text-sm text-slate-400">{selectedPost.author.username}</p>
+                    <p className="text-sm text-slate-400">
+                      {selectedPost.author.username}
+                    </p>
                   </div>
                 </div>
                 <p className="text-sm">{selectedPost.content}</p>
@@ -402,8 +469,16 @@ const SocialFeed: React.FC = () => {
               {/* Sample Comments */}
               <div className="space-y-4">
                 {[
-                  { author: 'Alex Chen', comment: 'This is amazing! 🔥', avatar: '👨‍💻' },
-                  { author: 'Jordan Smith', comment: 'Love this project!', avatar: '👩‍🎨' },
+                  {
+                    author: "Alex Chen",
+                    comment: "This is amazing! 🔥",
+                    avatar: "👨‍💻",
+                  },
+                  {
+                    author: "Jordan Smith",
+                    comment: "Love this project!",
+                    avatar: "👩‍🎨",
+                  },
                 ].map((item, idx) => (
                   <div key={idx} className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs flex-shrink-0">

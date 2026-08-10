@@ -30,10 +30,10 @@ export type BlockIdentifier = number | string;
  */
 export interface AbiItem {
   name?: string;
-  type: 'function' | 'event' | 'constructor' | 'fallback' | 'receive';
+  type: "function" | "event" | "constructor" | "fallback" | "receive";
   inputs?: Array<{ name: string; type: string; indexed?: boolean }>;
   outputs?: Array<{ name: string; type: string }>;
-  stateMutability?: 'pure' | 'view' | 'nonpayable' | 'payable';
+  stateMutability?: "pure" | "view" | "nonpayable" | "payable";
   anonymous?: boolean;
 }
 
@@ -112,7 +112,7 @@ export interface EventLog {
  * Represents a security vulnerability finding.
  */
 export interface AuditFinding {
-  severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Informational';
+  severity: "Critical" | "High" | "Medium" | "Low" | "Informational";
   category: string;
   description: string;
   location: {
@@ -136,7 +136,7 @@ export interface BytecodeAnalysisResult {
  * Represents gas optimization suggestions.
  */
 export interface GasOptimizationSuggestion {
-  type: 'Storage' | 'Computation' | 'Loops' | 'DataPacking';
+  type: "Storage" | "Computation" | "Loops" | "DataPacking";
   description: string;
   estimatedGasSavings: string; // e.g., "5000 gas units"
   codeSnippet?: string;
@@ -171,7 +171,7 @@ export interface MultiSigTransactionProposal {
 export interface ProxyConfig {
   proxyAddress: ContractAddress;
   implementationAddress: ContractAddress;
-  proxyType: 'Transparent' | 'UUPS' | 'Beacon';
+  proxyType: "Transparent" | "UUPS" | "Beacon";
 }
 
 /**
@@ -189,32 +189,150 @@ export interface UpgradeResult {
  */
 export const CONTRACT_TEMPLATES_ABI = {
   ERC20: [
-    { type: 'function', name: 'totalSupply', inputs: [], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
-    { type: 'function', name: 'balanceOf', inputs: [{ name: 'account', type: 'address' }], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
-    { type: 'function', name: 'transfer', inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }], stateMutability: 'nonpayable' },
-    { type: 'event', name: 'Transfer', inputs: [{ name: 'from', type: 'address', indexed: true }, { name: 'to', type: 'address', indexed: true }, { name: 'value', type: 'uint256' }], anonymous: false },
+    {
+      type: "function",
+      name: "totalSupply",
+      inputs: [],
+      outputs: [{ name: "", type: "uint256" }],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
+      name: "balanceOf",
+      inputs: [{ name: "account", type: "address" }],
+      outputs: [{ name: "", type: "uint256" }],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
+      name: "transfer",
+      inputs: [
+        { name: "to", type: "address" },
+        { name: "amount", type: "uint256" },
+      ],
+      outputs: [{ name: "", type: "bool" }],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "event",
+      name: "Transfer",
+      inputs: [
+        { name: "from", type: "address", indexed: true },
+        { name: "to", type: "address", indexed: true },
+        { name: "value", type: "uint256" },
+      ],
+      anonymous: false,
+    },
   ] as ContractABI,
   ERC721: [
-    { type: 'function', name: 'balanceOf', inputs: [{ name: 'owner', type: 'address' }], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
-    { type: 'function', name: 'ownerOf', inputs: [{ name: 'tokenId', type: 'uint256' }], outputs: [{ name: '', type: 'address' }], stateMutability: 'view' },
-    { type: 'function', name: 'transferFrom', inputs: [{ name: 'from', type: 'address' }, { name: 'to', type: 'address' }, { name: 'tokenId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
-    { type: 'event', name: 'Transfer', inputs: [{ name: 'from', type: 'address', indexed: true }, { name: 'to', type: 'address', indexed: true }, { name: 'tokenId', type: 'uint256' }], anonymous: false },
+    {
+      type: "function",
+      name: "balanceOf",
+      inputs: [{ name: "owner", type: "address" }],
+      outputs: [{ name: "", type: "uint256" }],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
+      name: "ownerOf",
+      inputs: [{ name: "tokenId", type: "uint256" }],
+      outputs: [{ name: "", type: "address" }],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
+      name: "transferFrom",
+      inputs: [
+        { name: "from", type: "address" },
+        { name: "to", type: "address" },
+        { name: "tokenId", type: "uint256" },
+      ],
+      outputs: [],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "event",
+      name: "Transfer",
+      inputs: [
+        { name: "from", type: "address", indexed: true },
+        { name: "to", type: "address", indexed: true },
+        { name: "tokenId", type: "uint256" },
+      ],
+      anonymous: false,
+    },
   ] as ContractABI,
   ERC1155: [
-    { type: 'function', name: 'balanceOf', inputs: [{ name: 'account', type: 'address' }, { name: 'id', type: 'uint256' }], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
-    { type: 'function', name: 'balanceOfBatch', inputs: [{ name: 'accounts', type: 'address[]' }, { name: 'ids', type: 'uint256[]' }], outputs: [{ name: '', type: 'uint256[]' }], stateMutability: 'view' },
+    {
+      type: "function",
+      name: "balanceOf",
+      inputs: [
+        { name: "account", type: "address" },
+        { name: "id", type: "uint256" },
+      ],
+      outputs: [{ name: "", type: "uint256" }],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
+      name: "balanceOfBatch",
+      inputs: [
+        { name: "accounts", type: "address[]" },
+        { name: "ids", type: "uint256[]" },
+      ],
+      outputs: [{ name: "", type: "uint256[]" }],
+      stateMutability: "view",
+    },
   ] as ContractABI,
   Staking: [
-    { type: 'function', name: 'stake', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
-    { type: 'function', name: 'unstake', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
+    {
+      type: "function",
+      name: "stake",
+      inputs: [{ name: "amount", type: "uint256" }],
+      outputs: [],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "function",
+      name: "unstake",
+      inputs: [{ name: "amount", type: "uint256" }],
+      outputs: [],
+      stateMutability: "nonpayable",
+    },
   ] as ContractABI,
   Governance: [
-    { type: 'function', name: 'propose', inputs: [{ name: 'description', type: 'string' }], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'nonpayable' },
-    { type: 'function', name: 'vote', inputs: [{ name: 'proposalId', type: 'uint256' }, { name: 'support', type: 'bool' }], outputs: [], stateMutability: 'nonpayable' },
+    {
+      type: "function",
+      name: "propose",
+      inputs: [{ name: "description", type: "string" }],
+      outputs: [{ name: "", type: "uint256" }],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "function",
+      name: "vote",
+      inputs: [
+        { name: "proposalId", type: "uint256" },
+        { name: "support", type: "bool" },
+      ],
+      outputs: [],
+      stateMutability: "nonpayable",
+    },
   ] as ContractABI,
   Vesting: [
-    { type: 'function', name: 'vest', inputs: [], outputs: [], stateMutability: 'nonpayable' },
-    { type: 'function', name: 'releasable', inputs: [{ name: 'beneficiary', type: 'address' }], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
+    {
+      type: "function",
+      name: "vest",
+      inputs: [],
+      outputs: [],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "function",
+      name: "releasable",
+      inputs: [{ name: "beneficiary", type: "address" }],
+      outputs: [{ name: "", type: "uint256" }],
+      stateMutability: "view",
+    },
   ] as ContractABI,
 };
 
@@ -247,12 +365,17 @@ class BlockchainUtils {
    * @param txHash The transaction hash.
    * @returns A promise that resolves with a simplified transaction receipt.
    */
-  public async getTransactionReceipt(txHash: TransactionHash): Promise<{ status: boolean; blockNumber: number }> {
+  public async getTransactionReceipt(
+    txHash: TransactionHash
+  ): Promise<{ status: boolean; blockNumber: number }> {
     // In a real implementation, this would interact with a blockchain node.
-    if (typeof txHash === 'string' && txHash.startsWith('0x')) {
-      return Promise.resolve({ status: true, blockNumber: Math.floor(Date.now() / 10000) });
+    if (typeof txHash === "string" && txHash.startsWith("0x")) {
+      return Promise.resolve({
+        status: true,
+        blockNumber: Math.floor(Date.now() / 10000),
+      });
     }
-    throw new Error('Invalid transaction hash');
+    throw new Error("Invalid transaction hash");
   }
 
   /**
@@ -263,9 +386,11 @@ class BlockchainUtils {
   public async sendRawTransaction(signedTx: string): Promise<TransactionHash> {
     // In a real implementation, this would interact with a blockchain node.
     if (signedTx.length > 10) {
-      return Promise.resolve(`0x${Math.random().toString(16).substring(2, 66)}` as string);
+      return Promise.resolve(
+        `0x${Math.random().toString(16).substring(2, 66)}` as string
+      );
     }
-    throw new Error('Invalid signed transaction');
+    throw new Error("Invalid signed transaction");
   }
 }
 
@@ -286,10 +411,16 @@ class ContractDeployerAndInteractor {
    * @param config The deployment configuration.
    * @returns A promise that resolves with the deployment result.
    */
-  public async deployContract(config: DeploymentConfig): Promise<DeploymentResult> {
-    console.log(`Deploying contract with bytecode: ${config.bytecode.substring(0, 20)}...`);
+  public async deployContract(
+    config: DeploymentConfig
+  ): Promise<DeploymentResult> {
+    console.log(
+      `Deploying contract with bytecode: ${config.bytecode.substring(0, 20)}...`
+    );
     // Simulate transaction sending and receipt
-    const txHashResult = await this.blockchainUtils.sendRawTransaction('0x' + config.bytecode);
+    const txHashResult = await this.blockchainUtils.sendRawTransaction(
+      "0x" + config.bytecode
+    );
     const txHash = String(txHashResult);
     const receipt = await this.blockchainUtils.getTransactionReceipt(txHash);
     const address = `0x${Math.random().toString(16).substring(2, 42)}`; // Simulate new contract address
@@ -305,10 +436,16 @@ class ContractDeployerAndInteractor {
    * @param config The interaction configuration.
    * @returns A promise that resolves with the interaction result.
    */
-  public async interactWithContract(config: ContractInteractionConfig): Promise<ContractInteractionResult> {
-    console.log(`Interacting with contract ${config.contractAddress}, method: ${config.methodName}`);
+  public async interactWithContract(
+    config: ContractInteractionConfig
+  ): Promise<ContractInteractionResult> {
+    console.log(
+      `Interacting with contract ${config.contractAddress}, method: ${config.methodName}`
+    );
     // Simulate transaction sending and receipt
-    const txHash = await this.blockchainUtils.sendRawTransaction('0x' + config.methodName + JSON.stringify(config.args));
+    const txHash = await this.blockchainUtils.sendRawTransaction(
+      "0x" + config.methodName + JSON.stringify(config.args)
+    );
     const receipt = await this.blockchainUtils.getTransactionReceipt(txHash);
     return {
       transactionHash: txHash,
@@ -322,11 +459,17 @@ class ContractDeployerAndInteractor {
    * @param config The interaction configuration.
    * @returns A promise that resolves with the return value of the call.
    */
-  public async callContractMethod(config: ContractInteractionConfig): Promise<any> {
-    console.log(`Calling contract ${config.contractAddress}, method: ${config.methodName}`);
+  public async callContractMethod(
+    config: ContractInteractionConfig
+  ): Promise<any> {
+    console.log(
+      `Calling contract ${config.contractAddress}, method: ${config.methodName}`
+    );
     // Simulate a contract call, potentially using LLM for complex logic simulation
     const prompt = `Simulate the return value for a call to contract method '${config.methodName}' with arguments ${JSON.stringify(config.args)} on contract at ${config.contractAddress}. ABI: ${JSON.stringify(config.abi)}.`;
-    const llmRawResult = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+    const llmRawResult = await invokeLLM({
+      messages: [{ role: "user", content: prompt }],
+    });
     const llmResponse = String(llmRawResult.choices[0]?.message?.content || "");
     try {
       return JSON.parse(llmResponse);
@@ -349,18 +492,20 @@ class AbiParser {
     try {
       const abi = JSON.parse(rawAbiJson);
       if (!Array.isArray(abi)) {
-        throw new Error('ABI must be an array.');
+        throw new Error("ABI must be an array.");
       }
       // Basic validation for ABI items
       for (const item of abi) {
         if (!item.type) {
-          throw new Error('ABI item missing type.');
+          throw new Error("ABI item missing type.");
         }
       }
       return abi as ContractABI;
     } catch (error) {
-      console.error('Error parsing ABI:', error);
-      throw new Error(`Failed to parse ABI: ${error instanceof Error ? error.message : String(error)}`);
+      console.error("Error parsing ABI:", error);
+      throw new Error(
+        `Failed to parse ABI: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -371,9 +516,9 @@ class AbiParser {
    */
   public getFunctionSignatures(abi: ContractABI): string[] {
     return abi
-      .filter(item => item.type === 'function' && item.name)
+      .filter(item => item.type === "function" && item.name)
       .map(item => {
-        const inputs = (item.inputs || []).map(input => input.type).join(',');
+        const inputs = (item.inputs || []).map(input => input.type).join(",");
         return `${item.name}(${inputs})`;
       });
   }
@@ -385,7 +530,11 @@ class AbiParser {
    * @param type The type of the item ('function' or 'event').
    * @returns The found AbiItem or undefined.
    */
-  public findAbiItem(abi: ContractABI, name: string, type: 'function' | 'event'): AbiItem | undefined {
+  public findAbiItem(
+    abi: ContractABI,
+    name: string,
+    type: "function" | "event"
+  ): AbiItem | undefined {
     return abi.find(item => item.name === name && item.type === type);
   }
 }
@@ -400,34 +549,49 @@ class AuditTools {
    * @param abi The contract ABI.
    * @returns A promise that resolves with a list of audit findings.
    */
-  public async performSecurityAudit(bytecode: string, abi: ContractABI): Promise<AuditFinding[]> {
-    console.log('Performing security audit...');
+  public async performSecurityAudit(
+    bytecode: string,
+    abi: ContractABI
+  ): Promise<AuditFinding[]> {
+    console.log("Performing security audit...");
     const prompt = `Analyze the following contract bytecode and ABI for common security vulnerabilities (e.g., reentrancy, integer overflow, access control issues). Bytecode: ${bytecode.substring(0, 100)}... ABI: ${JSON.stringify(abi)}. Provide findings in a structured JSON format.`;
-    const llmRawResult = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+    const llmRawResult = await invokeLLM({
+      messages: [{ role: "user", content: prompt }],
+    });
     const llmResponse = String(llmRawResult.choices[0]?.message?.content || "");
     try {
       const findings = JSON.parse(llmResponse) as AuditFinding[];
       // Basic validation for findings structure
-      if (!Array.isArray(findings) || findings.some(f => !f.severity || !f.description)) {
-        throw new Error('LLM response for audit findings is not in expected format.');
+      if (
+        !Array.isArray(findings) ||
+        findings.some(f => !f.severity || !f.description)
+      ) {
+        throw new Error(
+          "LLM response for audit findings is not in expected format."
+        );
       }
       return findings;
     } catch (e) {
-      console.warn('LLM did not return valid JSON for audit findings, returning mock data.', e);
+      console.warn(
+        "LLM did not return valid JSON for audit findings, returning mock data.",
+        e
+      );
       return [
         {
-          severity: 'Medium',
-          category: 'Reentrancy',
-          description: 'Potential reentrancy vulnerability detected in a fallback function.',
-          location: { file: 'Contract.sol', line: 123 },
-          recommendation: 'Implement reentrancy guard or use Checks-Effects-Interactions pattern.',
+          severity: "Medium",
+          category: "Reentrancy",
+          description:
+            "Potential reentrancy vulnerability detected in a fallback function.",
+          location: { file: "Contract.sol", line: 123 },
+          recommendation:
+            "Implement reentrancy guard or use Checks-Effects-Interactions pattern.",
         },
         {
-          severity: 'Low',
-          category: 'Gas Optimization',
-          description: 'Inefficient storage access pattern.',
-          location: { file: 'Contract.sol', line: 45 },
-          recommendation: 'Pack storage variables to reduce SLOAD operations.',
+          severity: "Low",
+          category: "Gas Optimization",
+          description: "Inefficient storage access pattern.",
+          location: { file: "Contract.sol", line: 45 },
+          recommendation: "Pack storage variables to reduce SLOAD operations.",
         },
       ];
     }
@@ -438,22 +602,48 @@ class AuditTools {
    * @param bytecode The contract bytecode.
    * @returns A promise that resolves with bytecode analysis results.
    */
-  public async analyzeBytecode(bytecode: string): Promise<BytecodeAnalysisResult> {
-    console.log('Analyzing bytecode...');
+  public async analyzeBytecode(
+    bytecode: string
+  ): Promise<BytecodeAnalysisResult> {
+    console.log("Analyzing bytecode...");
     const prompt = `Analyze the provided EVM bytecode for its operational codes and potential control flow. Bytecode: ${bytecode.substring(0, 200)}...`;
-    const llmRawResult = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+    const llmRawResult = await invokeLLM({
+      messages: [{ role: "user", content: prompt }],
+    });
     const llmResponse = String(llmRawResult.choices[0]?.message?.content || "");
     try {
       const analysis = JSON.parse(llmResponse) as BytecodeAnalysisResult;
       if (!analysis.opcodes) {
-        throw new Error('LLM response for bytecode analysis is not in expected format.');
+        throw new Error(
+          "LLM response for bytecode analysis is not in expected format."
+        );
       }
       return analysis;
     } catch (e) {
-      console.warn('LLM did not return valid JSON for bytecode analysis, returning mock data.', e);
+      console.warn(
+        "LLM did not return valid JSON for bytecode analysis, returning mock data.",
+        e
+      );
       return {
-        opcodes: ['PUSH1', '60', 'PUSH1', '40', 'MSTORE', 'CALLDATASIZE', 'LT', 'PUSH1', '60', 'JUMPI'],
-        controlFlowGraph: { nodes: ['start', 'check_size', 'end'], edges: [['start', 'check_size'], ['check_size', 'end']] },
+        opcodes: [
+          "PUSH1",
+          "60",
+          "PUSH1",
+          "40",
+          "MSTORE",
+          "CALLDATASIZE",
+          "LT",
+          "PUSH1",
+          "60",
+          "JUMPI",
+        ],
+        controlFlowGraph: {
+          nodes: ["start", "check_size", "end"],
+          edges: [
+            ["start", "check_size"],
+            ["check_size", "end"],
+          ],
+        },
       };
     }
   }
@@ -468,31 +658,47 @@ class GasOptimizer {
    * @param contractSourceOrBytecode The contract source code or bytecode.
    * @returns A promise that resolves with a list of gas optimization suggestions.
    */
-  public async getOptimizationSuggestions(contractSourceOrBytecode: string): Promise<GasOptimizationSuggestion[]> {
-    console.log('Generating gas optimization suggestions...');
+  public async getOptimizationSuggestions(
+    contractSourceOrBytecode: string
+  ): Promise<GasOptimizationSuggestion[]> {
+    console.log("Generating gas optimization suggestions...");
     const prompt = `Provide gas optimization suggestions for the following contract code/bytecode: ${contractSourceOrBytecode.substring(0, 200)}... Focus on common patterns like storage packing, efficient loops, and external calls. Return suggestions in a structured JSON format.`;
-    const llmRawResult = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+    const llmRawResult = await invokeLLM({
+      messages: [{ role: "user", content: prompt }],
+    });
     const llmResponse = String(llmRawResult.choices[0]?.message?.content || "");
     try {
-      const suggestions = JSON.parse(llmResponse) as GasOptimizationSuggestion[];
-      if (!Array.isArray(suggestions) || suggestions.some(s => !s.description || !s.estimatedGasSavings)) {
-        throw new Error('LLM response for gas optimization is not in expected format.');
+      const suggestions = JSON.parse(
+        llmResponse
+      ) as GasOptimizationSuggestion[];
+      if (
+        !Array.isArray(suggestions) ||
+        suggestions.some(s => !s.description || !s.estimatedGasSavings)
+      ) {
+        throw new Error(
+          "LLM response for gas optimization is not in expected format."
+        );
       }
       return suggestions;
     } catch (e) {
-      console.warn('LLM did not return valid JSON for gas optimization, returning mock data.', e);
+      console.warn(
+        "LLM did not return valid JSON for gas optimization, returning mock data.",
+        e
+      );
       return [
         {
-          type: 'Storage',
-          description: 'Consider packing small variables into a single storage slot to reduce SLOAD operations.',
-          estimatedGasSavings: '2000 gas units per access',
-          codeSnippet: 'uint8 a; uint8 b; uint16 c; // pack into one slot',
+          type: "Storage",
+          description:
+            "Consider packing small variables into a single storage slot to reduce SLOAD operations.",
+          estimatedGasSavings: "2000 gas units per access",
+          codeSnippet: "uint8 a; uint8 b; uint16 c; // pack into one slot",
         },
         {
-          type: 'Computation',
-          description: 'Cache array length in loops to avoid re-reading storage.',
-          estimatedGasSavings: '50 gas units per iteration',
-          codeSnippet: 'for (uint i = 0; i < cachedLength; i++) { ... }',
+          type: "Computation",
+          description:
+            "Cache array length in loops to avoid re-reading storage.",
+          estimatedGasSavings: "50 gas units per iteration",
+          codeSnippet: "for (uint i = 0; i < cachedLength; i++) { ... }",
         },
       ];
     }
@@ -510,24 +716,39 @@ class ContractVerifier {
    * @param abi The contract's ABI.
    * @returns A promise that resolves with the verification result.
    */
-  public async verifyContract(contractAddress: ContractAddress, sourceCode: string, abi: ContractABI): Promise<ContractVerificationResult> {
+  public async verifyContract(
+    contractAddress: ContractAddress,
+    sourceCode: string,
+    abi: ContractABI
+  ): Promise<ContractVerificationResult> {
     console.log(`Verifying contract ${contractAddress}...`);
     const prompt = `Simulate verification for contract at ${contractAddress} with provided source code (first 100 chars: ${sourceCode.substring(0, 100)}...) and ABI. Determine if it would be verified on a block explorer.`;
-    const llmRawResult = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+    const llmRawResult = await invokeLLM({
+      messages: [{ role: "user", content: prompt }],
+    });
     const llmResponse = String(llmRawResult.choices[0]?.message?.content || "");
     try {
       const result = JSON.parse(llmResponse) as ContractVerificationResult;
-      if (typeof result.isVerified !== 'boolean') {
-        throw new Error('LLM response for verification is not in expected format.');
+      if (typeof result.isVerified !== "boolean") {
+        throw new Error(
+          "LLM response for verification is not in expected format."
+        );
       }
       return result;
     } catch (e) {
-      console.warn('LLM did not return valid JSON for contract verification, returning mock data.', e);
+      console.warn(
+        "LLM did not return valid JSON for contract verification, returning mock data.",
+        e
+      );
       const isVerified = Math.random() > 0.5;
       return {
         isVerified: isVerified,
-        verifierUrl: isVerified ? `https://skycoin4444explorer.com/address/${contractAddress}#code` : undefined,
-        errors: isVerified ? [] : ['Bytecode mismatch', 'Compiler settings differ'],
+        verifierUrl: isVerified
+          ? `https://skycoin4444explorer.com/address/${contractAddress}#code`
+          : undefined,
+        errors: isVerified
+          ? []
+          : ["Bytecode mismatch", "Compiler settings differ"],
       };
     }
   }
@@ -550,7 +771,14 @@ class MultiSigManager {
    * @param requiredApprovals The number of approvals required.
    * @returns The created proposal.
    */
-  public createProposal(to: ContractAddress, value: string, data: string, description: string, proposer: ContractAddress, requiredApprovals: number): MultiSigTransactionProposal {
+  public createProposal(
+    to: ContractAddress,
+    value: string,
+    data: string,
+    description: string,
+    proposer: ContractAddress,
+    requiredApprovals: number
+  ): MultiSigTransactionProposal {
     const proposal: MultiSigTransactionProposal = {
       to,
       value,
@@ -563,7 +791,9 @@ class MultiSigManager {
     };
     this.proposals.push(proposal);
     this.nextProposalId++;
-    console.log(`New multi-sig proposal created by ${proposer}: ${description}`);
+    console.log(
+      `New multi-sig proposal created by ${proposer}: ${description}`
+    );
     return proposal;
   }
 
@@ -573,17 +803,22 @@ class MultiSigManager {
    * @param approverAddress The address of the approver.
    * @returns True if approved, false otherwise.
    */
-  public approveProposal(proposalIndex: number, approverAddress: ContractAddress): boolean {
+  public approveProposal(
+    proposalIndex: number,
+    approverAddress: ContractAddress
+  ): boolean {
     if (proposalIndex < 0 || proposalIndex >= this.proposals.length) {
-      throw new Error('Invalid proposal index.');
+      throw new Error("Invalid proposal index.");
     }
     const proposal = this.proposals[proposalIndex];
     if (proposal.executed) {
-      throw new Error('Cannot approve an already executed proposal.');
+      throw new Error("Cannot approve an already executed proposal.");
     }
     if (!proposal.approvals.includes(approverAddress)) {
       proposal.approvals.push(approverAddress);
-      console.log(`Proposal ${proposalIndex} approved by ${approverAddress}. Current approvals: ${proposal.approvals.length}/${proposal.requiredApprovals}`);
+      console.log(
+        `Proposal ${proposalIndex} approved by ${approverAddress}. Current approvals: ${proposal.approvals.length}/${proposal.requiredApprovals}`
+      );
       return true;
     }
     return false;
@@ -594,23 +829,31 @@ class MultiSigManager {
    * @param proposalIndex The index of the proposal.
    * @returns A promise that resolves with the transaction hash if executed, or null if not enough approvals.
    */
-  public async executeProposal(proposalIndex: number): Promise<TransactionHash | null> {
+  public async executeProposal(
+    proposalIndex: number
+  ): Promise<TransactionHash | null> {
     if (proposalIndex < 0 || proposalIndex >= this.proposals.length) {
-      throw new Error('Invalid proposal index.');
+      throw new Error("Invalid proposal index.");
     }
     const proposal = this.proposals[proposalIndex];
     if (proposal.executed) {
-      throw new Error('Proposal already executed.');
+      throw new Error("Proposal already executed.");
     }
 
     if (proposal.approvals.length >= proposal.requiredApprovals) {
-      console.log(`Executing multi-sig proposal ${proposalIndex}: ${proposal.description}`);
+      console.log(
+        `Executing multi-sig proposal ${proposalIndex}: ${proposal.description}`
+      );
       // Simulate execution
-      const txHash = await new BlockchainUtils().sendRawTransaction(`0x${proposal.to}${proposal.value}${proposal.data}`);
+      const txHash = await new BlockchainUtils().sendRawTransaction(
+        `0x${proposal.to}${proposal.value}${proposal.data}`
+      );
       proposal.executed = true;
       return txHash;
     } else {
-      console.log(`Proposal ${proposalIndex} does not have enough approvals yet. Needed: ${proposal.requiredApprovals}, Got: ${proposal.approvals.length}`);
+      console.log(
+        `Proposal ${proposalIndex} does not have enough approvals yet. Needed: ${proposal.requiredApprovals}, Got: ${proposal.approvals.length}`
+      );
       return null;
     }
   }
@@ -640,8 +883,13 @@ class ProxyAndUpgradeManager {
    * @param proxyType The type of proxy to deploy.
    * @returns A promise that resolves with the deployed proxy configuration.
    */
-  public async deployProxy(initialImplementationAddress: ContractAddress, proxyType: ProxyConfig['proxyType']): Promise<ProxyConfig> {
-    console.log(`Deploying ${proxyType} proxy pointing to ${initialImplementationAddress}...`);
+  public async deployProxy(
+    initialImplementationAddress: ContractAddress,
+    proxyType: ProxyConfig["proxyType"]
+  ): Promise<ProxyConfig> {
+    console.log(
+      `Deploying ${proxyType} proxy pointing to ${initialImplementationAddress}...`
+    );
     // Simulate proxy deployment
     const proxyBytecode = `0xproxy_${proxyType}_${initialImplementationAddress}`;
     const deployer = new ContractDeployerAndInteractor(this.blockchainUtils);
@@ -664,11 +912,17 @@ class ProxyAndUpgradeManager {
    * @param newImplementationAddress The address of the new implementation contract.
    * @returns A promise that resolves with the upgrade result.
    */
-  public async upgradeProxy(proxyAddress: ContractAddress, newImplementationAddress: ContractAddress): Promise<UpgradeResult> {
-    console.log(`Upgrading proxy ${proxyAddress} to new implementation ${newImplementationAddress}...`);
+  public async upgradeProxy(
+    proxyAddress: ContractAddress,
+    newImplementationAddress: ContractAddress
+  ): Promise<UpgradeResult> {
+    console.log(
+      `Upgrading proxy ${proxyAddress} to new implementation ${newImplementationAddress}...`
+    );
     // Simulate upgrade transaction
     const upgradeTxData = `0xupgradeCallData_${newImplementationAddress}`;
-    const txHashResult = await this.blockchainUtils.sendRawTransaction(upgradeTxData);
+    const txHashResult =
+      await this.blockchainUtils.sendRawTransaction(upgradeTxData);
     const txHash = String(txHashResult);
 
     return {
@@ -682,14 +936,18 @@ class ProxyAndUpgradeManager {
    * @param proxyAddress The address of the proxy contract.
    * @returns A promise that resolves with the implementation address.
    */
-  public async getImplementationAddress(proxyAddress: ContractAddress): Promise<ContractAddress> {
+  public async getImplementationAddress(
+    proxyAddress: ContractAddress
+  ): Promise<ContractAddress> {
     console.log(`Fetching implementation address for proxy ${proxyAddress}...`);
     // Simulate fetching implementation address (e.g., from storage slot or specific proxy method)
     const prompt = `What is the current implementation address for a proxy contract at ${proxyAddress}?`;
-    const llmRawResult = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+    const llmRawResult = await invokeLLM({
+      messages: [{ role: "user", content: prompt }],
+    });
     const llmResponse = String(llmRawResult.choices[0]?.message?.content || "");
     // Assume LLM returns a valid address string
-    if (llmResponse.startsWith('0x') && llmResponse.length === 42) {
+    if (llmResponse.startsWith("0x") && llmResponse.length === 42) {
       return llmResponse;
     }
     return `0x${Math.random().toString(16).substring(2, 42)}`; // Mock address
@@ -713,8 +971,14 @@ class EventMonitor {
    * @param callback A callback function to handle detected events.
    * @returns A function to stop monitoring.
    */
-  public startMonitoringEvents(contractAddress: ContractAddress, eventsToMonitor: MonitoredEvent[], callback: (log: EventLog) => void): () => void {
-    console.log(`Starting event monitoring for ${contractAddress} for events: ${eventsToMonitor.map(e => e.eventName).join(', ')}`);
+  public startMonitoringEvents(
+    contractAddress: ContractAddress,
+    eventsToMonitor: MonitoredEvent[],
+    callback: (log: EventLog) => void
+  ): () => void {
+    console.log(
+      `Starting event monitoring for ${contractAddress} for events: ${eventsToMonitor.map(e => e.eventName).join(", ")}`
+    );
 
     // In a real system, this would involve subscribing to blockchain node events.
     // For simulation, we'll periodically check and emit mock events.
@@ -723,15 +987,22 @@ class EventMonitor {
       const currentBlock = await this.blockchainUtils.getCurrentBlockNumber();
       for (const eventConfig of eventsToMonitor) {
         // Simulate event detection based on filter and block range
-        if (Math.random() < 0.3) { // 30% chance to detect a mock event
+        if (Math.random() < 0.3) {
+          // 30% chance to detect a mock event
           const mockLog: EventLog = {
             blockNumber: currentBlock,
             transactionHash: `0x${Math.random().toString(16).substring(2, 66)}`,
             address: contractAddress,
             event: eventConfig.eventName,
-            args: { from: `0x${Math.random().toString(16).substring(2, 42)}`, to: `0x${Math.random().toString(16).substring(2, 42)}`, value: Math.floor(Math.random() * 1000).toString() },
+            args: {
+              from: `0x${Math.random().toString(16).substring(2, 42)}`,
+              to: `0x${Math.random().toString(16).substring(2, 42)}`,
+              value: Math.floor(Math.random() * 1000).toString(),
+            },
           };
-          console.log(`Detected event: ${eventConfig.eventName} at block ${currentBlock}`);
+          console.log(
+            `Detected event: ${eventConfig.eventName} at block ${currentBlock}`
+          );
           callback(mockLog);
         }
       }
@@ -773,7 +1044,9 @@ export class AtlasSmartContractsEngine {
     this.multiSigManager = new MultiSigManager();
     this.proxyManager = new ProxyAndUpgradeManager(this.blockchainUtils);
     this.eventMonitor = new EventMonitor(this.blockchainUtils);
-    console.log('ATLAS Smart Contracts Engine initialized for SKYCOIN4444 platform.');
+    console.log(
+      "ATLAS Smart Contracts Engine initialized for SKYCOIN4444 platform."
+    );
   }
 
   /**
@@ -792,25 +1065,38 @@ export class AtlasSmartContractsEngine {
    * @param eventsToMonitor Optional events to monitor after deployment.
    * @returns A promise that resolves with a summary of the contract lifecycle.
    */
-  public async fullContractLifecycle(config: DeploymentConfig, sourceCode: string, eventsToMonitor?: MonitoredEvent[]): Promise<{
+  public async fullContractLifecycle(
+    config: DeploymentConfig,
+    sourceCode: string,
+    eventsToMonitor?: MonitoredEvent[]
+  ): Promise<{
     deployment: DeploymentResult;
     auditFindings: AuditFinding[];
     verification: ContractVerificationResult;
     stopMonitoring?: () => void;
   }> {
-    console.log('Starting full contract lifecycle...');
+    console.log("Starting full contract lifecycle...");
 
     // 1. Deploy Contract
     const deployment = await this.deployer.deployContract(config);
     console.log(`Contract deployed at: ${deployment.address}`);
 
     // 2. Perform Security Audit
-    const auditFindings = await this.auditTools.performSecurityAudit(config.bytecode, config.abi);
+    const auditFindings = await this.auditTools.performSecurityAudit(
+      config.bytecode,
+      config.abi
+    );
     console.log(`Audit completed with ${auditFindings.length} findings.`);
 
     // 3. Verify Contract
-    const verification = await this.verifier.verifyContract(deployment.address, sourceCode, config.abi);
-    console.log(`Contract verification status: ${verification.isVerified ? 'Verified' : 'Failed'}`);
+    const verification = await this.verifier.verifyContract(
+      deployment.address,
+      sourceCode,
+      config.abi
+    );
+    console.log(
+      `Contract verification status: ${verification.isVerified ? "Verified" : "Failed"}`
+    );
 
     // 4. Monitor Events (if specified)
     let stopMonitoring: (() => void) | undefined;
@@ -818,15 +1104,18 @@ export class AtlasSmartContractsEngine {
       stopMonitoring = this.eventMonitor.startMonitoringEvents(
         deployment.address,
         eventsToMonitor,
-        (log) => {
-          console.log(`[Lifecycle Monitor] Event ${log.event} detected:`, log.args);
+        log => {
+          console.log(
+            `[Lifecycle Monitor] Event ${log.event} detected:`,
+            log.args
+          );
           // In a real scenario, this would trigger further actions (e.g., database update, notification)
         }
       );
-      console.log('Event monitoring started.');
+      console.log("Event monitoring started.");
     }
 
-    console.log('Full contract lifecycle orchestration complete.');
+    console.log("Full contract lifecycle orchestration complete.");
     return {
       deployment,
       auditFindings,

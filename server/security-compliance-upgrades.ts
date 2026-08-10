@@ -26,7 +26,12 @@ export const securityComplianceRouter = router({
   // Session management
   getActiveSessions: protectedProcedure.query(async () => ({
     sessions: [
-      { id: "1", device: "Chrome on macOS", lastActive: Date.now(), current: true },
+      {
+        id: "1",
+        device: "Chrome on macOS",
+        lastActive: Date.now(),
+        current: true,
+      },
     ],
   })),
 

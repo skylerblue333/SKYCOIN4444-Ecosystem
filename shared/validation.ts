@@ -27,7 +27,8 @@ export interface ValidationRule {
  */
 export function validateEmail(email: string): ValidationResult {
   const errors: string[] = [];
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  const emailRegex =
+    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
   if (!email || email.trim().length === 0) {
     errors.push("Email is required");
@@ -37,9 +38,11 @@ export function validateEmail(email: string): ValidationResult {
     errors.push("Invalid email format");
   } else {
     const [local, domain] = email.split("@");
-    if (local.length > 64) errors.push("Local part must be less than 64 characters");
+    if (local.length > 64)
+      errors.push("Local part must be less than 64 characters");
     if (!domain || domain.length < 3) errors.push("Invalid domain");
-    if (domain && !domain.includes(".")) errors.push("Domain must contain a dot");
+    if (domain && !domain.includes("."))
+      errors.push("Domain must contain a dot");
   }
 
   return { valid: errors.length === 0, errors };
@@ -54,15 +57,34 @@ export function validateUsername(username: string): ValidationResult {
   if (!username || username.trim().length === 0) {
     errors.push("Username is required");
   } else {
-    if (username.length < 3) errors.push("Username must be at least 3 characters");
-    if (username.length > 30) errors.push("Username must be less than 30 characters");
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) errors.push("Username can only contain letters, numbers, and underscores");
-    if (/^[0-9]/.test(username)) errors.push("Username cannot start with a number");
-    if (username.startsWith("_") || username.endsWith("_")) errors.push("Username cannot start or end with underscore");
-    if (/__/.test(username)) errors.push("Username cannot contain consecutive underscores");
+    if (username.length < 3)
+      errors.push("Username must be at least 3 characters");
+    if (username.length > 30)
+      errors.push("Username must be less than 30 characters");
+    if (!/^[a-zA-Z0-9_]+$/.test(username))
+      errors.push(
+        "Username can only contain letters, numbers, and underscores"
+      );
+    if (/^[0-9]/.test(username))
+      errors.push("Username cannot start with a number");
+    if (username.startsWith("_") || username.endsWith("_"))
+      errors.push("Username cannot start or end with underscore");
+    if (/__/.test(username))
+      errors.push("Username cannot contain consecutive underscores");
 
     // Reserved words
-    const reserved = ["admin", "moderator", "system", "support", "help", "root", "null", "undefined", "api", "www"];
+    const reserved = [
+      "admin",
+      "moderator",
+      "system",
+      "support",
+      "help",
+      "root",
+      "null",
+      "undefined",
+      "api",
+      "www",
+    ];
     if (reserved.includes(username.toLowerCase())) {
       errors.push("This username is reserved");
     }
@@ -80,11 +102,16 @@ export function validateDisplayName(name: string): ValidationResult {
   if (!name || name.trim().length === 0) {
     errors.push("Display name is required");
   } else {
-    if (name.length < 1) errors.push("Display name must be at least 1 character");
-    if (name.length > 50) errors.push("Display name must be less than 50 characters");
-    if (/[<>{}[\]\\]/.test(name)) errors.push("Display name contains invalid characters");
-    if (/^\s|\s$/.test(name)) errors.push("Display name cannot start or end with whitespace");
-    if (/\s{2,}/.test(name)) errors.push("Display name cannot contain consecutive spaces");
+    if (name.length < 1)
+      errors.push("Display name must be at least 1 character");
+    if (name.length > 50)
+      errors.push("Display name must be less than 50 characters");
+    if (/[<>{}[\]\\]/.test(name))
+      errors.push("Display name contains invalid characters");
+    if (/^\s|\s$/.test(name))
+      errors.push("Display name cannot start or end with whitespace");
+    if (/\s{2,}/.test(name))
+      errors.push("Display name cannot contain consecutive spaces");
   }
 
   return { valid: errors.length === 0, errors };
@@ -99,11 +126,16 @@ export function validatePassword(password: string): ValidationResult {
   if (!password) {
     errors.push("Password is required");
   } else {
-    if (password.length < 8) errors.push("Password must be at least 8 characters");
-    if (password.length > 128) errors.push("Password must be less than 128 characters");
-    if (!/[A-Z]/.test(password)) errors.push("Password must contain at least one uppercase letter");
-    if (!/[a-z]/.test(password)) errors.push("Password must contain at least one lowercase letter");
-    if (!/[0-9]/.test(password)) errors.push("Password must contain at least one number");
+    if (password.length < 8)
+      errors.push("Password must be at least 8 characters");
+    if (password.length > 128)
+      errors.push("Password must be less than 128 characters");
+    if (!/[A-Z]/.test(password))
+      errors.push("Password must contain at least one uppercase letter");
+    if (!/[a-z]/.test(password))
+      errors.push("Password must contain at least one lowercase letter");
+    if (!/[0-9]/.test(password))
+      errors.push("Password must contain at least one number");
     if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
       errors.push("Password must contain at least one special character");
     }
@@ -121,10 +153,13 @@ export function validatePassword(password: string): ValidationResult {
 /**
  * Validate a URL
  */
-export function validateUrl(url: string, options?: {
-  requireHttps?: boolean;
-  allowedDomains?: string[];
-}): ValidationResult {
+export function validateUrl(
+  url: string,
+  options?: {
+    requireHttps?: boolean;
+    allowedDomains?: string[];
+  }
+): ValidationResult {
   const errors: string[] = [];
 
   if (!url || url.trim().length === 0) {
@@ -144,11 +179,13 @@ export function validateUrl(url: string, options?: {
     }
 
     if (options?.allowedDomains && options.allowedDomains.length > 0) {
-      const isAllowed = options.allowedDomains.some(d =>
-        parsed.hostname === d || parsed.hostname.endsWith(`.${d}`)
+      const isAllowed = options.allowedDomains.some(
+        d => parsed.hostname === d || parsed.hostname.endsWith(`.${d}`)
       );
       if (!isAllowed) {
-        errors.push(`URL domain not allowed. Allowed: ${options.allowedDomains.join(", ")}`);
+        errors.push(
+          `URL domain not allowed. Allowed: ${options.allowedDomains.join(", ")}`
+        );
       }
     }
 
@@ -165,11 +202,14 @@ export function validateUrl(url: string, options?: {
 /**
  * Validate a token amount
  */
-export function validateTokenAmount(amount: number | string, options?: {
-  min?: number;
-  max?: number;
-  decimals?: number;
-}): ValidationResult {
+export function validateTokenAmount(
+  amount: number | string,
+  options?: {
+    min?: number;
+    max?: number;
+    decimals?: number;
+  }
+): ValidationResult {
   const errors: string[] = [];
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
 
@@ -186,7 +226,9 @@ export function validateTokenAmount(amount: number | string, options?: {
     if (options?.decimals !== undefined) {
       const decimalPart = num.toString().split(".")[1];
       if (decimalPart && decimalPart.length > options.decimals) {
-        errors.push(`Amount cannot have more than ${options.decimals} decimal places`);
+        errors.push(
+          `Amount cannot have more than ${options.decimals} decimal places`
+        );
       }
     }
   }
@@ -217,11 +259,14 @@ export function validateWalletAddress(address: string): ValidationResult {
 /**
  * Validate post content
  */
-export function validatePostContent(content: string, options?: {
-  minLength?: number;
-  maxLength?: number;
-  allowHtml?: boolean;
-}): ValidationResult {
+export function validatePostContent(
+  content: string,
+  options?: {
+    minLength?: number;
+    maxLength?: number;
+    allowHtml?: boolean;
+  }
+): ValidationResult {
   const errors: string[] = [];
   const min = options?.minLength || 1;
   const max = options?.maxLength || 5000;
@@ -229,18 +274,25 @@ export function validatePostContent(content: string, options?: {
   if (!content || content.trim().length === 0) {
     errors.push("Content is required");
   } else {
-    if (content.trim().length < min) errors.push(`Content must be at least ${min} characters`);
-    if (content.length > max) errors.push(`Content must be less than ${max} characters`);
+    if (content.trim().length < min)
+      errors.push(`Content must be at least ${min} characters`);
+    if (content.length > max)
+      errors.push(`Content must be less than ${max} characters`);
 
     if (!options?.allowHtml) {
-      if (/<script/i.test(content)) errors.push("Content cannot contain script tags");
-      if (/on\w+\s*=/i.test(content)) errors.push("Content cannot contain event handlers");
-      if (/javascript:/i.test(content)) errors.push("Content cannot contain javascript: URLs");
+      if (/<script/i.test(content))
+        errors.push("Content cannot contain script tags");
+      if (/on\w+\s*=/i.test(content))
+        errors.push("Content cannot contain event handlers");
+      if (/javascript:/i.test(content))
+        errors.push("Content cannot contain javascript: URLs");
     }
 
     // Check for spam patterns
-    if (/(.)\1{10,}/.test(content)) errors.push("Content appears to be spam (repeated characters)");
-    if (content.split("\n").length > 100) errors.push("Content has too many line breaks");
+    if (/(.)\1{10,}/.test(content))
+      errors.push("Content appears to be spam (repeated characters)");
+    if (content.split("\n").length > 100)
+      errors.push("Content has too many line breaks");
   }
 
   return { valid: errors.length === 0, errors };
@@ -249,7 +301,10 @@ export function validatePostContent(content: string, options?: {
 /**
  * Generic schema validator
  */
-export function validateSchema(data: Record<string, unknown>, rules: ValidationRule[]): ValidationResult {
+export function validateSchema(
+  data: Record<string, unknown>,
+  rules: ValidationRule[]
+): ValidationResult {
   const errors: string[] = [];
 
   for (const rule of rules) {
@@ -273,28 +328,53 @@ export function validateSchema(data: Record<string, unknown>, rules: ValidationR
           }
           break;
         case "min":
-          if (typeof value === "string" && value.length < (check.value as number)) {
-            errors.push(check.message || `${rule.field} must be at least ${check.value} characters`);
+          if (
+            typeof value === "string" &&
+            value.length < (check.value as number)
+          ) {
+            errors.push(
+              check.message ||
+                `${rule.field} must be at least ${check.value} characters`
+            );
           }
           if (typeof value === "number" && value < (check.value as number)) {
-            errors.push(check.message || `${rule.field} must be at least ${check.value}`);
+            errors.push(
+              check.message || `${rule.field} must be at least ${check.value}`
+            );
           }
           break;
         case "max":
-          if (typeof value === "string" && value.length > (check.value as number)) {
-            errors.push(check.message || `${rule.field} must be at most ${check.value} characters`);
+          if (
+            typeof value === "string" &&
+            value.length > (check.value as number)
+          ) {
+            errors.push(
+              check.message ||
+                `${rule.field} must be at most ${check.value} characters`
+            );
           }
           if (typeof value === "number" && value > (check.value as number)) {
-            errors.push(check.message || `${rule.field} must be at most ${check.value}`);
+            errors.push(
+              check.message || `${rule.field} must be at most ${check.value}`
+            );
           }
           break;
         case "enum":
-          if (value !== undefined && !(check.value as string[]).includes(value as string)) {
-            errors.push(check.message || `${rule.field} must be one of: ${(check.value as string[]).join(", ")}`);
+          if (
+            value !== undefined &&
+            !(check.value as string[]).includes(value as string)
+          ) {
+            errors.push(
+              check.message ||
+                `${rule.field} must be one of: ${(check.value as string[]).join(", ")}`
+            );
           }
           break;
         case "pattern":
-          if (typeof value === "string" && !(check.value as RegExp).test(value)) {
+          if (
+            typeof value === "string" &&
+            !(check.value as RegExp).test(value)
+          ) {
             errors.push(check.message || `${rule.field} has invalid format`);
           }
           break;
@@ -314,129 +394,283 @@ export function validateSchema(data: Record<string, unknown>, rules: ValidationR
 // ROLE-BASED ACCESS CONTROL (RBAC)
 // ═══════════════════════════════════════════════════════════════
 
-export type Role = "guest" | "user" | "creator" | "moderator" | "admin" | "superadmin";
+export type Role =
+  "guest" | "user" | "creator" | "moderator" | "admin" | "superadmin";
 
 export type Permission =
   // Content
-  | "post:create" | "post:edit" | "post:delete" | "post:pin"
-  | "comment:create" | "comment:edit" | "comment:delete"
+  | "post:create"
+  | "post:edit"
+  | "post:delete"
+  | "post:pin"
+  | "comment:create"
+  | "comment:edit"
+  | "comment:delete"
   // Social
-  | "user:follow" | "user:block" | "user:report"
-  | "dm:send" | "dm:read"
+  | "user:follow"
+  | "user:block"
+  | "user:report"
+  | "dm:send"
+  | "dm:read"
   // Community
-  | "community:create" | "community:edit" | "community:delete"
-  | "channel:create" | "channel:edit" | "channel:delete"
+  | "community:create"
+  | "community:edit"
+  | "community:delete"
+  | "channel:create"
+  | "channel:edit"
+  | "channel:delete"
   // Streaming
-  | "stream:start" | "stream:end" | "stream:moderate"
-  | "stream:raid" | "stream:costream"
+  | "stream:start"
+  | "stream:end"
+  | "stream:moderate"
+  | "stream:raid"
+  | "stream:costream"
   // Marketplace
-  | "listing:create" | "listing:edit" | "listing:delete"
-  | "listing:buy" | "listing:bid"
+  | "listing:create"
+  | "listing:edit"
+  | "listing:delete"
+  | "listing:buy"
+  | "listing:bid"
   // Financial
-  | "wallet:view" | "wallet:transfer" | "wallet:withdraw"
-  | "tip:send" | "subscription:manage"
-  | "payout:request" | "payout:approve"
+  | "wallet:view"
+  | "wallet:transfer"
+  | "wallet:withdraw"
+  | "tip:send"
+  | "subscription:manage"
+  | "payout:request"
+  | "payout:approve"
   // Gaming
-  | "tournament:create" | "tournament:join"
-  | "guild:create" | "guild:manage"
+  | "tournament:create"
+  | "tournament:join"
+  | "guild:create"
+  | "guild:manage"
   // Moderation
-  | "mod:warn" | "mod:mute" | "mod:ban" | "mod:unban"
-  | "mod:delete_content" | "mod:review_reports"
+  | "mod:warn"
+  | "mod:mute"
+  | "mod:ban"
+  | "mod:unban"
+  | "mod:delete_content"
+  | "mod:review_reports"
   // Admin
-  | "admin:users" | "admin:settings" | "admin:analytics"
-  | "admin:payouts" | "admin:moderation"
-  | "admin:system" | "admin:roles";
+  | "admin:users"
+  | "admin:settings"
+  | "admin:analytics"
+  | "admin:payouts"
+  | "admin:moderation"
+  | "admin:system"
+  | "admin:roles";
 
 const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   guest: [],
   user: [
-    "post:create", "post:edit", "post:delete",
-    "comment:create", "comment:edit", "comment:delete",
-    "user:follow", "user:block", "user:report",
-    "dm:send", "dm:read",
+    "post:create",
+    "post:edit",
+    "post:delete",
+    "comment:create",
+    "comment:edit",
+    "comment:delete",
+    "user:follow",
+    "user:block",
+    "user:report",
+    "dm:send",
+    "dm:read",
     "community:create",
-    "listing:create", "listing:edit", "listing:delete",
-    "listing:buy", "listing:bid",
-    "wallet:view", "wallet:transfer",
-    "tip:send", "subscription:manage",
-    "tournament:join", "guild:create",
+    "listing:create",
+    "listing:edit",
+    "listing:delete",
+    "listing:buy",
+    "listing:bid",
+    "wallet:view",
+    "wallet:transfer",
+    "tip:send",
+    "subscription:manage",
+    "tournament:join",
+    "guild:create",
   ],
   creator: [
-    "post:create", "post:edit", "post:delete", "post:pin",
-    "comment:create", "comment:edit", "comment:delete",
-    "user:follow", "user:block", "user:report",
-    "dm:send", "dm:read",
-    "community:create", "community:edit",
-    "channel:create", "channel:edit",
-    "stream:start", "stream:end", "stream:raid", "stream:costream",
-    "listing:create", "listing:edit", "listing:delete",
-    "listing:buy", "listing:bid",
-    "wallet:view", "wallet:transfer", "wallet:withdraw",
-    "tip:send", "subscription:manage",
+    "post:create",
+    "post:edit",
+    "post:delete",
+    "post:pin",
+    "comment:create",
+    "comment:edit",
+    "comment:delete",
+    "user:follow",
+    "user:block",
+    "user:report",
+    "dm:send",
+    "dm:read",
+    "community:create",
+    "community:edit",
+    "channel:create",
+    "channel:edit",
+    "stream:start",
+    "stream:end",
+    "stream:raid",
+    "stream:costream",
+    "listing:create",
+    "listing:edit",
+    "listing:delete",
+    "listing:buy",
+    "listing:bid",
+    "wallet:view",
+    "wallet:transfer",
+    "wallet:withdraw",
+    "tip:send",
+    "subscription:manage",
     "payout:request",
-    "tournament:create", "tournament:join",
-    "guild:create", "guild:manage",
+    "tournament:create",
+    "tournament:join",
+    "guild:create",
+    "guild:manage",
   ],
   moderator: [
-    "post:create", "post:edit", "post:delete", "post:pin",
-    "comment:create", "comment:edit", "comment:delete",
-    "user:follow", "user:block", "user:report",
-    "dm:send", "dm:read",
-    "community:create", "community:edit",
-    "channel:create", "channel:edit",
-    "stream:start", "stream:end", "stream:moderate",
-    "stream:raid", "stream:costream",
-    "listing:create", "listing:edit", "listing:delete",
-    "listing:buy", "listing:bid",
-    "wallet:view", "wallet:transfer",
-    "tip:send", "subscription:manage",
-    "tournament:create", "tournament:join",
-    "guild:create", "guild:manage",
-    "mod:warn", "mod:mute", "mod:ban", "mod:unban",
-    "mod:delete_content", "mod:review_reports",
+    "post:create",
+    "post:edit",
+    "post:delete",
+    "post:pin",
+    "comment:create",
+    "comment:edit",
+    "comment:delete",
+    "user:follow",
+    "user:block",
+    "user:report",
+    "dm:send",
+    "dm:read",
+    "community:create",
+    "community:edit",
+    "channel:create",
+    "channel:edit",
+    "stream:start",
+    "stream:end",
+    "stream:moderate",
+    "stream:raid",
+    "stream:costream",
+    "listing:create",
+    "listing:edit",
+    "listing:delete",
+    "listing:buy",
+    "listing:bid",
+    "wallet:view",
+    "wallet:transfer",
+    "tip:send",
+    "subscription:manage",
+    "tournament:create",
+    "tournament:join",
+    "guild:create",
+    "guild:manage",
+    "mod:warn",
+    "mod:mute",
+    "mod:ban",
+    "mod:unban",
+    "mod:delete_content",
+    "mod:review_reports",
   ],
   admin: [
-    "post:create", "post:edit", "post:delete", "post:pin",
-    "comment:create", "comment:edit", "comment:delete",
-    "user:follow", "user:block", "user:report",
-    "dm:send", "dm:read",
-    "community:create", "community:edit", "community:delete",
-    "channel:create", "channel:edit", "channel:delete",
-    "stream:start", "stream:end", "stream:moderate",
-    "stream:raid", "stream:costream",
-    "listing:create", "listing:edit", "listing:delete",
-    "listing:buy", "listing:bid",
-    "wallet:view", "wallet:transfer", "wallet:withdraw",
-    "tip:send", "subscription:manage",
-    "payout:request", "payout:approve",
-    "tournament:create", "tournament:join",
-    "guild:create", "guild:manage",
-    "mod:warn", "mod:mute", "mod:ban", "mod:unban",
-    "mod:delete_content", "mod:review_reports",
-    "admin:users", "admin:settings", "admin:analytics",
-    "admin:payouts", "admin:moderation",
+    "post:create",
+    "post:edit",
+    "post:delete",
+    "post:pin",
+    "comment:create",
+    "comment:edit",
+    "comment:delete",
+    "user:follow",
+    "user:block",
+    "user:report",
+    "dm:send",
+    "dm:read",
+    "community:create",
+    "community:edit",
+    "community:delete",
+    "channel:create",
+    "channel:edit",
+    "channel:delete",
+    "stream:start",
+    "stream:end",
+    "stream:moderate",
+    "stream:raid",
+    "stream:costream",
+    "listing:create",
+    "listing:edit",
+    "listing:delete",
+    "listing:buy",
+    "listing:bid",
+    "wallet:view",
+    "wallet:transfer",
+    "wallet:withdraw",
+    "tip:send",
+    "subscription:manage",
+    "payout:request",
+    "payout:approve",
+    "tournament:create",
+    "tournament:join",
+    "guild:create",
+    "guild:manage",
+    "mod:warn",
+    "mod:mute",
+    "mod:ban",
+    "mod:unban",
+    "mod:delete_content",
+    "mod:review_reports",
+    "admin:users",
+    "admin:settings",
+    "admin:analytics",
+    "admin:payouts",
+    "admin:moderation",
   ],
   superadmin: [
-    "post:create", "post:edit", "post:delete", "post:pin",
-    "comment:create", "comment:edit", "comment:delete",
-    "user:follow", "user:block", "user:report",
-    "dm:send", "dm:read",
-    "community:create", "community:edit", "community:delete",
-    "channel:create", "channel:edit", "channel:delete",
-    "stream:start", "stream:end", "stream:moderate",
-    "stream:raid", "stream:costream",
-    "listing:create", "listing:edit", "listing:delete",
-    "listing:buy", "listing:bid",
-    "wallet:view", "wallet:transfer", "wallet:withdraw",
-    "tip:send", "subscription:manage",
-    "payout:request", "payout:approve",
-    "tournament:create", "tournament:join",
-    "guild:create", "guild:manage",
-    "mod:warn", "mod:mute", "mod:ban", "mod:unban",
-    "mod:delete_content", "mod:review_reports",
-    "admin:users", "admin:settings", "admin:analytics",
-    "admin:payouts", "admin:moderation",
-    "admin:system", "admin:roles",
+    "post:create",
+    "post:edit",
+    "post:delete",
+    "post:pin",
+    "comment:create",
+    "comment:edit",
+    "comment:delete",
+    "user:follow",
+    "user:block",
+    "user:report",
+    "dm:send",
+    "dm:read",
+    "community:create",
+    "community:edit",
+    "community:delete",
+    "channel:create",
+    "channel:edit",
+    "channel:delete",
+    "stream:start",
+    "stream:end",
+    "stream:moderate",
+    "stream:raid",
+    "stream:costream",
+    "listing:create",
+    "listing:edit",
+    "listing:delete",
+    "listing:buy",
+    "listing:bid",
+    "wallet:view",
+    "wallet:transfer",
+    "wallet:withdraw",
+    "tip:send",
+    "subscription:manage",
+    "payout:request",
+    "payout:approve",
+    "tournament:create",
+    "tournament:join",
+    "guild:create",
+    "guild:manage",
+    "mod:warn",
+    "mod:mute",
+    "mod:ban",
+    "mod:unban",
+    "mod:delete_content",
+    "mod:review_reports",
+    "admin:users",
+    "admin:settings",
+    "admin:analytics",
+    "admin:payouts",
+    "admin:moderation",
+    "admin:system",
+    "admin:roles",
   ],
 };
 
@@ -450,14 +684,20 @@ export function hasPermission(role: Role, permission: Permission): boolean {
 /**
  * Check if a role has ALL of the specified permissions
  */
-export function hasAllPermissions(role: Role, permissions: Permission[]): boolean {
+export function hasAllPermissions(
+  role: Role,
+  permissions: Permission[]
+): boolean {
   return permissions.every(p => hasPermission(role, p));
 }
 
 /**
  * Check if a role has ANY of the specified permissions
  */
-export function hasAnyPermission(role: Role, permissions: Permission[]): boolean {
+export function hasAnyPermission(
+  role: Role,
+  permissions: Permission[]
+): boolean {
   return permissions.some(p => hasPermission(role, p));
 }
 
@@ -472,7 +712,14 @@ export function getPermissions(role: Role): Permission[] {
  * Check if role A is higher than role B
  */
 export function isHigherRole(roleA: Role, roleB: Role): boolean {
-  const hierarchy: Role[] = ["guest", "user", "creator", "moderator", "admin", "superadmin"];
+  const hierarchy: Role[] = [
+    "guest",
+    "user",
+    "creator",
+    "moderator",
+    "admin",
+    "superadmin",
+  ];
   return hierarchy.indexOf(roleA) > hierarchy.indexOf(roleB);
 }
 
@@ -480,7 +727,14 @@ export function isHigherRole(roleA: Role, roleB: Role): boolean {
  * Get the minimum role required for a permission
  */
 export function getMinimumRole(permission: Permission): Role {
-  const roles: Role[] = ["guest", "user", "creator", "moderator", "admin", "superadmin"];
+  const roles: Role[] = [
+    "guest",
+    "user",
+    "creator",
+    "moderator",
+    "admin",
+    "superadmin",
+  ];
   for (const role of roles) {
     if (hasPermission(role, permission)) return role;
   }
@@ -539,7 +793,11 @@ const DEFAULT_POLICIES: ContentPolicy[] = [
     rules: [
       { type: "keyword", value: "send_tokens_first", action: "block" },
       { type: "link", value: "known_phishing_domain", action: "remove" },
-      { type: "pattern", value: "guaranteed.*profit|double.*tokens", action: "flag" },
+      {
+        type: "pattern",
+        value: "guaranteed.*profit|double.*tokens",
+        action: "flag",
+      },
       { type: "behavior", value: "impersonation", action: "remove" },
     ],
     severity: "ban",
@@ -564,9 +822,15 @@ const DEFAULT_POLICIES: ContentPolicy[] = [
 export function checkContentPolicies(
   content: string,
   policies?: ContentPolicy[]
-): { violations: Array<{ policyId: string; rule: ContentRule; severity: string }> } {
+): {
+  violations: Array<{ policyId: string; rule: ContentRule; severity: string }>;
+} {
   const activePolicies = (policies || DEFAULT_POLICIES).filter(p => p.isActive);
-  const violations: Array<{ policyId: string; rule: ContentRule; severity: string }> = [];
+  const violations: Array<{
+    policyId: string;
+    rule: ContentRule;
+    severity: string;
+  }> = [];
 
   for (const policy of activePolicies) {
     for (const rule of policy.rules) {
@@ -582,18 +846,26 @@ export function checkContentPolicies(
           break;
         case "keyword":
           // Check against keyword categories
-          violated = content.toLowerCase().includes(rule.value.replace(/_/g, " "));
+          violated = content
+            .toLowerCase()
+            .includes(rule.value.replace(/_/g, " "));
           break;
         case "link":
           // Check for suspicious links
-          violated = /https?:\/\/[^\s]+/.test(content) && rule.value === "suspicious_shortener";
+          violated =
+            /https?:\/\/[^\s]+/.test(content) &&
+            rule.value === "suspicious_shortener";
           break;
         default:
           break;
       }
 
       if (violated) {
-        violations.push({ policyId: policy.id, rule, severity: policy.severity });
+        violations.push({
+          policyId: policy.id,
+          rule,
+          severity: policy.severity,
+        });
       }
     }
   }
@@ -619,7 +891,7 @@ export function hashData(data: string): string {
   let hash = 0;
   for (let i = 0; i < data.length; i++) {
     const char = data.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
   return Math.abs(hash).toString(36);
@@ -675,7 +947,10 @@ export function formatCompactNumber(num: number): string {
 /**
  * Format token amount with proper decimals
  */
-export function formatTokenAmount(amount: number, decimals: number = 2): string {
+export function formatTokenAmount(
+  amount: number,
+  decimals: number = 2
+): string {
   if (amount === 0) return "0";
   if (amount < 0.01) return "<0.01";
   return amount.toLocaleString("en-US", {
@@ -733,7 +1008,11 @@ export function calculateReadingTime(content: string): number {
 /**
  * Validate a numeric amount within a range
  */
-export function validateAmount(amount: number, min: number, max: number): ValidationResult {
+export function validateAmount(
+  amount: number,
+  min: number,
+  max: number
+): ValidationResult {
   if (isNaN(amount) || !isFinite(amount)) {
     return { valid: false, errors: ["Amount must be a valid number"] };
   }
@@ -767,7 +1046,7 @@ export function hashString(input: string): string {
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
     const char = input.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
   return Math.abs(hash).toString(36);
@@ -776,7 +1055,10 @@ export function hashString(input: string): string {
 /**
  * Format a number as currency (USD)
  */
-export function formatCurrency(amount: number, currency: string = "USD"): string {
+export function formatCurrency(
+  amount: number,
+  currency: string = "USD"
+): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
@@ -795,7 +1077,11 @@ export function formatPercentage(value: number, decimals: number = 2): string {
 /**
  * Truncate a wallet/blockchain address for display
  */
-export function truncateAddress(address: string, startChars: number = 6, endChars: number = 4): string {
+export function truncateAddress(
+  address: string,
+  startChars: number = 6,
+  endChars: number = 4
+): string {
   if (address.length <= startChars + endChars) return address;
   return `${address.slice(0, startChars)}...${address.slice(-endChars)}`;
 }

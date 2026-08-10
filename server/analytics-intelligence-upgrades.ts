@@ -14,7 +14,12 @@ export const analyticsIntelligenceRouter = router({
 
   // Custom reports
   generateReport: protectedProcedure
-    .input(z.object({ type: z.string(), dateRange: z.object({ start: z.number(), end: z.number() }) }))
+    .input(
+      z.object({
+        type: z.string(),
+        dateRange: z.object({ start: z.number(), end: z.number() }),
+      })
+    )
     .mutation(async ({ input }) => ({
       reportId: `report-${Date.now()}`,
       status: "generating",
@@ -33,9 +38,7 @@ export const analyticsIntelligenceRouter = router({
 
   // Anomaly detection
   getAnomalies: publicProcedure.query(async () => ({
-    anomalies: [
-      { metric: "API latency", severity: "high", value: 5000 },
-    ],
+    anomalies: [{ metric: "API latency", severity: "high", value: 5000 }],
   })),
 
   // Cohort analysis

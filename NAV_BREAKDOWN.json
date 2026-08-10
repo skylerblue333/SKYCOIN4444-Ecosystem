@@ -31,12 +31,7 @@
     },
     "Project Management": {
       "pages": 14,
-      "examples": [
-        "ProjectBoard",
-        "GanttChart",
-        "TaskList",
-        "TimeTracking"
-      ]
+      "examples": ["ProjectBoard", "GanttChart", "TaskList", "TimeTracking"]
     },
     "Content Creation": {
       "pages": 18,
@@ -76,12 +71,7 @@
     },
     "Customer Support": {
       "pages": 12,
-      "examples": [
-        "TicketQueue",
-        "KnowledgeBase",
-        "LiveChat",
-        "FAQManagement"
-      ]
+      "examples": ["TicketQueue", "KnowledgeBase", "LiveChat", "FAQManagement"]
     },
     "Developer Tools": {
       "pages": 15,
@@ -139,21 +129,11 @@
     },
     "Gaming": {
       "pages": 12,
-      "examples": [
-        "GameLobby",
-        "Leaderboards",
-        "Tournaments",
-        "Achievements"
-      ]
+      "examples": ["GameLobby", "Leaderboards", "Tournaments", "Achievements"]
     },
     "Mobile": {
       "pages": 12,
-      "examples": [
-        "MobileHome",
-        "MobileMenu",
-        "MobileSettings",
-        "MobileWallet"
-      ]
+      "examples": ["MobileHome", "MobileMenu", "MobileSettings", "MobileWallet"]
     },
     "Integrations": {
       "pages": 16,
@@ -166,12 +146,7 @@
     },
     "Compliance": {
       "pages": 12,
-      "examples": [
-        "TermsOfService",
-        "PrivacyPolicy",
-        "GDPR",
-        "AuditTrail"
-      ]
+      "examples": ["TermsOfService", "PrivacyPolicy", "GDPR", "AuditTrail"]
     },
     "AI & ML": {
       "pages": 14,

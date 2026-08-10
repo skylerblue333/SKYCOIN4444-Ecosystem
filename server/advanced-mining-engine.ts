@@ -1,6 +1,6 @@
-import { walletManager } from './secure-wallet';
-import { notifyOwner } from './_core/notification';
-import { invokeLLM } from './_core/llm';
+import { walletManager } from "./secure-wallet";
+import { notifyOwner } from "./_core/notification";
+import { invokeLLM } from "./_core/llm";
 
 /**
  * Advanced Mining Engine - Real Crypto Mining with Max Parallel Workers
@@ -13,8 +13,8 @@ interface MiningPool {
   name: string;
   url: string;
   port: number;
-  protocol: 'stratum' | 'stratum+ssl' | 'http';
-  coin: 'BTC' | 'ETH' | 'SOL' | 'DOGE' | 'TRUMP';
+  protocol: "stratum" | "stratum+ssl" | "http";
+  coin: "BTC" | "ETH" | "SOL" | "DOGE" | "TRUMP";
   difficulty: number;
   hashrate: number;
   workers: number;
@@ -31,7 +31,7 @@ interface MiningWorker {
   validShares: number;
   rejectedShares: number;
   earnings: number;
-  status: 'active' | 'idle' | 'error';
+  status: "active" | "idle" | "error";
   lastShare: number;
   uptime: number;
 }
@@ -40,7 +40,7 @@ interface MiningSession {
   id: string;
   startTime: number;
   endTime?: number;
-  status: 'active' | 'completed' | 'failed';
+  status: "active" | "completed" | "failed";
   workers: MiningWorker[];
   totalHashrate: number;
   totalEarnings: number;
@@ -94,12 +94,12 @@ class AdvancedMiningEngine {
     const pools: MiningPool[] = [
       // Bitcoin Pools
       {
-        id: 'btc-pool-1',
-        name: 'Stratum Bitcoin Pool 1',
-        url: 'stratum.mining.pool1.com',
+        id: "btc-pool-1",
+        name: "Stratum Bitcoin Pool 1",
+        url: "stratum.mining.pool1.com",
         port: 3333,
-        protocol: 'stratum+ssl',
-        coin: 'BTC',
+        protocol: "stratum+ssl",
+        coin: "BTC",
         difficulty: 1000000,
         hashrate: 0,
         workers: 0,
@@ -107,12 +107,12 @@ class AdvancedMiningEngine {
         lastUpdate: Date.now(),
       },
       {
-        id: 'btc-pool-2',
-        name: 'Stratum Bitcoin Pool 2',
-        url: 'stratum.mining.pool2.com',
+        id: "btc-pool-2",
+        name: "Stratum Bitcoin Pool 2",
+        url: "stratum.mining.pool2.com",
         port: 3334,
-        protocol: 'stratum+ssl',
-        coin: 'BTC',
+        protocol: "stratum+ssl",
+        coin: "BTC",
         difficulty: 1000000,
         hashrate: 0,
         workers: 0,
@@ -121,12 +121,12 @@ class AdvancedMiningEngine {
       },
       // Ethereum Pools
       {
-        id: 'eth-pool-1',
-        name: 'Stratum Ethereum Pool 1',
-        url: 'stratum.mining.eth1.com',
+        id: "eth-pool-1",
+        name: "Stratum Ethereum Pool 1",
+        url: "stratum.mining.eth1.com",
         port: 3335,
-        protocol: 'stratum+ssl',
-        coin: 'ETH',
+        protocol: "stratum+ssl",
+        coin: "ETH",
         difficulty: 500000,
         hashrate: 0,
         workers: 0,
@@ -134,12 +134,12 @@ class AdvancedMiningEngine {
         lastUpdate: Date.now(),
       },
       {
-        id: 'eth-pool-2',
-        name: 'Stratum Ethereum Pool 2',
-        url: 'stratum.mining.eth2.com',
+        id: "eth-pool-2",
+        name: "Stratum Ethereum Pool 2",
+        url: "stratum.mining.eth2.com",
         port: 3336,
-        protocol: 'stratum+ssl',
-        coin: 'ETH',
+        protocol: "stratum+ssl",
+        coin: "ETH",
         difficulty: 500000,
         hashrate: 0,
         workers: 0,
@@ -148,12 +148,12 @@ class AdvancedMiningEngine {
       },
       // Solana Pools
       {
-        id: 'sol-pool-1',
-        name: 'Stratum Solana Pool 1',
-        url: 'stratum.mining.sol1.com',
+        id: "sol-pool-1",
+        name: "Stratum Solana Pool 1",
+        url: "stratum.mining.sol1.com",
         port: 3337,
-        protocol: 'stratum+ssl',
-        coin: 'SOL',
+        protocol: "stratum+ssl",
+        coin: "SOL",
         difficulty: 100000,
         hashrate: 0,
         workers: 0,
@@ -162,12 +162,12 @@ class AdvancedMiningEngine {
       },
       // Dogecoin Pools
       {
-        id: 'doge-pool-1',
-        name: 'Stratum Dogecoin Pool 1',
-        url: 'stratum.mining.doge1.com',
+        id: "doge-pool-1",
+        name: "Stratum Dogecoin Pool 1",
+        url: "stratum.mining.doge1.com",
         port: 3338,
-        protocol: 'stratum+ssl',
-        coin: 'DOGE',
+        protocol: "stratum+ssl",
+        coin: "DOGE",
         difficulty: 50000,
         hashrate: 0,
         workers: 0,
@@ -176,12 +176,12 @@ class AdvancedMiningEngine {
       },
       // TRUMP Token Pools
       {
-        id: 'trump-pool-1',
-        name: 'Stratum TRUMP Pool 1',
-        url: 'stratum.mining.trump1.com',
+        id: "trump-pool-1",
+        name: "Stratum TRUMP Pool 1",
+        url: "stratum.mining.trump1.com",
         port: 3339,
-        protocol: 'stratum+ssl',
-        coin: 'TRUMP',
+        protocol: "stratum+ssl",
+        coin: "TRUMP",
         difficulty: 10000,
         hashrate: 0,
         workers: 0,
@@ -190,7 +190,7 @@ class AdvancedMiningEngine {
       },
     ];
 
-    pools.forEach((pool) => this.pools.set(pool.id, pool));
+    pools.forEach(pool => this.pools.set(pool.id, pool));
     console.log(`[Mining] Initialized ${pools.length} mining pools`);
   }
 
@@ -213,18 +213,18 @@ class AdvancedMiningEngine {
   private async updateCryptoPrices(): Promise<void> {
     try {
       // Fetch from CoinGecko API (free, no auth required)
-      const symbols = ['bitcoin', 'ethereum', 'solana', 'dogecoin'];
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${symbols.join(',')}&vs_currencies=usd&include_24hr_change=true`;
+      const symbols = ["bitcoin", "ethereum", "solana", "dogecoin"];
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${symbols.join(",")}&vs_currencies=usd&include_24hr_change=true`;
 
       const response = await fetch(url);
       const data = await response.json();
 
       // Map CoinGecko response to our format
       const priceMap: Record<string, { symbol: string; id: string }> = {
-        BTC: { symbol: 'bitcoin', id: 'BTC' },
-        ETH: { symbol: 'ethereum', id: 'ETH' },
-        SOL: { symbol: 'solana', id: 'SOL' },
-        DOGE: { symbol: 'dogecoin', id: 'DOGE' },
+        BTC: { symbol: "bitcoin", id: "BTC" },
+        ETH: { symbol: "ethereum", id: "ETH" },
+        SOL: { symbol: "solana", id: "SOL" },
+        DOGE: { symbol: "dogecoin", id: "DOGE" },
       };
 
       for (const [symbol, { symbol: apiSymbol }] of Object.entries(priceMap)) {
@@ -239,16 +239,21 @@ class AdvancedMiningEngine {
       }
 
       // Add TRUMP price (mock for now)
-      this.cryptoPrices.set('TRUMP', {
-        symbol: 'TRUMP',
+      this.cryptoPrices.set("TRUMP", {
+        symbol: "TRUMP",
         price: 8.42,
         change24h: 2.5,
         lastUpdate: Date.now(),
       });
 
-      console.log('[Mining] Crypto prices updated:', Array.from(this.cryptoPrices.entries()).map(([k, v]) => `${k}: $${v.price}`).join(', '));
+      console.log(
+        "[Mining] Crypto prices updated:",
+        Array.from(this.cryptoPrices.entries())
+          .map(([k, v]) => `${k}: $${v.price}`)
+          .join(", ")
+      );
     } catch (error) {
-      console.error('[Mining] Failed to update crypto prices:', error);
+      console.error("[Mining] Failed to update crypto prices:", error);
     }
   }
 
@@ -257,20 +262,22 @@ class AdvancedMiningEngine {
    */
   async startMining(): Promise<void> {
     if (this.isRunning) {
-      console.log('[Mining] Mining already running');
+      console.log("[Mining] Mining already running");
       return;
     }
 
     this.isRunning = true;
-    console.log(`[Mining] Starting advanced mining engine with ${this.maxParallelWorkers} max parallel workers...`);
+    console.log(
+      `[Mining] Starting advanced mining engine with ${this.maxParallelWorkers} max parallel workers...`
+    );
 
     const adminWallet = process.env.ADMIN_WALLET_ADDRESS;
     if (!adminWallet) {
-      throw new Error('ADMIN_WALLET_ADDRESS not configured');
+      throw new Error("ADMIN_WALLET_ADDRESS not configured");
     }
 
     await notifyOwner({
-      title: '🚀 Advanced Mining Engine Started',
+      title: "🚀 Advanced Mining Engine Started",
       content: `Mining system activated with ${this.maxParallelWorkers} parallel workers. All rewards will be sent to: ${adminWallet}`,
     });
 
@@ -293,11 +300,11 @@ class AdvancedMiningEngine {
         }
 
         // Wait before next mining session (configurable interval)
-        const interval = parseInt(process.env.MINING_INTERVAL || '3600000'); // 1 hour default
-        await new Promise((resolve) => setTimeout(resolve, interval));
+        const interval = parseInt(process.env.MINING_INTERVAL || "3600000"); // 1 hour default
+        await new Promise(resolve => setTimeout(resolve, interval));
       } catch (error) {
-        console.error('[Mining] Error in mining loop:', error);
-        await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait 1 minute before retry
+        console.error("[Mining] Error in mining loop:", error);
+        await new Promise(resolve => setTimeout(resolve, 60000)); // Wait 1 minute before retry
       }
     }
   }
@@ -309,12 +316,14 @@ class AdvancedMiningEngine {
     const sessionId = `mining-${Date.now()}`;
     const startTime = Date.now();
 
-    console.log(`[Mining] Starting session ${sessionId} with max parallel workers`);
+    console.log(
+      `[Mining] Starting session ${sessionId} with max parallel workers`
+    );
 
     const session: MiningSession = {
       id: sessionId,
       startTime,
-      status: 'active',
+      status: "active",
       workers: [],
       totalHashrate: 0,
       totalEarnings: 0,
@@ -326,12 +335,14 @@ class AdvancedMiningEngine {
 
     try {
       // 1. Get AI optimization suggestions
-      console.log('[Mining] Getting AI optimization suggestions...');
+      console.log("[Mining] Getting AI optimization suggestions...");
       const optimizations = await this.getAIOptimizations();
       session.aiOptimizations = optimizations;
 
       // 2. Spawn max parallel workers across all pools
-      console.log(`[Mining] Spawning ${this.maxParallelWorkers} parallel workers...`);
+      console.log(
+        `[Mining] Spawning ${this.maxParallelWorkers} parallel workers...`
+      );
       const workerPromises: Promise<MiningWorker>[] = [];
 
       for (let i = 0; i < this.maxParallelWorkers; i++) {
@@ -346,7 +357,7 @@ class AdvancedMiningEngine {
       let totalEarnings = 0;
 
       for (const result of workers) {
-        if (result.status === 'fulfilled') {
+        if (result.status === "fulfilled") {
           const worker = result.value;
           session.workers.push(worker);
           totalHashrate += worker.hashrate;
@@ -354,43 +365,50 @@ class AdvancedMiningEngine {
 
           // Track by crypto
           const coin = worker.coin;
-          session.cryptoBreakdown[coin] = (session.cryptoBreakdown[coin] || 0) + worker.earnings;
+          session.cryptoBreakdown[coin] =
+            (session.cryptoBreakdown[coin] || 0) + worker.earnings;
         } else {
-          session.errors.push(result.reason?.message || 'Worker spawn failed');
+          session.errors.push(result.reason?.message || "Worker spawn failed");
         }
       }
 
       session.totalHashrate = totalHashrate;
       session.totalEarnings = totalEarnings;
-      session.status = 'completed';
+      session.status = "completed";
       this.totalEarnings += totalEarnings;
 
       console.log(`[Mining] Session ${sessionId} completed:
 - Workers: ${session.workers.length}
 - Total Hashrate: ${totalHashrate} H/s
 - Total Earnings: $${totalEarnings.toFixed(2)} USD
-- Breakdown: ${Object.entries(session.cryptoBreakdown).map(([coin, amount]) => `${coin}: $${amount.toFixed(2)}`).join(', ')}`);
+- Breakdown: ${Object.entries(session.cryptoBreakdown)
+        .map(([coin, amount]) => `${coin}: $${amount.toFixed(2)}`)
+        .join(", ")}`);
 
       // 4. Log session
       await notifyOwner({
-        title: '⛏️ Mining Session Completed',
+        title: "⛏️ Mining Session Completed",
         content: `Session ${sessionId}:
 - Workers: ${session.workers.length}
 - Hashrate: ${totalHashrate} H/s
 - Earnings: $${totalEarnings.toFixed(2)} USD
-- Breakdown: ${Object.entries(session.cryptoBreakdown).map(([coin, amount]) => `${coin}: $${amount.toFixed(2)}`).join(', ')}`,
+- Breakdown: ${Object.entries(session.cryptoBreakdown)
+          .map(([coin, amount]) => `${coin}: $${amount.toFixed(2)}`)
+          .join(", ")}`,
       });
 
       return session;
     } catch (error) {
-      session.status = 'failed';
-      session.errors.push(error instanceof Error ? error.message : 'Unknown error');
+      session.status = "failed";
+      session.errors.push(
+        error instanceof Error ? error.message : "Unknown error"
+      );
 
       console.error(`[Mining] Session ${sessionId} failed:`, error);
 
       await notifyOwner({
-        title: '❌ Mining Session Failed',
-        content: `Session ${sessionId} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: "❌ Mining Session Failed",
+        content: `Session ${sessionId} failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       });
 
       return session;
@@ -402,7 +420,10 @@ class AdvancedMiningEngine {
   /**
    * Spawn a mining worker for a specific pool
    */
-  private async spawnWorker(poolId: string, workerId: number): Promise<MiningWorker> {
+  private async spawnWorker(
+    poolId: string,
+    workerId: number
+  ): Promise<MiningWorker> {
     const pool = this.pools.get(poolId);
     if (!pool) throw new Error(`Pool ${poolId} not found`);
 
@@ -415,15 +436,15 @@ class AdvancedMiningEngine {
       validShares: 0,
       rejectedShares: 0,
       earnings: 0,
-      status: 'active',
+      status: "active",
       lastShare: Date.now(),
       uptime: 0,
     };
 
     try {
       // Simulate mining work
-      const miningDuration = parseInt(process.env.MINING_DURATION || '60000'); // 1 minute default
-      await new Promise((resolve) => setTimeout(resolve, miningDuration));
+      const miningDuration = parseInt(process.env.MINING_DURATION || "60000"); // 1 minute default
+      await new Promise(resolve => setTimeout(resolve, miningDuration));
 
       // Calculate earnings based on hashrate and crypto price
       const price = this.cryptoPrices.get(pool.coin)?.price || 1;
@@ -437,11 +458,13 @@ class AdvancedMiningEngine {
 
       this.workers.set(worker.id, worker);
 
-      console.log(`[Mining] Worker ${worker.id} completed: ${worker.earnings.toFixed(4)} ${pool.coin} ($${(worker.earnings * price).toFixed(2)})`);
+      console.log(
+        `[Mining] Worker ${worker.id} completed: ${worker.earnings.toFixed(4)} ${pool.coin} ($${(worker.earnings * price).toFixed(2)})`
+      );
 
       return worker;
     } catch (error) {
-      worker.status = 'error';
+      worker.status = "error";
       throw error;
     }
   }
@@ -455,12 +478,12 @@ class AdvancedMiningEngine {
       const response = await invokeLLM({
         messages: [
           {
-            role: 'system',
+            role: "system",
             content:
-              'You are a crypto mining optimization expert. Suggest 5 specific optimizations for maximizing mining efficiency, profitability, and parallel worker performance.',
+              "You are a crypto mining optimization expert. Suggest 5 specific optimizations for maximizing mining efficiency, profitability, and parallel worker performance.",
           },
           {
-            role: 'user',
+            role: "user",
             content: `Current mining stats:
 - Total earnings: $${stats.totalEarnings.toFixed(2)}
 - Active workers: ${stats.activeWorkers}
@@ -474,13 +497,16 @@ Suggest specific optimizations for the next mining session to maximize earnings.
       });
 
       const content = response.choices[0]?.message?.content;
-      if (typeof content === 'string') {
-        return content.split('\n').filter((line) => line.trim().length > 0).slice(0, 5);
+      if (typeof content === "string") {
+        return content
+          .split("\n")
+          .filter(line => line.trim().length > 0)
+          .slice(0, 5);
       }
 
       return [];
     } catch (error) {
-      console.error('[Mining] Failed to get AI optimizations:', error);
+      console.error("[Mining] Failed to get AI optimizations:", error);
       return [];
     }
   }
@@ -491,17 +517,19 @@ Suggest specific optimizations for the next mining session to maximize earnings.
   private async sendRewardsToWallet(session: MiningSession): Promise<void> {
     const adminWallet = process.env.ADMIN_WALLET_ADDRESS;
     if (!adminWallet) {
-      throw new Error('ADMIN_WALLET_ADDRESS not configured');
+      throw new Error("ADMIN_WALLET_ADDRESS not configured");
     }
 
     try {
-      console.log(`[Mining] Sending $${session.totalEarnings.toFixed(2)} to admin wallet...`);
+      console.log(
+        `[Mining] Sending $${session.totalEarnings.toFixed(2)} to admin wallet...`
+      );
 
       // Route rewards to admin wallet
       const transaction = await walletManager.routeMiningRewards(
         `mining-session-${session.id}`,
         session.totalEarnings,
-        'MULTI'
+        "MULTI"
       );
 
       session.totalRewardsSent = session.totalEarnings;
@@ -510,17 +538,21 @@ Suggest specific optimizations for the next mining session to maximize earnings.
       console.log(`[Mining] Rewards sent successfully: ${transaction.id}`);
 
       await notifyOwner({
-        title: '💰 Mining Rewards Sent',
+        title: "💰 Mining Rewards Sent",
         content: `$${session.totalEarnings.toFixed(2)} sent to admin wallet. Transaction: ${transaction.id}
-Breakdown: ${Object.entries(session.cryptoBreakdown).map(([coin, amount]) => `${coin}: $${amount.toFixed(2)}`).join(', ')}`,
+Breakdown: ${Object.entries(session.cryptoBreakdown)
+          .map(([coin, amount]) => `${coin}: $${amount.toFixed(2)}`)
+          .join(", ")}`,
       });
     } catch (error) {
-      console.error('[Mining] Failed to send rewards:', error);
-      session.errors.push(`Failed to send rewards: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("[Mining] Failed to send rewards:", error);
+      session.errors.push(
+        `Failed to send rewards: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
 
       await notifyOwner({
-        title: '❌ Mining Reward Transfer Failed',
-        content: `Failed to send $${session.totalEarnings.toFixed(2)}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: "❌ Mining Reward Transfer Failed",
+        content: `Failed to send $${session.totalEarnings.toFixed(2)}: ${error instanceof Error ? error.message : "Unknown error"}`,
       });
     }
   }
@@ -529,12 +561,12 @@ Breakdown: ${Object.entries(session.cryptoBreakdown).map(([coin, amount]) => `${
    * Stop mining
    */
   async stopMining(): Promise<void> {
-    console.log('[Mining] Stopping advanced mining engine...');
+    console.log("[Mining] Stopping advanced mining engine...");
     this.isRunning = false;
     this.workers.clear();
 
     await notifyOwner({
-      title: '⏹️ Mining Stopped',
+      title: "⏹️ Mining Stopped",
       content: `Advanced mining engine stopped. Total earnings: $${this.totalEarnings.toFixed(2)}`,
     });
   }
@@ -543,23 +575,40 @@ Breakdown: ${Object.entries(session.cryptoBreakdown).map(([coin, amount]) => `${
    * Get mining statistics
    */
   getStatistics(): MiningStats {
-    const completedSessions = this.sessions.filter((s) => s.status === 'completed');
-    const totalEarnings = completedSessions.reduce((sum, s) => sum + s.totalEarnings, 0);
-    const totalRewards = completedSessions.reduce((sum, s) => sum + s.totalRewardsSent, 0);
-    const totalHashrate = completedSessions.reduce((sum, s) => sum + s.totalHashrate, 0);
+    const completedSessions = this.sessions.filter(
+      s => s.status === "completed"
+    );
+    const totalEarnings = completedSessions.reduce(
+      (sum, s) => sum + s.totalEarnings,
+      0
+    );
+    const totalRewards = completedSessions.reduce(
+      (sum, s) => sum + s.totalRewardsSent,
+      0
+    );
+    const totalHashrate = completedSessions.reduce(
+      (sum, s) => sum + s.totalHashrate,
+      0
+    );
 
     return {
       totalSessions: this.sessions.length,
       totalEarnings,
       totalRewardsSent: totalRewards,
-      averageEarningsPerSession: completedSessions.length > 0 ? totalEarnings / completedSessions.length : 0,
-      uptime: this.isRunning ? Date.now() - (this.sessions[0]?.startTime || Date.now()) : 0,
+      averageEarningsPerSession:
+        completedSessions.length > 0
+          ? totalEarnings / completedSessions.length
+          : 0,
+      uptime: this.isRunning
+        ? Date.now() - (this.sessions[0]?.startTime || Date.now())
+        : 0,
       activeWorkers: this.workers.size,
       totalHashrate,
       profitability: {
         hourly: totalEarnings / Math.max(1, completedSessions.length),
         daily: (totalEarnings / Math.max(1, completedSessions.length)) * 24,
-        monthly: (totalEarnings / Math.max(1, completedSessions.length)) * 24 * 30,
+        monthly:
+          (totalEarnings / Math.max(1, completedSessions.length)) * 24 * 30,
       },
     };
   }

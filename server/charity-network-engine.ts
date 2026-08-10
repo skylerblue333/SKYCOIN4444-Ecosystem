@@ -19,7 +19,17 @@ export interface VerifiedCharity {
   name: string;
   description: string;
   mission: string;
-  category: "education" | "health" | "environment" | "poverty" | "animals" | "disaster_relief" | "arts" | "research" | "community" | "other";
+  category:
+    | "education"
+    | "health"
+    | "environment"
+    | "poverty"
+    | "animals"
+    | "disaster_relief"
+    | "arts"
+    | "research"
+    | "community"
+    | "other";
   registrationNumber?: string;
   country: string;
   website?: string;
@@ -138,7 +148,13 @@ export interface CompetitionTeam {
 export interface DonorReward {
   id: string;
   donorId: number;
-  type: "nft_badge" | "platform_badge" | "exclusive_role" | "merchandise" | "experience" | "recognition";
+  type:
+    | "nft_badge"
+    | "platform_badge"
+    | "exclusive_role"
+    | "merchandise"
+    | "experience"
+    | "recognition";
   name: string;
   description: string;
   imageUrl?: string;
@@ -170,8 +186,19 @@ export interface TransparencyReport {
   period: string; // e.g., "2024-Q1"
   totalReceived: number;
   totalSpent: number;
-  breakdown: { category: string; amount: number; percentage: number; description: string }[];
-  walletTransactions: { hash: string; amount: number; recipient: string; purpose: string; date: Date }[];
+  breakdown: {
+    category: string;
+    amount: number;
+    percentage: number;
+    description: string;
+  }[];
+  walletTransactions: {
+    hash: string;
+    amount: number;
+    recipient: string;
+    purpose: string;
+    date: Date;
+  }[];
   impactAchieved: ImpactMetric[];
   auditedBy?: string;
   publishedAt: Date;
@@ -199,7 +226,20 @@ export class CharityVerificationService {
   private charities = new Map<string, VerifiedCharity>();
   private charityCounter = 0;
 
-  async registerCharity(params: Omit<VerifiedCharity, "id" | "verificationStatus" | "verificationTier" | "impactScore" | "totalRaised" | "donorCount" | "projectCount" | "transparencyScore" | "createdAt">): Promise<VerifiedCharity> {
+  async registerCharity(
+    params: Omit<
+      VerifiedCharity,
+      | "id"
+      | "verificationStatus"
+      | "verificationTier"
+      | "impactScore"
+      | "totalRaised"
+      | "donorCount"
+      | "projectCount"
+      | "transparencyScore"
+      | "createdAt"
+    >
+  ): Promise<VerifiedCharity> {
     const id = `charity_${++this.charityCounter}`;
     const charity: VerifiedCharity = {
       id,
@@ -217,14 +257,18 @@ export class CharityVerificationService {
     return charity;
   }
 
-  async verifyCharity(charityId: string, tier: VerifiedCharity["verificationTier"]): Promise<VerifiedCharity | null> {
+  async verifyCharity(
+    charityId: string,
+    tier: VerifiedCharity["verificationTier"]
+  ): Promise<VerifiedCharity | null> {
     const charity = this.charities.get(charityId);
     if (!charity) return null;
 
     charity.verificationStatus = "verified";
     charity.verificationTier = tier;
     charity.verifiedAt = new Date();
-    charity.transparencyScore = tier === "platinum" ? 90 : tier === "standard" ? 70 : 50;
+    charity.transparencyScore =
+      tier === "platinum" ? 90 : tier === "standard" ? 70 : 50;
 
     return charity;
   }
@@ -246,17 +290,28 @@ export class CharityVerificationService {
     return this.charities.get(charityId) || null;
   }
 
-  getVerifiedCharities(category?: VerifiedCharity["category"]): VerifiedCharity[] {
+  getVerifiedCharities(
+    category?: VerifiedCharity["category"]
+  ): VerifiedCharity[] {
     return Array.from(this.charities.values())
-      .filter(c => c.verificationStatus === "verified" && (!category || c.category === category))
+      .filter(
+        c =>
+          c.verificationStatus === "verified" &&
+          (!category || c.category === category)
+      )
       .sort((a, b) => b.impactScore - a.impactScore);
   }
 
   searchCharities(query: string): VerifiedCharity[] {
     const q = query.toLowerCase();
     return Array.from(this.charities.values())
-      .filter(c => c.verificationStatus === "verified" &&
-        (c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q) || c.mission.toLowerCase().includes(q)))
+      .filter(
+        c =>
+          c.verificationStatus === "verified" &&
+          (c.name.toLowerCase().includes(q) ||
+            c.description.toLowerCase().includes(q) ||
+            c.mission.toLowerCase().includes(q))
+      )
       .sort((a, b) => b.impactScore - a.impactScore);
   }
 }
@@ -267,7 +322,12 @@ export class DonationCompetitionService {
   private competitions = new Map<string, DonationCompetition>();
   private competitionCounter = 0;
 
-  async createCompetition(params: Omit<DonationCompetition, "id" | "participants" | "status" | "totalRaised" | "createdAt">): Promise<DonationCompetition> {
+  async createCompetition(
+    params: Omit<
+      DonationCompetition,
+      "id" | "participants" | "status" | "totalRaised" | "createdAt"
+    >
+  ): Promise<DonationCompetition> {
     const id = `comp_${++this.competitionCounter}`;
     const competition: DonationCompetition = {
       id,
@@ -281,9 +341,15 @@ export class DonationCompetitionService {
     return competition;
   }
 
-  async joinCompetition(competitionId: string, userId: number, displayName: string, teamId?: string): Promise<CompetitionParticipant> {
+  async joinCompetition(
+    competitionId: string,
+    userId: number,
+    displayName: string,
+    teamId?: string
+  ): Promise<CompetitionParticipant> {
     const competition = this.competitions.get(competitionId);
-    if (!competition || competition.status === "completed") throw new Error("Competition not joinable");
+    if (!competition || competition.status === "completed")
+      throw new Error("Competition not joinable");
 
     const existing = competition.participants.find(p => p.userId === userId);
     if (existing) return existing;
@@ -301,7 +367,11 @@ export class DonationCompetitionService {
     return participant;
   }
 
-  async recordCompetitionDonation(competitionId: string, userId: number, amount: number): Promise<void> {
+  async recordCompetitionDonation(
+    competitionId: string,
+    userId: number,
+    amount: number
+  ): Promise<void> {
     const competition = this.competitions.get(competitionId);
     if (!competition) return;
 
@@ -317,22 +387,36 @@ export class DonationCompetitionService {
       }
 
       // Recalculate ranks
-      const sorted = [...competition.participants].sort((a, b) => b.totalDonated - a.totalDonated);
-      sorted.forEach((p, i) => { p.rank = i + 1; });
+      const sorted = [...competition.participants].sort(
+        (a, b) => b.totalDonated - a.totalDonated
+      );
+      sorted.forEach((p, i) => {
+        p.rank = i + 1;
+      });
 
       if (competition.teams) {
-        const teamsSorted = [...competition.teams].sort((a, b) => b.totalDonated - a.totalDonated);
-        teamsSorted.forEach((t, i) => { t.rank = i + 1; });
+        const teamsSorted = [...competition.teams].sort(
+          (a, b) => b.totalDonated - a.totalDonated
+        );
+        teamsSorted.forEach((t, i) => {
+          t.rank = i + 1;
+        });
       }
     }
   }
 
-  async completeCompetition(competitionId: string): Promise<{ winners: CompetitionParticipant[]; prizes: { userId: number; amount: number }[] }> {
+  async completeCompetition(competitionId: string): Promise<{
+    winners: CompetitionParticipant[];
+    prizes: { userId: number; amount: number }[];
+  }> {
     const competition = this.competitions.get(competitionId);
     if (!competition) throw new Error("Competition not found");
 
     competition.status = "completed";
-    const winners = competition.participants.slice(0, competition.prizeDistribution.length);
+    const winners = competition.participants.slice(
+      0,
+      competition.prizeDistribution.length
+    );
     const prizes = winners.map((w, i) => ({
       userId: w.userId,
       amount: competition.prizeDistribution[i]?.amount || 0,
@@ -368,7 +452,12 @@ export class ImpactDashboardService {
   private campaignCounter = 0;
   private donationCounter = 0;
 
-  async createCampaign(params: Omit<CharityCampaign, "id" | "raisedAmount" | "donorCount" | "updates" | "createdAt">): Promise<CharityCampaign> {
+  async createCampaign(
+    params: Omit<
+      CharityCampaign,
+      "id" | "raisedAmount" | "donorCount" | "updates" | "createdAt"
+    >
+  ): Promise<CharityCampaign> {
     const id = `campaign_${++this.campaignCounter}`;
     const campaign: CharityCampaign = {
       id,
@@ -382,15 +471,21 @@ export class ImpactDashboardService {
     return campaign;
   }
 
-  async recordDonation(params: Omit<Donation, "id" | "matchedAmount" | "createdAt">): Promise<Donation> {
+  async recordDonation(
+    params: Omit<Donation, "id" | "matchedAmount" | "createdAt">
+  ): Promise<Donation> {
     const campaign = this.campaigns.get(params.campaignId);
     if (!campaign) throw new Error("Campaign not found");
     if (campaign.status !== "active") throw new Error("Campaign not active");
 
     let matchedAmount = 0;
     if (campaign.matchingEnabled && campaign.matchingMultiplier) {
-      const remainingMatch = (campaign.matchingCap || Infinity) - (campaign.matchingRaised || 0);
-      matchedAmount = Math.min(params.amount * (campaign.matchingMultiplier - 1), remainingMatch);
+      const remainingMatch =
+        (campaign.matchingCap || Infinity) - (campaign.matchingRaised || 0);
+      matchedAmount = Math.min(
+        params.amount * (campaign.matchingMultiplier - 1),
+        remainingMatch
+      );
       campaign.matchingRaised = (campaign.matchingRaised || 0) + matchedAmount;
     }
 
@@ -410,7 +505,10 @@ export class ImpactDashboardService {
 
     // Check milestones
     for (const milestone of campaign.milestones) {
-      if (!milestone.reachedAt && campaign.raisedAmount >= milestone.targetAmount) {
+      if (
+        !milestone.reachedAt &&
+        campaign.raisedAmount >= milestone.targetAmount
+      ) {
         milestone.reachedAt = new Date();
       }
     }
@@ -423,7 +521,10 @@ export class ImpactDashboardService {
     return donation;
   }
 
-  async addCampaignUpdate(campaignId: string, update: Omit<CampaignUpdate, "id">): Promise<CampaignUpdate> {
+  async addCampaignUpdate(
+    campaignId: string,
+    update: Omit<CampaignUpdate, "id">
+  ): Promise<CampaignUpdate> {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign) throw new Error("Campaign not found");
 
@@ -433,7 +534,10 @@ export class ImpactDashboardService {
     return newUpdate;
   }
 
-  async updateImpactMetrics(campaignId: string, metrics: ImpactMetric[]): Promise<void> {
+  async updateImpactMetrics(
+    campaignId: string,
+    metrics: ImpactMetric[]
+  ): Promise<void> {
     const campaign = this.campaigns.get(campaignId);
     if (campaign) campaign.impactMetrics = metrics;
   }
@@ -448,9 +552,13 @@ export class ImpactDashboardService {
       .slice(0, limit);
   }
 
-  getActiveCampaigns(category?: VerifiedCharity["category"]): CharityCampaign[] {
+  getActiveCampaigns(
+    category?: VerifiedCharity["category"]
+  ): CharityCampaign[] {
     return Array.from(this.campaigns.values())
-      .filter(c => c.status === "active" && (!category || c.category === category))
+      .filter(
+        c => c.status === "active" && (!category || c.category === category)
+      )
       .sort((a, b) => b.raisedAmount - a.raisedAmount);
   }
 
@@ -509,7 +617,11 @@ export class DonorRewardService {
     return "bronze";
   }
 
-  async recordDonation(userId: number, amount: number, campaignId: string): Promise<{ profile: DonorProfile; newReward?: DonorReward }> {
+  async recordDonation(
+    userId: number,
+    amount: number,
+    campaignId: string
+  ): Promise<{ profile: DonorProfile; newReward?: DonorReward }> {
     let profile = this.profiles.get(userId);
 
     if (!profile) {
@@ -539,16 +651,30 @@ export class DonorRewardService {
     // Check for new reward
     let newReward: DonorReward | undefined;
     if (profile.tier !== previousTier) {
-      newReward = await this.issueReward(userId, profile.totalDonated, campaignId);
+      newReward = await this.issueReward(
+        userId,
+        profile.totalDonated,
+        campaignId
+      );
       if (newReward) profile.rewards.push(newReward);
     }
 
     return { profile, newReward };
   }
 
-  async issueReward(userId: number, totalDonated: number, campaignId?: string): Promise<DonorReward> {
+  async issueReward(
+    userId: number,
+    totalDonated: number,
+    campaignId?: string
+  ): Promise<DonorReward> {
     const tier = this.getRewardTier(totalDonated);
-    const tierNames = { bronze: "Bronze Heart", silver: "Silver Star", gold: "Gold Crown", platinum: "Platinum Angel", diamond: "Diamond Champion" };
+    const tierNames = {
+      bronze: "Bronze Heart",
+      silver: "Silver Star",
+      gold: "Gold Crown",
+      platinum: "Platinum Angel",
+      diamond: "Diamond Champion",
+    };
 
     const id = `reward_${++this.rewardCounter}`;
     const reward: DonorReward = {
@@ -568,7 +694,10 @@ export class DonorRewardService {
     return reward;
   }
 
-  async claimReward(rewardId: string, userId: number): Promise<DonorReward | null> {
+  async claimReward(
+    rewardId: string,
+    userId: number
+  ): Promise<DonorReward | null> {
     const reward = this.rewards.get(rewardId);
     if (!reward || reward.donorId !== userId || reward.isClaimed) return null;
 
@@ -603,7 +732,9 @@ export class PublicTransparencyService {
     this.reports.set(report.charityId, reports);
   }
 
-  async createGrantProposal(params: Omit<GrantProposal, "id" | "votes" | "status" | "createdAt">): Promise<GrantProposal> {
+  async createGrantProposal(
+    params: Omit<GrantProposal, "id" | "votes" | "status" | "createdAt">
+  ): Promise<GrantProposal> {
     const id = `grant_${++this.proposalCounter}`;
     const proposal: GrantProposal = {
       id,
@@ -616,7 +747,11 @@ export class PublicTransparencyService {
     return proposal;
   }
 
-  async voteOnGrant(proposalId: string, userId: number, approve: boolean): Promise<GrantProposal | null> {
+  async voteOnGrant(
+    proposalId: string,
+    userId: number,
+    approve: boolean
+  ): Promise<GrantProposal | null> {
     const proposal = this.grantProposals.get(proposalId);
     if (!proposal || proposal.status !== "voting") return null;
 
@@ -632,7 +767,10 @@ export class PublicTransparencyService {
     return proposal;
   }
 
-  async fundGrant(proposalId: string, amount: number): Promise<GrantProposal | null> {
+  async fundGrant(
+    proposalId: string,
+    amount: number
+  ): Promise<GrantProposal | null> {
     const proposal = this.grantProposals.get(proposalId);
     if (!proposal || proposal.status !== "approved") return null;
 
@@ -643,8 +781,9 @@ export class PublicTransparencyService {
   }
 
   getCharityReports(charityId: string): TransparencyReport[] {
-    return (this.reports.get(charityId) || [])
-      .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
+    return (this.reports.get(charityId) || []).sort(
+      (a, b) => b.publishedAt.getTime() - a.publishedAt.getTime()
+    );
   }
 
   getGrantProposals(status?: GrantProposal["status"]): GrantProposal[] {
@@ -658,10 +797,17 @@ export class PublicTransparencyService {
     if (allReports.length === 0) return 0;
 
     // Score based on reporting frequency and completeness
-    const avgBreakdownItems = allReports.reduce((sum, r) => sum + r.breakdown.length, 0) / allReports.length;
-    const avgTransactions = allReports.reduce((sum, r) => sum + r.walletTransactions.length, 0) / allReports.length;
+    const avgBreakdownItems =
+      allReports.reduce((sum, r) => sum + r.breakdown.length, 0) /
+      allReports.length;
+    const avgTransactions =
+      allReports.reduce((sum, r) => sum + r.walletTransactions.length, 0) /
+      allReports.length;
 
-    return Math.min(100, Math.round((avgBreakdownItems * 5) + (avgTransactions * 2)));
+    return Math.min(
+      100,
+      Math.round(avgBreakdownItems * 5 + avgTransactions * 2)
+    );
   }
 }
 

@@ -24,13 +24,49 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 function generateStars(count: number): Star[] {
-  const categories: Star["category"][] = ["memory", "skill", "goal", "relationship", "achievement"];
+  const categories: Star["category"][] = [
+    "memory",
+    "skill",
+    "goal",
+    "relationship",
+    "achievement",
+  ];
   const labels: Record<string, string[]> = {
-    memory: ["First Login", "First Trade", "First Vote", "Genesis Day", "Mission Complete"],
-    skill: ["DeFi Basics", "Smart Contracts", "AI Prompting", "Governance", "Trading"],
-    goal: ["Reach Level 10", "Earn 1000 SKY", "Build First App", "Join Council", "Mentor 5 Users"],
-    relationship: ["HOPE AI", "ShadowChat", "Trading Partner", "Mentor", "Council Member"],
-    achievement: ["Early Adopter", "First Stake", "Builder Badge", "Voter", "Legendary"],
+    memory: [
+      "First Login",
+      "First Trade",
+      "First Vote",
+      "Genesis Day",
+      "Mission Complete",
+    ],
+    skill: [
+      "DeFi Basics",
+      "Smart Contracts",
+      "AI Prompting",
+      "Governance",
+      "Trading",
+    ],
+    goal: [
+      "Reach Level 10",
+      "Earn 1000 SKY",
+      "Build First App",
+      "Join Council",
+      "Mentor 5 Users",
+    ],
+    relationship: [
+      "HOPE AI",
+      "ShadowChat",
+      "Trading Partner",
+      "Mentor",
+      "Council Member",
+    ],
+    achievement: [
+      "Early Adopter",
+      "First Stake",
+      "Builder Badge",
+      "Voter",
+      "Legendary",
+    ],
   };
 
   return Array.from({ length: count }, (_, i) => {
@@ -57,19 +93,20 @@ export default function MemoryConstellation() {
   const canvasRef = useRef<SVGSVGElement>(null);
 
   const { data: memoryGraph } = trpc.enterprise.memoryGraph.snapshot.useQuery();
-  const { data: predictions } = trpc.enterprise.memoryGraph.predictions.useQuery();
+  const { data: predictions } =
+    trpc.enterprise.memoryGraph.predictions.useQuery();
 
   const filteredStars = selectedCategory
-    ? STARS.filter((s) => s.category === selectedCategory)
+    ? STARS.filter(s => s.category === selectedCategory)
     : STARS;
 
   const stats = {
     total: STARS.length,
-    memories: STARS.filter((s) => s.category === "memory").length,
-    skills: STARS.filter((s) => s.category === "skill").length,
-    goals: STARS.filter((s) => s.category === "goal").length,
-    relationships: STARS.filter((s) => s.category === "relationship").length,
-    achievements: STARS.filter((s) => s.category === "achievement").length,
+    memories: STARS.filter(s => s.category === "memory").length,
+    skills: STARS.filter(s => s.category === "skill").length,
+    goals: STARS.filter(s => s.category === "goal").length,
+    relationships: STARS.filter(s => s.category === "relationship").length,
+    achievements: STARS.filter(s => s.category === "achievement").length,
   };
 
   return (
@@ -109,9 +146,14 @@ export default function MemoryConstellation() {
               key={cat}
               variant="outline"
               size="sm"
-              onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+              onClick={() =>
+                setSelectedCategory(selectedCategory === cat ? null : cat)
+              }
               className={`border-white/20 text-xs capitalize ${selectedCategory === cat ? "bg-white/20" : "text-white/50"}`}
-              style={{ borderColor: selectedCategory === cat ? color : undefined, color: selectedCategory === cat ? color : undefined }}
+              style={{
+                borderColor: selectedCategory === cat ? color : undefined,
+                color: selectedCategory === cat ? color : undefined,
+              }}
             >
               {cat}s ({stats[cat as keyof typeof stats] ?? 0})
             </Button>
@@ -141,7 +183,9 @@ export default function MemoryConstellation() {
             {/* Connection lines between nearby stars */}
             {filteredStars.slice(0, 20).map((star, i) => {
               const next = filteredStars[(i + 1) % filteredStars.length];
-              const dist = Math.sqrt(Math.pow(star.x - next.x, 2) + Math.pow(star.y - next.y, 2));
+              const dist = Math.sqrt(
+                Math.pow(star.x - next.x, 2) + Math.pow(star.y - next.y, 2)
+              );
               if (dist > 20) return null;
               return (
                 <line
@@ -158,7 +202,7 @@ export default function MemoryConstellation() {
             })}
 
             {/* Stars */}
-            {filteredStars.map((star) => (
+            {filteredStars.map(star => (
               <g key={star.id}>
                 {/* Glow */}
                 <circle
@@ -178,7 +222,12 @@ export default function MemoryConstellation() {
                   className="cursor-pointer transition-all duration-200"
                   onMouseEnter={() => setHoveredStar(star)}
                   onMouseLeave={() => setHoveredStar(null)}
-                  style={{ filter: hoveredStar?.id === star.id ? `drop-shadow(0 0 4px ${star.color})` : undefined }}
+                  style={{
+                    filter:
+                      hoveredStar?.id === star.id
+                        ? `drop-shadow(0 0 4px ${star.color})`
+                        : undefined,
+                  }}
                 />
               </g>
             ))}
@@ -195,8 +244,12 @@ export default function MemoryConstellation() {
                 transform: "translate(-50%, -120%)",
               }}
             >
-              <div className="font-bold" style={{ color: hoveredStar.color }}>{hoveredStar.label}</div>
-              <div className="text-white/50 capitalize">{hoveredStar.category}</div>
+              <div className="font-bold" style={{ color: hoveredStar.color }}>
+                {hoveredStar.label}
+              </div>
+              <div className="text-white/50 capitalize">
+                {hoveredStar.category}
+              </div>
             </div>
           )}
         </div>
@@ -206,10 +259,15 @@ export default function MemoryConstellation() {
           {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
             <Card key={cat} className="bg-black/60 border-white/10">
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-black font-mono" style={{ color }}>
+                <div
+                  className="text-2xl font-black font-mono"
+                  style={{ color }}
+                >
                   {stats[cat as keyof typeof stats] ?? 0}
                 </div>
-                <div className="text-xs text-white/40 capitalize mt-1">{cat}s</div>
+                <div className="text-xs text-white/40 capitalize mt-1">
+                  {cat}s
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -226,13 +284,29 @@ export default function MemoryConstellation() {
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4">
                 {[
-                  { label: "Graph Nodes", value: memoryGraph?.nodeCount ?? "—" },
-                  { label: "Connections", value: memoryGraph?.edgeCount ?? "—" },
-                  { label: "Top Patterns", value: memoryGraph?.topPatterns?.length ?? "—" },
+                  {
+                    label: "Graph Nodes",
+                    value: memoryGraph?.nodeCount ?? "—",
+                  },
+                  {
+                    label: "Connections",
+                    value: memoryGraph?.edgeCount ?? "—",
+                  },
+                  {
+                    label: "Top Patterns",
+                    value: memoryGraph?.topPatterns?.length ?? "—",
+                  },
                 ].map((item, i) => (
-                  <div key={i} className="p-4 rounded-lg bg-white/5 text-center">
-                    <div className="text-2xl font-black text-purple-400 font-mono">{String(item.value)}</div>
-                    <div className="text-xs text-white/40 mt-1">{item.label}</div>
+                  <div
+                    key={i}
+                    className="p-4 rounded-lg bg-white/5 text-center"
+                  >
+                    <div className="text-2xl font-black text-purple-400 font-mono">
+                      {String(item.value)}
+                    </div>
+                    <div className="text-xs text-white/40 mt-1">
+                      {item.label}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -241,30 +315,41 @@ export default function MemoryConstellation() {
         )}
 
         {/* AI Predictions from Memory */}
-        {predictions && Array.isArray(predictions) && predictions.length > 0 && (
-          <Card className="bg-black/60 border-yellow-500/20">
-            <CardHeader>
-              <CardTitle className="text-yellow-400 text-sm uppercase tracking-widest">
-                WHAT YOUR MEMORY PREDICTS
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {(predictions as unknown as Array<Record<string, unknown>>).slice(0, 5).map((pred, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
-                  <span className="text-yellow-400 font-mono text-sm w-6">{i + 1}.</span>
-                  <span className="text-sm text-white/70 flex-1">
-                    {String(pred.prediction ?? pred.text ?? JSON.stringify(pred))}
-                  </span>
-                  {pred.confidence !== undefined && (
-                    <Badge className="bg-yellow-500/10 text-yellow-400 text-xs border-0 shrink-0">
-                      {Math.round(Number(pred.confidence) * 100)}%
-                    </Badge>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+        {predictions &&
+          Array.isArray(predictions) &&
+          predictions.length > 0 && (
+            <Card className="bg-black/60 border-yellow-500/20">
+              <CardHeader>
+                <CardTitle className="text-yellow-400 text-sm uppercase tracking-widest">
+                  WHAT YOUR MEMORY PREDICTS
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {(predictions as unknown as Array<Record<string, unknown>>)
+                  .slice(0, 5)
+                  .map((pred, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-white/5"
+                    >
+                      <span className="text-yellow-400 font-mono text-sm w-6">
+                        {i + 1}.
+                      </span>
+                      <span className="text-sm text-white/70 flex-1">
+                        {String(
+                          pred.prediction ?? pred.text ?? JSON.stringify(pred)
+                        )}
+                      </span>
+                      {pred.confidence !== undefined && (
+                        <Badge className="bg-yellow-500/10 text-yellow-400 text-xs border-0 shrink-0">
+                          {Math.round(Number(pred.confidence) * 100)}%
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
+              </CardContent>
+            </Card>
+          )}
       </div>
     </div>
   );

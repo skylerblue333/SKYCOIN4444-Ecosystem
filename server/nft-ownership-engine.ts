@@ -61,7 +61,14 @@ export interface NFT {
   listingPrice?: bigint;
   listingCurrency?: string;
   isBurned: boolean;
-  nftType: "art" | "gaming" | "profile" | "donor" | "membership" | "achievement" | "ticket";
+  nftType:
+    | "art"
+    | "gaming"
+    | "profile"
+    | "donor"
+    | "membership"
+    | "achievement"
+    | "ticket";
   txHash: string;
   chainId: number;
 }
@@ -84,7 +91,8 @@ export interface NFTCollection {
   ownerCount: number;
   royaltyPercent: number;
   royaltyRecipient: string;
-  category: "art" | "gaming" | "profile" | "charity" | "membership" | "pfp" | "utility";
+  category:
+    "art" | "gaming" | "profile" | "charity" | "membership" | "pfp" | "utility";
   isVerified: boolean;
   isActive: boolean;
   launchType: "instant" | "whitelist" | "dutch_auction" | "fair_launch";
@@ -138,7 +146,15 @@ export interface RoyaltyConfig {
 export interface NFTTransaction {
   id: string;
   nftId: string;
-  type: "mint" | "transfer" | "sale" | "burn" | "list" | "delist" | "offer" | "accept_offer";
+  type:
+    | "mint"
+    | "transfer"
+    | "sale"
+    | "burn"
+    | "list"
+    | "delist"
+    | "offer"
+    | "accept_offer";
   fromUserId?: number;
   toUserId?: number;
   fromAddress: string;
@@ -167,7 +183,12 @@ export interface RarityAnalysis {
   score: number;
   rank: number;
   tier: NFT["rarityTier"];
-  traitScores: { trait: string; value: string | number; rarity: number; score: number }[];
+  traitScores: {
+    trait: string;
+    value: string | number;
+    rarity: number;
+    score: number;
+  }[];
   percentile: number;
 }
 
@@ -182,10 +203,18 @@ class IPFSPinningService {
     "https://nftstorage.link/ipfs/",
   ];
 
-  async pinContent(content: string | Buffer, name: string, type: IPFSPin["type"]): Promise<IPFSPin> {
+  async pinContent(
+    content: string | Buffer,
+    name: string,
+    type: IPFSPin["type"]
+  ): Promise<IPFSPin> {
     // Simulate IPFS pinning — in production this calls Pinata/NFT.Storage API
-    const contentStr = typeof content === "string" ? content : content.toString("base64");
-    const hash = `Qm${Buffer.from(contentStr + name + Date.now()).toString("base64").replace(/[^a-zA-Z0-9]/g, "").slice(0, 44)}`;
+    const contentStr =
+      typeof content === "string" ? content : content.toString("base64");
+    const hash = `Qm${Buffer.from(contentStr + name + Date.now())
+      .toString("base64")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .slice(0, 44)}`;
     const pin: IPFSPin = {
       hash,
       name,
@@ -200,7 +229,11 @@ class IPFSPinningService {
   }
 
   async pinMetadata(metadata: NFTMetadata): Promise<string> {
-    const pin = await this.pinContent(JSON.stringify(metadata), `${metadata.name}_metadata`, "metadata");
+    const pin = await this.pinContent(
+      JSON.stringify(metadata),
+      `${metadata.name}_metadata`,
+      "metadata"
+    );
     return pin.hash;
   }
 
@@ -267,16 +300,35 @@ class MetadataEngine {
     };
   }
 
-  async generateAIDescription(nftName: string, attributes: NFTAttribute[]): Promise<string> {
+  async generateAIDescription(
+    nftName: string,
+    attributes: NFTAttribute[]
+  ): Promise<string> {
     try {
-      const attrStr = attributes.map(a => `${a.traitType}: ${a.value}`).join(", ");
-      return (await invokeLLM({ messages: [{ role: "user" as const, content: `Write a compelling 2-sentence NFT description for "${nftName}" with traits: ${attrStr}. Make it evocative and unique.` }] }))?.choices[0]?.message?.content as string;
+      const attrStr = attributes
+        .map(a => `${a.traitType}: ${a.value}`)
+        .join(", ");
+      return (
+        await invokeLLM({
+          messages: [
+            {
+              role: "user" as const,
+              content: `Write a compelling 2-sentence NFT description for "${nftName}" with traits: ${attrStr}. Make it evocative and unique.`,
+            },
+          ],
+        })
+      )?.choices[0]?.message?.content as string;
     } catch {
       return `${nftName} is a unique digital collectible with distinctive traits that make it one of a kind in the ShadowChat ecosystem.`;
     }
   }
 
-  buildProfileNFTMetadata(userId: number, username: string, level: number, achievements: string[]): NFTMetadata {
+  buildProfileNFTMetadata(
+    userId: number,
+    username: string,
+    level: number,
+    achievements: string[]
+  ): NFTMetadata {
     return {
       name: `${username} Profile NFT`,
       description: `Official ShadowChat profile NFT for ${username}. Level ${level} creator with ${achievements.length} achievements.`,
@@ -284,16 +336,36 @@ class MetadataEngine {
       attributes: [
         { traitType: "Username", value: username },
         { traitType: "Level", value: level, displayType: "number" },
-        { traitType: "Achievements", value: achievements.length, displayType: "number" },
-        { traitType: "Member Since", value: Math.floor(Date.now() / 1000), displayType: "date" },
+        {
+          traitType: "Achievements",
+          value: achievements.length,
+          displayType: "number",
+        },
+        {
+          traitType: "Member Since",
+          value: Math.floor(Date.now() / 1000),
+          displayType: "date",
+        },
         { traitType: "Platform", value: "ShadowChat" },
       ],
       properties: { type: "profile", userId },
     };
   }
 
-  buildDonorNFTMetadata(donorName: string, charityName: string, amount: number, campaignId: string): NFTMetadata {
-    const tier = amount >= 10000 ? "Platinum" : amount >= 1000 ? "Gold" : amount >= 100 ? "Silver" : "Bronze";
+  buildDonorNFTMetadata(
+    donorName: string,
+    charityName: string,
+    amount: number,
+    campaignId: string
+  ): NFTMetadata {
+    const tier =
+      amount >= 10000
+        ? "Platinum"
+        : amount >= 1000
+          ? "Gold"
+          : amount >= 100
+            ? "Silver"
+            : "Bronze";
     return {
       name: `${tier} Donor — ${charityName}`,
       description: `Proof-of-impact NFT awarded to ${donorName} for donating $${amount.toLocaleString()} to ${charityName}. This NFT represents verified charitable impact on the blockchain.`,
@@ -305,7 +377,11 @@ class MetadataEngine {
         { traitType: "Tier", value: tier },
         { traitType: "Campaign ID", value: campaignId },
         { traitType: "Verified", value: "Yes" },
-        { traitType: "Date", value: Math.floor(Date.now() / 1000), displayType: "date" },
+        {
+          traitType: "Date",
+          value: Math.floor(Date.now() / 1000),
+          displayType: "date",
+        },
       ],
     };
   }
@@ -317,11 +393,13 @@ class MetadataEngine {
     stats: Record<string, number>,
     gameId: string
   ): NFTMetadata {
-    const statAttributes: NFTAttribute[] = Object.entries(stats).map(([key, value]) => ({
-      traitType: key,
-      value,
-      displayType: "number" as const,
-    }));
+    const statAttributes: NFTAttribute[] = Object.entries(stats).map(
+      ([key, value]) => ({
+        traitType: key,
+        value,
+        displayType: "number" as const,
+      })
+    );
     return {
       name: itemName,
       description: `A ${rarity} ${itemType} from the ShadowChat GameFi universe. Usable in-game and tradeable on the marketplace.`,
@@ -340,7 +418,9 @@ class MetadataEngine {
 // ─── RARITY ENGINE ────────────────────────────────────────────────────────────
 
 class NFTRarityEngine {
-  calculateCollectionRarity(nfts: { id: string; attributes: NFTAttribute[] }[]): Map<string, RarityAnalysis> {
+  calculateCollectionRarity(
+    nfts: { id: string; attributes: NFTAttribute[] }[]
+  ): Map<string, RarityAnalysis> {
     const results = new Map<string, RarityAnalysis>();
     if (nfts.length === 0) return results;
 
@@ -368,7 +448,12 @@ class NFTRarityEngine {
         const count = valueMap.get(attr.value) || 1;
         const rarity = count / nfts.length;
         const score = 1 / rarity;
-        traitScores.push({ trait: attr.traitType, value: attr.value, rarity, score });
+        traitScores.push({
+          trait: attr.traitType,
+          value: attr.value,
+          rarity,
+          score,
+        });
         totalScore += score;
       }
 
@@ -405,7 +490,11 @@ class NFTRarityEngine {
     return "common";
   }
 
-  calculateSingleNFTRarity(attributes: NFTAttribute[], collectionStats: Map<string, Map<string | number, number>>, totalSupply: number): {
+  calculateSingleNFTRarity(
+    attributes: NFTAttribute[],
+    collectionStats: Map<string, Map<string | number, number>>,
+    totalSupply: number
+  ): {
     score: number;
     tier: NFT["rarityTier"];
     traitScores: RarityAnalysis["traitScores"];
@@ -419,7 +508,12 @@ class NFTRarityEngine {
       const count = valueMap.get(attr.value) || 1;
       const rarity = count / totalSupply;
       const score = 1 / rarity;
-      traitScores.push({ trait: attr.traitType, value: attr.value, rarity, score });
+      traitScores.push({
+        trait: attr.traitType,
+        value: attr.value,
+        rarity,
+        score,
+      });
       totalScore += score;
     }
 
@@ -441,7 +535,16 @@ class NFTMintingService {
   createCollection(
     creatorId: number,
     creatorAddress: string,
-    data: Omit<NFTCollection, "id" | "mintedCount" | "floorPrice" | "totalVolume" | "ownerCount" | "isVerified" | "createdAt">
+    data: Omit<
+      NFTCollection,
+      | "id"
+      | "mintedCount"
+      | "floorPrice"
+      | "totalVolume"
+      | "ownerCount"
+      | "isVerified"
+      | "createdAt"
+    >
   ): NFTCollection {
     const collection: NFTCollection = {
       ...data,
@@ -468,7 +571,8 @@ class NFTMintingService {
   ): Promise<NFT> {
     const collection = this.collections.get(collectionId);
     if (!collection) throw new Error("Collection not found");
-    if (collection.mintedCount >= collection.maxSupply) throw new Error("Collection fully minted");
+    if (collection.mintedCount >= collection.maxSupply)
+      throw new Error("Collection fully minted");
 
     const tokenId = (this.tokenCounters.get(collectionId) || 0) + 1;
     this.tokenCounters.set(collectionId, tokenId);
@@ -520,8 +624,18 @@ class NFTMintingService {
   ): Promise<NFT[]> {
     const results: NFT[] = [];
     for (const metadata of metadataList) {
-      const imageHash = await ipfsPinning.pinImage(metadata.image, metadata.name);
-      const nft = await this.mintNFT(collectionId, ownerId, ownerAddress, metadata, imageHash, nftType);
+      const imageHash = await ipfsPinning.pinImage(
+        metadata.image,
+        metadata.name
+      );
+      const nft = await this.mintNFT(
+        collectionId,
+        ownerId,
+        ownerAddress,
+        metadata,
+        imageHash,
+        nftType
+      );
       results.push(nft);
     }
     return results;
@@ -536,8 +650,11 @@ class NFTMintingService {
   }
 
   getUserNFTs(userId: number, nftType?: NFT["nftType"]): NFT[] {
-    return Array.from(this.nfts.values()).filter(n =>
-      n.ownerId === userId && !n.isBurned && (!nftType || n.nftType === nftType)
+    return Array.from(this.nfts.values()).filter(
+      n =>
+        n.ownerId === userId &&
+        !n.isBurned &&
+        (!nftType || n.nftType === nftType)
     );
   }
 
@@ -553,7 +670,9 @@ class NFTMintingService {
   }
 
   updateRarityScores(collectionId: string): void {
-    const collectionNFTs = Array.from(this.nfts.values()).filter(n => n.collectionId === collectionId);
+    const collectionNFTs = Array.from(this.nfts.values()).filter(
+      n => n.collectionId === collectionId
+    );
     const rarityData = rarityEngine.calculateCollectionRarity(
       collectionNFTs.map(n => ({ id: n.id, attributes: n.metadata.attributes }))
     );
@@ -570,7 +689,10 @@ class NFTMintingService {
     if (listed.length > 0) {
       const collection = this.collections.get(collectionId);
       if (collection) {
-        collection.floorPrice = listed.reduce((min, n) => n.listingPrice! < min ? n.listingPrice! : min, listed[0].listingPrice!);
+        collection.floorPrice = listed.reduce(
+          (min, n) => (n.listingPrice! < min ? n.listingPrice! : min),
+          listed[0].listingPrice!
+        );
       }
     }
   }
@@ -623,7 +745,8 @@ class CreatorDropsService {
     if (drop.dropType !== "dutch_auction" || !drop.dutchAuctionConfig) {
       return drop.mintPrice;
     }
-    const { startPrice, endPrice, priceDecrement, decrementInterval } = drop.dutchAuctionConfig;
+    const { startPrice, endPrice, priceDecrement, decrementInterval } =
+      drop.dutchAuctionConfig;
     const elapsed = Date.now() - drop.startTime.getTime();
     const intervals = Math.floor(elapsed / (decrementInterval * 1000));
     const totalDecrement = priceDecrement * BigInt(intervals);
@@ -631,15 +754,23 @@ class CreatorDropsService {
     return currentPrice < endPrice ? endPrice : currentPrice;
   }
 
-  canMint(dropId: string, userId: number): { canMint: boolean; reason?: string } {
+  canMint(
+    dropId: string,
+    userId: number
+  ): { canMint: boolean; reason?: string } {
     const drop = this.drops.get(dropId);
     if (!drop) return { canMint: false, reason: "Drop not found" };
-    if (drop.status !== "active") return { canMint: false, reason: "Drop not active" };
-    if (drop.minted >= drop.totalDropped) return { canMint: false, reason: "Sold out" };
+    if (drop.status !== "active")
+      return { canMint: false, reason: "Drop not active" };
+    if (drop.minted >= drop.totalDropped)
+      return { canMint: false, reason: "Sold out" };
     const records = this.mintRecords.get(dropId) || [];
     const userRecord = records.find(r => r.userId === userId);
     if (userRecord && userRecord.count >= drop.maxPerWallet) {
-      return { canMint: false, reason: `Maximum ${drop.maxPerWallet} per wallet` };
+      return {
+        canMint: false,
+        reason: `Maximum ${drop.maxPerWallet} per wallet`,
+      };
     }
     return { canMint: true };
   }
@@ -680,7 +811,12 @@ class CreatorDropsService {
 
 class RoyaltyEngine {
   private configs = new Map<string, RoyaltyConfig>();
-  private paymentHistory: { configId: string; amount: bigint; salePrice: bigint; timestamp: Date }[] = [];
+  private paymentHistory: {
+    configId: string;
+    amount: bigint;
+    salePrice: bigint;
+    timestamp: Date;
+  }[] = [];
 
   setRoyaltyConfig(
     collectionId: string,
@@ -705,7 +841,7 @@ class RoyaltyEngine {
   calculateRoyalty(collectionId: string, salePrice: bigint): bigint {
     const config = this.configs.get(collectionId);
     if (!config) return 0n;
-    return salePrice * BigInt(config.royaltyPercent) / 10000n;
+    return (salePrice * BigInt(config.royaltyPercent)) / 10000n;
   }
 
   recordRoyaltyPayment(collectionId: string, salePrice: bigint): bigint {
@@ -714,7 +850,12 @@ class RoyaltyEngine {
     const royaltyAmount = this.calculateRoyalty(collectionId, salePrice);
     config.totalEarned += royaltyAmount;
     config.pendingPayout += royaltyAmount;
-    this.paymentHistory.push({ configId: collectionId, amount: royaltyAmount, salePrice, timestamp: new Date() });
+    this.paymentHistory.push({
+      configId: collectionId,
+      amount: royaltyAmount,
+      salePrice,
+      timestamp: new Date(),
+    });
     return royaltyAmount;
   }
 
@@ -730,12 +871,21 @@ class RoyaltyEngine {
     return this.configs.get(collectionId);
   }
 
-  getCreatorRoyalties(creatorId: number, collections: NFTCollection[]): {
+  getCreatorRoyalties(
+    creatorId: number,
+    collections: NFTCollection[]
+  ): {
     totalEarned: bigint;
     pendingPayout: bigint;
-    byCollection: { collection: NFTCollection; earned: bigint; pending: bigint }[];
+    byCollection: {
+      collection: NFTCollection;
+      earned: bigint;
+      pending: bigint;
+    }[];
   } {
-    const creatorCollections = collections.filter(c => c.creatorId === creatorId);
+    const creatorCollections = collections.filter(
+      c => c.creatorId === creatorId
+    );
     let totalEarned = 0n;
     let pendingPayout = 0n;
     const byCollection = [];
@@ -744,7 +894,11 @@ class RoyaltyEngine {
       if (config) {
         totalEarned += config.totalEarned;
         pendingPayout += config.pendingPayout;
-        byCollection.push({ collection: col, earned: config.totalEarned, pending: config.pendingPayout });
+        byCollection.push({
+          collection: col,
+          earned: config.totalEarned,
+          pending: config.pendingPayout,
+        });
       }
     }
     return { totalEarned, pendingPayout, byCollection };
@@ -757,7 +911,12 @@ class NFTSettlementService {
   private transactions: NFTTransaction[] = [];
   private readonly PLATFORM_FEE_PERCENT = 250n; // 2.5% in basis points
 
-  async listNFT(nftId: string, price: bigint, currency: string, sellerId: number): Promise<{ success: boolean; txHash: string }> {
+  async listNFT(
+    nftId: string,
+    price: bigint,
+    currency: string,
+    sellerId: number
+  ): Promise<{ success: boolean; txHash: string }> {
     const nft = nftMinting.getNFT(nftId);
     if (!nft || nft.ownerId !== sellerId) return { success: false, txHash: "" };
     nft.isListed = true;
@@ -780,7 +939,11 @@ class NFTSettlementService {
     return { success: true, txHash };
   }
 
-  async buyNFT(nftId: string, buyerId: number, buyerAddress: string): Promise<{
+  async buyNFT(
+    nftId: string,
+    buyerId: number,
+    buyerAddress: string
+  ): Promise<{
     success: boolean;
     txHash: string;
     platformFee: bigint;
@@ -790,11 +953,21 @@ class NFTSettlementService {
   }> {
     const nft = nftMinting.getNFT(nftId);
     if (!nft || !nft.isListed || !nft.listingPrice) {
-      return { success: false, txHash: "", platformFee: 0n, royaltyPaid: 0n, sellerReceived: 0n, error: "NFT not listed" };
+      return {
+        success: false,
+        txHash: "",
+        platformFee: 0n,
+        royaltyPaid: 0n,
+        sellerReceived: 0n,
+        error: "NFT not listed",
+      };
     }
     const salePrice = nft.listingPrice;
-    const platformFee = salePrice * this.PLATFORM_FEE_PERCENT / 10000n;
-    const royaltyPaid = royaltyEngine.recordRoyaltyPayment(nft.collectionId, salePrice);
+    const platformFee = (salePrice * this.PLATFORM_FEE_PERCENT) / 10000n;
+    const royaltyPaid = royaltyEngine.recordRoyaltyPayment(
+      nft.collectionId,
+      salePrice
+    );
     const sellerReceived = salePrice - platformFee - royaltyPaid;
     const txHash = `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
     const previousOwner = nft.ownerId;
@@ -806,7 +979,8 @@ class NFTSettlementService {
     const collection = nftMinting.getCollection(nft.collectionId);
     if (collection) {
       collection.totalVolume += salePrice;
-      collection.floorPrice = salePrice < collection.floorPrice ? salePrice : collection.floorPrice;
+      collection.floorPrice =
+        salePrice < collection.floorPrice ? salePrice : collection.floorPrice;
     }
     this.transactions.push({
       id: `tx_${Date.now()}`,
@@ -827,9 +1001,15 @@ class NFTSettlementService {
     return { success: true, txHash, platformFee, royaltyPaid, sellerReceived };
   }
 
-  async transferNFT(nftId: string, fromUserId: number, toAddress: string, toUserId: number): Promise<{ success: boolean; txHash: string }> {
+  async transferNFT(
+    nftId: string,
+    fromUserId: number,
+    toAddress: string,
+    toUserId: number
+  ): Promise<{ success: boolean; txHash: string }> {
     const nft = nftMinting.getNFT(nftId);
-    if (!nft || nft.ownerId !== fromUserId) return { success: false, txHash: "" };
+    if (!nft || nft.ownerId !== fromUserId)
+      return { success: false, txHash: "" };
     const txHash = `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
     nft.ownerId = toUserId;
     nft.ownerAddress = toAddress;
@@ -850,7 +1030,10 @@ class NFTSettlementService {
     return { success: true, txHash };
   }
 
-  async burnNFT(nftId: string, ownerId: number): Promise<{ success: boolean; txHash: string }> {
+  async burnNFT(
+    nftId: string,
+    ownerId: number
+  ): Promise<{ success: boolean; txHash: string }> {
     const nft = nftMinting.getNFT(nftId);
     if (!nft || nft.ownerId !== ownerId) return { success: false, txHash: "" };
     nft.isBurned = true;
@@ -871,24 +1054,30 @@ class NFTSettlementService {
   }
 
   getTransactionHistory(nftId: string): NFTTransaction[] {
-    return this.transactions.filter(t => t.nftId === nftId).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    return this.transactions
+      .filter(t => t.nftId === nftId)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
 
   getMarketplaceStats() {
     const sales = this.transactions.filter(t => t.type === "sale");
     const totalVolume = sales.reduce((sum, t) => sum + (t.price || 0n), 0n);
     const totalFees = sales.reduce((sum, t) => sum + (t.platformFee || 0n), 0n);
-    const totalRoyalties = sales.reduce((sum, t) => sum + (t.royaltyPaid || 0n), 0n);
+    const totalRoyalties = sales.reduce(
+      (sum, t) => sum + (t.royaltyPaid || 0n),
+      0n
+    );
     return {
       totalTransactions: this.transactions.length,
       totalSales: sales.length,
       totalVolume,
       totalFees,
       totalRoyalties,
-      uniqueTraders: new Set([
-        ...sales.map(t => t.fromUserId),
-        ...sales.map(t => t.toUserId),
-      ].filter(Boolean)).size,
+      uniqueTraders: new Set(
+        [...sales.map(t => t.fromUserId), ...sales.map(t => t.toUserId)].filter(
+          Boolean
+        )
+      ).size,
     };
   }
 }
@@ -896,11 +1085,32 @@ class NFTSettlementService {
 // ─── SPECIAL NFT MINTING HELPERS ─────────────────────────────────────────────
 
 class SpecialNFTService {
-  async mintProfileNFT(userId: number, walletAddress: string, username: string, level: number, achievements: string[]): Promise<NFT> {
+  async mintProfileNFT(
+    userId: number,
+    walletAddress: string,
+    username: string,
+    level: number,
+    achievements: string[]
+  ): Promise<NFT> {
     const profileCollectionId = "col_profiles_shadowchat";
-    const metadata = metadataEngine.buildProfileNFTMetadata(userId, username, level, achievements);
-    const imageHash = await ipfsPinning.pinImage(metadata.image, `profile_${userId}`);
-    return nftMinting.mintNFT(profileCollectionId, userId, walletAddress, metadata, imageHash, "profile");
+    const metadata = metadataEngine.buildProfileNFTMetadata(
+      userId,
+      username,
+      level,
+      achievements
+    );
+    const imageHash = await ipfsPinning.pinImage(
+      metadata.image,
+      `profile_${userId}`
+    );
+    return nftMinting.mintNFT(
+      profileCollectionId,
+      userId,
+      walletAddress,
+      metadata,
+      imageHash,
+      "profile"
+    );
   }
 
   async mintDonorNFT(
@@ -912,9 +1122,24 @@ class SpecialNFTService {
     campaignId: string
   ): Promise<NFT> {
     const donorCollectionId = "col_donors_shadowchat";
-    const metadata = metadataEngine.buildDonorNFTMetadata(donorName, charityName, amount, campaignId);
-    const imageHash = await ipfsPinning.pinImage(metadata.image, `donor_${donorId}_${campaignId}`);
-    return nftMinting.mintNFT(donorCollectionId, donorId, donorAddress, metadata, imageHash, "donor");
+    const metadata = metadataEngine.buildDonorNFTMetadata(
+      donorName,
+      charityName,
+      amount,
+      campaignId
+    );
+    const imageHash = await ipfsPinning.pinImage(
+      metadata.image,
+      `donor_${donorId}_${campaignId}`
+    );
+    return nftMinting.mintNFT(
+      donorCollectionId,
+      donorId,
+      donorAddress,
+      metadata,
+      imageHash,
+      "donor"
+    );
   }
 
   async mintGameFiNFT(
@@ -927,12 +1152,33 @@ class SpecialNFTService {
     gameId: string
   ): Promise<NFT> {
     const gamingCollectionId = `col_gamefi_${gameId}`;
-    const metadata = metadataEngine.buildGameFiNFTMetadata(itemName, itemType, rarity, stats, gameId);
-    const imageHash = await ipfsPinning.pinImage(metadata.image, `gamefi_${gameId}_${itemName}`);
-    return nftMinting.mintNFT(gamingCollectionId, userId, walletAddress, metadata, imageHash, "gaming");
+    const metadata = metadataEngine.buildGameFiNFTMetadata(
+      itemName,
+      itemType,
+      rarity,
+      stats,
+      gameId
+    );
+    const imageHash = await ipfsPinning.pinImage(
+      metadata.image,
+      `gamefi_${gameId}_${itemName}`
+    );
+    return nftMinting.mintNFT(
+      gamingCollectionId,
+      userId,
+      walletAddress,
+      metadata,
+      imageHash,
+      "gaming"
+    );
   }
 
-  async mintAchievementNFT(userId: number, walletAddress: string, achievementName: string, description: string): Promise<NFT> {
+  async mintAchievementNFT(
+    userId: number,
+    walletAddress: string,
+    achievementName: string,
+    description: string
+  ): Promise<NFT> {
     const achievementCollectionId = "col_achievements_shadowchat";
     const metadata: NFTMetadata = {
       name: achievementName,
@@ -941,11 +1187,25 @@ class SpecialNFTService {
       attributes: [
         { traitType: "Achievement", value: achievementName },
         { traitType: "Type", value: "Achievement" },
-        { traitType: "Earned", value: Math.floor(Date.now() / 1000), displayType: "date" },
+        {
+          traitType: "Earned",
+          value: Math.floor(Date.now() / 1000),
+          displayType: "date",
+        },
       ],
     };
-    const imageHash = await ipfsPinning.pinImage(metadata.image, `achievement_${userId}_${achievementName}`);
-    return nftMinting.mintNFT(achievementCollectionId, userId, walletAddress, metadata, imageHash, "achievement");
+    const imageHash = await ipfsPinning.pinImage(
+      metadata.image,
+      `achievement_${userId}_${achievementName}`
+    );
+    return nftMinting.mintNFT(
+      achievementCollectionId,
+      userId,
+      walletAddress,
+      metadata,
+      imageHash,
+      "achievement"
+    );
   }
 }
 

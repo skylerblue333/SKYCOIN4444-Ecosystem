@@ -17,7 +17,9 @@ import {
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
-function createAuthContext(overrides?: Partial<AuthenticatedUser>): TrpcContext {
+function createAuthContext(
+  overrides?: Partial<AuthenticatedUser>
+): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "test-user-001",
@@ -67,7 +69,7 @@ describe("Security: Input Sanitization", () => {
   });
 
   it("sanitizeContent removes script tags", () => {
-    const input = 'Hello <script>evil()</script> World';
+    const input = "Hello <script>evil()</script> World";
     const result = sanitizeContent(input);
     expect(result).not.toContain("<script>");
     expect(result).toContain("Hello");
@@ -87,7 +89,9 @@ describe("Security: Input Sanitization", () => {
   });
 
   it("sanitizeDisplayName removes dangerous characters", () => {
-    expect(sanitizeDisplayName('<script>hack</script>"user')).toBe("scripthack/scriptuser");
+    expect(sanitizeDisplayName('<script>hack</script>"user')).toBe(
+      "scripthack/scriptuser"
+    );
   });
 
   it("sanitizeDisplayName trims and limits length", () => {

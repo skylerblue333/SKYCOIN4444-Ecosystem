@@ -49,43 +49,75 @@ describe("ContentModerationService", () => {
   });
 
   it("should allow clean content", async () => {
-    const result = await service.moderateContent("Hello, how are you today?", 1, "post");
+    const result = await service.moderateContent(
+      "Hello, how are you today?",
+      1,
+      "post"
+    );
     expect(result.allowed).toBe(true);
     expect(result.flags).toHaveLength(0);
     expect(result.score).toBe(0);
   });
 
   it("should flag spam patterns", async () => {
-    const result = await service.moderateContent("Buy now free! Click here to win prizes!", 1, "post");
+    const result = await service.moderateContent(
+      "Buy now free! Click here to win prizes!",
+      1,
+      "post"
+    );
     expect(result.flags.length).toBeGreaterThan(0);
     expect(result.score).toBeGreaterThan(0);
   });
 
   it("should flag toxic keywords", async () => {
-    const result = await service.moderateContent("You are an idiot and a loser", 1, "comment");
+    const result = await service.moderateContent(
+      "You are an idiot and a loser",
+      1,
+      "comment"
+    );
     expect(result.flags.some(f => f.includes("toxic_keyword"))).toBe(true);
     expect(result.score).toBeGreaterThan(0);
   });
 
   it("should flag excessive caps", async () => {
-    const result = await service.moderateContent("THIS IS ALL CAPS AND VERY LOUD SHOUTING", 1, "post");
+    const result = await service.moderateContent(
+      "THIS IS ALL CAPS AND VERY LOUD SHOUTING",
+      1,
+      "post"
+    );
     expect(result.flags).toContain("excessive_caps");
   });
 
   it("should flag character spam", async () => {
-    const result = await service.moderateContent("hellooooooo everyone", 1, "message");
+    const result = await service.moderateContent(
+      "hellooooooo everyone",
+      1,
+      "message"
+    );
     expect(result.flags).toContain("character_spam");
   });
 
   it("should block high-score content", async () => {
-    const result = await service.moderateContent("Buy now free! Double your crypto! Send 1 ETH! Click here to win! Guaranteed returns!", 1, "post");
+    const result = await service.moderateContent(
+      "Buy now free! Double your crypto! Send 1 ETH! Click here to win! Guaranteed returns!",
+      1,
+      "post"
+    );
     expect(result.allowed).toBe(false);
     expect(result.autoAction).toBeDefined();
   });
 
   it("should track moderation actions", async () => {
     await service.takeAction(1, "warn", "Test warning", "spam", "low", true);
-    await service.takeAction(2, "mute", "Test mute", "harassment", "medium", false, 99);
+    await service.takeAction(
+      2,
+      "mute",
+      "Test mute",
+      "harassment",
+      "medium",
+      false,
+      99
+    );
     const actions = service.getActions();
     expect(actions).toHaveLength(2);
   });
@@ -158,14 +190,24 @@ describe("ReportService", () => {
   });
 
   it("should create reports with correct priority", async () => {
-    const report = await service.createReport(1, 2, "Threatening messages", "violence", "message");
+    const report = await service.createReport(
+      1,
+      2,
+      "Threatening messages",
+      "violence",
+      "message"
+    );
     expect(report.priority).toBe("urgent");
     expect(report.status).toBe("pending");
   });
 
   it("should resolve reports", async () => {
     const report = await service.createReport(1, 2, "Spam", "spam", "post");
-    const resolved = await service.resolveReport(report.id, "Content removed", 99);
+    const resolved = await service.resolveReport(
+      report.id,
+      "Content removed",
+      99
+    );
     expect(resolved).toBe(true);
   });
 
@@ -207,20 +249,35 @@ describe("AppealService", () => {
   });
 
   it("should create appeals", async () => {
-    const appeal = await service.createAppeal(1, "MOD-000001", "I was wrongly banned", "Screenshot evidence");
+    const appeal = await service.createAppeal(
+      1,
+      "MOD-000001",
+      "I was wrongly banned",
+      "Screenshot evidence"
+    );
     expect(appeal.status).toBe("pending");
     expect(appeal.userId).toBe(1);
   });
 
   it("should approve appeals", async () => {
     const appeal = await service.createAppeal(1, "MOD-000001", "Wrong ban");
-    const result = await service.reviewAppeal(appeal.id, 99, true, "Ban was incorrect");
+    const result = await service.reviewAppeal(
+      appeal.id,
+      99,
+      true,
+      "Ban was incorrect"
+    );
     expect(result).toBe(true);
   });
 
   it("should deny appeals", async () => {
     const appeal = await service.createAppeal(1, "MOD-000001", "Unfair");
-    const result = await service.reviewAppeal(appeal.id, 99, false, "Violation confirmed");
+    const result = await service.reviewAppeal(
+      appeal.id,
+      99,
+      false,
+      "Violation confirmed"
+    );
     expect(result).toBe(true);
   });
 });
@@ -248,12 +305,18 @@ describe("AntiSpamEngine", () => {
   });
 
   it("should detect link spam", () => {
-    const signals = engine.checkSpam(1, "Check https://a.com https://b.com https://c.com https://d.com");
+    const signals = engine.checkSpam(
+      1,
+      "Check https://a.com https://b.com https://c.com https://d.com"
+    );
     expect(signals.some(s => s.type === "link_spam")).toBe(true);
   });
 
   it("should detect keyword spam", () => {
-    const signals = engine.checkSpam(1, "Free airdrop! Claim your guaranteed win now!");
+    const signals = engine.checkSpam(
+      1,
+      "Free airdrop! Claim your guaranteed win now!"
+    );
     expect(signals.some(s => s.type === "keyword_spam")).toBe(true);
   });
 
@@ -276,14 +339,18 @@ describe("EventBus", () => {
 
   it("should publish and receive events", async () => {
     let received = false;
-    bus.subscribe("test:event", () => { received = true; });
+    bus.subscribe("test:event", () => {
+      received = true;
+    });
     await bus.publish("test:event", "global", { data: "hello" });
     expect(received).toBe(true);
   });
 
   it("should support wildcard subscriptions", async () => {
     let count = 0;
-    bus.subscribe("*", () => { count++; });
+    bus.subscribe("*", () => {
+      count++;
+    });
     await bus.publish("event:a", "ch1", {});
     await bus.publish("event:b", "ch2", {});
     expect(count).toBe(2);
@@ -298,7 +365,9 @@ describe("EventBus", () => {
 
   it("should unsubscribe correctly", async () => {
     let count = 0;
-    const unsub = bus.subscribe("test", () => { count++; });
+    const unsub = bus.subscribe("test", () => {
+      count++;
+    });
     await bus.publish("test", "ch", {});
     unsub();
     await bus.publish("test", "ch", {});
@@ -328,11 +397,20 @@ describe("SSEConnectionManager", () => {
 
   it("should broadcast to channel subscribers", () => {
     let received = 0;
-    manager.addConnection(1, () => { received++; });
-    manager.addConnection(2, () => { received++; });
+    manager.addConnection(1, () => {
+      received++;
+    });
+    manager.addConnection(2, () => {
+      received++;
+    });
 
     const sent = manager.broadcastToChannel("global", {
-      id: "1", type: "test", channel: "global", payload: {}, timestamp: new Date(), priority: "normal",
+      id: "1",
+      type: "test",
+      channel: "global",
+      payload: {},
+      timestamp: new Date(),
+      priority: "normal",
     });
     expect(sent).toBe(2);
     expect(received).toBe(2);
@@ -341,11 +419,20 @@ describe("SSEConnectionManager", () => {
   it("should send to specific user", () => {
     let user1Received = 0;
     let user2Received = 0;
-    manager.addConnection(1, () => { user1Received++; });
-    manager.addConnection(2, () => { user2Received++; });
+    manager.addConnection(1, () => {
+      user1Received++;
+    });
+    manager.addConnection(2, () => {
+      user2Received++;
+    });
 
     manager.sendToUser(1, {
-      id: "1", type: "test", channel: "user:1", payload: {}, timestamp: new Date(), priority: "normal",
+      id: "1",
+      type: "test",
+      channel: "user:1",
+      payload: {},
+      timestamp: new Date(),
+      priority: "normal",
     });
     expect(user1Received).toBe(1);
     expect(user2Received).toBe(0);
@@ -353,11 +440,18 @@ describe("SSEConnectionManager", () => {
 
   it("should handle channel subscriptions", () => {
     let received = 0;
-    const connId = manager.addConnection(1, () => { received++; });
+    const connId = manager.addConnection(1, () => {
+      received++;
+    });
     manager.subscribeToChannel(connId, "room:123");
 
     manager.broadcastToChannel("room:123", {
-      id: "1", type: "test", channel: "room:123", payload: {}, timestamp: new Date(), priority: "normal",
+      id: "1",
+      type: "test",
+      channel: "room:123",
+      payload: {},
+      timestamp: new Date(),
+      priority: "normal",
     });
     expect(received).toBe(1);
   });
@@ -449,7 +543,12 @@ describe("NotificationPipeline", () => {
   });
 
   it("should send notifications", async () => {
-    const notif = await pipeline.send(1, "message", "New Message", "You have a new message");
+    const notif = await pipeline.send(
+      1,
+      "message",
+      "New Message",
+      "You have a new message"
+    );
     expect(notif.id).toBeDefined();
     expect(notif.read).toBe(false);
   });
@@ -462,7 +561,12 @@ describe("NotificationPipeline", () => {
   });
 
   it("should mark as read", async () => {
-    const notif = await pipeline.send(1, "follow", "New Follower", "User followed you");
+    const notif = await pipeline.send(
+      1,
+      "follow",
+      "New Follower",
+      "User followed you"
+    );
     pipeline.markAsRead(1, notif.id);
     const unread = pipeline.getNotifications(1, true);
     expect(unread).toHaveLength(0);
@@ -500,14 +604,20 @@ describe("ImageProcessingService", () => {
   });
 
   it("should generate image variants", async () => {
-    const result = await service.processImage("https://example.com/photo.jpg", 1);
+    const result = await service.processImage(
+      "https://example.com/photo.jpg",
+      1
+    );
     expect(result.variants.length).toBeGreaterThan(0);
     expect(result.variants.find(v => v.name === "thumbnail")).toBeDefined();
     expect(result.variants.find(v => v.name === "large")).toBeDefined();
   });
 
   it("should extract metadata", async () => {
-    const result = await service.processImage("https://example.com/photo.png", 1);
+    const result = await service.processImage(
+      "https://example.com/photo.png",
+      1
+    );
     expect(result.metadata.colorSpace).toBe("sRGB");
     expect(result.metadata.hasAlpha).toBe(true); // .png
     expect(result.metadata.blurhash).toBeDefined();
@@ -547,10 +657,30 @@ describe("MediaLibraryService", () => {
   });
 
   it("should categorize media types", async () => {
-    const image = await library.uploadAsset(1, { filename: "a.jpg", mimeType: "image/jpeg", size: 100, url: "u1" });
-    const video = await library.uploadAsset(1, { filename: "b.mp4", mimeType: "video/mp4", size: 100, url: "u2" });
-    const audio = await library.uploadAsset(1, { filename: "c.mp3", mimeType: "audio/mpeg", size: 100, url: "u3" });
-    const doc = await library.uploadAsset(1, { filename: "d.pdf", mimeType: "application/pdf", size: 100, url: "u4" });
+    const image = await library.uploadAsset(1, {
+      filename: "a.jpg",
+      mimeType: "image/jpeg",
+      size: 100,
+      url: "u1",
+    });
+    const video = await library.uploadAsset(1, {
+      filename: "b.mp4",
+      mimeType: "video/mp4",
+      size: 100,
+      url: "u2",
+    });
+    const audio = await library.uploadAsset(1, {
+      filename: "c.mp3",
+      mimeType: "audio/mpeg",
+      size: 100,
+      url: "u3",
+    });
+    const doc = await library.uploadAsset(1, {
+      filename: "d.pdf",
+      mimeType: "application/pdf",
+      size: 100,
+      url: "u4",
+    });
 
     expect(image.type).toBe("image");
     expect(video.type).toBe("video");
@@ -559,16 +689,36 @@ describe("MediaLibraryService", () => {
   });
 
   it("should list user assets", async () => {
-    await library.uploadAsset(1, { filename: "a.jpg", mimeType: "image/jpeg", size: 100, url: "u1" });
-    await library.uploadAsset(1, { filename: "b.jpg", mimeType: "image/jpeg", size: 100, url: "u2" });
-    await library.uploadAsset(2, { filename: "c.jpg", mimeType: "image/jpeg", size: 100, url: "u3" });
+    await library.uploadAsset(1, {
+      filename: "a.jpg",
+      mimeType: "image/jpeg",
+      size: 100,
+      url: "u1",
+    });
+    await library.uploadAsset(1, {
+      filename: "b.jpg",
+      mimeType: "image/jpeg",
+      size: 100,
+      url: "u2",
+    });
+    await library.uploadAsset(2, {
+      filename: "c.jpg",
+      mimeType: "image/jpeg",
+      size: 100,
+      url: "u3",
+    });
 
     const user1Assets = await library.getUserAssets(1);
     expect(user1Assets).toHaveLength(2);
   });
 
   it("should delete assets", async () => {
-    const asset = await library.uploadAsset(1, { filename: "a.jpg", mimeType: "image/jpeg", size: 100, url: "u1" });
+    const asset = await library.uploadAsset(1, {
+      filename: "a.jpg",
+      mimeType: "image/jpeg",
+      size: 100,
+      url: "u1",
+    });
     const deleted = await library.deleteAsset(asset.id, 1);
     expect(deleted).toBe(true);
 
@@ -577,16 +727,30 @@ describe("MediaLibraryService", () => {
   });
 
   it("should prevent unauthorized deletion", async () => {
-    const asset = await library.uploadAsset(1, { filename: "a.jpg", mimeType: "image/jpeg", size: 100, url: "u1" });
+    const asset = await library.uploadAsset(1, {
+      filename: "a.jpg",
+      mimeType: "image/jpeg",
+      size: 100,
+      url: "u1",
+    });
     const deleted = await library.deleteAsset(asset.id, 2); // Different user
     expect(deleted).toBe(false);
   });
 
   it("should manage collections", async () => {
-    const collection = await library.createCollection(1, "My Album", "Vacation photos");
+    const collection = await library.createCollection(
+      1,
+      "My Album",
+      "Vacation photos"
+    );
     expect(collection.name).toBe("My Album");
 
-    const asset = await library.uploadAsset(1, { filename: "a.jpg", mimeType: "image/jpeg", size: 100, url: "u1" });
+    const asset = await library.uploadAsset(1, {
+      filename: "a.jpg",
+      mimeType: "image/jpeg",
+      size: 100,
+      url: "u1",
+    });
     await library.addToCollection(collection.id, asset.id, 1);
 
     const collections = await library.getUserCollections(1);
@@ -689,7 +853,11 @@ describe("CDNService", () => {
   });
 
   it("should generate optimized URLs", () => {
-    const url = cdn.getOptimizedUrl("https://storage.com/img.jpg", { width: 640, quality: 80, format: "webp" });
+    const url = cdn.getOptimizedUrl("https://storage.com/img.jpg", {
+      width: 640,
+      quality: 80,
+      format: "webp",
+    });
     expect(url).toContain("w=640");
     expect(url).toContain("q=80");
     expect(url).toContain("fmt=webp");

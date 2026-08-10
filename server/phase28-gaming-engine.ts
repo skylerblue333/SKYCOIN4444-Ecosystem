@@ -7,11 +7,26 @@
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type GameMode = "1v1" | "2v2" | "squad" | "battle_royale" | "guild_war" | "tournament";
-export type MatchStatus = "queuing" | "matched" | "in_progress" | "completed" | "cancelled" | "disputed";
-export type TournamentStatus = "registration" | "seeding" | "bracket" | "finals" | "completed" | "cancelled";
-export type WagerStatus = "pending" | "accepted" | "in_progress" | "completed" | "disputed" | "refunded";
-export type GuildWarStatus = "declared" | "preparation" | "active" | "ended" | "settled";
+export type GameMode =
+  "1v1" | "2v2" | "squad" | "battle_royale" | "guild_war" | "tournament";
+export type MatchStatus =
+  | "queuing"
+  | "matched"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | "disputed";
+export type TournamentStatus =
+  "registration" | "seeding" | "bracket" | "finals" | "completed" | "cancelled";
+export type WagerStatus =
+  | "pending"
+  | "accepted"
+  | "in_progress"
+  | "completed"
+  | "disputed"
+  | "refunded";
+export type GuildWarStatus =
+  "declared" | "preparation" | "active" | "ended" | "settled";
 export type SeasonStatus = "upcoming" | "active" | "ended";
 
 export interface PlayerProfile {
@@ -20,7 +35,15 @@ export interface PlayerProfile {
   gameTag: string;
   skillRating: number;
   peakSkillRating: number;
-  rank: "bronze" | "silver" | "gold" | "platinum" | "diamond" | "master" | "grandmaster" | "legend";
+  rank:
+    | "bronze"
+    | "silver"
+    | "gold"
+    | "platinum"
+    | "diamond"
+    | "master"
+    | "grandmaster"
+    | "legend";
   wins: number;
   losses: number;
   draws: number;
@@ -87,7 +110,11 @@ export interface Tournament {
   entryFee: number;
   prizePool: number;
   currency: string;
-  prizeDistribution: Array<{ place: number; amount: number; percentage: number }>;
+  prizeDistribution: Array<{
+    place: number;
+    amount: number;
+    percentage: number;
+  }>;
   bracket: Array<{
     round: number;
     matchId: string;
@@ -211,7 +238,15 @@ export interface AntiCheatReport {
   matchId: string;
   reportedUserId: number;
   reporterUserId?: number;
-  cheatType: "aimbot" | "wallhack" | "speedhack" | "macro" | "account_sharing" | "smurfing" | "ddos" | "exploit";
+  cheatType:
+    | "aimbot"
+    | "wallhack"
+    | "speedhack"
+    | "macro"
+    | "account_sharing"
+    | "smurfing"
+    | "ddos"
+    | "exploit";
   evidence: string;
   confidence: number;
   status: "pending" | "investigating" | "confirmed" | "dismissed";
@@ -279,7 +314,11 @@ export const skillRankingEngine = {
     return "bronze";
   },
 
-  getOrCreateProfile(userId: number, displayName: string, gameTag: string): PlayerProfile {
+  getOrCreateProfile(
+    userId: number,
+    displayName: string,
+    gameTag: string
+  ): PlayerProfile {
     const existing = _playerProfiles.get(userId);
     if (existing) return existing;
     const profile: PlayerProfile = {
@@ -308,17 +347,24 @@ export const skillRankingEngine = {
     return profile;
   },
 
-  updateRating(userId: number, delta: number, won: boolean, drew = false): PlayerProfile | null {
+  updateRating(
+    userId: number,
+    delta: number,
+    won: boolean,
+    drew = false
+  ): PlayerProfile | null {
     const profile = _playerProfiles.get(userId);
     if (!profile) return null;
     profile.skillRating = Math.max(0, profile.skillRating + delta);
-    if (profile.skillRating > profile.peakSkillRating) profile.peakSkillRating = profile.skillRating;
+    if (profile.skillRating > profile.peakSkillRating)
+      profile.peakSkillRating = profile.skillRating;
     profile.rank = this._getRankFromRating(profile.skillRating);
     profile.totalGamesPlayed++;
     if (won) {
       profile.wins++;
       profile.currentStreak = Math.max(0, profile.currentStreak) + 1;
-      if (profile.currentStreak > profile.bestStreak) profile.bestStreak = profile.currentStreak;
+      if (profile.currentStreak > profile.bestStreak)
+        profile.bestStreak = profile.currentStreak;
     } else if (drew) {
       profile.draws++;
       profile.currentStreak = 0;
@@ -326,13 +372,21 @@ export const skillRankingEngine = {
       profile.losses++;
       profile.currentStreak = Math.min(0, profile.currentStreak) - 1;
     }
-    profile.winRate = profile.totalGamesPlayed > 0 ? profile.wins / profile.totalGamesPlayed : 0;
+    profile.winRate =
+      profile.totalGamesPlayed > 0
+        ? profile.wins / profile.totalGamesPlayed
+        : 0;
     profile.updatedAt = new Date();
     return profile;
   },
 
-  calculateEloChange(winnerRating: number, loserRating: number, kFactor = 32): { winnerDelta: number; loserDelta: number } {
-    const expectedWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
+  calculateEloChange(
+    winnerRating: number,
+    loserRating: number,
+    kFactor = 32
+  ): { winnerDelta: number; loserDelta: number } {
+    const expectedWinner =
+      1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
     const winnerDelta = Math.round(kFactor * (1 - expectedWinner));
     const loserDelta = -Math.round(kFactor * expectedWinner);
     return { winnerDelta, loserDelta };
@@ -438,14 +492,17 @@ export const matchEngine = {
     return match;
   },
 
-  completeMatch(matchId: string, params: {
-    winnerTeam: "A" | "B" | "draw";
-    scoreA: number;
-    scoreB: number;
-    durationSeconds: number;
-    mvpUserId?: number;
-    telemetryData?: Record<string, unknown>;
-  }): GameMatch | null {
+  completeMatch(
+    matchId: string,
+    params: {
+      winnerTeam: "A" | "B" | "draw";
+      scoreA: number;
+      scoreB: number;
+      durationSeconds: number;
+      mvpUserId?: number;
+      telemetryData?: Record<string, unknown>;
+    }
+  ): GameMatch | null {
     const match = _matches.get(matchId);
     if (!match || match.status !== "in_progress") return null;
 
@@ -462,9 +519,20 @@ export const matchEngine = {
     if (match.isRanked && params.winnerTeam !== "draw") {
       const winners = params.winnerTeam === "A" ? match.teamA : match.teamB;
       const losers = params.winnerTeam === "A" ? match.teamB : match.teamA;
-      const avgWinnerRating = winners.reduce((s, id) => s + (_playerProfiles.get(id)?.skillRating ?? 1000), 0) / winners.length;
-      const avgLoserRating = losers.reduce((s, id) => s + (_playerProfiles.get(id)?.skillRating ?? 1000), 0) / losers.length;
-      const { winnerDelta, loserDelta } = skillRankingEngine.calculateEloChange(avgWinnerRating, avgLoserRating);
+      const avgWinnerRating =
+        winners.reduce(
+          (s, id) => s + (_playerProfiles.get(id)?.skillRating ?? 1000),
+          0
+        ) / winners.length;
+      const avgLoserRating =
+        losers.reduce(
+          (s, id) => s + (_playerProfiles.get(id)?.skillRating ?? 1000),
+          0
+        ) / losers.length;
+      const { winnerDelta, loserDelta } = skillRankingEngine.calculateEloChange(
+        avgWinnerRating,
+        avgLoserRating
+      );
       for (const uid of winners) {
         skillRankingEngine.updateRating(uid, winnerDelta, true);
         match.skillRatingChanges[uid] = winnerDelta;
@@ -477,7 +545,10 @@ export const matchEngine = {
 
     // Settle wager if exists
     if (match.wagerId) {
-      wagerEngine.settleWager(match.wagerId, match.winnerTeam === "A" ? match.teamA[0] : match.teamB[0]);
+      wagerEngine.settleWager(
+        match.wagerId,
+        match.winnerTeam === "A" ? match.teamA[0] : match.teamB[0]
+      );
     }
 
     return match;
@@ -498,7 +569,12 @@ export const matchEngine = {
 // ─── TOURNAMENT ENGINE ────────────────────────────────────────────────────────
 
 export const tournamentEngine = {
-  createTournament(params: Omit<Tournament, "id" | "registeredParticipants" | "bracket" | "createdAt">): Tournament {
+  createTournament(
+    params: Omit<
+      Tournament,
+      "id" | "registeredParticipants" | "bracket" | "createdAt"
+    >
+  ): Tournament {
     const id = `tourney_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const tournament: Tournament = {
       ...params,
@@ -511,12 +587,18 @@ export const tournamentEngine = {
     return tournament;
   },
 
-  registerParticipant(tournamentId: string, userId: number): { success: boolean; reason?: string } {
+  registerParticipant(
+    tournamentId: string,
+    userId: number
+  ): { success: boolean; reason?: string } {
     const tournament = _tournaments.get(tournamentId);
     if (!tournament) return { success: false, reason: "Tournament not found" };
-    if (tournament.status !== "registration") return { success: false, reason: "Registration closed" };
-    if (tournament.registeredParticipants.includes(userId)) return { success: false, reason: "Already registered" };
-    if (tournament.registeredParticipants.length >= tournament.maxParticipants) return { success: false, reason: "Tournament full" };
+    if (tournament.status !== "registration")
+      return { success: false, reason: "Registration closed" };
+    if (tournament.registeredParticipants.includes(userId))
+      return { success: false, reason: "Already registered" };
+    if (tournament.registeredParticipants.length >= tournament.maxParticipants)
+      return { success: false, reason: "Tournament full" };
     tournament.registeredParticipants.push(userId);
     return { success: true };
   },
@@ -527,8 +609,10 @@ export const tournamentEngine = {
     tournament.status = "bracket";
 
     // Seed participants by skill rating
-    const seeded = [...tournament.registeredParticipants].sort((a, b) =>
-      (_playerProfiles.get(b)?.skillRating ?? 1000) - (_playerProfiles.get(a)?.skillRating ?? 1000)
+    const seeded = [...tournament.registeredParticipants].sort(
+      (a, b) =>
+        (_playerProfiles.get(b)?.skillRating ?? 1000) -
+        (_playerProfiles.get(a)?.skillRating ?? 1000)
     );
 
     // Generate first round matches
@@ -545,7 +629,11 @@ export const tournamentEngine = {
     return tournament;
   },
 
-  recordBracketResult(tournamentId: string, matchId: string, winnerId: number): Tournament | null {
+  recordBracketResult(
+    tournamentId: string,
+    matchId: string,
+    winnerId: number
+  ): Tournament | null {
     const tournament = _tournaments.get(tournamentId);
     if (!tournament) return null;
     const bracketMatch = tournament.bracket.find(b => b.matchId === matchId);
@@ -559,7 +647,11 @@ export const tournamentEngine = {
 
   getActiveTournaments(gameMode?: GameMode): Tournament[] {
     return Array.from(_tournaments.values())
-      .filter(t => ["registration", "bracket", "finals"].includes(t.status) && (!gameMode || t.gameMode === gameMode))
+      .filter(
+        t =>
+          ["registration", "bracket", "finals"].includes(t.status) &&
+          (!gameMode || t.gameMode === gameMode)
+      )
       .sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   },
 };
@@ -567,7 +659,18 @@ export const tournamentEngine = {
 // ─── WAGER ENGINE ─────────────────────────────────────────────────────────────
 
 export const wagerEngine = {
-  createWager(params: Omit<Wager, "id" | "matchId" | "winnerId" | "payoutTxHash" | "acceptedAt" | "completedAt" | "createdAt">): Wager {
+  createWager(
+    params: Omit<
+      Wager,
+      | "id"
+      | "matchId"
+      | "winnerId"
+      | "payoutTxHash"
+      | "acceptedAt"
+      | "completedAt"
+      | "createdAt"
+    >
+  ): Wager {
     const id = `wager_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const wager: Wager = { ...params, id, createdAt: new Date() };
     _wagers.set(id, wager);
@@ -584,7 +687,8 @@ export const wagerEngine = {
 
   settleWager(wagerId: string, winnerId: number): Wager | null {
     const wager = _wagers.get(wagerId);
-    if (!wager || !["accepted", "in_progress"].includes(wager.status)) return null;
+    if (!wager || !["accepted", "in_progress"].includes(wager.status))
+      return null;
     wager.status = "completed";
     wager.winnerId = winnerId;
     wager.completedAt = new Date();
@@ -594,7 +698,11 @@ export const wagerEngine = {
 
   getPlayerWagers(userId: number, status?: WagerStatus): Wager[] {
     return Array.from(_wagers.values())
-      .filter(w => (w.challengerId === userId || w.challengedId === userId) && (!status || w.status === status))
+      .filter(
+        w =>
+          (w.challengerId === userId || w.challengedId === userId) &&
+          (!status || w.status === status)
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   },
 
@@ -606,7 +714,20 @@ export const wagerEngine = {
 // ─── GUILD ENGINE ─────────────────────────────────────────────────────────────
 
 export const guildEngine = {
-  createGuild(params: Omit<Guild, "id" | "officerIds" | "wins" | "losses" | "warPoints" | "level" | "xp" | "createdAt" | "updatedAt">): Guild {
+  createGuild(
+    params: Omit<
+      Guild,
+      | "id"
+      | "officerIds"
+      | "wins"
+      | "losses"
+      | "warPoints"
+      | "level"
+      | "xp"
+      | "createdAt"
+      | "updatedAt"
+    >
+  ): Guild {
     const id = `guild_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const guild: Guild = {
       ...params,
@@ -624,13 +745,20 @@ export const guildEngine = {
     return guild;
   },
 
-  joinGuild(guildId: string, userId: number): { success: boolean; reason?: string } {
+  joinGuild(
+    guildId: string,
+    userId: number
+  ): { success: boolean; reason?: string } {
     const guild = _guilds.get(guildId);
     if (!guild) return { success: false, reason: "Guild not found" };
     if (!guild.isOpen) return { success: false, reason: "Guild is closed" };
-    if (guild.memberIds.length >= guild.maxMembers) return { success: false, reason: "Guild is full" };
+    if (guild.memberIds.length >= guild.maxMembers)
+      return { success: false, reason: "Guild is full" };
     const profile = _playerProfiles.get(userId);
-    if (guild.minSkillRating && (profile?.skillRating ?? 0) < guild.minSkillRating) {
+    if (
+      guild.minSkillRating &&
+      (profile?.skillRating ?? 0) < guild.minSkillRating
+    ) {
       return { success: false, reason: "Skill rating too low" };
     }
     if (!guild.memberIds.includes(userId)) guild.memberIds.push(userId);
@@ -657,7 +785,11 @@ export const guildEngine = {
     return war;
   },
 
-  recordWarBattle(warId: string, matchId: string, winnerGuildId: string): GuildWar | null {
+  recordWarBattle(
+    warId: string,
+    matchId: string,
+    winnerGuildId: string
+  ): GuildWar | null {
     const war = _guildWars.get(warId);
     if (!war || war.status !== "active") return null;
     war.matchIds.push(matchId);
@@ -667,7 +799,10 @@ export const guildEngine = {
     if (war.battlesCompleted >= war.maxBattles) {
       war.status = "ended";
       war.endedAt = new Date();
-      war.winnerGuildId = war.attackerScore > war.defenderScore ? war.attackerGuildId : war.defenderGuildId;
+      war.winnerGuildId =
+        war.attackerScore > war.defenderScore
+          ? war.attackerGuildId
+          : war.defenderGuildId;
     }
     return war;
   },
@@ -686,9 +821,16 @@ export const guildEngine = {
 // ─── BATTLE PASS ENGINE ───────────────────────────────────────────────────────
 
 export const battlePassEngine = {
-  createSeason(params: Omit<RewardSeason, "id" | "participantCount" | "createdAt">): RewardSeason {
+  createSeason(
+    params: Omit<RewardSeason, "id" | "participantCount" | "createdAt">
+  ): RewardSeason {
     const id = `season_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const season: RewardSeason = { ...params, id, participantCount: 0, createdAt: new Date() };
+    const season: RewardSeason = {
+      ...params,
+      id,
+      participantCount: 0,
+      createdAt: new Date(),
+    };
     _rewardSeasons.set(id, season);
     return season;
   },
@@ -700,7 +842,11 @@ export const battlePassEngine = {
     return reward;
   },
 
-  purchaseBattlePass(userId: number, seasonId: string, tier: BattlePass["tier"]): BattlePass {
+  purchaseBattlePass(
+    userId: number,
+    seasonId: string,
+    tier: BattlePass["tier"]
+  ): BattlePass {
     const season = _rewardSeasons.get(seasonId);
     const id = `bp_${userId}_${seasonId}`;
     const existing = _battlePasses.get(id);
@@ -739,14 +885,21 @@ export const battlePassEngine = {
     return bp;
   },
 
-  claimReward(userId: number, seasonId: string, rewardId: string): { success: boolean; reward?: BattlePassReward; reason?: string } {
+  claimReward(
+    userId: number,
+    seasonId: string,
+    rewardId: string
+  ): { success: boolean; reward?: BattlePassReward; reason?: string } {
     const bp = _battlePasses.get(`bp_${userId}_${seasonId}`);
     if (!bp) return { success: false, reason: "No battle pass" };
     const reward = _battlePassRewards.get(rewardId);
     if (!reward) return { success: false, reason: "Reward not found" };
-    if (reward.level > bp.level) return { success: false, reason: "Level not reached" };
-    if (reward.tier === "premium" && bp.tier === "free") return { success: false, reason: "Premium pass required" };
-    if (bp.claimedRewards.includes(rewardId)) return { success: false, reason: "Already claimed" };
+    if (reward.level > bp.level)
+      return { success: false, reason: "Level not reached" };
+    if (reward.tier === "premium" && bp.tier === "free")
+      return { success: false, reason: "Premium pass required" };
+    if (bp.claimedRewards.includes(rewardId))
+      return { success: false, reason: "Already claimed" };
     bp.claimedRewards.push(rewardId);
     return { success: true, reward };
   },
@@ -755,7 +908,10 @@ export const battlePassEngine = {
     return _battlePasses.get(`bp_${userId}_${seasonId}`) ?? null;
   },
 
-  getSeasonRewards(seasonId: string, tier?: BattlePass["tier"]): BattlePassReward[] {
+  getSeasonRewards(
+    seasonId: string,
+    tier?: BattlePass["tier"]
+  ): BattlePassReward[] {
     return Array.from(_battlePassRewards.values())
       .filter(r => r.seasonId === seasonId && (!tier || r.tier === tier))
       .sort((a, b) => a.level - b.level);
@@ -763,14 +919,20 @@ export const battlePassEngine = {
 
   getActiveSeason(): RewardSeason | null {
     const now = new Date();
-    return Array.from(_rewardSeasons.values()).find(s => s.status === "active" && s.startDate <= now && s.endDate > now) ?? null;
+    return (
+      Array.from(_rewardSeasons.values()).find(
+        s => s.status === "active" && s.startDate <= now && s.endDate > now
+      ) ?? null
+    );
   },
 };
 
 // ─── ANTI-CHEAT ENGINE ────────────────────────────────────────────────────────
 
 export const antiCheatEngine = {
-  reportCheat(params: Omit<AntiCheatReport, "id" | "status" | "resolvedAt" | "createdAt">): AntiCheatReport {
+  reportCheat(
+    params: Omit<AntiCheatReport, "id" | "status" | "resolvedAt" | "createdAt">
+  ): AntiCheatReport {
     const id = `cheat_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const report: AntiCheatReport = {
       ...params,
@@ -790,7 +952,8 @@ export const antiCheatEngine = {
     const userEventCounts: Record<number, Record<string, number>> = {};
     for (const event of matchTelemetry) {
       if (!userEventCounts[event.userId]) userEventCounts[event.userId] = {};
-      userEventCounts[event.userId][event.eventType] = (userEventCounts[event.userId][event.eventType] ?? 0) + 1;
+      userEventCounts[event.userId][event.eventType] =
+        (userEventCounts[event.userId][event.eventType] ?? 0) + 1;
     }
 
     for (const [userIdStr, eventCounts] of Object.entries(userEventCounts)) {
@@ -815,7 +978,11 @@ export const antiCheatEngine = {
     return reports;
   },
 
-  resolveReport(reportId: string, status: "confirmed" | "dismissed", reviewedBy: number): AntiCheatReport | null {
+  resolveReport(
+    reportId: string,
+    status: "confirmed" | "dismissed",
+    reviewedBy: number
+  ): AntiCheatReport | null {
     const report = _antiCheatReports.get(reportId);
     if (!report) return null;
     report.status = status;
@@ -857,10 +1024,15 @@ export const gameTelemetryEngine = {
   },
 
   getMatchTelemetry(matchId: string, userId?: number): GameTelemetry[] {
-    return _telemetry.filter(t => t.matchId === matchId && (!userId || t.userId === userId));
+    return _telemetry.filter(
+      t => t.matchId === matchId && (!userId || t.userId === userId)
+    );
   },
 
-  createReplay(matchId: string, highlights: MatchReplay["highlights"]): MatchReplay {
+  createReplay(
+    matchId: string,
+    highlights: MatchReplay["highlights"]
+  ): MatchReplay {
     const id = `replay_${matchId}`;
     const replay: MatchReplay = {
       id,
@@ -894,18 +1066,35 @@ export const aiBalancingEngine = {
     isBalanced: boolean;
   } {
     const match = _matches.get(matchId);
-    if (!match) return { balanceScore: 0, skillGap: 0, recommendations: [], isBalanced: false };
+    if (!match)
+      return {
+        balanceScore: 0,
+        skillGap: 0,
+        recommendations: [],
+        isBalanced: false,
+      };
 
-    const avgTeamA = match.teamA.reduce((s, id) => s + (_playerProfiles.get(id)?.skillRating ?? 1000), 0) / match.teamA.length;
-    const avgTeamB = match.teamB.reduce((s, id) => s + (_playerProfiles.get(id)?.skillRating ?? 1000), 0) / match.teamB.length;
+    const avgTeamA =
+      match.teamA.reduce(
+        (s, id) => s + (_playerProfiles.get(id)?.skillRating ?? 1000),
+        0
+      ) / match.teamA.length;
+    const avgTeamB =
+      match.teamB.reduce(
+        (s, id) => s + (_playerProfiles.get(id)?.skillRating ?? 1000),
+        0
+      ) / match.teamB.length;
     const skillGap = Math.abs(avgTeamA - avgTeamB);
     const balanceScore = Math.max(0, 1 - skillGap / 500);
     const isBalanced = skillGap < 100;
 
     const recommendations: string[] = [];
-    if (skillGap > 200) recommendations.push("Consider rebalancing teams by swapping players");
-    if (skillGap > 100) recommendations.push("Adjust handicap settings for fairer gameplay");
-    if (match.teamA.length !== match.teamB.length) recommendations.push("Teams have unequal sizes");
+    if (skillGap > 200)
+      recommendations.push("Consider rebalancing teams by swapping players");
+    if (skillGap > 100)
+      recommendations.push("Adjust handicap settings for fairer gameplay");
+    if (match.teamA.length !== match.teamB.length)
+      recommendations.push("Teams have unequal sizes");
 
     return { balanceScore, skillGap, recommendations, isBalanced };
   },
@@ -916,19 +1105,30 @@ export const aiBalancingEngine = {
     avgSkillRating: number;
     winRateByRank: Record<string, number>;
   } {
-    const matches = Array.from(_matches.values()).filter(m => m.status === "completed");
+    const matches = Array.from(_matches.values()).filter(
+      m => m.status === "completed"
+    );
     const modeCounts: Record<string, number> = {};
     let totalDuration = 0;
     let durationCount = 0;
 
     for (const m of matches) {
       modeCounts[m.gameMode] = (modeCounts[m.gameMode] ?? 0) + 1;
-      if (m.durationSeconds) { totalDuration += m.durationSeconds; durationCount++; }
+      if (m.durationSeconds) {
+        totalDuration += m.durationSeconds;
+        durationCount++;
+      }
     }
 
-    const mostPlayedMode = Object.entries(modeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] as GameMode ?? null;
+    const mostPlayedMode =
+      (Object.entries(modeCounts).sort(
+        (a, b) => b[1] - a[1]
+      )[0]?.[0] as GameMode) ?? null;
     const profiles = Array.from(_playerProfiles.values());
-    const avgSkillRating = profiles.length > 0 ? profiles.reduce((s, p) => s + p.skillRating, 0) / profiles.length : 1000;
+    const avgSkillRating =
+      profiles.length > 0
+        ? profiles.reduce((s, p) => s + p.skillRating, 0) / profiles.length
+        : 1000;
 
     const winRateByRank: Record<string, number> = {};
     for (const p of profiles) {
@@ -936,9 +1136,10 @@ export const aiBalancingEngine = {
       winRateByRank[p.rank] += p.winRate;
     }
     const rankCounts: Record<string, number> = {};
-    for (const p of profiles) rankCounts[p.rank] = (rankCounts[p.rank] ?? 0) + 1;
+    for (const p of profiles)
+      rankCounts[p.rank] = (rankCounts[p.rank] ?? 0) + 1;
     for (const rank of Object.keys(winRateByRank)) {
-      winRateByRank[rank] /= (rankCounts[rank] ?? 1);
+      winRateByRank[rank] /= rankCounts[rank] ?? 1;
     }
 
     return {
@@ -959,10 +1160,16 @@ export const aiBalancingEngine = {
   } {
     return {
       activePlayers: _playerProfiles.size,
-      matchesInProgress: Array.from(_matches.values()).filter(m => m.status === "in_progress").length,
+      matchesInProgress: Array.from(_matches.values()).filter(
+        m => m.status === "in_progress"
+      ).length,
       activeTournaments: tournamentEngine.getActiveTournaments().length,
-      pendingWagers: Array.from(_wagers.values()).filter(w => w.status === "pending").length,
-      activeGuildWars: Array.from(_guildWars.values()).filter(w => w.status === "active").length,
+      pendingWagers: Array.from(_wagers.values()).filter(
+        w => w.status === "pending"
+      ).length,
+      activeGuildWars: Array.from(_guildWars.values()).filter(
+        w => w.status === "active"
+      ).length,
       topPlayers: skillRankingEngine.getLeaderboard(undefined, 5),
     };
   },

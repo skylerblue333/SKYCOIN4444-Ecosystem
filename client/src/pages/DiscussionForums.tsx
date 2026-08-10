@@ -8,9 +8,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import {
-  MessageCircle, ThumbsUp, Share2, Flag, Reply, Search, Filter, TrendingUp,
-  Clock, User, Award, Bookmark, Heart, Send, X, Edit2, Trash2, Pin,
-  AlertCircle, CheckCircle, HelpCircle, Lightbulb, Bug, Zap, Eye
+  MessageCircle,
+  ThumbsUp,
+  Share2,
+  Flag,
+  Reply,
+  Search,
+  Filter,
+  TrendingUp,
+  Clock,
+  User,
+  Award,
+  Bookmark,
+  Heart,
+  Send,
+  X,
+  Edit2,
+  Trash2,
+  Pin,
+  AlertCircle,
+  CheckCircle,
+  HelpCircle,
+  Lightbulb,
+  Bug,
+  Zap,
+  Eye,
 } from "lucide-react";
 
 interface Post {
@@ -55,10 +77,11 @@ const MOCK_POSTS: Post[] = [
     author: {
       name: "Alice Johnson",
       avatar: "👩‍💻",
-      role: "student"
+      role: "student",
     },
     title: "How do I deploy a smart contract to mainnet?",
-    content: "I've written my smart contract and tested it on testnet. What are the steps to deploy it to Ethereum mainnet? Any best practices I should follow?",
+    content:
+      "I've written my smart contract and tested it on testnet. What are the steps to deploy it to Ethereum mainnet? Any best practices I should follow?",
     category: "question",
     course: "blockchain-101",
     lesson: "Smart Contracts Intro",
@@ -69,17 +92,18 @@ const MOCK_POSTS: Post[] = [
     views: 89,
     isPinned: false,
     isResolved: true,
-    tags: ["smart-contracts", "deployment", "mainnet"]
+    tags: ["smart-contracts", "deployment", "mainnet"],
   },
   {
     id: "p2",
     author: {
       name: "Bob Smith",
       avatar: "👨‍🏫",
-      role: "instructor"
+      role: "instructor",
     },
     title: "New lesson: Advanced Solidity Patterns",
-    content: "I've just released a new lesson covering advanced Solidity patterns including proxy patterns, access control, and gas optimization. Check it out in the course materials!",
+    content:
+      "I've just released a new lesson covering advanced Solidity patterns including proxy patterns, access control, and gas optimization. Check it out in the course materials!",
     category: "resource",
     course: "blockchain-101",
     lesson: "Smart Contracts Intro",
@@ -90,17 +114,18 @@ const MOCK_POSTS: Post[] = [
     views: 234,
     isPinned: true,
     isResolved: false,
-    tags: ["solidity", "patterns", "advanced"]
+    tags: ["solidity", "patterns", "advanced"],
   },
   {
     id: "p3",
     author: {
       name: "Carol Davis",
       avatar: "👩‍💼",
-      role: "student"
+      role: "student",
     },
     title: "Bug: Quiz not submitting answers",
-    content: "When I try to submit my quiz answers, I get an error message. The page shows 'Error submitting quiz' but doesn't tell me what went wrong. This happened in the Blockchain Fundamentals quiz.",
+    content:
+      "When I try to submit my quiz answers, I get an error message. The page shows 'Error submitting quiz' but doesn't tell me what went wrong. This happened in the Blockchain Fundamentals quiz.",
     category: "bug",
     course: "blockchain-101",
     lesson: "Final Assessment",
@@ -111,17 +136,18 @@ const MOCK_POSTS: Post[] = [
     views: 24,
     isPinned: false,
     isResolved: false,
-    tags: ["bug", "quiz", "technical-issue"]
+    tags: ["bug", "quiz", "technical-issue"],
   },
   {
     id: "p4",
     author: {
       name: "David Lee",
       avatar: "👨‍💻",
-      role: "student"
+      role: "student",
     },
     title: "Suggestion: Add interactive coding challenges",
-    content: "It would be great if the courses included interactive coding challenges where we can write and test code directly in the browser. This would help reinforce the concepts we're learning.",
+    content:
+      "It would be great if the courses included interactive coding challenges where we can write and test code directly in the browser. This would help reinforce the concepts we're learning.",
     category: "suggestion",
     course: "python-dev",
     lesson: "Functions & Modules",
@@ -132,8 +158,8 @@ const MOCK_POSTS: Post[] = [
     views: 156,
     isPinned: false,
     isResolved: false,
-    tags: ["feature-request", "interactive", "coding"]
-  }
+    tags: ["feature-request", "interactive", "coding"],
+  },
 ];
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -141,7 +167,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   question: <HelpCircle className="w-4 h-4" />,
   bug: <Bug className="w-4 h-4" />,
   suggestion: <Lightbulb className="w-4 h-4" />,
-  resource: <Award className="w-4 h-4" />
+  resource: <Award className="w-4 h-4" />,
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -149,7 +175,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   question: "bg-purple-500/20 text-purple-300 border-purple-500/30",
   bug: "bg-red-500/20 text-red-300 border-red-500/30",
   suggestion: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  resource: "bg-green-500/20 text-green-300 border-green-500/30"
+  resource: "bg-green-500/20 text-green-300 border-green-500/30",
 };
 
 export default function DiscussionForums() {
@@ -165,7 +191,7 @@ export default function DiscussionForums() {
     content: "",
     category: "question" as const,
     course: "blockchain-101",
-    lesson: "General"
+    lesson: "General",
   });
 
   const handleCreatePost = () => {
@@ -179,7 +205,7 @@ export default function DiscussionForums() {
       author: {
         name: user?.name || "Anonymous",
         avatar: "👤",
-        role: "student"
+        role: "student",
       },
       ...newPost,
       createdAt: new Date(),
@@ -189,7 +215,7 @@ export default function DiscussionForums() {
       views: 0,
       isPinned: false,
       isResolved: false,
-      tags: newPost.title.toLowerCase().split(" ").slice(0, 3)
+      tags: newPost.title.toLowerCase().split(" ").slice(0, 3),
     };
 
     setPosts([post, ...posts]);
@@ -198,16 +224,14 @@ export default function DiscussionForums() {
       content: "",
       category: "question",
       course: "blockchain-101",
-      lesson: "General"
+      lesson: "General",
     });
     setShowNewPostForm(false);
     toast.success("Post created successfully!");
   };
 
   const handleLikePost = (id: string) => {
-    setPosts(posts.map(p =>
-      p.id === id ? { ...p, likes: p.likes + 1 } : p
-    ));
+    setPosts(posts.map(p => (p.id === id ? { ...p, likes: p.likes + 1 } : p)));
   };
 
   const handleReply = () => {
@@ -217,18 +241,22 @@ export default function DiscussionForums() {
     }
 
     if (selectedPost) {
-      setPosts(posts.map(p =>
-        p.id === selectedPost.id ? { ...p, replies: p.replies + 1 } : p
-      ));
+      setPosts(
+        posts.map(p =>
+          p.id === selectedPost.id ? { ...p, replies: p.replies + 1 } : p
+        )
+      );
       setReplyContent("");
       toast.success("Reply posted!");
     }
   };
 
   const filteredPosts = posts.filter(p => {
-    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         p.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || p.category === selectedCategory;
+    const matchesSearch =
+      p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || p.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -253,7 +281,9 @@ export default function DiscussionForums() {
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-4">
-                    <h1 className="text-2xl font-bold text-white">{selectedPost.title}</h1>
+                    <h1 className="text-2xl font-bold text-white">
+                      {selectedPost.title}
+                    </h1>
                     {selectedPost.isPinned && (
                       <Pin className="w-5 h-5 text-yellow-400" />
                     )}
@@ -273,19 +303,29 @@ export default function DiscussionForums() {
                     <span>{selectedPost.views} views</span>
                   </div>
                 </div>
-                <Badge className={`text-xs px-3 py-1 ${CATEGORY_COLORS[selectedPost.category]}`}>
+                <Badge
+                  className={`text-xs px-3 py-1 ${CATEGORY_COLORS[selectedPost.category]}`}
+                >
                   {CATEGORY_ICONS[selectedPost.category]}
-                  <span className="ml-1">{selectedPost.category.toUpperCase()}</span>
+                  <span className="ml-1">
+                    {selectedPost.category.toUpperCase()}
+                  </span>
                 </Badge>
               </div>
 
               {/* Content */}
-              <p className="text-slate-300 text-lg leading-relaxed mb-6">{selectedPost.content}</p>
+              <p className="text-slate-300 text-lg leading-relaxed mb-6">
+                {selectedPost.content}
+              </p>
 
               {/* Tags */}
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedPost.tags.map(tag => (
-                  <Badge key={tag} variant="outline" className="border-slate-600 text-slate-400">
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className="border-slate-600 text-slate-400"
+                  >
                     #{tag}
                   </Badge>
                 ))}
@@ -301,11 +341,17 @@ export default function DiscussionForums() {
                   <ThumbsUp className="w-4 h-4 mr-2" />
                   {selectedPost.likes} Likes
                 </Button>
-                <Button variant="ghost" className="text-slate-400 hover:text-cyan-400">
+                <Button
+                  variant="ghost"
+                  className="text-slate-400 hover:text-cyan-400"
+                >
                   <MessageCircle className="w-4 h-4 mr-2" />
                   {selectedPost.replies} Replies
                 </Button>
-                <Button variant="ghost" className="text-slate-400 hover:text-cyan-400">
+                <Button
+                  variant="ghost"
+                  className="text-slate-400 hover:text-cyan-400"
+                >
                   <Bookmark className="w-4 h-4 mr-2" />
                   Save
                 </Button>
@@ -322,7 +368,7 @@ export default function DiscussionForums() {
               <Textarea
                 placeholder="Share your thoughts, answer, or suggestion..."
                 value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
+                onChange={e => setReplyContent(e.target.value)}
                 className="bg-slate-800/50 border-slate-700 text-white min-h-32"
               />
               <div className="flex gap-3">
@@ -346,7 +392,9 @@ export default function DiscussionForums() {
 
           {/* Replies */}
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-white mb-4">{selectedPost.replies} Replies</h2>
+            <h2 className="text-xl font-bold text-white mb-4">
+              {selectedPost.replies} Replies
+            </h2>
             {[1, 2].map(i => (
               <Card key={i} className="bg-slate-900/50 border border-white/10">
                 <CardContent className="p-6">
@@ -354,20 +402,33 @@ export default function DiscussionForums() {
                     <div className="text-2xl">👤</div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <p className="font-semibold text-white">Reply Author {i}</p>
+                        <p className="font-semibold text-white">
+                          Reply Author {i}
+                        </p>
                         {i === 1 && (
                           <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs px-2 py-0.5">
                             ANSWER
                           </Badge>
                         )}
                       </div>
-                      <p className="text-slate-300 mb-3">This is a helpful reply to the question. The author has provided a solution or insight.</p>
+                      <p className="text-slate-300 mb-3">
+                        This is a helpful reply to the question. The author has
+                        provided a solution or insight.
+                      </p>
                       <div className="flex gap-4 text-sm">
-                        <Button variant="ghost" size="sm" className="text-slate-400 hover:text-cyan-400">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-slate-400 hover:text-cyan-400"
+                        >
                           <ThumbsUp className="w-4 h-4 mr-1" />
                           {i === 1 ? "12" : "5"}
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-slate-400 hover:text-cyan-400">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-slate-400 hover:text-cyan-400"
+                        >
                           <Reply className="w-4 h-4 mr-1" />
                           Reply
                         </Button>
@@ -389,8 +450,12 @@ export default function DiscussionForums() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Discussion Forums</h1>
-          <p className="text-slate-400">Connect with fellow learners, ask questions, and share knowledge</p>
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Discussion Forums
+          </h1>
+          <p className="text-slate-400">
+            Connect with fellow learners, ask questions, and share knowledge
+          </p>
         </div>
 
         {/* New Post Button */}
@@ -409,7 +474,9 @@ export default function DiscussionForums() {
           <Card className="bg-slate-900/50 border border-cyan-500/30 mb-8">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-white">Start a New Discussion</CardTitle>
+                <CardTitle className="text-white">
+                  Start a New Discussion
+                </CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -421,29 +488,44 @@ export default function DiscussionForums() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm text-slate-300 block mb-2">Title</label>
+                <label className="text-sm text-slate-300 block mb-2">
+                  Title
+                </label>
                 <Input
                   placeholder="What's your question or topic?"
                   value={newPost.title}
-                  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                  onChange={e =>
+                    setNewPost({ ...newPost, title: e.target.value })
+                  }
                   className="bg-slate-800/50 border-slate-700 text-white"
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-300 block mb-2">Description</label>
+                <label className="text-sm text-slate-300 block mb-2">
+                  Description
+                </label>
                 <Textarea
                   placeholder="Provide details and context..."
                   value={newPost.content}
-                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                  onChange={e =>
+                    setNewPost({ ...newPost, content: e.target.value })
+                  }
                   className="bg-slate-800/50 border-slate-700 text-white min-h-32"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-slate-300 block mb-2">Category</label>
+                  <label className="text-sm text-slate-300 block mb-2">
+                    Category
+                  </label>
                   <select
                     value={newPost.category}
-                    onChange={(e) => setNewPost({ ...newPost, category: e.target.value as any })}
+                    onChange={e =>
+                      setNewPost({
+                        ...newPost,
+                        category: e.target.value as any,
+                      })
+                    }
                     className="w-full bg-slate-800/50 border border-slate-700 text-white rounded p-2"
                   >
                     <option value="question">Question</option>
@@ -454,13 +536,19 @@ export default function DiscussionForums() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm text-slate-300 block mb-2">Course</label>
+                  <label className="text-sm text-slate-300 block mb-2">
+                    Course
+                  </label>
                   <select
                     value={newPost.course}
-                    onChange={(e) => setNewPost({ ...newPost, course: e.target.value })}
+                    onChange={e =>
+                      setNewPost({ ...newPost, course: e.target.value })
+                    }
                     className="w-full bg-slate-800/50 border border-slate-700 text-white rounded p-2"
                   >
-                    <option value="blockchain-101">Blockchain Fundamentals</option>
+                    <option value="blockchain-101">
+                      Blockchain Fundamentals
+                    </option>
                     <option value="python-dev">Python for Builders</option>
                     <option value="js-mastery">JavaScript & React</option>
                   </select>
@@ -492,7 +580,7 @@ export default function DiscussionForums() {
             <Input
               placeholder="Search discussions..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10 bg-slate-800/50 border-slate-700 text-white"
             />
           </div>
@@ -503,7 +591,11 @@ export default function DiscussionForums() {
                 variant={selectedCategory === cat ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(cat)}
-                className={selectedCategory === cat ? "bg-cyan-500/20 text-cyan-300" : "border-slate-600"}
+                className={
+                  selectedCategory === cat
+                    ? "bg-cyan-500/20 text-cyan-300"
+                    : "border-slate-600"
+                }
               >
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
               </Button>
@@ -529,12 +621,20 @@ export default function DiscussionForums() {
                           <h3 className="text-lg font-semibold text-white hover:text-cyan-300 transition-colors">
                             {post.title}
                           </h3>
-                          {post.isPinned && <Pin className="w-4 h-4 text-yellow-400" />}
-                          {post.isResolved && <CheckCircle className="w-4 h-4 text-green-400" />}
+                          {post.isPinned && (
+                            <Pin className="w-4 h-4 text-yellow-400" />
+                          )}
+                          {post.isResolved && (
+                            <CheckCircle className="w-4 h-4 text-green-400" />
+                          )}
                         </div>
-                        <p className="text-slate-400 text-sm mb-3">{post.content.substring(0, 150)}...</p>
+                        <p className="text-slate-400 text-sm mb-3">
+                          {post.content.substring(0, 150)}...
+                        </p>
                       </div>
-                      <Badge className={`text-xs px-2 py-1 shrink-0 ${CATEGORY_COLORS[post.category]}`}>
+                      <Badge
+                        className={`text-xs px-2 py-1 shrink-0 ${CATEGORY_COLORS[post.category]}`}
+                      >
                         {post.category}
                       </Badge>
                     </div>

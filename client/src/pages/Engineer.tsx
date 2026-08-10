@@ -9,19 +9,49 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Streamdown } from "streamdown";
 import { Card, IconTile, StatCard } from "@/components/ui/sk";
-import { Cpu, Code2, ShieldAlert, Gauge, Bug, ScanSearch, Loader2, Share2, Users } from "lucide-react";
+import {
+  Cpu,
+  Code2,
+  ShieldAlert,
+  Gauge,
+  Bug,
+  ScanSearch,
+  Loader2,
+  Share2,
+  Users,
+} from "lucide-react";
 
 type Mode = "generate" | "review" | "optimize" | "security" | "debug";
 
-const MODES: { id: Mode; label: string; icon: any; needsError?: boolean; codeInput: boolean }[] = [
+const MODES: {
+  id: Mode;
+  label: string;
+  icon: any;
+  needsError?: boolean;
+  codeInput: boolean;
+}[] = [
   { id: "generate", label: "Generate", icon: Code2, codeInput: false },
   { id: "review", label: "Review", icon: ScanSearch, codeInput: true },
   { id: "optimize", label: "Optimize", icon: Gauge, codeInput: true },
-  { id: "security", label: "Security Audit", icon: ShieldAlert, codeInput: true },
+  {
+    id: "security",
+    label: "Security Audit",
+    icon: ShieldAlert,
+    codeInput: true,
+  },
   { id: "debug", label: "Debug", icon: Bug, codeInput: true, needsError: true },
 ];
 
-const LANGS = ["typescript", "javascript", "python", "rust", "go", "solidity", "java", "c++"];
+const LANGS = [
+  "typescript",
+  "javascript",
+  "python",
+  "rust",
+  "go",
+  "solidity",
+  "java",
+  "c++",
+];
 
 export default function Engineer() {
   const { isAuthenticated, user } = useAuth();
@@ -41,7 +71,12 @@ export default function Engineer() {
   const security = trpc.engineer.securityAudit.useMutation();
   const debug = trpc.engineer.debugCode.useMutation();
 
-  const pending = gen.isPending || review.isPending || optimize.isPending || security.isPending || debug.isPending;
+  const pending =
+    gen.isPending ||
+    review.isPending ||
+    optimize.isPending ||
+    security.isPending ||
+    debug.isPending;
   const active = MODES.find(m => m.id === mode)!;
 
   // Initialize real-time collaboration session
@@ -57,19 +92,28 @@ export default function Engineer() {
     setOutput("");
     try {
       let res;
-      if (mode === "generate") res = await gen.mutateAsync({ description: text, language });
-      else if (mode === "review") res = await review.mutateAsync({ code: text, language });
-      else if (mode === "optimize") res = await optimize.mutateAsync({ code: text, language });
-      else if (mode === "security") res = await security.mutateAsync({ code: text, language });
-      else res = await debug.mutateAsync({ code: text, error: errText, language });
+      if (mode === "generate")
+        res = await gen.mutateAsync({ description: text, language });
+      else if (mode === "review")
+        res = await review.mutateAsync({ code: text, language });
+      else if (mode === "optimize")
+        res = await optimize.mutateAsync({ code: text, language });
+      else if (mode === "security")
+        res = await security.mutateAsync({ code: text, language });
+      else
+        res = await debug.mutateAsync({ code: text, error: errText, language });
       setOutput(res.output);
-      
+
       // Broadcast to collaborators (simulated)
       if (collaborators.length > 1) {
-        console.log(`[Collab] Shared result with ${collaborators.length - 1} collaborators`);
+        console.log(
+          `[Collab] Shared result with ${collaborators.length - 1} collaborators`
+        );
       }
     } catch (err) {
-      setOutput(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+      setOutput(
+        `Error: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
     }
   }
 
@@ -85,9 +129,7 @@ export default function Engineer() {
         <Card className="max-w-md">
           <h2 className="text-xl font-bold mb-4">Sign in to HopeAI</h2>
           <a href={getLoginUrl()} className="inline-block w-full">
-            <Button className="w-full">
-              Sign In
-            </Button>
+            <Button className="w-full">Sign In</Button>
           </a>
         </Card>
       </div>
@@ -103,7 +145,9 @@ export default function Engineer() {
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
               HopeAI Software Engineer
             </h1>
-            <p className="text-gray-400">AI-powered code generation, review, and optimization</p>
+            <p className="text-gray-400">
+              AI-powered code generation, review, and optimization
+            </p>
           </div>
           <div className="flex gap-3">
             <Button
@@ -122,10 +166,15 @@ export default function Engineer() {
           <Card className="mb-6 bg-slate-900/50 border-cyan-500/30 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400 mb-2">Active collaborators:</p>
+                <p className="text-sm text-gray-400 mb-2">
+                  Active collaborators:
+                </p>
                 <div className="flex gap-2 mb-3">
                   {collaborators.map((c, i) => (
-                    <span key={i} className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-sm">
+                    <span
+                      key={i}
+                      className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-sm"
+                    >
                       {c}
                     </span>
                   ))}
@@ -164,14 +213,18 @@ export default function Engineer() {
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <Card className="bg-slate-900/50 border-slate-700/50 p-6">
             <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-300 mb-2">Language</label>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                Language
+              </label>
               <select
                 value={language}
                 onChange={e => setLanguage(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white"
               >
                 {LANGS.map(l => (
-                  <option key={l} value={l}>{l}</option>
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
                 ))}
               </select>
             </div>
@@ -182,13 +235,19 @@ export default function Engineer() {
             <Textarea
               value={text}
               onChange={e => setText(e.target.value)}
-              placeholder={active.codeInput ? "Paste your code here..." : "Describe what you want to build..."}
+              placeholder={
+                active.codeInput
+                  ? "Paste your code here..."
+                  : "Describe what you want to build..."
+              }
               className="w-full h-40 bg-slate-800 border border-slate-700 rounded text-white placeholder-gray-500 resize-none"
             />
 
             {active.needsError && (
               <>
-                <label className="block text-sm font-semibold text-gray-300 mt-4 mb-2">Error Message</label>
+                <label className="block text-sm font-semibold text-gray-300 mt-4 mb-2">
+                  Error Message
+                </label>
                 <Textarea
                   value={errText}
                   onChange={e => setErrText(e.target.value)}
@@ -219,12 +278,16 @@ export default function Engineer() {
 
           {/* Output Section */}
           <Card className="bg-slate-900/50 border-slate-700/50 p-6">
-            <label className="block text-sm font-semibold text-gray-300 mb-2">Result</label>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">
+              Result
+            </label>
             <div className="h-80 bg-slate-800 border border-slate-700 rounded p-4 overflow-auto">
               {output ? (
                 <Streamdown>{output}</Streamdown>
               ) : (
-                <p className="text-gray-500 text-sm">Results will appear here...</p>
+                <p className="text-gray-500 text-sm">
+                  Results will appear here...
+                </p>
               )}
             </div>
           </Card>
@@ -232,9 +295,24 @@ export default function Engineer() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
-          <StatCard icon={Code2} accent="cyan" label="Code Generated" value="—" />
-          <StatCard icon={ScanSearch} accent="purple" label="Reviews Completed" value="892" />
-          <StatCard icon={Gauge} accent="green" label="Optimizations" value="654" />
+          <StatCard
+            icon={Code2}
+            accent="cyan"
+            label="Code Generated"
+            value="—"
+          />
+          <StatCard
+            icon={ScanSearch}
+            accent="purple"
+            label="Reviews Completed"
+            value="892"
+          />
+          <StatCard
+            icon={Gauge}
+            accent="green"
+            label="Optimizations"
+            value="654"
+          />
         </div>
       </div>
     </div>

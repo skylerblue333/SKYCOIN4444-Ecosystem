@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Check, X, Zap, Crown, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Spinner } from '@/components/ui/spinner';
-import { useAuth } from '@/_core/hooks/useAuth';
+import React, { useState, useEffect } from "react";
+import { Check, X, Zap, Crown, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface SubscriptionPlan {
   id: string;
@@ -22,23 +22,24 @@ interface UserSubscription {
 }
 
 const FEATURE_DESCRIPTIONS: Record<string, string> = {
-  unlimitedLikes: 'Unlimited Likes',
-  unlimitedSuperLikes: 'Unlimited Super Likes',
-  unlimitedMessages: 'Unlimited Messages',
-  rewindFeature: 'Rewind Feature',
-  boostFeature: 'Boost Profile',
-  incognitoMode: 'Incognito Mode',
-  advancedFilters: 'Advanced Filters',
-  seenByFeature: 'See Who Liked You',
-  prioritySupport: 'Priority Support',
-  premiumBadge: 'Premium Badge',
-  aiMatchingBoost: 'AI Matching Boost',
+  unlimitedLikes: "Unlimited Likes",
+  unlimitedSuperLikes: "Unlimited Super Likes",
+  unlimitedMessages: "Unlimited Messages",
+  rewindFeature: "Rewind Feature",
+  boostFeature: "Boost Profile",
+  incognitoMode: "Incognito Mode",
+  advancedFilters: "Advanced Filters",
+  seenByFeature: "See Who Liked You",
+  prioritySupport: "Priority Support",
+  premiumBadge: "Premium Badge",
+  aiMatchingBoost: "AI Matching Boost",
 };
 
 export default function DatingSubscription() {
   const { user } = useAuth();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [currentSubscription, setCurrentSubscription] = useState<UserSubscription | null>(null);
+  const [currentSubscription, setCurrentSubscription] =
+    useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
 
@@ -49,21 +50,21 @@ export default function DatingSubscription() {
 
   const loadPlans = async () => {
     try {
-      const response = await fetch('/api/dating/subscription/plans');
+      const response = await fetch("/api/dating/subscription/plans");
       const data = await response.json();
       setPlans(data || []);
     } catch (error) {
-      console.error('Failed to load plans:', error);
+      console.error("Failed to load plans:", error);
     }
   };
 
   const loadCurrentSubscription = async () => {
     try {
-      const response = await fetch('/api/dating/subscription');
+      const response = await fetch("/api/dating/subscription");
       const data = await response.json();
       setCurrentSubscription(data);
     } catch (error) {
-      console.error('Failed to load subscription:', error);
+      console.error("Failed to load subscription:", error);
     } finally {
       setLoading(false);
     }
@@ -72,9 +73,9 @@ export default function DatingSubscription() {
   const handleUpgrade = async (planId: string) => {
     setUpgrading(planId);
     try {
-      const response = await fetch('/api/dating/subscription/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/dating/subscription/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tier: planId }),
       });
       const data = await response.json();
@@ -82,7 +83,7 @@ export default function DatingSubscription() {
         window.location.href = data.checkoutUrl;
       }
     } catch (error) {
-      console.error('Failed to upgrade subscription:', error);
+      console.error("Failed to upgrade subscription:", error);
     } finally {
       setUpgrading(null);
     }
@@ -98,11 +99,11 @@ export default function DatingSubscription() {
 
   const getTierIcon = (tier: string) => {
     switch (tier) {
-      case 'elite':
+      case "elite":
         return <Crown className="w-6 h-6 text-yellow-500" />;
-      case 'vip':
+      case "vip":
         return <Star className="w-6 h-6 text-purple-500" />;
-      case 'premium':
+      case "premium":
         return <Zap className="w-6 h-6 text-pink-500" />;
       default:
         return null;
@@ -114,7 +115,9 @@ export default function DatingSubscription() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Upgrade Your Experience</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Upgrade Your Experience
+          </h1>
           <p className="text-xl text-gray-600">
             Choose the perfect plan to unlock premium features
           </p>
@@ -131,7 +134,8 @@ export default function DatingSubscription() {
                 </h2>
                 {currentSubscription.endsAt && (
                   <p className="text-sm text-gray-600 mt-1">
-                    Renews on {new Date(currentSubscription.endsAt).toLocaleDateString()}
+                    Renews on{" "}
+                    {new Date(currentSubscription.endsAt).toLocaleDateString()}
                   </p>
                 )}
               </div>
@@ -147,17 +151,19 @@ export default function DatingSubscription() {
 
         {/* Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {plans.map((plan) => {
+          {plans.map(plan => {
             const isCurrentPlan = currentSubscription?.tier === plan.id;
-            const isHigherTier = plans.findIndex((p) => p.id === currentSubscription?.tier) < plans.findIndex((p) => p.id === plan.id);
+            const isHigherTier =
+              plans.findIndex(p => p.id === currentSubscription?.tier) <
+              plans.findIndex(p => p.id === plan.id);
 
             return (
               <Card
                 key={plan.id}
                 className={`p-6 transition-all ${
                   isCurrentPlan
-                    ? 'ring-2 ring-pink-500 shadow-lg scale-105'
-                    : 'hover:shadow-lg hover:scale-102'
+                    ? "ring-2 ring-pink-500 shadow-lg scale-105"
+                    : "hover:shadow-lg hover:scale-102"
                 }`}
               >
                 {/* Badge */}
@@ -171,11 +177,15 @@ export default function DatingSubscription() {
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-2">
                     {getTierIcon(plan.id)}
-                    <h3 className="text-xl font-bold text-gray-900 capitalize">{plan.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 capitalize">
+                      {plan.name}
+                    </h3>
                   </div>
                   <div className="text-3xl font-bold text-gray-900">
                     ${plan.price.toFixed(2)}
-                    <span className="text-sm text-gray-600 font-normal">/month</span>
+                    <span className="text-sm text-gray-600 font-normal">
+                      /month
+                    </span>
                   </div>
                 </div>
 
@@ -188,7 +198,9 @@ export default function DatingSubscription() {
                       ) : (
                         <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
                       )}
-                      <span className={value ? 'text-gray-700' : 'text-gray-400'}>
+                      <span
+                        className={value ? "text-gray-700" : "text-gray-400"}
+                      >
                         {FEATURE_DESCRIPTIONS[key] || key}
                       </span>
                     </div>
@@ -203,23 +215,26 @@ export default function DatingSubscription() {
                 ) : (
                   <Button
                     onClick={() => handleUpgrade(plan.id)}
-                    disabled={upgrading === plan.id || (!isHigherTier && currentSubscription?.tier !== 'free')}
+                    disabled={
+                      upgrading === plan.id ||
+                      (!isHigherTier && currentSubscription?.tier !== "free")
+                    }
                     className={`w-full ${
-                      plan.id === 'elite'
-                        ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600'
-                        : plan.id === 'vip'
-                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
-                        : plan.id === 'premium'
-                        ? 'bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600'
-                        : 'bg-gray-500 hover:bg-gray-600'
+                      plan.id === "elite"
+                        ? "bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                        : plan.id === "vip"
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                          : plan.id === "premium"
+                            ? "bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600"
+                            : "bg-gray-500 hover:bg-gray-600"
                     }`}
                   >
                     {upgrading === plan.id ? (
                       <Spinner className="w-4 h-4" />
                     ) : plan.price === 0 ? (
-                      'Downgrade'
+                      "Downgrade"
                     ) : (
-                      'Upgrade Now'
+                      "Upgrade Now"
                     )}
                   </Button>
                 )}
@@ -230,34 +245,48 @@ export default function DatingSubscription() {
 
         {/* FAQ Section */}
         <Card className="p-8 bg-white">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Frequently Asked Questions
+          </h2>
 
           <div className="space-y-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Can I cancel anytime?</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Can I cancel anytime?
+              </h3>
               <p className="text-gray-600">
-                Yes! You can cancel your subscription at any time. Your access will continue until the end of your billing period.
+                Yes! You can cancel your subscription at any time. Your access
+                will continue until the end of your billing period.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">What payment methods do you accept?</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                What payment methods do you accept?
+              </h3>
               <p className="text-gray-600">
-                We accept all major credit cards (Visa, Mastercard, American Express) and digital wallets through Stripe.
+                We accept all major credit cards (Visa, Mastercard, American
+                Express) and digital wallets through Stripe.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Can I upgrade or downgrade my plan?</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Can I upgrade or downgrade my plan?
+              </h3>
               <p className="text-gray-600">
-                Absolutely! You can upgrade or downgrade your plan at any time. Changes take effect immediately.
+                Absolutely! You can upgrade or downgrade your plan at any time.
+                Changes take effect immediately.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Is there a free trial?</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Is there a free trial?
+              </h3>
               <p className="text-gray-600">
-                The Free tier is always available with basic features. Upgrade to Premium, VIP, or Elite to unlock advanced features.
+                The Free tier is always available with basic features. Upgrade
+                to Premium, VIP, or Elite to unlock advanced features.
               </p>
             </div>
           </div>

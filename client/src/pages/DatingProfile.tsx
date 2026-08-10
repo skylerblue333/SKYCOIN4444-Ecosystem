@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Upload, Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
-import { useAuth } from '@/_core/hooks/useAuth';
+import React, { useState, useEffect } from "react";
+import { Upload, Edit2, Save, X, Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface DatingProfile {
   id: number;
@@ -39,25 +39,25 @@ export default function DatingProfile() {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [formData, setFormData] = useState({
-    age: '',
-    gender: '',
-    lookingFor: '',
-    bio: '',
+    age: "",
+    gender: "",
+    lookingFor: "",
+    bio: "",
     interests: [] as string[],
-    height: '',
-    bodyType: '',
-    ethnicity: '',
-    religion: '',
-    education: '',
-    occupation: '',
-    smoker: '',
-    drinker: '',
+    height: "",
+    bodyType: "",
+    ethnicity: "",
+    religion: "",
+    education: "",
+    occupation: "",
+    smoker: "",
+    drinker: "",
     hasKids: false,
-    wantsKids: '',
-    relationshipGoal: '',
+    wantsKids: "",
+    relationshipGoal: "",
   });
 
-  const [newInterest, setNewInterest] = useState('');
+  const [newInterest, setNewInterest] = useState("");
 
   useEffect(() => {
     loadProfile();
@@ -65,18 +65,20 @@ export default function DatingProfile() {
 
   const loadProfile = async () => {
     try {
-      const response = await fetch('/api/dating/profile');
+      const response = await fetch("/api/dating/profile");
       const data = await response.json();
       if (data.profile) {
         setProfile(data.profile);
         setFormData({
           ...data.profile,
-          age: data.profile.age ? data.profile.age.toString() : '',
-          interests: Array.isArray(data.profile.interests) ? data.profile.interests : [],
+          age: data.profile.age ? data.profile.age.toString() : "",
+          interests: Array.isArray(data.profile.interests)
+            ? data.profile.interests
+            : [],
         });
       }
     } catch (error) {
-      console.error('Failed to load profile:', error);
+      console.error("Failed to load profile:", error);
     } finally {
       setLoading(false);
     }
@@ -84,21 +86,21 @@ export default function DatingProfile() {
 
   const loadSuggestions = async () => {
     try {
-      const response = await fetch('/api/dating/profile/suggestions');
+      const response = await fetch("/api/dating/profile/suggestions");
       const data = await response.json();
       setSuggestions(data.suggestions || []);
       setShowSuggestions(true);
     } catch (error) {
-      console.error('Failed to load suggestions:', error);
+      console.error("Failed to load suggestions:", error);
     }
   };
 
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      const response = await fetch('/api/dating/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/dating/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       const data = await response.json();
@@ -111,7 +113,7 @@ export default function DatingProfile() {
         setEditing(false);
       }
     } catch (error) {
-      console.error('Failed to save profile:', error);
+      console.error("Failed to save profile:", error);
     } finally {
       setSaving(false);
     }
@@ -123,14 +125,14 @@ export default function DatingProfile() {
         ...formData,
         interests: [...formData.interests, newInterest],
       });
-      setNewInterest('');
+      setNewInterest("");
     }
   };
 
   const handleRemoveInterest = (interest: string) => {
     setFormData({
       ...formData,
-      interests: formData.interests.filter((i) => i !== interest),
+      interests: formData.interests.filter(i => i !== interest),
     });
   };
 
@@ -160,8 +162,12 @@ export default function DatingProfile() {
         {profile && (
           <Card className="mb-6 p-6 bg-gradient-to-r from-pink-100 to-purple-100">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Profile Completeness</h2>
-              <span className="text-2xl font-bold text-pink-600">{profile.profileCompleteness}%</span>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Profile Completeness
+              </h2>
+              <span className="text-2xl font-bold text-pink-600">
+                {profile.profileCompleteness}%
+              </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
@@ -185,7 +191,9 @@ export default function DatingProfile() {
 
         {showSuggestions && suggestions.length > 0 && (
           <Card className="mb-6 p-6 bg-blue-50 border-blue-200">
-            <h3 className="font-semibold text-gray-900 mb-4">Suggestions to Improve Your Profile</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">
+              Suggestions to Improve Your Profile
+            </h3>
             <ul className="space-y-2">
               {suggestions.map((suggestion, idx) => (
                 <li key={idx} className="flex gap-2 text-sm text-gray-700">
@@ -210,20 +218,28 @@ export default function DatingProfile() {
             {/* Basic Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Age
+                </label>
                 <Input
                   type="number"
                   value={formData.age}
-                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, age: e.target.value })
+                  }
                   disabled={!editing}
                   placeholder="Age"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Gender
+                </label>
                 <select
                   value={formData.gender}
-                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, gender: e.target.value })
+                  }
                   disabled={!editing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
@@ -237,10 +253,14 @@ export default function DatingProfile() {
 
             {/* Bio */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bio
+              </label>
               <textarea
                 value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, bio: e.target.value })
+                }
                 disabled={!editing}
                 placeholder="Tell us about yourself..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md h-24"
@@ -249,13 +269,15 @@ export default function DatingProfile() {
 
             {/* Interests */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Interests</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Interests
+              </label>
               <div className="flex gap-2 mb-4">
                 <Input
                   value={newInterest}
-                  onChange={(e) => setNewInterest(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
+                  onChange={e => setNewInterest(e.target.value)}
+                  onKeyPress={e => {
+                    if (e.key === "Enter") {
                       handleAddInterest();
                     }
                   }}
@@ -269,7 +291,7 @@ export default function DatingProfile() {
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {formData.interests.map((interest) => (
+                {formData.interests.map(interest => (
                   <div
                     key={interest}
                     className="flex items-center gap-2 px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm"
@@ -291,19 +313,27 @@ export default function DatingProfile() {
             {/* Physical Attributes */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Height</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Height
+                </label>
                 <Input
                   value={formData.height}
-                  onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, height: e.target.value })
+                  }
                   disabled={!editing}
                   placeholder="e.g., 5 feet 10 inches"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Body Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Body Type
+                </label>
                 <Input
                   value={formData.bodyType}
-                  onChange={(e) => setFormData({ ...formData, bodyType: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, bodyType: e.target.value })
+                  }
                   disabled={!editing}
                   placeholder="e.g., Athletic"
                 />
@@ -313,19 +343,27 @@ export default function DatingProfile() {
             {/* Background */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Education</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Education
+                </label>
                 <Input
                   value={formData.education}
-                  onChange={(e) => setFormData({ ...formData, education: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, education: e.target.value })
+                  }
                   disabled={!editing}
                   placeholder="e.g., Bachelors Degree"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Occupation</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Occupation
+                </label>
                 <Input
                   value={formData.occupation}
-                  onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, occupation: e.target.value })
+                  }
                   disabled={!editing}
                   placeholder="e.g., Software Engineer"
                 />
@@ -335,10 +373,14 @@ export default function DatingProfile() {
             {/* Preferences */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Looking For</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Looking For
+                </label>
                 <select
                   value={formData.lookingFor}
-                  onChange={(e) => setFormData({ ...formData, lookingFor: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, lookingFor: e.target.value })
+                  }
                   disabled={!editing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
@@ -349,10 +391,17 @@ export default function DatingProfile() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Relationship Goal</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Relationship Goal
+                </label>
                 <select
                   value={formData.relationshipGoal}
-                  onChange={(e) => setFormData({ ...formData, relationshipGoal: e.target.value })}
+                  onChange={e =>
+                    setFormData({
+                      ...formData,
+                      relationshipGoal: e.target.value,
+                    })
+                  }
                   disabled={!editing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
@@ -372,7 +421,11 @@ export default function DatingProfile() {
                   disabled={saving}
                   className="flex-1 bg-pink-500 hover:bg-pink-600"
                 >
-                  {saving ? <Spinner className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                  {saving ? (
+                    <Spinner className="w-4 h-4" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
                   Save Profile
                 </Button>
                 <Button

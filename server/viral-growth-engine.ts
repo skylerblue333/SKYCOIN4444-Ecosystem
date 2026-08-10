@@ -1,7 +1,7 @@
 /**
  * VIRAL GROWTH ENGINE x44
  * Maximum Viral Loops & Social Features
- * 
+ *
  * Growth Mechanics:
  * - Referral system (40% commission)
  * - Viral sharing (post-to-X, Discord, Telegram)
@@ -18,12 +18,12 @@ export interface ReferralReward {
   referee: string;
   reward: number;
   timestamp: Date;
-  status: 'pending' | 'completed';
+  status: "pending" | "completed";
 }
 
 export interface ViralLoop {
   id: string;
-  type: 'referral' | 'share' | 'challenge' | 'leaderboard' | 'community';
+  type: "referral" | "share" | "challenge" | "leaderboard" | "community";
   trigger: string;
   reward: number;
   multiplier: number;
@@ -46,9 +46,9 @@ export class ViralGrowthEngine {
   private initializeViralLoops(): void {
     // 1. REFERRAL SYSTEM (40% lifetime commission)
     this.addLoop({
-      id: 'referral-basic',
-      type: 'referral',
-      trigger: 'user_signup',
+      id: "referral-basic",
+      type: "referral",
+      trigger: "user_signup",
       reward: 50, // $50 per referral
       multiplier: 1,
       viral_coefficient: 0.4, // 40% of users refer someone
@@ -56,27 +56,27 @@ export class ViralGrowthEngine {
 
     // 2. TIERED REFERRAL BONUSES
     this.addLoop({
-      id: 'referral-tier-1',
-      type: 'referral',
-      trigger: 'referral_count_10',
+      id: "referral-tier-1",
+      type: "referral",
+      trigger: "referral_count_10",
       reward: 500, // Bonus for 10 referrals
       multiplier: 10,
       viral_coefficient: 0.5,
     });
 
     this.addLoop({
-      id: 'referral-tier-2',
-      type: 'referral',
-      trigger: 'referral_count_50',
+      id: "referral-tier-2",
+      type: "referral",
+      trigger: "referral_count_50",
       reward: 5000, // Bonus for 50 referrals
       multiplier: 50,
       viral_coefficient: 0.6,
     });
 
     this.addLoop({
-      id: 'referral-tier-3',
-      type: 'referral',
-      trigger: 'referral_count_100',
+      id: "referral-tier-3",
+      type: "referral",
+      trigger: "referral_count_100",
       reward: 25000, // Bonus for 100 referrals
       multiplier: 100,
       viral_coefficient: 0.7,
@@ -84,9 +84,9 @@ export class ViralGrowthEngine {
 
     // 3. SHARE TO X (Twitter)
     this.addLoop({
-      id: 'share-x',
-      type: 'share',
-      trigger: 'share_to_x',
+      id: "share-x",
+      type: "share",
+      trigger: "share_to_x",
       reward: 100, // $100 per share
       multiplier: 1,
       viral_coefficient: 0.3, // 30% of shares convert
@@ -94,9 +94,9 @@ export class ViralGrowthEngine {
 
     // 4. SHARE TO DISCORD
     this.addLoop({
-      id: 'share-discord',
-      type: 'share',
-      trigger: 'share_to_discord',
+      id: "share-discord",
+      type: "share",
+      trigger: "share_to_discord",
       reward: 150, // $150 per share (higher engagement)
       multiplier: 1,
       viral_coefficient: 0.4,
@@ -104,9 +104,9 @@ export class ViralGrowthEngine {
 
     // 5. SHARE TO TELEGRAM
     this.addLoop({
-      id: 'share-telegram',
-      type: 'share',
-      trigger: 'share_to_telegram',
+      id: "share-telegram",
+      type: "share",
+      trigger: "share_to_telegram",
       reward: 150,
       multiplier: 1,
       viral_coefficient: 0.45,
@@ -114,9 +114,9 @@ export class ViralGrowthEngine {
 
     // 6. SHARE TO REDDIT
     this.addLoop({
-      id: 'share-reddit',
-      type: 'share',
-      trigger: 'share_to_reddit',
+      id: "share-reddit",
+      type: "share",
+      trigger: "share_to_reddit",
       reward: 200, // Highest engagement
       multiplier: 1,
       viral_coefficient: 0.5,
@@ -124,9 +124,9 @@ export class ViralGrowthEngine {
 
     // 7. VIRAL CHALLENGES
     this.addLoop({
-      id: 'challenge-daily',
-      type: 'challenge',
-      trigger: 'challenge_complete',
+      id: "challenge-daily",
+      type: "challenge",
+      trigger: "challenge_complete",
       reward: 50,
       multiplier: 1,
       viral_coefficient: 0.6, // High participation
@@ -134,9 +134,9 @@ export class ViralGrowthEngine {
 
     // 8. LEADERBOARD COMPETITION
     this.addLoop({
-      id: 'leaderboard-weekly',
-      type: 'leaderboard',
-      trigger: 'top_10_weekly',
+      id: "leaderboard-weekly",
+      type: "leaderboard",
+      trigger: "top_10_weekly",
       reward: 1000, // $1000 for top 10
       multiplier: 10,
       viral_coefficient: 0.7,
@@ -144,9 +144,9 @@ export class ViralGrowthEngine {
 
     // 9. COMMUNITY CHALLENGES
     this.addLoop({
-      id: 'community-challenge',
-      type: 'community',
-      trigger: 'community_goal_met',
+      id: "community-challenge",
+      type: "community",
+      trigger: "community_goal_met",
       reward: 500,
       multiplier: 1,
       viral_coefficient: 0.8, // Highest viral coefficient
@@ -154,9 +154,9 @@ export class ViralGrowthEngine {
 
     // 10. INFLUENCER PROGRAM
     this.addLoop({
-      id: 'influencer-tier-1',
-      type: 'referral',
-      trigger: 'influencer_signup',
+      id: "influencer-tier-1",
+      type: "referral",
+      trigger: "influencer_signup",
       reward: 1000, // $1000 per influencer
       multiplier: 1,
       viral_coefficient: 0.9, // Influencers bring many users
@@ -170,7 +170,7 @@ export class ViralGrowthEngine {
         trigger: `trigger_${i}`,
         reward: 50 * i,
         multiplier: i,
-        viral_coefficient: Math.min(0.95, 0.3 + (i * 0.02)),
+        viral_coefficient: Math.min(0.95, 0.3 + i * 0.02),
       });
     }
   }
@@ -182,13 +182,16 @@ export class ViralGrowthEngine {
   /**
    * Process referral
    */
-  async processReferral(referrerId: string, refereeId: string): Promise<ReferralReward> {
+  async processReferral(
+    referrerId: string,
+    refereeId: string
+  ): Promise<ReferralReward> {
     const reward: ReferralReward = {
       referrer: referrerId,
       referee: refereeId,
       reward: 50, // $50 per referral
       timestamp: new Date(),
-      status: 'completed',
+      status: "completed",
     };
 
     const referrals = this.referrals.get(referrerId) || [];
@@ -215,7 +218,7 @@ export class ViralGrowthEngine {
     return {
       totalReferrals,
       totalEarned,
-      activeReferrals: referrals.filter(r => r.status === 'completed').length,
+      activeReferrals: referrals.filter(r => r.status === "completed").length,
       tier: this.calculateTier(totalReferrals),
       nextTierBonus: this.getNextTierBonus(totalReferrals),
       leaderboardRank: this.getLeaderboardRank(userId, totalReferrals),
@@ -225,8 +228,16 @@ export class ViralGrowthEngine {
   /**
    * Track share
    */
-  async trackShare(userId: string, platform: 'x' | 'discord' | 'telegram' | 'reddit'): Promise<any> {
-    const metrics = this.shareMetrics.get(userId) || { x: 0, discord: 0, telegram: 0, reddit: 0 };
+  async trackShare(
+    userId: string,
+    platform: "x" | "discord" | "telegram" | "reddit"
+  ): Promise<any> {
+    const metrics = this.shareMetrics.get(userId) || {
+      x: 0,
+      discord: 0,
+      telegram: 0,
+      reddit: 0,
+    };
     metrics[platform]++;
     this.shareMetrics.set(userId, metrics);
 
@@ -236,7 +247,10 @@ export class ViralGrowthEngine {
     return {
       platform,
       reward,
-      totalShares: Object.values(metrics).reduce((a: number, b: any) => a + (b as number), 0),
+      totalShares: Object.values(metrics).reduce(
+        (a: number, b: any) => a + (b as number),
+        0
+      ),
       metrics,
     };
   }
@@ -277,7 +291,7 @@ export class ViralGrowthEngine {
       startingUsers,
       endingUsers: Math.floor(users),
       totalGrowth: Math.floor(users - startingUsers),
-      growthRate: ((users - startingUsers) / startingUsers * 100).toFixed(2),
+      growthRate: (((users - startingUsers) / startingUsers) * 100).toFixed(2),
       projections,
     };
   }
@@ -286,11 +300,11 @@ export class ViralGrowthEngine {
    * Calculate tier
    */
   private calculateTier(referralCount: number): string {
-    if (referralCount >= 100) return 'Platinum';
-    if (referralCount >= 50) return 'Gold';
-    if (referralCount >= 10) return 'Silver';
-    if (referralCount >= 1) return 'Bronze';
-    return 'None';
+    if (referralCount >= 100) return "Platinum";
+    if (referralCount >= 50) return "Gold";
+    if (referralCount >= 10) return "Silver";
+    if (referralCount >= 1) return "Bronze";
+    return "None";
   }
 
   /**
@@ -327,8 +341,14 @@ export class ViralGrowthEngine {
   /**
    * Get random loop type
    */
-  private getRandomLoopType(): ViralLoop['type'] {
-    const types: ViralLoop['type'][] = ['referral', 'share', 'challenge', 'leaderboard', 'community'];
+  private getRandomLoopType(): ViralLoop["type"] {
+    const types: ViralLoop["type"][] = [
+      "referral",
+      "share",
+      "challenge",
+      "leaderboard",
+      "community",
+    ];
     return types[Math.floor(Math.random() * types.length)];
   }
 
@@ -347,10 +367,10 @@ export class ViralGrowthEngine {
       totalLoops: this.viralLoops.size,
       averageViralCoefficient: this.getViralCoefficient(),
       projectedMonthlyGrowth: this.projectGrowth(10000, 30),
-      referralCommission: '40% lifetime',
-      shareRewards: 'Up to $200 per share',
-      challengeRewards: 'Daily $50-$1000',
-      status: 'Viral growth machine activated',
+      referralCommission: "40% lifetime",
+      shareRewards: "Up to $200 per share",
+      challengeRewards: "Daily $50-$1000",
+      status: "Viral growth machine activated",
     };
   }
 }

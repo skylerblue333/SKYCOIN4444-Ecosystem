@@ -4,9 +4,9 @@
  * Provides intelligent responses across all 10 strategic engines
  */
 
-import { publicProcedure, protectedProcedure, router } from './_core/trpc';
-import { z } from 'zod';
-import { productionLLM } from './llm-production';
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import { productionLLM } from "./llm-production";
 
 export const aiEnhancedRouter = router({
   /**
@@ -18,7 +18,12 @@ export const aiEnhancedRouter = router({
         message: z.string().min(1).max(4000),
         model: z.string().optional(),
         history: z
-          .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string() }))
+          .array(
+            z.object({
+              role: z.enum(["user", "assistant"]),
+              content: z.string(),
+            })
+          )
           .optional(),
         systemPrompt: z.string().optional(),
         engine: z.string().optional(),
@@ -27,33 +32,37 @@ export const aiEnhancedRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const userId = (input.userId || ctx.user?.id || 'anonymous') as string;
+        const userId = (input.userId || ctx.user?.id || "anonymous") as string;
 
         // Build context for intelligent response
         const context = {
           userId: userId as string,
-          engine: input.engine || 'general',
-          platform: 'skycoin4444',
-          userRole: ctx.user?.role || 'user',
+          engine: input.engine || "general",
+          platform: "skycoin4444",
+          userRole: ctx.user?.role || "user",
           recentActions: [],
           timestamp: Date.now() as unknown as number,
         };
 
         // Generate intelligent response using OpenAI API
-        const reply = await productionLLM.generateIntelligentResponse(input.message, context);
+        const reply = await productionLLM.generateIntelligentResponse(
+          input.message,
+          context
+        );
 
         return {
           reply,
-          model: input.model || 'gpt-4',
+          model: input.model || "gpt-4",
           tokensUsed: Math.ceil(reply.length / 4), // Estimate tokens
-          engine: input.engine || 'general',
+          engine: input.engine || "general",
           timestamp: new Date(),
         };
       } catch (error) {
-        console.error('AI chat error:', error);
+        console.error("AI chat error:", error);
         return {
-          reply: 'I encountered an issue processing your request. Please try again.',
-          model: input.model || 'gpt-4',
+          reply:
+            "I encountered an issue processing your request. Please try again.",
+          model: input.model || "gpt-4",
           tokensUsed: 0,
           error: true,
         };
@@ -74,24 +83,27 @@ export const aiEnhancedRouter = router({
     .mutation(async ({ input, ctx }) => {
       try {
         const context = {
-          userId: ((ctx.user.id as unknown) as string),
-          engine: input.engine || 'general',
-          platform: 'skycoin4444',
-          userRole: ctx.user.role || 'user',
+          userId: ctx.user.id as unknown as string,
+          engine: input.engine || "general",
+          platform: "skycoin4444",
+          userRole: ctx.user.role || "user",
           recentActions: [],
           timestamp: Date.now() as unknown as number,
         };
 
-        const reply = await productionLLM.generateIntelligentResponse(input.message, context);
+        const reply = await productionLLM.generateIntelligentResponse(
+          input.message,
+          context
+        );
 
         return {
           sessionId: input.sessionId,
           reply,
           timestamp: new Date(),
-          engine: input.engine || 'general',
+          engine: input.engine || "general",
         };
       } catch (error) {
-        console.error('Conversation error:', error);
+        console.error("Conversation error:", error);
         throw error;
       }
     }),
@@ -109,30 +121,33 @@ export const aiEnhancedRouter = router({
     .mutation(async ({ input, ctx }) => {
       try {
         const context = {
-          userId: ((ctx.user?.id as unknown) as string) || 'anonymous',
-          engine: input.engine || 'general',
-          platform: 'skycoin4444',
-          userRole: ctx.user?.role || 'user',
+          userId: (ctx.user?.id as unknown as string) || "anonymous",
+          engine: input.engine || "general",
+          platform: "skycoin4444",
+          userRole: ctx.user?.role || "user",
           recentActions: [],
           timestamp: Date.now() as unknown as number,
         };
 
         // Return streaming response generator
-        const generator = productionLLM.streamResponse(input.message, context as any);
+        const generator = productionLLM.streamResponse(
+          input.message,
+          context as any
+        );
 
         // Collect all chunks
-        let fullResponse = '';
+        let fullResponse = "";
         for await (const chunk of generator) {
           fullResponse += chunk;
         }
 
         return {
           reply: fullResponse,
-          engine: input.engine || 'general',
+          engine: input.engine || "general",
           timestamp: new Date(),
         };
       } catch (error) {
-        console.error('Stream error:', error);
+        console.error("Stream error:", error);
         throw error;
       }
     }),
@@ -144,16 +159,16 @@ export const aiEnhancedRouter = router({
     .input(
       z.object({
         engine: z.enum([
-          'feedback-hub',
-          'adaptive-roadmap',
-          'agent-debate',
-          'competitive-radar',
-          'behavioral-intelligence',
-          'experiment-factory',
-          'narrative-engine',
-          'connector-intelligence',
-          'product-brain',
-          'company-simulator',
+          "feedback-hub",
+          "adaptive-roadmap",
+          "agent-debate",
+          "competitive-radar",
+          "behavioral-intelligence",
+          "experiment-factory",
+          "narrative-engine",
+          "connector-intelligence",
+          "product-brain",
+          "company-simulator",
         ]),
         data: z.record(z.string(), z.any()).optional(),
       })
@@ -161,30 +176,39 @@ export const aiEnhancedRouter = router({
     .mutation(async ({ input, ctx }) => {
       try {
         const enginePrompts: Record<string, string> = {
-          'feedback-hub': 'Analyze this feedback data and provide key insights and recommendations.',
-          'adaptive-roadmap': 'Based on this roadmap data, suggest strategic priorities.',
-          'agent-debate': 'Analyze these perspectives and provide balanced analysis.',
-          'competitive-radar': 'Analyze competitive data and identify opportunities.',
-          'behavioral-intelligence': 'Analyze user behavior patterns and provide insights.',
-          'experiment-factory': 'Analyze experiment results and recommend next steps.',
-          'narrative-engine': 'Generate compelling narratives from this data.',
-          'connector-intelligence': 'Analyze integration opportunities.',
-          'product-brain': 'Synthesize product knowledge and provide insights.',
-          'company-simulator': 'Simulate scenarios and forecast outcomes.',
+          "feedback-hub":
+            "Analyze this feedback data and provide key insights and recommendations.",
+          "adaptive-roadmap":
+            "Based on this roadmap data, suggest strategic priorities.",
+          "agent-debate":
+            "Analyze these perspectives and provide balanced analysis.",
+          "competitive-radar":
+            "Analyze competitive data and identify opportunities.",
+          "behavioral-intelligence":
+            "Analyze user behavior patterns and provide insights.",
+          "experiment-factory":
+            "Analyze experiment results and recommend next steps.",
+          "narrative-engine": "Generate compelling narratives from this data.",
+          "connector-intelligence": "Analyze integration opportunities.",
+          "product-brain": "Synthesize product knowledge and provide insights.",
+          "company-simulator": "Simulate scenarios and forecast outcomes.",
         };
 
         const prompt = `${enginePrompts[input.engine]}\n\nData: ${JSON.stringify(input.data || {})}`;
 
         const context = {
-          userId: ((ctx.user?.id as unknown) as string) || 'anonymous',
+          userId: (ctx.user?.id as unknown as string) || "anonymous",
           engine: input.engine,
-          platform: 'skycoin4444',
-          userRole: ctx.user?.role || 'user',
+          platform: "skycoin4444",
+          userRole: ctx.user?.role || "user",
           recentActions: [],
           timestamp: Date.now(),
         };
 
-        const insight = await productionLLM.generateIntelligentResponse(prompt, context as any);
+        const insight = await productionLLM.generateIntelligentResponse(
+          prompt,
+          context as any
+        );
 
         return {
           engine: input.engine,
@@ -193,7 +217,7 @@ export const aiEnhancedRouter = router({
           timestamp: new Date(),
         };
       } catch (error) {
-        console.error('Insight generation error:', error);
+        console.error("Insight generation error:", error);
         throw error;
       }
     }),
@@ -215,21 +239,24 @@ export const aiEnhancedRouter = router({
     .mutation(async ({ input, ctx }) => {
       try {
         const results = await Promise.all(
-          input.queries.map(async (query) => {
+          input.queries.map(async query => {
             const context = {
-              userId: (ctx.user?.id || 'anonymous') as string,
-              engine: query.engine || 'general',
-              platform: 'skycoin4444',
-              userRole: ctx.user?.role || 'user',
+              userId: (ctx.user?.id || "anonymous") as string,
+              engine: query.engine || "general",
+              platform: "skycoin4444",
+              userRole: ctx.user?.role || "user",
               recentActions: [],
               timestamp: Date.now() as unknown as number,
             };
 
-            const reply = await productionLLM.generateIntelligentResponse(query.message, context);
+            const reply = await productionLLM.generateIntelligentResponse(
+              query.message,
+              context
+            );
             return {
               message: query.message,
               reply,
-              engine: query.engine || 'general',
+              engine: query.engine || "general",
             };
           })
         );
@@ -240,7 +267,7 @@ export const aiEnhancedRouter = router({
           count: results.length,
         };
       } catch (error) {
-        console.error('Batch processing error:', error);
+        console.error("Batch processing error:", error);
         throw error;
       }
     }),
@@ -256,10 +283,13 @@ export const aiEnhancedRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        productionLLM.clearHistory((ctx.user.id as unknown) as string, input.engine);
-        return { success: true, cleared: input.engine || 'all' };
+        productionLLM.clearHistory(
+          ctx.user.id as unknown as string,
+          input.engine
+        );
+        return { success: true, cleared: input.engine || "all" };
       } catch (error) {
-        console.error('Clear history error:', error);
+        console.error("Clear history error:", error);
         throw error;
       }
     }),
@@ -275,14 +305,17 @@ export const aiEnhancedRouter = router({
     )
     .query(async ({ input, ctx }) => {
       try {
-        const history = productionLLM.getHistory((ctx.user.id as unknown) as string, input.engine);
+        const history = productionLLM.getHistory(
+          ctx.user.id as unknown as string,
+          input.engine
+        );
         return {
           engine: input.engine,
           messages: history,
           count: history.length,
         };
       } catch (error) {
-        console.error('Get history error:', error);
+        console.error("Get history error:", error);
         throw error;
       }
     }),
@@ -293,22 +326,22 @@ export const aiEnhancedRouter = router({
   getModels: publicProcedure.query(async () => {
     return [
       {
-        id: 'gpt-4',
-        name: 'GPT-4',
-        provider: 'openai',
-        capabilities: ['chat', 'analysis', 'code-generation', 'streaming'],
+        id: "gpt-4",
+        name: "GPT-4",
+        provider: "openai",
+        capabilities: ["chat", "analysis", "code-generation", "streaming"],
       },
       {
-        id: 'gpt-4-turbo',
-        name: 'GPT-4 Turbo',
-        provider: 'openai',
-        capabilities: ['chat', 'analysis', 'code-generation', 'streaming'],
+        id: "gpt-4-turbo",
+        name: "GPT-4 Turbo",
+        provider: "openai",
+        capabilities: ["chat", "analysis", "code-generation", "streaming"],
       },
       {
-        id: 'gpt-3.5-turbo',
-        name: 'GPT-3.5 Turbo',
-        provider: 'openai',
-        capabilities: ['chat', 'analysis'],
+        id: "gpt-3.5-turbo",
+        name: "GPT-3.5 Turbo",
+        provider: "openai",
+        capabilities: ["chat", "analysis"],
       },
     ];
   }),
@@ -320,8 +353,8 @@ export const aiEnhancedRouter = router({
     return {
       modelsAvailable: 3,
       enginesCovered: 10,
-      averageResponseTime: '< 500ms',
-      uptime: '99.9%',
+      averageResponseTime: "< 500ms",
+      uptime: "99.9%",
       lastUpdated: new Date(),
     };
   }),

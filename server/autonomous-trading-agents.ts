@@ -1,9 +1,9 @@
-import crypto from 'crypto';
-import { getDb } from './db';
+import crypto from "crypto";
+import { getDb } from "./db";
 
 /**
  * Autonomous Trading Agents
- * 
+ *
  * Features:
  * - Multi-strategy trading (momentum, mean-reversion, arbitrage)
  * - Predictive analytics with ML models
@@ -17,8 +17,8 @@ interface TradingAgent {
   id: string;
   userId: string;
   name: string;
-  strategy: 'momentum' | 'mean-reversion' | 'arbitrage' | 'market-making';
-  riskLevel: 'low' | 'medium' | 'high';
+  strategy: "momentum" | "mean-reversion" | "arbitrage" | "market-making";
+  riskLevel: "low" | "medium" | "high";
   capital: number;
   performance: {
     totalTrades: number;
@@ -26,16 +26,16 @@ interface TradingAgent {
     roi: number;
     sharpeRatio: number;
   };
-  status: 'active' | 'paused' | 'stopped';
+  status: "active" | "paused" | "stopped";
   createdAt: number;
 }
 
 interface MarketPrediction {
   token: string;
-  direction: 'up' | 'down' | 'neutral';
+  direction: "up" | "down" | "neutral";
   confidence: number;
   targetPrice: number;
-  timeframe: '1h' | '4h' | '1d';
+  timeframe: "1h" | "4h" | "1d";
   signals: string[];
 }
 
@@ -47,13 +47,16 @@ export class AutonomousTradingAgents {
   /**
    * Create new trading agent
    */
-  async createAgent(userId: string, config: Partial<TradingAgent>): Promise<TradingAgent> {
+  async createAgent(
+    userId: string,
+    config: Partial<TradingAgent>
+  ): Promise<TradingAgent> {
     const agent: TradingAgent = {
       id: crypto.randomUUID(),
       userId,
-      name: config.name || 'Trading Agent',
-      strategy: config.strategy || 'momentum',
-      riskLevel: config.riskLevel || 'medium',
+      name: config.name || "Trading Agent",
+      strategy: config.strategy || "momentum",
+      riskLevel: config.riskLevel || "medium",
       capital: config.capital || 10000,
       performance: {
         totalTrades: 0,
@@ -61,7 +64,7 @@ export class AutonomousTradingAgents {
         roi: 0,
         sharpeRatio: 0,
       },
-      status: 'active',
+      status: "active",
       createdAt: Date.now(),
     };
 
@@ -88,12 +91,16 @@ export class AutonomousTradingAgents {
     const macd = this.calculateMACD(token);
     const bollingerBands = this.calculateBollingerBands(token);
 
-    if (rsi < 30) signals.push('oversold');
-    if (rsi > 70) signals.push('overbought');
-    if (macd.positive) signals.push('bullish_crossover');
-    if (bollingerBands.nearBottom) signals.push('near_support');
+    if (rsi < 30) signals.push("oversold");
+    if (rsi > 70) signals.push("overbought");
+    if (macd.positive) signals.push("bullish_crossover");
+    if (bollingerBands.nearBottom) signals.push("near_support");
 
-    const direction = signals.includes('oversold') ? 'up' : signals.includes('overbought') ? 'down' : 'neutral';
+    const direction = signals.includes("oversold")
+      ? "up"
+      : signals.includes("overbought")
+        ? "down"
+        : "neutral";
     const confidence = Math.min(0.95, 0.5 + signals.length * 0.15);
 
     const prediction: MarketPrediction = {
@@ -101,7 +108,7 @@ export class AutonomousTradingAgents {
       direction,
       confidence,
       targetPrice: this.calculateTargetPrice(token, direction),
-      timeframe: '1h',
+      timeframe: "1h",
       signals,
     };
 
@@ -118,7 +125,7 @@ export class AutonomousTradingAgents {
     prediction: MarketPrediction
   ): Promise<{ success: boolean; tradeId: string; price: number }> {
     const agent = this.agents.get(agentId);
-    if (!agent) throw new Error('Agent not found');
+    if (!agent) throw new Error("Agent not found");
 
     // Calculate position size based on risk management
     const positionSize = this.calculatePositionSize(agent, prediction);
@@ -138,7 +145,7 @@ export class AutonomousTradingAgents {
       targetPrice: prediction.targetPrice,
       stopLoss: this.calculateStopLoss(currentPrice, prediction.direction),
       timestamp: Date.now(),
-      status: 'open',
+      status: "open",
     };
 
     this.tradeHistory.push(trade);
@@ -160,14 +167,17 @@ export class AutonomousTradingAgents {
   /**
    * Close trade and realize P&L
    */
-  async closeTrade(tradeId: string, exitPrice: number): Promise<{ pnl: number; roi: number }> {
-    const trade = this.tradeHistory.find((t) => t.id === tradeId);
-    if (!trade) throw new Error('Trade not found');
+  async closeTrade(
+    tradeId: string,
+    exitPrice: number
+  ): Promise<{ pnl: number; roi: number }> {
+    const trade = this.tradeHistory.find(t => t.id === tradeId);
+    if (!trade) throw new Error("Trade not found");
 
     const pnl = (exitPrice - trade.entryPrice) * trade.positionSize;
     const roi = ((exitPrice - trade.entryPrice) / trade.entryPrice) * 100;
 
-    trade.status = 'closed';
+    trade.status = "closed";
     trade.exitPrice = exitPrice;
     trade.pnl = pnl;
 
@@ -175,10 +185,14 @@ export class AutonomousTradingAgents {
     const agent = this.agents.get(trade.agentId);
     if (agent) {
       const previousRoi = agent.performance.roi;
-      agent.performance.roi = (previousRoi + roi) / agent.performance.totalTrades;
+      agent.performance.roi =
+        (previousRoi + roi) / agent.performance.totalTrades;
 
       if (pnl > 0) {
-        agent.performance.winRate = (agent.performance.winRate * (agent.performance.totalTrades - 1) + 1) / agent.performance.totalTrades;
+        agent.performance.winRate =
+          (agent.performance.winRate * (agent.performance.totalTrades - 1) +
+            1) /
+          agent.performance.totalTrades;
       }
 
       agent.capital += pnl;
@@ -190,8 +204,16 @@ export class AutonomousTradingAgents {
   /**
    * Calculate position size based on risk management
    */
-  private calculatePositionSize(agent: TradingAgent, prediction: MarketPrediction): number {
-    const riskPercentage = agent.riskLevel === 'low' ? 0.01 : agent.riskLevel === 'medium' ? 0.02 : 0.05;
+  private calculatePositionSize(
+    agent: TradingAgent,
+    prediction: MarketPrediction
+  ): number {
+    const riskPercentage =
+      agent.riskLevel === "low"
+        ? 0.01
+        : agent.riskLevel === "medium"
+          ? 0.02
+          : 0.05;
     const riskAmount = agent.capital * riskPercentage;
     const positionSize = riskAmount / (prediction.confidence * 100);
 
@@ -203,7 +225,9 @@ export class AutonomousTradingAgents {
    */
   private calculateStopLoss(entryPrice: number, direction: string): number {
     const stopLossPercentage = 0.02; // 2% stop loss
-    return direction === 'up' ? entryPrice * (1 - stopLossPercentage) : entryPrice * (1 + stopLossPercentage);
+    return direction === "up"
+      ? entryPrice * (1 - stopLossPercentage)
+      : entryPrice * (1 + stopLossPercentage);
   }
 
   /**
@@ -212,7 +236,9 @@ export class AutonomousTradingAgents {
   private calculateTargetPrice(token: string, direction: string): number {
     const currentPrice = this.getMarketPrice(token);
     const targetPercentage = 0.05; // 5% target
-    return direction === 'up' ? currentPrice * (1 + targetPercentage) : currentPrice * (1 - targetPercentage);
+    return direction === "up"
+      ? currentPrice * (1 + targetPercentage)
+      : currentPrice * (1 - targetPercentage);
   }
 
   /**
@@ -248,18 +274,23 @@ export class AutonomousTradingAgents {
    */
   async getAgentPerformance(agentId: string) {
     const agent = this.agents.get(agentId);
-    if (!agent) throw new Error('Agent not found');
+    if (!agent) throw new Error("Agent not found");
 
     return {
       agent,
-      trades: this.tradeHistory.filter((t) => t.agentId === agentId),
+      trades: this.tradeHistory.filter(t => t.agentId === agentId),
       stats: {
         totalPnL: this.tradeHistory
-          .filter((t) => t.agentId === agentId && t.status === 'closed')
+          .filter(t => t.agentId === agentId && t.status === "closed")
           .reduce((sum, t) => sum + (t.pnl || 0), 0),
-        avgTradeSize: this.tradeHistory
-          .filter((t) => t.agentId === agentId)
-          .reduce((sum, t) => sum + t.positionSize, 0) / Math.max(1, this.tradeHistory.filter((t) => t.agentId === agentId).length),
+        avgTradeSize:
+          this.tradeHistory
+            .filter(t => t.agentId === agentId)
+            .reduce((sum, t) => sum + t.positionSize, 0) /
+          Math.max(
+            1,
+            this.tradeHistory.filter(t => t.agentId === agentId).length
+          ),
       },
     };
   }

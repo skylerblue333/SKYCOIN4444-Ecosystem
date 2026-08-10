@@ -3,27 +3,28 @@
  * Rich, smooth voice interface for SKYCOIN4444
  */
 
-import React, { useState, useEffect } from 'react';
-import { trpc } from '@/lib/trpc';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState, useEffect } from "react";
+import { trpc } from "@/lib/trpc";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function VoiceCommandsUI() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [result, setResult] = useState<any>(null);
-  const [selectedCategory, setSelectedCategory] = useState('AI');
+  const [selectedCategory, setSelectedCategory] = useState("AI");
 
   // tRPC queries
   const { data: stats } = trpc.voice.getStats.useQuery();
   const { data: allCommands } = trpc.voice.getAllCommands.useQuery();
   const { data: categories } = trpc.voice.getCategories.useQuery();
-  const { data: commandsByCategory } = trpc.voice.getCommandsByCategory.useQuery(
-    { category: selectedCategory },
-    { enabled: !!selectedCategory }
-  );
+  const { data: commandsByCategory } =
+    trpc.voice.getCommandsByCategory.useQuery(
+      { category: selectedCategory },
+      { enabled: !!selectedCategory }
+    );
 
   // Execute command mutation
   const executeCommand = trpc.voice.executeCommand.useMutation();
@@ -36,22 +37,22 @@ export function VoiceCommandsUI() {
         input: input.trim(),
       });
       setResult(res);
-      setInput('');
+      setInput("");
     } catch (error) {
       setResult({ error: String(error) });
     }
   };
 
   const handleVoiceInput = () => {
-    if (!('webkitSpeechRecognition' in window)) {
-      alert('Voice recognition not supported in this browser');
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Voice recognition not supported in this browser");
       return;
     }
 
     const recognition = new (window as any).webkitSpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.lang = 'en-US';
+    recognition.lang = "en-US";
 
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
@@ -73,7 +74,9 @@ export function VoiceCommandsUI() {
     <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold text-gold">SKYCOIN4444 Voice Commands</h1>
+        <h1 className="text-4xl font-bold text-gold">
+          SKYCOIN4444 Voice Commands
+        </h1>
         <p className="text-xl text-white">
           {stats?.totalCommands || 444} Commands Available
         </p>
@@ -87,8 +90,8 @@ export function VoiceCommandsUI() {
           <div className="flex gap-3">
             <Input
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleExecuteCommand()}
+              onChange={e => setInput(e.target.value)}
+              onKeyPress={e => e.key === "Enter" && handleExecuteCommand()}
               placeholder="Type or say a command..."
               className="bg-black/30 border-gold/30 text-white placeholder:text-gray-500"
             />
@@ -102,10 +105,10 @@ export function VoiceCommandsUI() {
               onClick={handleVoiceInput}
               disabled={isListening}
               className={`${
-                isListening ? 'bg-red-500' : 'bg-blue-500 hover:bg-blue-600'
+                isListening ? "bg-red-500" : "bg-blue-500 hover:bg-blue-600"
               } text-white font-bold`}
             >
-              {isListening ? '🎤 Listening...' : '🎤 Voice'}
+              {isListening ? "🎤 Listening..." : "🎤 Voice"}
             </Button>
           </div>
 
@@ -114,12 +117,14 @@ export function VoiceCommandsUI() {
             <div
               className={`p-4 rounded-lg ${
                 result.error
-                  ? 'bg-red-900/30 border border-red-500'
-                  : 'bg-green-900/30 border border-green-500'
+                  ? "bg-red-900/30 border border-red-500"
+                  : "bg-green-900/30 border border-green-500"
               }`}
             >
               <p className="text-white font-mono text-sm">
-                {result.error ? `❌ ${result.error}` : `✅ ${result.command}: ${JSON.stringify(result.result)}`}
+                {result.error
+                  ? `❌ ${result.error}`
+                  : `✅ ${result.command}: ${JSON.stringify(result.result)}`}
               </p>
             </div>
           )}
@@ -140,7 +145,7 @@ export function VoiceCommandsUI() {
           {/* Categories Tab */}
           <TabsContent value="categories" className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {categories?.categories.map((cat) => (
+              {categories?.categories.map((cat: { name: string; count: number }) => (
                 <button
                   key={cat.name}
                   onClick={() => {
@@ -148,8 +153,8 @@ export function VoiceCommandsUI() {
                   }}
                   className={`p-3 rounded-lg font-bold transition ${
                     selectedCategory === cat.name
-                      ? 'bg-gold text-black'
-                      : 'bg-black/30 border border-gold/30 text-gold hover:bg-gold/20'
+                      ? "bg-gold text-black"
+                      : "bg-black/30 border border-gold/30 text-gold hover:bg-gold/20"
                   }`}
                 >
                   <div className="text-lg">{cat.name}</div>
@@ -172,7 +177,7 @@ export function VoiceCommandsUI() {
                 >
                   <div className="font-bold text-gold">{cmd.name}</div>
                   <div className="text-sm text-gray-300">
-                    {cmd.aliases.join(', ')}
+                    {cmd.aliases.join(", ")}
                   </div>
                 </div>
               ))}
@@ -184,7 +189,7 @@ export function VoiceCommandsUI() {
             <Input
               placeholder="Search commands..."
               className="bg-black/30 border-gold/30 text-white"
-              onChange={(e) => {
+              onChange={e => {
                 // Implement search
               }}
             />
@@ -223,20 +228,27 @@ export function VoiceCommandsUI() {
       <Card className="bg-black/50 border-gold/30 p-6">
         <h2 className="text-2xl font-bold text-gold mb-4">Quick Commands</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {['ai chat', 'go home', 'send payment', 'create post', 'play game', 'buy item', 'vote', 'dashboard'].map(
-            (cmd) => (
-              <button
-                key={cmd}
-                onClick={() => {
-                  setInput(cmd);
-                  handleExecuteCommand();
-                }}
-                className="p-2 bg-black/30 border border-gold/30 text-gold rounded hover:bg-gold/20 transition font-bold text-sm"
-              >
-                {cmd}
-              </button>
-            )
-          )}
+          {[
+            "ai chat",
+            "go home",
+            "send payment",
+            "create post",
+            "play game",
+            "buy item",
+            "vote",
+            "dashboard",
+          ].map(cmd => (
+            <button
+              key={cmd}
+              onClick={() => {
+                setInput(cmd);
+                handleExecuteCommand();
+              }}
+              className="p-2 bg-black/30 border border-gold/30 text-gold rounded hover:bg-gold/20 transition font-bold text-sm"
+            >
+              {cmd}
+            </button>
+          ))}
         </div>
       </Card>
 

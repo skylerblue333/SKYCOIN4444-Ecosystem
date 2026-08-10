@@ -1,8 +1,8 @@
-import { invokeLLM } from './_core/llm';
-import { walletManager } from './secure-wallet';
-import { notifyOwner } from './_core/notification';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { invokeLLM } from "./_core/llm";
+import { walletManager } from "./secure-wallet";
+import { notifyOwner } from "./_core/notification";
+import { exec } from "child_process";
+import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
@@ -10,7 +10,7 @@ interface MiningSession {
   id: string;
   startTime: number;
   endTime?: number;
-  status: 'active' | 'completed' | 'failed';
+  status: "active" | "completed" | "failed";
   coinsGenerated: number;
   rewardsSent: number;
   poolsUsed: string[];
@@ -39,22 +39,22 @@ class AutonomousMiningSystem {
    */
   async startMining(): Promise<void> {
     if (this.isRunning) {
-      console.log('[Mining] Mining already running');
+      console.log("[Mining] Mining already running");
       return;
     }
 
     this.isRunning = true;
-    console.log('[Mining] Starting 24/7 autonomous mining system...');
+    console.log("[Mining] Starting 24/7 autonomous mining system...");
 
     // Get admin wallet from environment
     const adminWallet = process.env.ADMIN_WALLET_ADDRESS;
     if (!adminWallet) {
-      throw new Error('ADMIN_WALLET_ADDRESS not configured');
+      throw new Error("ADMIN_WALLET_ADDRESS not configured");
     }
 
     // Notify owner
     await notifyOwner({
-      title: '24/7 Autonomous Mining Started',
+      title: "24/7 Autonomous Mining Started",
       content: `Mining system activated. All rewards will be sent to: ${adminWallet}`,
     });
 
@@ -77,11 +77,11 @@ class AutonomousMiningSystem {
         }
 
         // Wait before next mining session (configurable interval)
-        const interval = parseInt(process.env.MINING_INTERVAL || '3600000'); // 1 hour default
-        await new Promise((resolve) => setTimeout(resolve, interval));
+        const interval = parseInt(process.env.MINING_INTERVAL || "3600000"); // 1 hour default
+        await new Promise(resolve => setTimeout(resolve, interval));
       } catch (error) {
-        console.error('[Mining] Error in mining loop:', error);
-        await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait 1 minute before retry
+        console.error("[Mining] Error in mining loop:", error);
+        await new Promise(resolve => setTimeout(resolve, 60000)); // Wait 1 minute before retry
       }
     }
   }
@@ -98,7 +98,7 @@ class AutonomousMiningSystem {
     const session: MiningSession = {
       id: sessionId,
       startTime,
-      status: 'active',
+      status: "active",
       coinsGenerated: 0,
       rewardsSent: 0,
       poolsUsed: [],
@@ -108,52 +108,58 @@ class AutonomousMiningSystem {
 
     try {
       // 1. Get AI optimization suggestions
-      console.log('[Mining] Getting AI optimization suggestions...');
+      console.log("[Mining] Getting AI optimization suggestions...");
       const optimizations = await this.getAIOptimizations();
       session.aiOptimizations = optimizations;
 
       // 2. Connect to mining pools
-      console.log('[Mining] Connecting to mining pools...');
+      console.log("[Mining] Connecting to mining pools...");
       const pools = await this.connectToMiningPools();
       session.poolsUsed = pools;
       this.minersActive = pools.length;
 
       // 3. Run mining tasks in parallel
       console.log(`[Mining] Running mining on ${pools.length} pools...`);
-      const miningResults = await Promise.allSettled(pools.map((pool) => this.mineCoin(pool)));
+      const miningResults = await Promise.allSettled(
+        pools.map(pool => this.mineCoin(pool))
+      );
 
       // 4. Aggregate results
       let totalCoins = 0;
       for (const result of miningResults) {
-        if (result.status === 'fulfilled') {
+        if (result.status === "fulfilled") {
           totalCoins += result.value;
         } else {
-          session.errors.push(result.reason?.message || 'Unknown mining error');
+          session.errors.push(result.reason?.message || "Unknown mining error");
         }
       }
 
       session.coinsGenerated = totalCoins;
-      session.status = 'completed';
+      session.status = "completed";
       this.totalCoinsGenerated += totalCoins;
 
-      console.log(`[Mining] Session ${sessionId} completed: ${totalCoins} coins generated`);
+      console.log(
+        `[Mining] Session ${sessionId} completed: ${totalCoins} coins generated`
+      );
 
       // 5. Log session
       await notifyOwner({
-        title: 'Mining Session Completed',
+        title: "Mining Session Completed",
         content: `Session ${sessionId}: Generated ${totalCoins} coins from ${pools.length} pools`,
       });
 
       return session;
     } catch (error) {
-      session.status = 'failed';
-      session.errors.push(error instanceof Error ? error.message : 'Unknown error');
+      session.status = "failed";
+      session.errors.push(
+        error instanceof Error ? error.message : "Unknown error"
+      );
 
       console.error(`[Mining] Session ${sessionId} failed:`, error);
 
       await notifyOwner({
-        title: 'Mining Session Failed',
-        content: `Session ${sessionId} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: "Mining Session Failed",
+        content: `Session ${sessionId} failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       });
 
       return session;
@@ -170,12 +176,12 @@ class AutonomousMiningSystem {
       const response = await invokeLLM({
         messages: [
           {
-            role: 'system',
+            role: "system",
             content:
-              'You are a crypto mining optimization expert. Suggest 3-5 specific optimizations for maximizing mining efficiency and profitability.',
+              "You are a crypto mining optimization expert. Suggest 3-5 specific optimizations for maximizing mining efficiency and profitability.",
           },
           {
-            role: 'user',
+            role: "user",
             content: `Current mining stats:
 - Total coins generated: ${this.totalCoinsGenerated}
 - Active miners: ${this.minersActive}
@@ -187,13 +193,13 @@ Suggest optimizations for the next mining session.`,
       });
 
       const content = response.choices[0]?.message?.content;
-      if (typeof content === 'string') {
-        return content.split('\n').filter((line) => line.trim().length > 0);
+      if (typeof content === "string") {
+        return content.split("\n").filter(line => line.trim().length > 0);
       }
 
       return [];
     } catch (error) {
-      console.error('[Mining] Failed to get AI optimizations:', error);
+      console.error("[Mining] Failed to get AI optimizations:", error);
       return [];
     }
   }
@@ -203,9 +209,9 @@ Suggest optimizations for the next mining session.`,
    */
   private async connectToMiningPools(): Promise<string[]> {
     const pools = [
-      'stratum+tcp://mining.pool1.com:3333',
-      'stratum+tcp://mining.pool2.com:3333',
-      'stratum+tcp://mining.pool3.com:3333',
+      "stratum+tcp://mining.pool1.com:3333",
+      "stratum+tcp://mining.pool2.com:3333",
+      "stratum+tcp://mining.pool3.com:3333",
     ];
 
     console.log(`[Mining] Connecting to ${pools.length} mining pools...`);
@@ -235,8 +241,8 @@ Suggest optimizations for the next mining session.`,
 
     try {
       // Simulate mining work
-      const miningDuration = parseInt(process.env.MINING_DURATION || '60000'); // 1 minute default
-      await new Promise((resolve) => setTimeout(resolve, miningDuration));
+      const miningDuration = parseInt(process.env.MINING_DURATION || "60000"); // 1 minute default
+      await new Promise(resolve => setTimeout(resolve, miningDuration));
 
       // Generate random coins (in production: real mining algorithm)
       const coinsGenerated = Math.floor(Math.random() * 100) + 10; // 10-110 coins per pool
@@ -255,17 +261,23 @@ Suggest optimizations for the next mining session.`,
   private async sendRewardsToWallet(session: MiningSession): Promise<void> {
     const adminWallet = process.env.ADMIN_WALLET_ADDRESS;
     if (!adminWallet) {
-      throw new Error('ADMIN_WALLET_ADDRESS not configured');
+      throw new Error("ADMIN_WALLET_ADDRESS not configured");
     }
 
     try {
-      console.log(`[Mining] Sending ${session.coinsGenerated} coins to admin wallet...`);
+      console.log(
+        `[Mining] Sending ${session.coinsGenerated} coins to admin wallet...`
+      );
 
       // Create temporary mining wallet
       const minerWallet = `miner-${Date.now()}`;
 
       // Transfer rewards to admin wallet
-      const transaction = await walletManager.routeMiningRewards(minerWallet, session.coinsGenerated, 'SKY4444');
+      const transaction = await walletManager.routeMiningRewards(
+        minerWallet,
+        session.coinsGenerated,
+        "SKY4444"
+      );
 
       session.rewardsSent = session.coinsGenerated;
       this.totalRewardsSent += session.coinsGenerated;
@@ -274,16 +286,18 @@ Suggest optimizations for the next mining session.`,
 
       // Notify owner
       await notifyOwner({
-        title: 'Mining Rewards Sent',
+        title: "Mining Rewards Sent",
         content: `${session.coinsGenerated} SKY4444 coins sent to your admin wallet. Transaction: ${transaction.id}`,
       });
     } catch (error) {
-      console.error('[Mining] Failed to send rewards:', error);
-      session.errors.push(`Failed to send rewards: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("[Mining] Failed to send rewards:", error);
+      session.errors.push(
+        `Failed to send rewards: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
 
       await notifyOwner({
-        title: 'Mining Reward Transfer Failed',
-        content: `Failed to send ${session.coinsGenerated} coins: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: "Mining Reward Transfer Failed",
+        content: `Failed to send ${session.coinsGenerated} coins: ${error instanceof Error ? error.message : "Unknown error"}`,
       });
     }
   }
@@ -292,12 +306,12 @@ Suggest optimizations for the next mining session.`,
    * Stop mining
    */
   async stopMining(): Promise<void> {
-    console.log('[Mining] Stopping autonomous mining system...');
+    console.log("[Mining] Stopping autonomous mining system...");
     this.isRunning = false;
     this.minersActive = 0;
 
     await notifyOwner({
-      title: 'Mining Stopped',
+      title: "Mining Stopped",
       content: `Autonomous mining system stopped. Total coins generated: ${this.totalCoinsGenerated}`,
     });
   }
@@ -306,16 +320,29 @@ Suggest optimizations for the next mining session.`,
    * Get mining statistics
    */
   getStatistics(): MiningStats {
-    const completedSessions = this.sessions.filter((s) => s.status === 'completed');
-    const totalCoins = completedSessions.reduce((sum, s) => sum + s.coinsGenerated, 0);
-    const totalRewards = completedSessions.reduce((sum, s) => sum + s.rewardsSent, 0);
+    const completedSessions = this.sessions.filter(
+      s => s.status === "completed"
+    );
+    const totalCoins = completedSessions.reduce(
+      (sum, s) => sum + s.coinsGenerated,
+      0
+    );
+    const totalRewards = completedSessions.reduce(
+      (sum, s) => sum + s.rewardsSent,
+      0
+    );
 
     return {
       totalSessions: this.sessions.length,
       totalCoinsGenerated: totalCoins,
       totalRewardsSent: totalRewards,
-      averageCoinsPerSession: completedSessions.length > 0 ? totalCoins / completedSessions.length : 0,
-      uptime: this.isRunning ? Date.now() - (this.sessions[0]?.startTime || Date.now()) : 0,
+      averageCoinsPerSession:
+        completedSessions.length > 0
+          ? totalCoins / completedSessions.length
+          : 0,
+      uptime: this.isRunning
+        ? Date.now() - (this.sessions[0]?.startTime || Date.now())
+        : 0,
       activeMiners: this.minersActive,
     };
   }
@@ -345,38 +372,44 @@ Suggest optimizations for the next mining session.`,
 export const autonomousMining = new AutonomousMiningSystem();
 
 // REST API routes
-import { Router } from 'express';
+import { Router } from "express";
 
 export const miningRouter = Router();
 
 /**
  * POST /mining/start - Start 24/7 mining
  */
-miningRouter.post('/mining/start', async (req, res) => {
+miningRouter.post("/mining/start", async (req, res) => {
   try {
     await autonomousMining.startMining();
-    res.json({ success: true, message: 'Mining started' });
+    res.json({ success: true, message: "Mining started" });
   } catch (error) {
-    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 });
 
 /**
  * POST /mining/stop - Stop mining
  */
-miningRouter.post('/mining/stop', async (req, res) => {
+miningRouter.post("/mining/stop", async (req, res) => {
   try {
     await autonomousMining.stopMining();
-    res.json({ success: true, message: 'Mining stopped' });
+    res.json({ success: true, message: "Mining stopped" });
   } catch (error) {
-    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 });
 
 /**
  * GET /mining/status - Get mining status
  */
-miningRouter.get('/mining/status', (req, res) => {
+miningRouter.get("/mining/status", (req, res) => {
   const status = autonomousMining.getStatus();
   res.json(status);
 });
@@ -384,7 +417,7 @@ miningRouter.get('/mining/status', (req, res) => {
 /**
  * GET /mining/stats - Get mining statistics
  */
-miningRouter.get('/mining/stats', (req, res) => {
+miningRouter.get("/mining/stats", (req, res) => {
   const stats = autonomousMining.getStatistics();
   res.json(stats);
 });
@@ -392,7 +425,7 @@ miningRouter.get('/mining/stats', (req, res) => {
 /**
  * GET /mining/sessions - Get session history
  */
-miningRouter.get('/mining/sessions', (req, res) => {
+miningRouter.get("/mining/sessions", (req, res) => {
   const limit = parseInt(req.query.limit as string) || 50;
   const sessions = autonomousMining.getSessions(limit);
   res.json({ sessions });

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './useAuth';
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "./useAuth";
 
 export interface NavigationSuggestion {
   path: string;
@@ -20,15 +20,17 @@ export const useSmartNavigation = () => {
   const { user } = useAuth();
   const [suggestions, setSuggestions] = useState<NavigationSuggestion[]>([]);
   const [recentPages, setRecentPages] = useState<string[]>([]);
-  const [navigationHistory, setNavigationHistory] = useState<UserNavigationPattern[]>([]);
+  const [navigationHistory, setNavigationHistory] = useState<
+    UserNavigationPattern[]
+  >([]);
 
   // Track navigation patterns
   const trackNavigation = useCallback((path: string) => {
     const now = Date.now();
-    setNavigationHistory((prev) => {
-      const existing = prev.find((p) => p.path === path);
+    setNavigationHistory(prev => {
+      const existing = prev.find(p => p.path === path);
       if (existing) {
-        return prev.map((p) =>
+        return prev.map(p =>
           p.path === path
             ? { ...p, frequency: p.frequency + 1, timestamp: now }
             : p
@@ -38,8 +40,8 @@ export const useSmartNavigation = () => {
     });
 
     // Update recent pages
-    setRecentPages((prev) => {
-      const filtered = prev.filter((p) => p !== path);
+    setRecentPages(prev => {
+      const filtered = prev.filter(p => p !== path);
       return [path, ...filtered].slice(0, 5);
     });
   }, []);
@@ -49,11 +51,29 @@ export const useSmartNavigation = () => {
     const suggestions: NavigationSuggestion[] = [];
 
     // Based on user role
-    if (user?.role === 'admin') {
+    if (user?.role === "admin") {
       suggestions.push(
-        { path: '/admin/dashboard', label: 'Admin Dashboard', reason: 'Admin access', score: 0.95, icon: '⚙️' },
-        { path: '/admin/users', label: 'User Management', reason: 'Admin access', score: 0.9, icon: '👥' },
-        { path: '/admin/analytics', label: 'Analytics', reason: 'Admin access', score: 0.85, icon: '📊' }
+        {
+          path: "/admin/dashboard",
+          label: "Admin Dashboard",
+          reason: "Admin access",
+          score: 0.95,
+          icon: "⚙️",
+        },
+        {
+          path: "/admin/users",
+          label: "User Management",
+          reason: "Admin access",
+          score: 0.9,
+          icon: "👥",
+        },
+        {
+          path: "/admin/analytics",
+          label: "Analytics",
+          reason: "Admin access",
+          score: 0.85,
+          icon: "📊",
+        }
       );
     }
 
@@ -61,13 +81,13 @@ export const useSmartNavigation = () => {
     navigationHistory
       .sort((a, b) => b.frequency - a.frequency)
       .slice(0, 3)
-      .forEach((pattern) => {
+      .forEach(pattern => {
         suggestions.push({
           path: pattern.path,
-          label: pattern.path.split('/').pop()?.replace('-', ' ') || 'Page',
+          label: pattern.path.split("/").pop()?.replace("-", " ") || "Page",
           reason: `You visit this ${pattern.frequency} times`,
           score: Math.min(0.95, 0.5 + pattern.frequency * 0.1),
-          icon: '⏱️',
+          icon: "⏱️",
         });
       });
 
@@ -75,69 +95,77 @@ export const useSmartNavigation = () => {
     const hour = new Date().getHours();
     if (hour >= 9 && hour <= 17) {
       suggestions.push({
-        path: '/trading',
-        label: 'Trading',
-        reason: 'Active trading hours',
+        path: "/trading",
+        label: "Trading",
+        reason: "Active trading hours",
         score: 0.8,
-        icon: '📈',
+        icon: "📈",
       });
     } else if (hour >= 18 && hour <= 23) {
       suggestions.push({
-        path: '/social',
-        label: 'Social',
-        reason: 'Evening activity',
+        path: "/social",
+        label: "Social",
+        reason: "Evening activity",
         score: 0.75,
-        icon: '💬',
+        icon: "💬",
       });
     }
 
     // Based on recent activity
     if (recentPages.length > 0) {
       const relatedPages: Record<string, string[]> = {
-        '/mining': ['/mining/dashboard', '/mining/calculator', '/mining/pools'],
-        '/trading': ['/trading/orders', '/trading/history', '/trading/alerts'],
-        '/social': ['/social/feed', '/social/messages', '/social/profile'],
-        '/gaming': ['/gaming/games', '/gaming/tournaments', '/gaming/achievements'],
-        '/marketplace': ['/marketplace/listings', '/marketplace/purchases', '/marketplace/reviews'],
+        "/mining": ["/mining/dashboard", "/mining/calculator", "/mining/pools"],
+        "/trading": ["/trading/orders", "/trading/history", "/trading/alerts"],
+        "/social": ["/social/feed", "/social/messages", "/social/profile"],
+        "/gaming": [
+          "/gaming/games",
+          "/gaming/tournaments",
+          "/gaming/achievements",
+        ],
+        "/marketplace": [
+          "/marketplace/listings",
+          "/marketplace/purchases",
+          "/marketplace/reviews",
+        ],
       };
 
       const lastPage = recentPages[0];
       const related = relatedPages[lastPage] || [];
-      related.forEach((path) => {
+      related.forEach(path => {
         suggestions.push({
           path,
-          label: path.split('/').pop()?.replace('-', ' ') || 'Page',
-          reason: 'Related to recent activity',
+          label: path.split("/").pop()?.replace("-", " ") || "Page",
+          reason: "Related to recent activity",
           score: 0.7,
-          icon: '🔗',
+          icon: "🔗",
         });
       });
     }
 
     // Personalized recommendations based on user role
-    if (user?.role === 'creator') {
+    if (user?.role === "creator") {
       suggestions.push({
-        path: '/social',
-        label: 'Social',
-        reason: 'Based on your role',
+        path: "/social",
+        label: "Social",
+        reason: "Based on your role",
         score: 0.85,
-        icon: '💬',
+        icon: "💬",
       });
     }
 
-    if (user?.role === 'admin') {
+    if (user?.role === "admin") {
       suggestions.push({
-        path: '/admin/dashboard',
-        label: 'Admin Dashboard',
-        reason: 'Based on your role',
+        path: "/admin/dashboard",
+        label: "Admin Dashboard",
+        reason: "Based on your role",
         score: 0.95,
-        icon: '⚙️',
+        icon: "⚙️",
       });
     }
 
     // Remove duplicates and sort by score
     const uniqueSuggestions = Array.from(
-      new Map(suggestions.map((s) => [s.path, s])).values()
+      new Map(suggestions.map(s => [s.path, s])).values()
     ).sort((a, b) => b.score - a.score);
 
     return uniqueSuggestions.slice(0, 8);
@@ -152,20 +180,20 @@ export const useSmartNavigation = () => {
   // Get personalized navigation based on role
   const getPersonalizedNavigation = useCallback(() => {
     const baseNav = [
-      { label: 'Home', path: '/', icon: '🏠' },
-      { label: 'Mining', path: '/mining', icon: '⛏️' },
-      { label: 'Trading', path: '/trading', icon: '📈' },
-      { label: 'Social', path: '/social', icon: '💬' },
-      { label: 'Gaming', path: '/gaming', icon: '🎮' },
-      { label: 'Marketplace', path: '/marketplace', icon: '🛒' },
-      { label: 'Governance', path: '/governance', icon: '🗳️' },
+      { label: "Home", path: "/", icon: "🏠" },
+      { label: "Mining", path: "/mining", icon: "⛏️" },
+      { label: "Trading", path: "/trading", icon: "📈" },
+      { label: "Social", path: "/social", icon: "💬" },
+      { label: "Gaming", path: "/gaming", icon: "🎮" },
+      { label: "Marketplace", path: "/marketplace", icon: "🛒" },
+      { label: "Governance", path: "/governance", icon: "🗳️" },
     ];
 
-    if (user?.role === 'admin') {
+    if (user?.role === "admin") {
       baseNav.push(
-        { label: 'Admin', path: '/admin', icon: '⚙️' },
-        { label: 'Analytics', path: '/analytics', icon: '📊' },
-        { label: 'Settings', path: '/settings', icon: '⚙️' }
+        { label: "Admin", path: "/admin", icon: "⚙️" },
+        { label: "Analytics", path: "/analytics", icon: "📊" },
+        { label: "Settings", path: "/settings", icon: "⚙️" }
       );
     }
 

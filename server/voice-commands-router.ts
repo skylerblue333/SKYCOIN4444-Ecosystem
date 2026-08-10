@@ -3,9 +3,9 @@
  * Complete voice control integration for SKYCOIN4444 ecosystem
  */
 
-import { publicProcedure, protectedProcedure, router } from './_core/trpc';
-import { z } from 'zod';
-import { voiceSystem444 } from './voice-commands-444';
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import { voiceSystem444 } from "./voice-commands-444";
 
 export const voiceCommandsRouter = router({
   /**
@@ -21,13 +21,13 @@ export const voiceCommandsRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const result = await voiceSystem444.processVoiceInput(input.input, {
-        userId: (input.userId || ctx.user?.id || 'anonymous') as string,
-        userRole: (input.userRole || ctx.user?.role || 'user') as string,
+        userId: (input.userId || ctx.user?.id || "anonymous") as string,
+        userRole: (input.userRole || ctx.user?.role || "user") as string,
         input: input.input,
         confidence: 0.95,
         timestamp: Date.now(),
-        device: 'web',
-        language: 'en',
+        device: "web",
+        language: "en",
       });
 
       return result;
@@ -40,7 +40,7 @@ export const voiceCommandsRouter = router({
     const commands = voiceSystem444.getAllCommands();
     return {
       totalCommands: commands.length,
-      commands: commands.map((cmd) => ({
+      commands: commands.map(cmd => ({
         id: cmd.id,
         name: cmd.name,
         description: cmd.description,
@@ -62,7 +62,7 @@ export const voiceCommandsRouter = router({
       return {
         category: input.category,
         count: commands.length,
-        commands: commands.map((cmd) => ({
+        commands: commands.map(cmd => ({
           id: cmd.id,
           name: cmd.name,
           aliases: cmd.aliases,
@@ -81,10 +81,10 @@ export const voiceCommandsRouter = router({
    * Get total command count
    */
   getTotalCommandCount: publicProcedure.query(async () => {
-      return {
-        totalCommands: voiceSystem444.getTotalCommandCount() as number,
-        message: `SKYCOIN4444 has 444 voice commands available`,
-      };
+    return {
+      totalCommands: voiceSystem444.getTotalCommandCount() as number,
+      message: `SKYCOIN4444 has 444 voice commands available`,
+    };
   }),
 
   /**
@@ -96,16 +96,16 @@ export const voiceCommandsRouter = router({
       const allCommands = voiceSystem444.getAllCommands();
       const query = input.query.toLowerCase();
       const results = allCommands.filter(
-        (cmd) =>
+        cmd =>
           cmd.name.toLowerCase().includes(query) ||
           cmd.description.toLowerCase().includes(query) ||
-          cmd.aliases.some((alias) => alias.toLowerCase().includes(query))
+          cmd.aliases.some(alias => alias.toLowerCase().includes(query))
       );
 
       return {
         query: input.query,
         resultCount: results.length,
-        results: results.slice(0, 10).map((cmd) => ({
+        results: results.slice(0, 10).map(cmd => ({
           id: cmd.id,
           name: cmd.name,
           category: cmd.category,
@@ -118,18 +118,18 @@ export const voiceCommandsRouter = router({
    * Get commands by user role
    */
   getCommandsForRole: publicProcedure
-    .input(z.object({ role: z.enum(['user', 'admin', 'moderator']) }))
+    .input(z.object({ role: z.enum(["user", "admin", "moderator"]) }))
     .query(async ({ input }) => {
       const allCommands = voiceSystem444.getAllCommands();
       const filtered =
-        input.role === 'admin'
+        input.role === "admin"
           ? allCommands
-          : allCommands.filter((cmd) => !cmd.requiresAdmin);
+          : allCommands.filter(cmd => !cmd.requiresAdmin);
 
       return {
         role: input.role,
         availableCommands: filtered.length,
-        commands: filtered.slice(0, 20).map((cmd) => ({
+        commands: filtered.slice(0, 20).map(cmd => ({
           id: cmd.id,
           name: cmd.name,
           category: cmd.category,
@@ -143,7 +143,7 @@ export const voiceCommandsRouter = router({
   getQuickCommands: publicProcedure.query(async () => {
     const allCommands = voiceSystem444.getAllCommands();
     return {
-      quickCommands: allCommands.slice(0, 20).map((cmd) => ({
+      quickCommands: allCommands.slice(0, 20).map(cmd => ({
         id: cmd.id,
         name: cmd.name,
         aliases: cmd.aliases.slice(0, 2),
@@ -158,7 +158,7 @@ export const voiceCommandsRouter = router({
     const allCommands = voiceSystem444.getAllCommands();
     const categories = new Map<string, number>();
 
-    allCommands.forEach((cmd) => {
+    allCommands.forEach(cmd => {
       categories.set(cmd.category, (categories.get(cmd.category) || 0) + 1);
     });
 
@@ -178,10 +178,10 @@ export const voiceCommandsRouter = router({
     .input(z.object({ commandId: z.string() }))
     .query(async ({ input }) => {
       const commands = voiceSystem444.getAllCommands();
-      const command = commands.find((cmd) => cmd.id === input.commandId);
+      const command = commands.find(cmd => cmd.id === input.commandId);
 
       if (!command) {
-        return { error: 'Command not found' };
+        return { error: "Command not found" };
       }
 
       return {
@@ -204,31 +204,31 @@ export const voiceCommandsRouter = router({
     .query(async ({ input }) => {
       if (!input.topic) {
         return {
-          message: 'SKYCOIN4444 Voice Commands - 444 Commands Available',
+          message: "SKYCOIN4444 Voice Commands - 444 Commands Available",
           categories: [
-            'AI (50 commands)',
-            'Navigation (40 commands)',
-            'Payment (35 commands)',
-            'Social (45 commands)',
-            'Gaming (40 commands)',
-            'Marketplace (35 commands)',
-            'Governance (30 commands)',
-            'Analytics (30 commands)',
-            'Admin (40 commands)',
-            'Wallet (35 commands)',
-            'Streaming (30 commands)',
-            'Chat (25 commands)',
-            'Search (20 commands)',
-            'Settings (25 commands)',
-            'Help (20 commands)',
-            'System (30 commands)',
-            'Accessibility (20 commands)',
-            'Notifications (15 commands)',
-            'Integration (20 commands)',
-            'Developer (25 commands)',
+            "AI (50 commands)",
+            "Navigation (40 commands)",
+            "Payment (35 commands)",
+            "Social (45 commands)",
+            "Gaming (40 commands)",
+            "Marketplace (35 commands)",
+            "Governance (30 commands)",
+            "Analytics (30 commands)",
+            "Admin (40 commands)",
+            "Wallet (35 commands)",
+            "Streaming (30 commands)",
+            "Chat (25 commands)",
+            "Search (20 commands)",
+            "Settings (25 commands)",
+            "Help (20 commands)",
+            "System (30 commands)",
+            "Accessibility (20 commands)",
+            "Notifications (15 commands)",
+            "Integration (20 commands)",
+            "Developer (25 commands)",
           ],
           totalCommands: 444,
-          usage: 'Say any command or its aliases to execute',
+          usage: "Say any command or its aliases to execute",
         };
       }
 
@@ -236,7 +236,7 @@ export const voiceCommandsRouter = router({
       return {
         category: input.topic,
         commandCount: commands.length,
-        commands: commands.slice(0, 5).map((cmd) => ({
+        commands: commands.slice(0, 5).map(cmd => ({
           name: cmd.name,
           aliases: cmd.aliases,
         })),

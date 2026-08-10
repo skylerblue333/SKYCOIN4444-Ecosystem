@@ -3,7 +3,16 @@
  * AI icebreakers, safety filters, conversation scoring, engagement tracking
  */
 import { useState, useRef, useEffect } from "react";
-import { Send, Brain, Shield, Heart, Star, ArrowLeft, MoreVertical, Sparkles } from "lucide-react";
+import {
+  Send,
+  Brain,
+  Shield,
+  Heart,
+  Star,
+  ArrowLeft,
+  MoreVertical,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "wouter";
@@ -18,9 +27,24 @@ const ICEBREAKERS = [
 ];
 
 const MOCK_MESSAGES = [
-  { id: 1, sender: "them", text: "Hey! I saw we matched 💜 Your profile is really interesting!", time: "2:30 PM" },
-  { id: 2, sender: "me", text: "Thanks! I loved your bio about the DeFi work. What protocol are you most excited about right now?", time: "2:32 PM" },
-  { id: 3, sender: "them", text: "Honestly Uniswap V4 has been blowing my mind. The hook architecture is so elegant. Are you into DeFi too?", time: "2:35 PM" },
+  {
+    id: 1,
+    sender: "them",
+    text: "Hey! I saw we matched 💜 Your profile is really interesting!",
+    time: "2:30 PM",
+  },
+  {
+    id: 2,
+    sender: "me",
+    text: "Thanks! I loved your bio about the DeFi work. What protocol are you most excited about right now?",
+    time: "2:32 PM",
+  },
+  {
+    id: 3,
+    sender: "them",
+    text: "Honestly Uniswap V4 has been blowing my mind. The hook architecture is so elegant. Are you into DeFi too?",
+    time: "2:35 PM",
+  },
 ];
 
 export default function MatchChat() {
@@ -36,7 +60,15 @@ export default function MatchChat() {
 
   const sendMessage = (text: string) => {
     if (!text.trim()) return;
-    const newMsg = { id: Date.now(), sender: "me" as const, text: text.trim(), time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
+    const newMsg = {
+      id: Date.now(),
+      sender: "me" as const,
+      text: text.trim(),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
     setMessages(prev => [...prev, newMsg]);
     setInput("");
     setConversationScore(prev => Math.min(100, prev + 3));
@@ -49,7 +81,15 @@ export default function MatchChat() {
         "Wow, I hadn't thought about it that way!",
         "You seem really knowledgeable about this 😊",
       ];
-      const reply = { id: Date.now() + 1, sender: "them" as const, text: replies[Math.floor(Math.random() * replies.length)], time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
+      const reply = {
+        id: Date.now() + 1,
+        sender: "them" as const,
+        text: replies[Math.floor(Math.random() * replies.length)],
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
       setMessages(prev => [...prev, reply]);
     }, 1500);
   };
@@ -78,7 +118,12 @@ export default function MatchChat() {
             <Heart className="w-2.5 h-2.5 text-pink-400" />
             <span className="text-muted-foreground">{conversationScore}%</span>
           </div>
-          <Button variant="ghost" size="sm" className="p-1" onClick={() => toast("Match options coming soon")}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-1"
+            onClick={() => toast("Match options coming soon")}
+          >
             <MoreVertical className="w-4 h-4" />
           </Button>
         </div>
@@ -102,12 +147,21 @@ export default function MatchChat() {
         </div>
 
         {messages.map(msg => (
-          <div key={msg.id} className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[75%] ${msg.sender === "me" ? "items-end" : "items-start"} flex flex-col gap-0.5`}>
-              <div className={`px-3 py-2 rounded-2xl text-sm ${msg.sender === "me" ? "bg-gradient-to-br from-pink-500 to-purple-500 text-white rounded-br-sm" : "bg-secondary text-foreground rounded-bl-sm"}`}>
+          <div
+            key={msg.id}
+            className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[75%] ${msg.sender === "me" ? "items-end" : "items-start"} flex flex-col gap-0.5`}
+            >
+              <div
+                className={`px-3 py-2 rounded-2xl text-sm ${msg.sender === "me" ? "bg-gradient-to-br from-pink-500 to-purple-500 text-white rounded-br-sm" : "bg-secondary text-foreground rounded-bl-sm"}`}
+              >
                 {msg.text}
               </div>
-              <span className="text-xs text-muted-foreground px-1">{msg.time}</span>
+              <span className="text-xs text-muted-foreground px-1">
+                {msg.time}
+              </span>
             </div>
           </div>
         ))}
@@ -119,13 +173,18 @@ export default function MatchChat() {
         <div className="px-3 py-2 border-t bg-secondary/30 shrink-0">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span className="text-xs font-medium text-purple-400">AI Icebreakers</span>
+            <span className="text-xs font-medium text-purple-400">
+              AI Icebreakers
+            </span>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {ICEBREAKERS.map((ib, idx) => (
               <button
                 key={idx}
-                onClick={() => { sendMessage(ib); setShowIcebreakers(false); }}
+                onClick={() => {
+                  sendMessage(ib);
+                  setShowIcebreakers(false);
+                }}
                 className="shrink-0 px-2.5 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-300 hover:bg-purple-500/20 transition-colors text-left max-w-[200px]"
               >
                 {ib}

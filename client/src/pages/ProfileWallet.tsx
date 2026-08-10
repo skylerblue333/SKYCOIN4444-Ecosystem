@@ -9,37 +9,99 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import { Link } from "wouter";
 import {
-  ArrowLeft, Wallet, TrendingUp, DollarSign, Zap, Star,
-  Copy, ExternalLink, Shield, CheckCircle, Clock, ArrowUpRight,
-  ArrowDownLeft, Bot, ShoppingBag, Heart, Users, MessageSquare,
-  Settings, ChevronRight, Edit3, Camera
+  ArrowLeft,
+  Wallet,
+  TrendingUp,
+  DollarSign,
+  Zap,
+  Star,
+  Copy,
+  ExternalLink,
+  Shield,
+  CheckCircle,
+  Clock,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Bot,
+  ShoppingBag,
+  Heart,
+  Users,
+  MessageSquare,
+  Settings,
+  ChevronRight,
+  Edit3,
+  Camera,
 } from "lucide-react";
 
 const ACTIVITY_TYPES = {
   tip_sent: { icon: ArrowUpRight, color: "text-red-400", label: "Tip Sent" },
-  tip_received: { icon: ArrowDownLeft, color: "text-green-400", label: "Tip Received" },
+  tip_received: {
+    icon: ArrowDownLeft,
+    color: "text-green-400",
+    label: "Tip Received",
+  },
   service: { icon: ShoppingBag, color: "text-blue-400", label: "Service" },
   ai_action: { icon: Bot, color: "text-purple-400", label: "AI Action" },
   subscription: { icon: Star, color: "text-yellow-400", label: "Subscription" },
 };
 
 const MOCK_ACTIVITY = [
-  { type: "tip_received", desc: "Tip from Alex Chen", amount: "+25 SKY", time: "2m ago" },
-  { type: "ai_action", desc: "AI found designer", amount: "0 SKY", time: "1h ago" },
-  { type: "tip_sent", desc: "Tip to PixelPro", amount: "-45 SKY", time: "2h ago" },
-  { type: "service", desc: "Logo design delivered", amount: "-45 SKY", time: "1d ago" },
-  { type: "subscription", desc: "Premium subscription", amount: "-10 SKY", time: "3d ago" },
-  { type: "tip_received", desc: "Tip from Sarah K.", amount: "+10 SKY", time: "5d ago" },
+  {
+    type: "tip_received",
+    desc: "Tip from Alex Chen",
+    amount: "+25 SKY",
+    time: "2m ago",
+  },
+  {
+    type: "ai_action",
+    desc: "AI found designer",
+    amount: "0 SKY",
+    time: "1h ago",
+  },
+  {
+    type: "tip_sent",
+    desc: "Tip to PixelPro",
+    amount: "-45 SKY",
+    time: "2h ago",
+  },
+  {
+    type: "service",
+    desc: "Logo design delivered",
+    amount: "-45 SKY",
+    time: "1d ago",
+  },
+  {
+    type: "subscription",
+    desc: "Premium subscription",
+    amount: "-10 SKY",
+    time: "3d ago",
+  },
+  {
+    type: "tip_received",
+    desc: "Tip from Sarah K.",
+    amount: "+10 SKY",
+    time: "5d ago",
+  },
 ];
 
 export default function ProfileWallet() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"overview" | "activity" | "earn">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "activity" | "earn">(
+    "overview"
+  );
   const [copied, setCopied] = useState(false);
 
-  const { data: profile } = trpc.user.profile.useQuery({ userId: user?.id ?? 0 }, { enabled: !!user });
-  const { data: walletData } = trpc.wallet.getBalance.useQuery(undefined, { enabled: !!user });
-  const { data: transactions } = trpc.wallet.getTransactions.useQuery(undefined, { enabled: !!user });
+  const { data: profile } = trpc.user.profile.useQuery(
+    { userId: user?.id ?? 0 },
+    { enabled: !!user }
+  );
+  const { data: walletData } = trpc.wallet.getBalance.useQuery(undefined, {
+    enabled: !!user,
+  });
+  const { data: transactions } = trpc.wallet.getTransactions.useQuery(
+    undefined,
+    { enabled: !!user }
+  );
 
   const balance = (walletData as any)?.balance ?? 1247;
   const walletAddress = (walletData as any)?.address ?? "0x1a2b...9f3e";
@@ -52,8 +114,16 @@ export default function ProfileWallet() {
   };
 
   const stats = [
-    { label: "Followers", value: profileData?.followersCount ?? 342, icon: Users },
-    { label: "Posts", value: profileData?.postsCount ?? 28, icon: MessageSquare },
+    {
+      label: "Followers",
+      value: profileData?.followersCount ?? 342,
+      icon: Users,
+    },
+    {
+      label: "Posts",
+      value: profileData?.postsCount ?? 28,
+      icon: MessageSquare,
+    },
     { label: "Tips Received", value: "1.2K SKY", icon: DollarSign },
     { label: "AI Actions", value: 47, icon: Bot },
   ];
@@ -63,12 +133,18 @@ export default function ProfileWallet() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border/50 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/chat" className="p-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground">
+          <Link
+            href="/chat"
+            className="p-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground"
+          >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <h1 className="font-bold text-lg">Profile & Wallet</h1>
         </div>
-        <Link href="/settings" className="p-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground">
+        <Link
+          href="/settings"
+          className="p-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground"
+        >
           <Settings className="w-4 h-4" />
         </Link>
       </div>
@@ -94,18 +170,30 @@ export default function ProfileWallet() {
                 </button>
               </div>
               <div className="flex gap-2">
-                <Link href="/chat" className="px-4 py-1.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">
+                <Link
+                  href="/chat"
+                  className="px-4 py-1.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                >
                   Message
                 </Link>
-                <Link href="/action-panel" className="px-4 py-1.5 bg-secondary/50 hover:bg-secondary rounded-xl text-sm font-medium transition-colors">
+                <Link
+                  href="/action-panel"
+                  className="px-4 py-1.5 bg-secondary/50 hover:bg-secondary rounded-xl text-sm font-medium transition-colors"
+                >
                   Actions
                 </Link>
               </div>
             </div>
             <div>
-              <h2 className="font-bold text-xl">{user?.username ?? "Anonymous"}</h2>
-              <p className="text-sm text-muted-foreground">@{user?.username?.toLowerCase() ?? "user"}</p>
-              <p className="text-sm mt-1 text-muted-foreground">Building the future of AI-powered messaging 🚀</p>
+              <h2 className="font-bold text-xl">
+                {user?.username ?? "Anonymous"}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                @{user?.username?.toLowerCase() ?? "user"}
+              </p>
+              <p className="text-sm mt-1 text-muted-foreground">
+                Building the future of AI-powered messaging 🚀
+              </p>
             </div>
           </div>
         </div>
@@ -134,25 +222,48 @@ export default function ProfileWallet() {
             </div>
           </div>
           <div className="mb-3">
-            <div className="text-3xl font-bold">{balance.toLocaleString()} <span className="text-lg text-muted-foreground">SKY</span></div>
-            <div className="text-sm text-muted-foreground">≈ ${(balance * 0.042).toFixed(2)} USD</div>
+            <div className="text-3xl font-bold">
+              {balance.toLocaleString()}{" "}
+              <span className="text-lg text-muted-foreground">SKY</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              ≈ ${(balance * 0.042).toFixed(2)} USD
+            </div>
           </div>
           <div className="flex items-center gap-2 bg-black/20 rounded-xl px-3 py-2 mb-3">
-            <span className="text-xs font-mono text-muted-foreground flex-1 truncate">{walletAddress}</span>
-            <button onClick={copyAddress} className="text-muted-foreground hover:text-foreground transition-colors">
-              {copied ? <CheckCircle className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+            <span className="text-xs font-mono text-muted-foreground flex-1 truncate">
+              {walletAddress}
+            </span>
+            <button
+              onClick={copyAddress}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {copied ? (
+                <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
             </button>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <Link href="/action-panel" className="flex flex-col items-center gap-1 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+            <Link
+              href="/action-panel"
+              className="flex flex-col items-center gap-1 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
+            >
               <ArrowUpRight className="w-4 h-4 text-red-400" />
               <span className="text-xs">Send</span>
             </Link>
-            <Link href="/wallet" className="flex flex-col items-center gap-1 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+            <Link
+              href="/wallet"
+              className="flex flex-col items-center gap-1 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
+            >
               <ArrowDownLeft className="w-4 h-4 text-green-400" />
               <span className="text-xs">Receive</span>
             </Link>
-            <Link href="/token-swap" className="flex flex-col items-center gap-1 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+            <Link
+              href="/token-swap"
+              className="flex flex-col items-center gap-1 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
+            >
               <Zap className="w-4 h-4 text-yellow-400" />
               <span className="text-xs">Swap</span>
             </Link>
@@ -179,22 +290,32 @@ export default function ProfileWallet() {
           {activeTab === "overview" && (
             <div className="space-y-3">
               <div className="card p-4">
-                <h3 className="font-semibold mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-green-400" /> This Week</h3>
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-green-400" /> This Week
+                </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-green-500/10 rounded-xl p-3">
-                    <div className="text-xs text-muted-foreground mb-1">Earned</div>
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Earned
+                    </div>
                     <div className="font-bold text-green-400">+142 SKY</div>
                   </div>
                   <div className="bg-red-500/10 rounded-xl p-3">
-                    <div className="text-xs text-muted-foreground mb-1">Spent</div>
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Spent
+                    </div>
                     <div className="font-bold text-red-400">-67 SKY</div>
                   </div>
                   <div className="bg-blue-500/10 rounded-xl p-3">
-                    <div className="text-xs text-muted-foreground mb-1">AI Actions</div>
+                    <div className="text-xs text-muted-foreground mb-1">
+                      AI Actions
+                    </div>
                     <div className="font-bold text-blue-400">12 tasks</div>
                   </div>
                   <div className="bg-purple-500/10 rounded-xl p-3">
-                    <div className="text-xs text-muted-foreground mb-1">Messages</div>
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Messages
+                    </div>
                     <div className="font-bold text-purple-400">284 sent</div>
                   </div>
                 </div>
@@ -203,12 +324,28 @@ export default function ProfileWallet() {
                 <h3 className="font-semibold mb-3">Quick Links</h3>
                 <div className="space-y-2">
                   {[
-                    { label: "Creator Analytics", href: "/creator-analytics", icon: TrendingUp },
-                    { label: "Subscriptions", href: "/subscriptions", icon: Star },
-                    { label: "Marketplace", href: "/marketplace", icon: ShoppingBag },
+                    {
+                      label: "Creator Analytics",
+                      href: "/creator-analytics",
+                      icon: TrendingUp,
+                    },
+                    {
+                      label: "Subscriptions",
+                      href: "/subscriptions",
+                      icon: Star,
+                    },
+                    {
+                      label: "Marketplace",
+                      href: "/marketplace",
+                      icon: ShoppingBag,
+                    },
                     { label: "AI Engineer", href: "/ai-engineer", icon: Bot },
                   ].map(link => (
-                    <Link key={link.href} href={link.href} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-secondary/30 transition-colors">
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-secondary/30 transition-colors"
+                    >
                       <div className="flex items-center gap-2.5">
                         <link.icon className="w-4 h-4 text-primary" />
                         <span className="text-sm">{link.label}</span>
@@ -224,7 +361,8 @@ export default function ProfileWallet() {
           {activeTab === "activity" && (
             <div className="space-y-2">
               {MOCK_ACTIVITY.map((item, i) => {
-                const typeInfo = ACTIVITY_TYPES[item.type as keyof typeof ACTIVITY_TYPES];
+                const typeInfo =
+                  ACTIVITY_TYPES[item.type as keyof typeof ACTIVITY_TYPES];
                 return (
                   <div key={i} className="card p-3 flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
@@ -237,7 +375,9 @@ export default function ProfileWallet() {
                         {item.time}
                       </div>
                     </div>
-                    <div className={`text-sm font-bold ${item.amount.startsWith("+") ? "text-green-400" : item.amount.startsWith("-") ? "text-red-400" : "text-muted-foreground"}`}>
+                    <div
+                      className={`text-sm font-bold ${item.amount.startsWith("+") ? "text-green-400" : item.amount.startsWith("-") ? "text-red-400" : "text-muted-foreground"}`}
+                    >
                       {item.amount}
                     </div>
                   </div>
@@ -249,20 +389,56 @@ export default function ProfileWallet() {
           {activeTab === "earn" && (
             <div className="space-y-3">
               <div className="card p-4 border border-primary/30 bg-primary/5">
-                <h3 className="font-bold mb-1 flex items-center gap-2"><Zap className="w-4 h-4 text-yellow-400" /> Start Earning Now</h3>
-                <p className="text-sm text-muted-foreground mb-3">Turn your conversations into income. Every action creates value.</p>
+                <h3 className="font-bold mb-1 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-yellow-400" /> Start Earning Now
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Turn your conversations into income. Every action creates
+                  value.
+                </p>
                 <div className="space-y-2">
                   {[
-                    { label: "Enable Tips on your profile", reward: "+5 SKY bonus", done: true },
-                    { label: "Complete your first AI task", reward: "+10 SKY", done: false },
-                    { label: "Get 10 followers", reward: "+20 SKY", done: false },
-                    { label: "Make your first sale", reward: "+50 SKY", done: false },
-                    { label: "Subscribe to a creator", reward: "+2 SKY cashback", done: false },
+                    {
+                      label: "Enable Tips on your profile",
+                      reward: "+5 SKY bonus",
+                      done: true,
+                    },
+                    {
+                      label: "Complete your first AI task",
+                      reward: "+10 SKY",
+                      done: false,
+                    },
+                    {
+                      label: "Get 10 followers",
+                      reward: "+20 SKY",
+                      done: false,
+                    },
+                    {
+                      label: "Make your first sale",
+                      reward: "+50 SKY",
+                      done: false,
+                    },
+                    {
+                      label: "Subscribe to a creator",
+                      reward: "+2 SKY cashback",
+                      done: false,
+                    },
                   ].map((task, i) => (
-                    <div key={i} className={`flex items-center gap-3 p-2.5 rounded-xl ${task.done ? "bg-green-500/10" : "bg-secondary/30"}`}>
-                      <CheckCircle className={`w-4 h-4 shrink-0 ${task.done ? "text-green-400" : "text-muted-foreground/30"}`} />
-                      <span className={`text-sm flex-1 ${task.done ? "line-through text-muted-foreground" : ""}`}>{task.label}</span>
-                      <span className="text-xs text-primary font-medium">{task.reward}</span>
+                    <div
+                      key={i}
+                      className={`flex items-center gap-3 p-2.5 rounded-xl ${task.done ? "bg-green-500/10" : "bg-secondary/30"}`}
+                    >
+                      <CheckCircle
+                        className={`w-4 h-4 shrink-0 ${task.done ? "text-green-400" : "text-muted-foreground/30"}`}
+                      />
+                      <span
+                        className={`text-sm flex-1 ${task.done ? "line-through text-muted-foreground" : ""}`}
+                      >
+                        {task.label}
+                      </span>
+                      <span className="text-xs text-primary font-medium">
+                        {task.reward}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -271,15 +447,37 @@ export default function ProfileWallet() {
                 <h3 className="font-semibold mb-3">Monetization Options</h3>
                 <div className="space-y-2">
                   {[
-                    { label: "Creator Subscriptions", desc: "Charge monthly for exclusive content", href: "/creator-monetization" },
-                    { label: "Sell in Marketplace", desc: "List products, templates, services", href: "/marketplace" },
-                    { label: "Staking Rewards", desc: "Earn yield on your SKY444", href: "/staking" },
-                    { label: "Referral Program", desc: "Earn 10% on referrals", href: "/affiliate" },
+                    {
+                      label: "Creator Subscriptions",
+                      desc: "Charge monthly for exclusive content",
+                      href: "/creator-monetization",
+                    },
+                    {
+                      label: "Sell in Marketplace",
+                      desc: "List products, templates, services",
+                      href: "/marketplace",
+                    },
+                    {
+                      label: "Staking Rewards",
+                      desc: "Earn yield on your SKY444",
+                      href: "/staking",
+                    },
+                    {
+                      label: "Referral Program",
+                      desc: "Earn 10% on referrals",
+                      href: "/affiliate",
+                    },
                   ].map(opt => (
-                    <Link key={opt.href} href={opt.href} className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/30 transition-colors">
+                    <Link
+                      key={opt.href}
+                      href={opt.href}
+                      className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/30 transition-colors"
+                    >
                       <div>
                         <div className="text-sm font-medium">{opt.label}</div>
-                        <div className="text-xs text-muted-foreground">{opt.desc}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {opt.desc}
+                        </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                     </Link>

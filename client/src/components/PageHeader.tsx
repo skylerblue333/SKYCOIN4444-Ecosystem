@@ -30,7 +30,11 @@ export function PageHeader({
     <div className={`mb-8 animate-page-in ${className}`}>
       {backHref && (
         <Link href={backHref}>
-          <Button variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground hover:text-foreground gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-4 -ml-2 text-muted-foreground hover:text-foreground gap-2"
+          >
             <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
@@ -45,7 +49,9 @@ export function PageHeader({
           )}
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight ${gradient ? "text-gradient" : "text-foreground"}`}>
+              <h1
+                className={`text-2xl sm:text-3xl font-bold tracking-tight ${gradient ? "text-gradient" : "text-foreground"}`}
+              >
                 {title}
               </h1>
               {badge && (
@@ -55,14 +61,14 @@ export function PageHeader({
               )}
             </div>
             {subtitle && (
-              <p className="text-muted-foreground text-sm mt-1 max-w-xl">{subtitle}</p>
+              <p className="text-muted-foreground text-sm mt-1 max-w-xl">
+                {subtitle}
+              </p>
             )}
           </div>
         </div>
         {actions && (
-          <div className="flex items-center gap-2 flex-wrap">
-            {actions}
-          </div>
+          <div className="flex items-center gap-2 flex-wrap">{actions}</div>
         )}
       </div>
     </div>

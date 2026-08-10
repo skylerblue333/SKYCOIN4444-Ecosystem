@@ -141,6 +141,7 @@ Capacity:
 ### Step 1: BIOS Configuration
 
 Access iDRAC:
+
 ```
 URL: https://<server-ip>:443
 Default User: root
@@ -148,6 +149,7 @@ Default Password: calvin
 ```
 
 Configure BIOS:
+
 ```
 1. System Settings
    ├── Boot Mode: UEFI
@@ -178,6 +180,7 @@ Configure BIOS:
 ### Step 2: RAID Configuration
 
 Create RAID 6 array:
+
 ```
 1. Boot into PERC H730 configuration
 2. Select "Create Virtual Disk"
@@ -194,6 +197,7 @@ Create RAID 6 array:
 ### Step 3: Ubuntu Installation
 
 Download Ubuntu Server 24.04 LTS:
+
 ```bash
 # Create bootable USB
 sudo dd if=ubuntu-24.04-live-server-amd64.iso of=/dev/sdb bs=4M
@@ -203,6 +207,7 @@ sync
 ```
 
 Boot and install:
+
 ```
 1. Boot from USB
 2. Select "Try or Install Ubuntu Server"
@@ -269,6 +274,7 @@ sudo nano /etc/netplan/00-installer-config.yaml
 ```
 
 Configuration:
+
 ```yaml
 network:
   version: 2
@@ -296,6 +302,7 @@ network:
 ```
 
 Apply configuration:
+
 ```bash
 sudo netplan apply
 sudo netplan get
@@ -447,6 +454,7 @@ long_query_time = 2
 ```
 
 Restart MySQL:
+
 ```bash
 sudo systemctl restart mysql
 ```
@@ -586,11 +594,13 @@ mysql -u skycoin_beta -p skycoin_beta -e "SELECT COUNT(*) FROM information_schem
 ### Setup Systemd Services
 
 Create backend service:
+
 ```bash
 sudo nano /etc/systemd/system/sky444-backend.service
 ```
 
 Content:
+
 ```ini
 [Unit]
 Description=SKY444 Backend Service
@@ -614,6 +624,7 @@ WantedBy=multi-user.target
 ```
 
 Enable and start:
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable sky444-backend
@@ -627,16 +638,19 @@ sudo tail -f /var/log/sky444-backend.log
 ### Setup Nginx Reverse Proxy
 
 Install Nginx:
+
 ```bash
 sudo apt install -y nginx
 ```
 
 Configure:
+
 ```bash
 sudo nano /etc/nginx/sites-available/sky444
 ```
 
 Content:
+
 ```nginx
 upstream sky444_backend {
   server 127.0.0.1:3001;
@@ -706,6 +720,7 @@ server {
 ```
 
 Enable and start:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/sky444 /etc/nginx/sites-enabled/
 sudo nginx -t
@@ -811,6 +826,7 @@ tar -xzf /mnt/backup/app_20260703_120000.tar.gz -C /home/ubuntu/
 ### Backup Strategy
 
 **Daily Backups:**
+
 ```bash
 # Database backup every 6 hours
 0 */6 * * * mysqldump -u skycoin_beta -p$MYSQL_PASSWORD skycoin_beta > /mnt/backup/db_$(date +\%Y\%m\%d_\%H\%M\%S).sql
@@ -820,6 +836,7 @@ tar -xzf /mnt/backup/app_20260703_120000.tar.gz -C /home/ubuntu/
 ```
 
 **Off-site Backups:**
+
 ```bash
 # Sync to S3
 0 3 * * * aws s3 sync /mnt/backup s3://sky444-backups/dell-r630/
@@ -831,6 +848,7 @@ tar -xzf /mnt/backup/app_20260703_120000.tar.gz -C /home/ubuntu/
 ### Recovery Procedures
 
 **Database Recovery:**
+
 ```bash
 # Stop application
 sudo systemctl stop sky444-backend
@@ -846,6 +864,7 @@ sudo systemctl start sky444-backend
 ```
 
 **Full Server Recovery:**
+
 ```bash
 # 1. Reinstall OS
 # 2. Configure network

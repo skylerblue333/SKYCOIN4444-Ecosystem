@@ -63,7 +63,13 @@ export interface TrendingResult {
 
 export interface FraudSignal {
   userId: string;
-  signalType: "bot_activity" | "wash_trading" | "fake_engagement" | "account_takeover" | "payment_fraud" | "spam";
+  signalType:
+    | "bot_activity"
+    | "wash_trading"
+    | "fake_engagement"
+    | "account_takeover"
+    | "payment_fraud"
+    | "spam";
   confidence: number; // 0-1
   evidence: string[];
   action: "allow" | "flag" | "throttle" | "block";
@@ -95,11 +101,11 @@ export interface ABTest {
 
 export class RecommendationEngine {
   private readonly WEIGHTS = {
-    engagement: 0.30,
-    recency: 0.20,
-    quality: 0.20,
-    personalization: 0.20,
-    diversity: 0.10,
+    engagement: 0.3,
+    recency: 0.2,
+    quality: 0.2,
+    personalization: 0.2,
+    diversity: 0.1,
   };
 
   /**
@@ -134,12 +140,17 @@ export class RecommendationEngine {
     return Math.exp(-ageHours / 24);
   }
 
-  private computePersonalizationScore(item: ContentItem, user: UserSignals): number {
+  private computePersonalizationScore(
+    item: ContentItem,
+    user: UserSignals
+  ): number {
     let score = 0;
     let factors = 0;
 
     // Category match
-    const categoryOverlap = item.categories.filter(c => user.likedCategories.includes(c)).length;
+    const categoryOverlap = item.categories.filter(c =>
+      user.likedCategories.includes(c)
+    ).length;
     if (item.categories.length > 0) {
       score += categoryOverlap / item.categories.length;
       factors++;
@@ -192,8 +203,11 @@ export class RecommendationEngine {
   }
 
   private explainScore(item: ContentItem, user: UserSignals): string {
-    if (user.followedCreators.includes(item.creatorId)) return "From a creator you follow";
-    const overlap = item.categories.filter(c => user.likedCategories.includes(c));
+    if (user.followedCreators.includes(item.creatorId))
+      return "From a creator you follow";
+    const overlap = item.categories.filter(c =>
+      user.likedCategories.includes(c)
+    );
     if (overlap.length > 0) return `Based on your interest in ${overlap[0]}`;
     if (item.engagementScore > 80) return "Trending in your region";
     return "Recommended for you";
@@ -210,8 +224,12 @@ export class RecommendationEngine {
     // First pass: take top items with diversity constraint
     for (const entry of sorted) {
       if (result.length >= limit) break;
-      const typeCount = [...seenTypes].filter(t => t === entry.item.type).length;
-      const creatorCount = [...seenCreators].filter(c => c === entry.item.creatorId).length;
+      const typeCount = [...seenTypes].filter(
+        t => t === entry.item.type
+      ).length;
+      const creatorCount = [...seenCreators].filter(
+        c => c === entry.item.creatorId
+      ).length;
       // Allow max 3 of same type and max 2 from same creator
       if (typeCount < 3 && creatorCount < 2) {
         result.push(entry);
@@ -283,8 +301,14 @@ export class TrendingEngine {
   /**
    * Compute trending velocity (score increase per hour)
    */
-  computeVelocity(currentScore: number, previousScore: number, intervalHours: number): number {
-    return intervalHours > 0 ? (currentScore - previousScore) / intervalHours : 0;
+  computeVelocity(
+    currentScore: number,
+    previousScore: number,
+    intervalHours: number
+  ): number {
+    return intervalHours > 0
+      ? (currentScore - previousScore) / intervalHours
+      : 0;
   }
 
   /**
@@ -301,7 +325,11 @@ export class TrendingEngine {
         type: item.type,
         title: `${item.type} by ${item.creatorId}`,
         score: this.computeTrendingScore(item, window),
-        velocity: this.computeVelocity(item.engagementScore, item.engagementScore * 0.8, 1),
+        velocity: this.computeVelocity(
+          item.engagementScore,
+          item.engagementScore * 0.8,
+          1
+        ),
         rank: 0,
         category: item.categories[0] || "general",
       }))
@@ -327,7 +355,11 @@ export class FraudDetectionEngine {
     botActivity: { clickRate: 60, sessionDuration: 5, engagementRate: 0.95 },
     washTrading: { selfTradeRatio: 0.3, circularTxCount: 3 },
     fakeEngagement: { likeVelocity: 1000, commentVelocity: 200 },
-    accountTakeover: { locationChange: true, deviceChange: true, rapidActions: 50 },
+    accountTakeover: {
+      locationChange: true,
+      deviceChange: true,
+      rapidActions: 50,
+    },
     paymentFraud: { chargebackRate: 0.05, velocityChecks: 10 },
     spam: { messageRate: 20, duplicateRatio: 0.8 },
   };
@@ -335,61 +367,95 @@ export class FraudDetectionEngine {
   /**
    * Analyze a user's signals for fraud indicators
    */
-  analyze(user: UserSignals, recentActions?: {
-    messageCount?: number;
-    duplicateMessageRatio?: number;
-    transactionCount?: number;
-    chargebackCount?: number;
-    likeCount?: number;
-    commentCount?: number;
-  }): FraudSignal {
+  analyze(
+    user: UserSignals,
+    recentActions?: {
+      messageCount?: number;
+      duplicateMessageRatio?: number;
+      transactionCount?: number;
+      chargebackCount?: number;
+      likeCount?: number;
+      commentCount?: number;
+    }
+  ): FraudSignal {
     const evidence: string[] = [];
     let riskScore = 0;
     let signalType: FraudSignal["signalType"] = "bot_activity";
 
     // Bot activity detection
     if (user.clickRate > this.THRESHOLDS.botActivity.clickRate) {
-      evidence.push(`Abnormal click rate: ${user.clickRate.toFixed(1)}/min (threshold: ${this.THRESHOLDS.botActivity.clickRate})`);
+      evidence.push(
+        `Abnormal click rate: ${user.clickRate.toFixed(1)}/min (threshold: ${this.THRESHOLDS.botActivity.clickRate})`
+      );
       riskScore += 0.4;
       signalType = "bot_activity";
     }
 
-    if (user.sessionDuration < this.THRESHOLDS.botActivity.sessionDuration && user.clickRate > 10) {
-      evidence.push(`Suspiciously short session with high activity: ${user.sessionDuration}s`);
+    if (
+      user.sessionDuration < this.THRESHOLDS.botActivity.sessionDuration &&
+      user.clickRate > 10
+    ) {
+      evidence.push(
+        `Suspiciously short session with high activity: ${user.sessionDuration}s`
+      );
       riskScore += 0.2;
     }
 
     // Fake engagement detection
-    if (recentActions?.likeCount && recentActions.likeCount > this.THRESHOLDS.fakeEngagement.likeVelocity) {
-      evidence.push(`Like velocity too high: ${recentActions.likeCount} likes in window`);
+    if (
+      recentActions?.likeCount &&
+      recentActions.likeCount > this.THRESHOLDS.fakeEngagement.likeVelocity
+    ) {
+      evidence.push(
+        `Like velocity too high: ${recentActions.likeCount} likes in window`
+      );
       riskScore += 0.35;
       signalType = "fake_engagement";
     }
 
     // Spam detection
-    if (recentActions?.messageCount && recentActions.messageCount > this.THRESHOLDS.spam.messageRate) {
-      evidence.push(`High message rate: ${recentActions.messageCount} messages/min`);
+    if (
+      recentActions?.messageCount &&
+      recentActions.messageCount > this.THRESHOLDS.spam.messageRate
+    ) {
+      evidence.push(
+        `High message rate: ${recentActions.messageCount} messages/min`
+      );
       riskScore += 0.3;
       signalType = "spam";
     }
 
-    if (recentActions?.duplicateMessageRatio && recentActions.duplicateMessageRatio > this.THRESHOLDS.spam.duplicateRatio) {
-      evidence.push(`High duplicate message ratio: ${(recentActions.duplicateMessageRatio * 100).toFixed(0)}%`);
+    if (
+      recentActions?.duplicateMessageRatio &&
+      recentActions.duplicateMessageRatio > this.THRESHOLDS.spam.duplicateRatio
+    ) {
+      evidence.push(
+        `High duplicate message ratio: ${(recentActions.duplicateMessageRatio * 100).toFixed(0)}%`
+      );
       riskScore += 0.25;
       signalType = "spam";
     }
 
     // Payment fraud detection
-    if (recentActions?.transactionCount && recentActions.transactionCount > this.THRESHOLDS.paymentFraud.velocityChecks) {
-      evidence.push(`High transaction velocity: ${recentActions.transactionCount} transactions`);
+    if (
+      recentActions?.transactionCount &&
+      recentActions.transactionCount >
+        this.THRESHOLDS.paymentFraud.velocityChecks
+    ) {
+      evidence.push(
+        `High transaction velocity: ${recentActions.transactionCount} transactions`
+      );
       riskScore += 0.4;
       signalType = "payment_fraud";
     }
 
     if (recentActions?.chargebackCount && recentActions.transactionCount) {
-      const chargebackRate = recentActions.chargebackCount / recentActions.transactionCount;
+      const chargebackRate =
+        recentActions.chargebackCount / recentActions.transactionCount;
       if (chargebackRate > this.THRESHOLDS.paymentFraud.chargebackRate) {
-        evidence.push(`High chargeback rate: ${(chargebackRate * 100).toFixed(1)}%`);
+        evidence.push(
+          `High chargeback rate: ${(chargebackRate * 100).toFixed(1)}%`
+        );
         riskScore += 0.5;
         signalType = "payment_fraud";
       }
@@ -437,7 +503,11 @@ export class FraudDetectionEngine {
     previousIpAddresses: string[];
     transactionCount24h: number;
     accountAgeHours: number;
-  }): { suspicious: boolean; reasons: string[]; riskLevel: "low" | "medium" | "high" } {
+  }): {
+    suspicious: boolean;
+    reasons: string[];
+    riskLevel: "low" | "medium" | "high";
+  } {
     const reasons: string[] = [];
     let riskPoints = 0;
 
@@ -452,7 +522,9 @@ export class FraudDetectionEngine {
     }
 
     if (params.transactionCount24h > 20) {
-      reasons.push(`High transaction velocity: ${params.transactionCount24h} in 24h`);
+      reasons.push(
+        `High transaction velocity: ${params.transactionCount24h} in 24h`
+      );
       riskPoints += 2;
     }
 
@@ -461,7 +533,8 @@ export class FraudDetectionEngine {
       riskPoints += 2;
     }
 
-    const riskLevel = riskPoints >= 4 ? "high" : riskPoints >= 2 ? "medium" : "low";
+    const riskLevel =
+      riskPoints >= 4 ? "high" : riskPoints >= 2 ? "medium" : "low";
     return { suspicious: riskPoints >= 3, reasons, riskLevel };
   }
 }
@@ -481,7 +554,9 @@ export class ABTestingEngine {
     // Validate weights sum to 1
     const totalWeight = test.variants.reduce((sum, v) => sum + v.weight, 0);
     if (Math.abs(totalWeight - 1) > 0.001) {
-      throw new Error(`A/B test ${test.testId} variant weights must sum to 1, got ${totalWeight}`);
+      throw new Error(
+        `A/B test ${test.testId} variant weights must sum to 1, got ${totalWeight}`
+      );
     }
     this.tests.set(test.testId, test);
   }
@@ -562,9 +637,16 @@ export class ABTestingEngine {
   /**
    * Record a conversion event for a test
    */
-  recordConversion(userId: string, testId: string, metric: string, value: number): void {
+  recordConversion(
+    userId: string,
+    testId: string,
+    metric: string,
+    value: number
+  ): void {
     // In production: persist to DB and compute statistical significance
-    console.log(`[A/B] Conversion: user=${userId} test=${testId} metric=${metric} value=${value}`);
+    console.log(
+      `[A/B] Conversion: user=${userId} test=${testId} metric=${metric} value=${value}`
+    );
   }
 }
 
@@ -601,13 +683,21 @@ export class FeedRankingEngine {
     const freshScores = new Map<string, number>();
 
     // Personalized scores
-    const recs = this.recommendation.recommend(user, candidates, candidates.length);
+    const recs = this.recommendation.recommend(
+      user,
+      candidates,
+      candidates.length
+    );
     for (const rec of recs.items) {
       personalizedScores.set(rec.item.id, rec.score);
     }
 
     // Trending scores
-    const trending = this.trending.getTrending(candidates, "24h", candidates.length);
+    const trending = this.trending.getTrending(
+      candidates,
+      "24h",
+      candidates.length
+    );
     const maxTrending = Math.max(...trending.items.map(i => i.score), 1);
     for (const item of trending.items) {
       trendingScores.set(item.id, item.score / maxTrending);
@@ -615,7 +705,8 @@ export class FeedRankingEngine {
 
     // Fresh scores (recency)
     for (const item of candidates) {
-      const ageHours = (Date.now() - item.createdAt.getTime()) / (1000 * 60 * 60);
+      const ageHours =
+        (Date.now() - item.createdAt.getTime()) / (1000 * 60 * 60);
       freshScores.set(item.id, Math.exp(-ageHours / 12)); // 12h half-life
     }
 
@@ -624,7 +715,8 @@ export class FeedRankingEngine {
       const p = personalizedScores.get(item.id) || 0;
       const t = trendingScores.get(item.id) || 0;
       const f = freshScores.get(item.id) || 0;
-      const score = p * personalizedWeight + t * trendingWeight + f * freshWeight;
+      const score =
+        p * personalizedWeight + t * trendingWeight + f * freshWeight;
       return { item, score };
     });
 
@@ -651,9 +743,36 @@ abTestingEngine.registerTest({
   name: "Feed Algorithm V2 Test",
   description: "Test personalized vs trending-heavy feed ranking",
   variants: [
-    { variantId: "control", name: "Control (50/30/20)", weight: 0.5, config: { personalizedWeight: 0.5, trendingWeight: 0.3, freshWeight: 0.2 } },
-    { variantId: "trending_heavy", name: "Trending Heavy (30/50/20)", weight: 0.25, config: { personalizedWeight: 0.3, trendingWeight: 0.5, freshWeight: 0.2 } },
-    { variantId: "personalized_heavy", name: "Personalized Heavy (70/20/10)", weight: 0.25, config: { personalizedWeight: 0.7, trendingWeight: 0.2, freshWeight: 0.1 } },
+    {
+      variantId: "control",
+      name: "Control (50/30/20)",
+      weight: 0.5,
+      config: {
+        personalizedWeight: 0.5,
+        trendingWeight: 0.3,
+        freshWeight: 0.2,
+      },
+    },
+    {
+      variantId: "trending_heavy",
+      name: "Trending Heavy (30/50/20)",
+      weight: 0.25,
+      config: {
+        personalizedWeight: 0.3,
+        trendingWeight: 0.5,
+        freshWeight: 0.2,
+      },
+    },
+    {
+      variantId: "personalized_heavy",
+      name: "Personalized Heavy (70/20/10)",
+      weight: 0.25,
+      config: {
+        personalizedWeight: 0.7,
+        trendingWeight: 0.2,
+        freshWeight: 0.1,
+      },
+    },
   ],
   startDate: new Date("2026-01-01"),
   targetAudience: "all",
@@ -666,9 +785,24 @@ abTestingEngine.registerTest({
   name: "Onboarding Flow V3",
   description: "Test different onboarding sequences for new users",
   variants: [
-    { variantId: "standard", name: "Standard Flow", weight: 0.5, config: { steps: ["profile", "interests", "wallet", "follow"] } },
-    { variantId: "crypto_first", name: "Crypto First", weight: 0.25, config: { steps: ["wallet", "staking", "profile", "follow"] } },
-    { variantId: "social_first", name: "Social First", weight: 0.25, config: { steps: ["follow", "interests", "profile", "wallet"] } },
+    {
+      variantId: "standard",
+      name: "Standard Flow",
+      weight: 0.5,
+      config: { steps: ["profile", "interests", "wallet", "follow"] },
+    },
+    {
+      variantId: "crypto_first",
+      name: "Crypto First",
+      weight: 0.25,
+      config: { steps: ["wallet", "staking", "profile", "follow"] },
+    },
+    {
+      variantId: "social_first",
+      name: "Social First",
+      weight: 0.25,
+      config: { steps: ["follow", "interests", "profile", "wallet"] },
+    },
   ],
   startDate: new Date("2026-01-01"),
   targetAudience: "new_users",
@@ -681,9 +815,24 @@ abTestingEngine.registerTest({
   name: "Tip CTA Placement Test",
   description: "Test different positions for tip button on creator posts",
   variants: [
-    { variantId: "bottom_right", name: "Bottom Right", weight: 0.34, config: { position: "bottom-right" } },
-    { variantId: "inline", name: "Inline with Likes", weight: 0.33, config: { position: "inline" } },
-    { variantId: "floating", name: "Floating Button", weight: 0.33, config: { position: "floating" } },
+    {
+      variantId: "bottom_right",
+      name: "Bottom Right",
+      weight: 0.34,
+      config: { position: "bottom-right" },
+    },
+    {
+      variantId: "inline",
+      name: "Inline with Likes",
+      weight: 0.33,
+      config: { position: "inline" },
+    },
+    {
+      variantId: "floating",
+      name: "Floating Button",
+      weight: 0.33,
+      config: { position: "floating" },
+    },
   ],
   startDate: new Date("2026-01-01"),
   targetAudience: "all",

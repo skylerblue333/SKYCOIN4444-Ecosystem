@@ -1,4 +1,4 @@
-import { notifyOwner } from './_core/notification';
+import { notifyOwner } from "./_core/notification";
 
 interface NotificationPreferences {
   userId: string;
@@ -21,8 +21,15 @@ interface NotificationPreferences {
 interface Alert {
   id: string;
   userId: string;
-  type: 'temperature' | 'hashrate' | 'rejection' | 'profitability' | 'pool' | 'worker' | 'earnings';
-  severity: 'info' | 'warning' | 'critical';
+  type:
+    | "temperature"
+    | "hashrate"
+    | "rejection"
+    | "profitability"
+    | "pool"
+    | "worker"
+    | "earnings";
+  severity: "info" | "warning" | "critical";
   title: string;
   message: string;
   data: Record<string, any>;
@@ -70,12 +77,15 @@ export class MiningNotificationSystem {
     const prefs = this.preferences.get(userId);
     if (!prefs) return;
 
-    const severity = temperature > prefs.alertThresholds.temperatureCritical ? 'critical' : 'warning';
+    const severity =
+      temperature > prefs.alertThresholds.temperatureCritical
+        ? "critical"
+        : "warning";
 
     const alert: Alert = {
       id: `alert-${Date.now()}`,
       userId,
-      type: 'temperature',
+      type: "temperature",
       severity,
       title: `Temperature Alert: ${workerName}`,
       message: `${workerName} temperature: ${temperature}°C (threshold: ${threshold}°C)`,
@@ -109,15 +119,16 @@ export class MiningNotificationSystem {
     const prefs = this.preferences.get(userId);
     if (!prefs) return;
 
-    const dropPercentage = ((previousHashrate - currentHashrate) / previousHashrate) * 100;
+    const dropPercentage =
+      ((previousHashrate - currentHashrate) / previousHashrate) * 100;
 
     if (dropPercentage < prefs.alertThresholds.hashrateDrop) return;
 
     const alert: Alert = {
       id: `alert-${Date.now()}`,
       userId,
-      type: 'hashrate',
-      severity: dropPercentage > 20 ? 'critical' : 'warning',
+      type: "hashrate",
+      severity: dropPercentage > 20 ? "critical" : "warning",
       title: `Hashrate Drop: ${poolName}`,
       message: `${poolName} hashrate dropped ${dropPercentage.toFixed(1)}% (${previousHashrate} → ${currentHashrate} TH/s)`,
       data: { poolName, currentHashrate, previousHashrate, dropPercentage },
@@ -148,8 +159,8 @@ export class MiningNotificationSystem {
     const alert: Alert = {
       id: `alert-${Date.now()}`,
       userId,
-      type: 'rejection',
-      severity: rejectionRate > 10 ? 'critical' : 'warning',
+      type: "rejection",
+      severity: rejectionRate > 10 ? "critical" : "warning",
       title: `High Rejection Rate: ${poolName}`,
       message: `${poolName} rejection rate: ${rejectionRate.toFixed(1)}% (threshold: ${prefs.alertThresholds.rejectionRate}%)`,
       data: { poolName, rejectionRate },
@@ -180,9 +191,9 @@ export class MiningNotificationSystem {
     const alert: Alert = {
       id: `alert-${Date.now()}`,
       userId,
-      type: 'earnings',
-      severity: 'info',
-      title: 'Daily Earnings Report',
+      type: "earnings",
+      severity: "info",
+      title: "Daily Earnings Report",
       message: `Today's earnings: $${dailyEarnings.toFixed(2)} | Monthly projection: $${monthlyProjection.toFixed(2)}`,
       data: { dailyEarnings, monthlyProjection },
       timestamp: Date.now(),
@@ -201,15 +212,18 @@ export class MiningNotificationSystem {
   /**
    * Send pool disconnection alert
    */
-  async sendPoolDisconnectAlert(userId: string, poolName: string): Promise<void> {
+  async sendPoolDisconnectAlert(
+    userId: string,
+    poolName: string
+  ): Promise<void> {
     const prefs = this.preferences.get(userId);
     if (!prefs || !prefs.alertThresholds.poolDisconnect) return;
 
     const alert: Alert = {
       id: `alert-${Date.now()}`,
       userId,
-      type: 'pool',
-      severity: 'critical',
+      type: "pool",
+      severity: "critical",
       title: `Pool Disconnected: ${poolName}`,
       message: `${poolName} disconnected. Attempting to reconnect...`,
       data: { poolName },
@@ -233,15 +247,18 @@ export class MiningNotificationSystem {
   /**
    * Send worker offline alert
    */
-  async sendWorkerOfflineAlert(userId: string, workerName: string): Promise<void> {
+  async sendWorkerOfflineAlert(
+    userId: string,
+    workerName: string
+  ): Promise<void> {
     const prefs = this.preferences.get(userId);
     if (!prefs || !prefs.alertThresholds.workerOffline) return;
 
     const alert: Alert = {
       id: `alert-${Date.now()}`,
       userId,
-      type: 'worker',
-      severity: 'critical',
+      type: "worker",
+      severity: "critical",
       title: `Worker Offline: ${workerName}`,
       message: `${workerName} is offline. Please check the hardware.`,
       data: { workerName },
@@ -273,7 +290,7 @@ export class MiningNotificationSystem {
       });
       console.log(`[Notifications] Alert notification sent for ${alert.title}`);
     } catch (error) {
-      console.error('[Notifications] Notification send failed:', error);
+      console.error("[Notifications] Notification send failed:", error);
     }
   }
 
@@ -285,7 +302,7 @@ export class MiningNotificationSystem {
       // Integrate with Twilio or similar SMS service
       console.log(`[Notifications] SMS sent to ${phone}: ${alert.message}`);
     } catch (error) {
-      console.error('[Notifications] SMS send failed:', error);
+      console.error("[Notifications] SMS send failed:", error);
     }
   }
 
@@ -294,9 +311,9 @@ export class MiningNotificationSystem {
    */
   private generateEmailHTML(alert: Alert): string {
     const severityColor = {
-      info: '#3b82f6',
-      warning: '#f59e0b',
-      critical: '#ef4444',
+      info: "#3b82f6",
+      warning: "#f59e0b",
+      critical: "#ef4444",
     }[alert.severity];
 
     return `

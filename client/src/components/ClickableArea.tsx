@@ -33,12 +33,10 @@ export function ClickableArea({
   const styles: Record<Variant, string> = {
     heading:
       "group inline-flex items-center gap-2 font-bold text-foreground hover:text-primary",
-    tag:
-      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40",
+    tag: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40",
     badge:
       "inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-secondary text-secondary-foreground hover:bg-primary/20 hover:text-primary border border-border hover:border-primary/30",
-    chip:
-      "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary",
+    chip: "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary",
     inline:
       "inline-flex items-center gap-1 text-primary hover:text-primary/80 underline-offset-2 hover:underline",
     section:
@@ -99,16 +97,16 @@ export function SectionHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-start justify-between gap-4 mb-6", className)}>
+    <div
+      className={cn("flex items-start justify-between gap-4 mb-6", className)}
+    >
       <div className="flex-1 min-w-0">
         {href ? (
           <Link
             href={href}
             className="group inline-flex items-center gap-2 hover:text-primary transition-colors duration-200"
           >
-            {icon && (
-              <span className="text-primary shrink-0">{icon}</span>
-            )}
+            {icon && <span className="text-primary shrink-0">{icon}</span>}
             <h2 className="text-xl md:text-2xl font-bold tracking-tight group-hover:text-primary transition-colors">
               {title}
             </h2>
@@ -117,7 +115,9 @@ export function SectionHeader({
         ) : (
           <div className="inline-flex items-center gap-2">
             {icon && <span className="text-primary shrink-0">{icon}</span>}
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight">{title}</h2>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+              {title}
+            </h2>
           </div>
         )}
         {description && (

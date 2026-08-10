@@ -45,7 +45,13 @@ import {
 
 describe("Phase 15A: Ad Revenue Splits", () => {
   it("calculates 70/30 split correctly", () => {
-    const split = creatorRevenueEngine.calculateAdRevenueSplit(1, "2024-01", 1000, 50000, 1500);
+    const split = creatorRevenueEngine.calculateAdRevenueSplit(
+      1,
+      "2024-01",
+      1000,
+      50000,
+      1500
+    );
     expect(split.creatorShare).toBe(700);
     expect(split.platformCut).toBe(300);
     expect(split.cpm).toBeGreaterThan(0);
@@ -191,7 +197,10 @@ describe("Phase 15A: Affiliate System", () => {
       isActive: true,
     });
     creatorRevenueEngine.trackAffiliateClick(link.id);
-    const converted = creatorRevenueEngine.recordAffiliateConversion(link.id, 100);
+    const converted = creatorRevenueEngine.recordAffiliateConversion(
+      link.id,
+      100
+    );
     expect(link.clicks).toBe(1);
     expect(converted!.conversions).toBe(1);
     expect(converted!.totalEarned).toBeCloseTo(15);
@@ -233,10 +242,30 @@ describe("Phase 15A: Premium DMs", () => {
 
 describe("Phase 15A: Tipping Upgrades", () => {
   it("assigns correct tier based on amount", () => {
-    const standard = creatorRevenueEngine.sendTip({ senderId: 1, recipientId: 2, amount: 5, currency: "USD" });
-    const superTip = creatorRevenueEngine.sendTip({ senderId: 1, recipientId: 2, amount: 50, currency: "USD" });
-    const mega = creatorRevenueEngine.sendTip({ senderId: 1, recipientId: 2, amount: 500, currency: "USD" });
-    const legendary = creatorRevenueEngine.sendTip({ senderId: 1, recipientId: 2, amount: 5000, currency: "USD" });
+    const standard = creatorRevenueEngine.sendTip({
+      senderId: 1,
+      recipientId: 2,
+      amount: 5,
+      currency: "USD",
+    });
+    const superTip = creatorRevenueEngine.sendTip({
+      senderId: 1,
+      recipientId: 2,
+      amount: 50,
+      currency: "USD",
+    });
+    const mega = creatorRevenueEngine.sendTip({
+      senderId: 1,
+      recipientId: 2,
+      amount: 500,
+      currency: "USD",
+    });
+    const legendary = creatorRevenueEngine.sendTip({
+      senderId: 1,
+      recipientId: 2,
+      amount: 5000,
+      currency: "USD",
+    });
     expect(standard.tier).toBe("standard");
     expect(superTip.tier).toBe("super");
     expect(mega.tier).toBe("mega");
@@ -244,7 +273,12 @@ describe("Phase 15A: Tipping Upgrades", () => {
   });
 
   it("deducts platform fee from tip", () => {
-    const tip = creatorRevenueEngine.sendTip({ senderId: 1, recipientId: 3, amount: 100, currency: "USD" });
+    const tip = creatorRevenueEngine.sendTip({
+      senderId: 1,
+      recipientId: 3,
+      amount: 100,
+      currency: "USD",
+    });
     expect(tip.platformFee).toBeCloseTo(5);
     expect(tip.creatorNet).toBeCloseTo(95);
   });
@@ -254,9 +288,24 @@ describe("Phase 15A: Tipping Upgrades", () => {
 
 describe("Phase 15B: Platform Fees", () => {
   it("records fees with correct rates", () => {
-    const subFee = platformRevenueEngine.recordFee("subscription", "tx_001", 100, "USD");
-    const nftFee = platformRevenueEngine.recordFee("nft_sale", "tx_002", 1000, "ETH");
-    const swapFee = platformRevenueEngine.recordFee("swap", "tx_003", 10000, "SKY444");
+    const subFee = platformRevenueEngine.recordFee(
+      "subscription",
+      "tx_001",
+      100,
+      "USD"
+    );
+    const nftFee = platformRevenueEngine.recordFee(
+      "nft_sale",
+      "tx_002",
+      1000,
+      "ETH"
+    );
+    const swapFee = platformRevenueEngine.recordFee(
+      "swap",
+      "tx_003",
+      10000,
+      "SKY444"
+    );
     expect(subFee.feeAmount).toBeCloseTo(5);
     expect(nftFee.feeAmount).toBeCloseTo(25);
     expect(swapFee.feeAmount).toBeCloseTo(30);
@@ -303,7 +352,9 @@ describe("Phase 15B: Ad Campaigns", () => {
     platformRevenueEngine.recordAdImpression(campaign.id);
     platformRevenueEngine.recordAdImpression(campaign.id);
     platformRevenueEngine.recordAdClick(campaign.id);
-    const updated = platformRevenueEngine.getActiveCampaigns().find(c => c.id === campaign.id);
+    const updated = platformRevenueEngine
+      .getActiveCampaigns()
+      .find(c => c.id === campaign.id);
     expect(updated!.impressions).toBe(2);
     expect(updated!.clicks).toBe(1);
     expect(updated!.ctr).toBeCloseTo(0.5);
@@ -342,7 +393,7 @@ describe("Phase 15C: Treasury Intelligence", () => {
       runway: 12,
       cashPosition: 360000,
       tokenTreasuryUSD: 2000000,
-      creatorPayoutRatio: 0.70,
+      creatorPayoutRatio: 0.7,
       adConversionRevenue: 15000,
       subscriptionRevenue: 30000,
       transactionFeeRevenue: 5000,
@@ -400,7 +451,7 @@ describe("Phase 16A: Referral Engine", () => {
       referrerType: "creator",
       referralType: "creator",
       code: "CREATOR_REF_001",
-      commissionRate: 0.10,
+      commissionRate: 0.1,
       bonusAmount: 20,
       bonusCurrency: "USD",
       isActive: true,
@@ -449,8 +500,18 @@ describe("Phase 16A: Referral Engine", () => {
       bonusCurrency: "USD",
       isActive: true,
     });
-    referralEngine.recordConversion({ code: "TREE_TEST_001", refereeId: 101, conversionType: "signup", level: 1 });
-    referralEngine.recordConversion({ code: "TREE_TEST_001", refereeId: 102, conversionType: "signup", level: 1 });
+    referralEngine.recordConversion({
+      code: "TREE_TEST_001",
+      refereeId: 101,
+      conversionType: "signup",
+      level: 1,
+    });
+    referralEngine.recordConversion({
+      code: "TREE_TEST_001",
+      refereeId: 102,
+      conversionType: "signup",
+      level: 1,
+    });
     const tree = referralEngine.getReferralTree(3);
     expect(tree.directReferrals).toBeGreaterThanOrEqual(2);
     expect(tree.totalEarned).toBeGreaterThan(0);
@@ -467,7 +528,13 @@ describe("Phase 16B: Streak System", () => {
   });
 
   it("issues and claims invite rewards", () => {
-    const reward = viralGrowthEngine.issueInviteReward(1001, "invite", 10, "SKY444", "Invite bonus");
+    const reward = viralGrowthEngine.issueInviteReward(
+      1001,
+      "invite",
+      10,
+      "SKY444",
+      "Invite bonus"
+    );
     expect(reward.claimed).toBe(false);
     const claimed = viralGrowthEngine.claimReward(reward.id);
     expect(claimed!.claimed).toBe(true);
@@ -475,7 +542,13 @@ describe("Phase 16B: Streak System", () => {
   });
 
   it("prevents double-claiming rewards", () => {
-    const reward = viralGrowthEngine.issueInviteReward(1002, "share", 5, "USD", "Share bonus");
+    const reward = viralGrowthEngine.issueInviteReward(
+      1002,
+      "share",
+      5,
+      "USD",
+      "Share bonus"
+    );
     viralGrowthEngine.claimReward(reward.id);
     const secondClaim = viralGrowthEngine.claimReward(reward.id);
     expect(secondClaim).toBeNull();
@@ -499,7 +572,9 @@ describe("Phase 16B: Engagement Quests", () => {
     for (let i = 0; i < 5; i++) {
       viralGrowthEngine.updateQuestProgress(2001, quest.id, "post", 1);
     }
-    const final = viralGrowthEngine.getUserQuestProgress(2001).find(p => p.questId === quest.id);
+    const final = viralGrowthEngine
+      .getUserQuestProgress(2001)
+      .find(p => p.questId === quest.id);
     expect(final!.completed).toBe(true);
     const claimed = viralGrowthEngine.claimQuestReward(2001, quest.id);
     expect(claimed!.rewardClaimed).toBe(true);
@@ -518,7 +593,11 @@ describe("Phase 16B: Creator Milestones", () => {
       boostDurationDays: 7,
       boostMultiplier: 2,
     });
-    const triggered = viralGrowthEngine.updateMilestoneProgress(3001, "followers", 1000);
+    const triggered = viralGrowthEngine.updateMilestoneProgress(
+      3001,
+      "followers",
+      1000
+    );
     expect(triggered.length).toBe(1);
     expect(triggered[0].achieved).toBe(true);
     expect(triggered[0].boostActiveUntil).toBeInstanceOf(Date);
@@ -532,7 +611,9 @@ describe("Phase 16B: Creator Milestones", () => {
 describe("Phase 16C: Network Expansion", () => {
   it("generates community recommendations", () => {
     const recs = networkExpansionEngine.generateCommunityRecommendations(
-      4001, ["crypto", "gaming"], ["comm_existing"]
+      4001,
+      ["crypto", "gaming"],
+      ["comm_existing"]
     );
     expect(recs.recommendedCommunities.length).toBeGreaterThan(0);
     expect(recs.recommendedCommunities[0].matchScore).toBeGreaterThan(0);
@@ -547,9 +628,16 @@ describe("Phase 16C: Network Expansion", () => {
       revenueShare: 0.5,
       projectedReach: 10000,
     });
-    const accepted = networkExpansionEngine.respondToCollaboration(collab.id, true);
+    const accepted = networkExpansionEngine.respondToCollaboration(
+      collab.id,
+      true
+    );
     expect(accepted!.status).toBe("accepted");
-    const completed = networkExpansionEngine.completeCollaboration(collab.id, 12000, 500);
+    const completed = networkExpansionEngine.completeCollaboration(
+      collab.id,
+      12000,
+      500
+    );
     expect(completed!.status).toBe("completed");
     expect(completed!.actualReach).toBe(12000);
   });
@@ -624,7 +712,11 @@ describe("Phase 17B: Offline Cache Engine", () => {
   it("caches and retrieves content", () => {
     const data = { posts: [{ id: 1, title: "Hello" }] };
     offlineCacheEngine.cacheContent(7001, "feed", "feed_main", data);
-    const retrieved = offlineCacheEngine.getCachedContent(7001, "feed", "feed_main");
+    const retrieved = offlineCacheEngine.getCachedContent(
+      7001,
+      "feed",
+      "feed_main"
+    );
     expect(retrieved).not.toBeNull();
     expect((retrieved as typeof data).posts[0].title).toBe("Hello");
   });
@@ -645,12 +737,18 @@ describe("Phase 17B: Offline Cache Engine", () => {
   });
 
   it("invalidates cache by content type", () => {
-    offlineCacheEngine.cacheContent(7003, "profile", "profile_1", { name: "Alice" });
+    offlineCacheEngine.cacheContent(7003, "profile", "profile_1", {
+      name: "Alice",
+    });
     offlineCacheEngine.cacheContent(7003, "feed", "feed_1", { posts: [] });
     const removed = offlineCacheEngine.invalidateCache(7003, "profile");
     expect(removed).toBe(1);
-    expect(offlineCacheEngine.getCachedContent(7003, "profile", "profile_1")).toBeNull();
-    expect(offlineCacheEngine.getCachedContent(7003, "feed", "feed_1")).not.toBeNull();
+    expect(
+      offlineCacheEngine.getCachedContent(7003, "profile", "profile_1")
+    ).toBeNull();
+    expect(
+      offlineCacheEngine.getCachedContent(7003, "feed", "feed_1")
+    ).not.toBeNull();
   });
 });
 
@@ -673,8 +771,22 @@ describe("Phase 17C: Media Compression Engine", () => {
   });
 
   it("applies correct compression ratios by quality", () => {
-    const lowJob = mediaCompressionEngine.submitJob({ userId: 8002, inputUrl: "a.jpg", mediaType: "image", inputSizeKB: 1000, targetQuality: "low", targetPlatform: "thumbnail" });
-    const highJob = mediaCompressionEngine.submitJob({ userId: 8002, inputUrl: "b.jpg", mediaType: "image", inputSizeKB: 1000, targetQuality: "high", targetPlatform: "desktop" });
+    const lowJob = mediaCompressionEngine.submitJob({
+      userId: 8002,
+      inputUrl: "a.jpg",
+      mediaType: "image",
+      inputSizeKB: 1000,
+      targetQuality: "low",
+      targetPlatform: "thumbnail",
+    });
+    const highJob = mediaCompressionEngine.submitJob({
+      userId: 8002,
+      inputUrl: "b.jpg",
+      mediaType: "image",
+      inputSizeKB: 1000,
+      targetQuality: "high",
+      targetPlatform: "desktop",
+    });
     const low = mediaCompressionEngine.processJob(lowJob.id);
     const high = mediaCompressionEngine.processJob(highJob.id);
     expect(low!.outputSizeKB!).toBeLessThan(high!.outputSizeKB!);
@@ -764,7 +876,10 @@ describe("Phase 18A: User Analytics", () => {
   it("computes user segment correctly", () => {
     intelligenceLayer.upsertUserProfile(11002, { totalSpentUSD: 2000 });
     expect(intelligenceLayer.computeUserSegment(11002)).toBe("whale");
-    intelligenceLayer.upsertUserProfile(11003, { engagementScore: 0.05, totalSessions: 1 });
+    intelligenceLayer.upsertUserProfile(11003, {
+      engagementScore: 0.05,
+      totalSessions: 1,
+    });
     expect(intelligenceLayer.computeUserSegment(11003)).toBe("lurker");
   });
 });
@@ -780,7 +895,9 @@ describe("Phase 18A: Creator Analytics", () => {
     expect(profile.totalFollowers).toBe(50000);
     const top = intelligenceLayer.getTopCreatorsByRevenue(5);
     expect(top.length).toBeGreaterThan(0);
-    expect(top[0].totalRevenue).toBeGreaterThanOrEqual(top[top.length - 1].totalRevenue);
+    expect(top[0].totalRevenue).toBeGreaterThanOrEqual(
+      top[top.length - 1].totalRevenue
+    );
   });
 });
 
@@ -816,7 +933,7 @@ describe("Phase 18A: Retention Cohorts", () => {
       cohortDate: "2024-01",
       cohortSize: 1000,
       retentionByDay: { 1: 0.62, 7: 0.38, 30: 0.22 },
-      retentionByWeek: { 1: 0.62, 4: 0.35, 12: 0.20 },
+      retentionByWeek: { 1: 0.62, 4: 0.35, 12: 0.2 },
       avgLTV: 85,
       avgRevenue: 12,
     });
@@ -838,7 +955,9 @@ describe("Phase 18B: Churn Prediction", () => {
     const prediction = predictionLayer.predictChurn(13001);
     expect(prediction.churnProbability).toBeGreaterThan(0);
     expect(prediction.churnProbability).toBeLessThanOrEqual(1);
-    expect(["low", "medium", "high", "critical"]).toContain(prediction.churnRisk);
+    expect(["low", "medium", "high", "critical"]).toContain(
+      prediction.churnRisk
+    );
     expect(prediction.recommendedInterventions.length).toBeGreaterThan(0);
   });
 
@@ -856,7 +975,12 @@ describe("Phase 18B: Churn Prediction", () => {
 
 describe("Phase 18B: Viral Prediction", () => {
   it("predicts content virality", () => {
-    const prediction = predictionLayer.predictVirality("post_viral_1", "video", 500, 100000);
+    const prediction = predictionLayer.predictVirality(
+      "post_viral_1",
+      "video",
+      500,
+      100000
+    );
     expect(prediction.viralProbability).toBeGreaterThan(0);
     expect(prediction.predictedReach).toBeGreaterThan(0);
     expect(prediction.peakTime).toBeInstanceOf(Date);
@@ -874,17 +998,23 @@ describe("Phase 18B: Creator Success Prediction", () => {
     const prediction = predictionLayer.predictCreatorSuccess(14001);
     expect(prediction.successProbability).toBeGreaterThan(0);
     expect(prediction.predictedFollowersIn30d).toBeGreaterThan(5000);
-    expect(["explosive", "steady", "plateau", "declining"]).toContain(prediction.growthTrajectory);
+    expect(["explosive", "steady", "plateau", "declining"]).toContain(
+      prediction.growthTrajectory
+    );
   });
 });
 
 describe("Phase 18B: Fraud Prediction", () => {
   it("flags high-risk entities", () => {
-    const prediction = predictionLayer.predictFraud("user_suspicious_1", "user", [
-      { signal: "rapid_follower_gain", severity: "high", value: 5000 },
-      { signal: "bot_like_pattern", severity: "high", value: true },
-      { signal: "vpn_usage", severity: "medium", value: true },
-    ]);
+    const prediction = predictionLayer.predictFraud(
+      "user_suspicious_1",
+      "user",
+      [
+        { signal: "rapid_follower_gain", severity: "high", value: 5000 },
+        { signal: "bot_like_pattern", severity: "high", value: true },
+        { signal: "vpn_usage", severity: "medium", value: true },
+      ]
+    );
     expect(prediction.fraudProbability).toBeGreaterThan(0.5);
     expect(prediction.recommendedAction).not.toBe("allow");
   });
@@ -897,9 +1027,18 @@ describe("Phase 18B: Fraud Prediction", () => {
 
 describe("Phase 18B: Treasury Prediction", () => {
   it("generates treasury forecast with scenarios", () => {
-    const prediction = predictionLayer.predictTreasury(50000, 0.12, 30000, 360000);
-    expect(prediction.revenueScenarios.bull).toBeGreaterThan(prediction.revenueScenarios.base);
-    expect(prediction.revenueScenarios.base).toBeGreaterThan(prediction.revenueScenarios.bear);
+    const prediction = predictionLayer.predictTreasury(
+      50000,
+      0.12,
+      30000,
+      360000
+    );
+    expect(prediction.revenueScenarios.bull).toBeGreaterThan(
+      prediction.revenueScenarios.base
+    );
+    expect(prediction.revenueScenarios.base).toBeGreaterThan(
+      prediction.revenueScenarios.bear
+    );
     expect(prediction.predictedRunway).toBeGreaterThan(0);
     expect(prediction.topGrowthDrivers.length).toBeGreaterThan(0);
   });
@@ -941,9 +1080,15 @@ describe("Phase 19A: Public API Manager", () => {
       rateLimit: 500,
       rateLimitWindow: "hour",
     });
-    const withScope = publicAPIManager.validateAPIKey(apiKey.key, "creator:read");
+    const withScope = publicAPIManager.validateAPIKey(
+      apiKey.key,
+      "creator:read"
+    );
     expect(withScope.valid).toBe(true);
-    const withoutScope = publicAPIManager.validateAPIKey(apiKey.key, "wallet:write");
+    const withoutScope = publicAPIManager.validateAPIKey(
+      apiKey.key,
+      "wallet:write"
+    );
     expect(withoutScope.valid).toBe(false);
   });
 
@@ -957,9 +1102,27 @@ describe("Phase 19A: Public API Manager", () => {
       rateLimit: 10000,
       rateLimitWindow: "day",
     });
-    publicAPIManager.recordRequest(apiKey.id, "/api/v1/creators", "GET", 200, 45);
-    publicAPIManager.recordRequest(apiKey.id, "/api/v1/analytics", "GET", 200, 120);
-    publicAPIManager.recordRequest(apiKey.id, "/api/v1/creators", "POST", 400, 30);
+    publicAPIManager.recordRequest(
+      apiKey.id,
+      "/api/v1/creators",
+      "GET",
+      200,
+      45
+    );
+    publicAPIManager.recordRequest(
+      apiKey.id,
+      "/api/v1/analytics",
+      "GET",
+      200,
+      120
+    );
+    publicAPIManager.recordRequest(
+      apiKey.id,
+      "/api/v1/creators",
+      "POST",
+      400,
+      30
+    );
     const stats = publicAPIManager.getAPIUsageStats(apiKey.id, "2024-01");
     expect(stats.totalRequests).toBe(3);
     expect(stats.successfulRequests).toBe(2);
@@ -993,7 +1156,11 @@ describe("Phase 19A: Public API Manager", () => {
       rateLimitWindow: "hour",
       webhookUrl: "https://partner.example.com/webhook",
     });
-    const event = publicAPIManager.dispatchWebhookEvent(apiKey.id, "creator.followed", { creatorId: 1, followerId: 2 });
+    const event = publicAPIManager.dispatchWebhookEvent(
+      apiKey.id,
+      "creator.followed",
+      { creatorId: 1, followerId: 2 }
+    );
     expect(event.lastDeliveryStatus).toBe("delivered");
     expect(event.deliveryAttempts).toBe(1);
   });
@@ -1080,7 +1247,11 @@ describe("Phase 19C: External Integrations", () => {
       syncEnabled: true,
       metadata: {},
     });
-    const job = externalIntegrationEngine.queueYouTubeSync(17002, integration.id, "import_videos");
+    const job = externalIntegrationEngine.queueYouTubeSync(
+      17002,
+      integration.id,
+      "import_videos"
+    );
     const processed = externalIntegrationEngine.processYouTubeSync(job.id);
     expect(processed!.status).toBe("completed");
     expect(processed!.itemsProcessed).toBeGreaterThan(0);
@@ -1097,7 +1268,11 @@ describe("Phase 19C: External Integrations", () => {
       syncEnabled: true,
       metadata: {},
     });
-    const job = externalIntegrationEngine.queueTwitchSync(17003, integration.id, "import_vods");
+    const job = externalIntegrationEngine.queueTwitchSync(
+      17003,
+      integration.id,
+      "import_vods"
+    );
     const processed = externalIntegrationEngine.processTwitchSync(job.id);
     expect(processed!.status).toBe("completed");
   });
@@ -1113,7 +1288,12 @@ describe("Phase 19C: External Integrations", () => {
       syncEnabled: true,
       metadata: {},
     });
-    const job = externalIntegrationEngine.queueDiscordSync(17004, integration.id, "guild_123", "sync_members");
+    const job = externalIntegrationEngine.queueDiscordSync(
+      17004,
+      integration.id,
+      "guild_123",
+      "sync_members"
+    );
     const processed = externalIntegrationEngine.processDiscordSync(job.id);
     expect(processed!.status).toBe("completed");
   });
@@ -1129,7 +1309,11 @@ describe("Phase 19C: External Integrations", () => {
       syncEnabled: true,
       metadata: {},
     });
-    const job = externalIntegrationEngine.queueCoinbaseSync(17005, integration.id, "sync_balances");
+    const job = externalIntegrationEngine.queueCoinbaseSync(
+      17005,
+      integration.id,
+      "sync_balances"
+    );
     const processed = externalIntegrationEngine.processCoinbaseSync(job.id);
     expect(processed!.status).toBe("completed");
   });
@@ -1145,7 +1329,11 @@ describe("Phase 19C: External Integrations", () => {
       syncEnabled: true,
       metadata: {},
     });
-    const job = externalIntegrationEngine.queueOpenSeaSync(17006, integration.id, "import_nfts");
+    const job = externalIntegrationEngine.queueOpenSeaSync(
+      17006,
+      integration.id,
+      "import_nfts"
+    );
     const processed = externalIntegrationEngine.processOpenSeaSync(job.id);
     expect(processed!.status).toBe("completed");
     expect(processed!.itemsProcessed).toBeGreaterThan(0);
@@ -1162,7 +1350,9 @@ describe("Phase 19C: External Integrations", () => {
       content: "Check out my new stream!",
       mediaUrls: ["https://cdn.sky/thumb.jpg"],
     });
-    const published = externalIntegrationEngine.publishCrossPlatformPost(post.id);
+    const published = externalIntegrationEngine.publishCrossPlatformPost(
+      post.id
+    );
     expect(published!.platforms.every(p => p.status === "posted")).toBe(true);
   });
 
@@ -1177,9 +1367,14 @@ describe("Phase 19C: External Integrations", () => {
       syncEnabled: true,
       metadata: {},
     });
-    const disconnected = externalIntegrationEngine.disconnectIntegration(integration.id);
+    const disconnected = externalIntegrationEngine.disconnectIntegration(
+      integration.id
+    );
     expect(disconnected).toBe(true);
-    const byPlatform = externalIntegrationEngine.getIntegrationByPlatform(17008, "instagram");
+    const byPlatform = externalIntegrationEngine.getIntegrationByPlatform(
+      17008,
+      "instagram"
+    );
     expect(byPlatform).toBeNull();
   });
 

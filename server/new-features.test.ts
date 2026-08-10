@@ -6,7 +6,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 describe("SKY444 Mining Engine", () => {
   describe("Proof-of-Engagement reward calculation", () => {
     const rewardMap: Record<string, number> = {
-      post: 50, like: 5, comment: 15, watch: 10, share: 20, login: 25, refer: 200, stake: 100,
+      post: 50,
+      like: 5,
+      comment: 15,
+      watch: 10,
+      share: 20,
+      login: 25,
+      refer: 200,
+      stake: 100,
     };
 
     it("should calculate correct base reward for post action", () => {
@@ -127,7 +134,14 @@ describe("SKY444 Mining Engine", () => {
 
   describe("XP reward calculation", () => {
     const xpMap: Record<string, number> = {
-      post: 100, like: 10, comment: 25, watch: 15, share: 30, login: 50, refer: 500, stake: 200,
+      post: 100,
+      like: 10,
+      comment: 25,
+      watch: 15,
+      share: 30,
+      login: 50,
+      refer: 500,
+      stake: 200,
     };
 
     it("should give 100 XP for posting", () => {
@@ -234,9 +248,27 @@ describe("AI Agent Engine", () => {
 
     it("should filter pending tasks", () => {
       const tasks: Task[] = [
-        { id: "1", agentId: "a", status: "pending", priority: 5, createdAt: Date.now() },
-        { id: "2", agentId: "b", status: "completed", priority: 5, createdAt: Date.now() },
-        { id: "3", agentId: "c", status: "running", priority: 5, createdAt: Date.now() },
+        {
+          id: "1",
+          agentId: "a",
+          status: "pending",
+          priority: 5,
+          createdAt: Date.now(),
+        },
+        {
+          id: "2",
+          agentId: "b",
+          status: "completed",
+          priority: 5,
+          createdAt: Date.now(),
+        },
+        {
+          id: "3",
+          agentId: "c",
+          status: "running",
+          priority: 5,
+          createdAt: Date.now(),
+        },
       ];
       const pending = tasks.filter(t => t.status === "pending");
       expect(pending.length).toBe(1);
@@ -419,7 +451,8 @@ describe("Price Engine", () => {
 // ═══════════════════════════════════════════════════════════════
 describe("Governance Engine", () => {
   describe("Proposal lifecycle", () => {
-    type ProposalStatus = "pending" | "active" | "passed" | "failed" | "executed";
+    type ProposalStatus =
+      "pending" | "active" | "passed" | "failed" | "executed";
 
     interface Proposal {
       id: string;
@@ -456,34 +489,61 @@ describe("Governance Engine", () => {
     });
 
     it("should calculate total votes correctly", () => {
-      const p: Proposal = { ...createProposal("Test"), votesFor: 5000, votesAgainst: 2000, abstain: 500 };
+      const p: Proposal = {
+        ...createProposal("Test"),
+        votesFor: 5000,
+        votesAgainst: 2000,
+        abstain: 500,
+      };
       const total = p.votesFor + p.votesAgainst + p.abstain;
       expect(total).toBe(7500);
     });
 
     it("should determine pass condition (>50% for)", () => {
-      const p: Proposal = { ...createProposal("Test"), votesFor: 6000, votesAgainst: 4000, abstain: 0 };
+      const p: Proposal = {
+        ...createProposal("Test"),
+        votesFor: 6000,
+        votesAgainst: 4000,
+        abstain: 0,
+      };
       const total = p.votesFor + p.votesAgainst + p.abstain;
       const passed = p.votesFor / total > 0.5;
       expect(passed).toBe(true);
     });
 
     it("should determine fail condition (<50% for)", () => {
-      const p: Proposal = { ...createProposal("Test"), votesFor: 3000, votesAgainst: 7000, abstain: 0 };
+      const p: Proposal = {
+        ...createProposal("Test"),
+        votesFor: 3000,
+        votesAgainst: 7000,
+        abstain: 0,
+      };
       const total = p.votesFor + p.votesAgainst + p.abstain;
       const passed = p.votesFor / total > 0.5;
       expect(passed).toBe(false);
     });
 
     it("should check quorum requirement", () => {
-      const p: Proposal = { ...createProposal("Test"), votesFor: 6_000_000, votesAgainst: 2_000_000, abstain: 500_000, quorum: 10_000_000 };
+      const p: Proposal = {
+        ...createProposal("Test"),
+        votesFor: 6_000_000,
+        votesAgainst: 2_000_000,
+        abstain: 500_000,
+        quorum: 10_000_000,
+      };
       const total = p.votesFor + p.votesAgainst + p.abstain;
       const quorumMet = total >= p.quorum;
       expect(quorumMet).toBe(false);
     });
 
     it("should pass quorum when enough votes", () => {
-      const p: Proposal = { ...createProposal("Test"), votesFor: 7_000_000, votesAgainst: 2_000_000, abstain: 1_500_000, quorum: 10_000_000 };
+      const p: Proposal = {
+        ...createProposal("Test"),
+        votesFor: 7_000_000,
+        votesAgainst: 2_000_000,
+        abstain: 1_500_000,
+        quorum: 10_000_000,
+      };
       const total = p.votesFor + p.votesAgainst + p.abstain;
       const quorumMet = total >= p.quorum;
       expect(quorumMet).toBe(true);
@@ -497,7 +557,10 @@ describe("Governance Engine", () => {
     });
 
     it("should detect expired proposal", () => {
-      const p: Proposal = { ...createProposal("Test"), endsAt: Date.now() - 1000 };
+      const p: Proposal = {
+        ...createProposal("Test"),
+        endsAt: Date.now() - 1000,
+      };
       const expired = p.endsAt < Date.now();
       expect(expired).toBe(true);
     });
@@ -549,23 +612,52 @@ describe("Social Engine", () => {
 
     const scorePost = (post: Post): number => {
       const ageHours = (Date.now() - post.createdAt) / 3600000;
-      const engagementScore = post.likes * 1 + post.comments * 3 + post.shares * 5;
+      const engagementScore =
+        post.likes * 1 + post.comments * 3 + post.shares * 5;
       const decayFactor = Math.pow(0.95, ageHours);
       const followerBonus = Math.log10(post.authorFollowers + 1) * 10;
-      return (engagementScore * decayFactor) + followerBonus;
+      return engagementScore * decayFactor + followerBonus;
     };
 
     it("should give higher score to more engaged posts", () => {
       const now = Date.now();
-      const popular: Post = { id: 1, likes: 100, comments: 50, shares: 20, createdAt: now - 3600000, authorFollowers: 1000 };
-      const unpopular: Post = { id: 2, likes: 1, comments: 0, shares: 0, createdAt: now - 3600000, authorFollowers: 10 };
+      const popular: Post = {
+        id: 1,
+        likes: 100,
+        comments: 50,
+        shares: 20,
+        createdAt: now - 3600000,
+        authorFollowers: 1000,
+      };
+      const unpopular: Post = {
+        id: 2,
+        likes: 1,
+        comments: 0,
+        shares: 0,
+        createdAt: now - 3600000,
+        authorFollowers: 10,
+      };
       expect(scorePost(popular)).toBeGreaterThan(scorePost(unpopular));
     });
 
     it("should penalize older posts", () => {
       const now = Date.now();
-      const recent: Post = { id: 1, likes: 50, comments: 10, shares: 5, createdAt: now - 1800000, authorFollowers: 100 };
-      const old: Post = { id: 2, likes: 50, comments: 10, shares: 5, createdAt: now - 86400000 * 7, authorFollowers: 100 };
+      const recent: Post = {
+        id: 1,
+        likes: 50,
+        comments: 10,
+        shares: 5,
+        createdAt: now - 1800000,
+        authorFollowers: 100,
+      };
+      const old: Post = {
+        id: 2,
+        likes: 50,
+        comments: 10,
+        shares: 5,
+        createdAt: now - 86400000 * 7,
+        authorFollowers: 100,
+      };
       expect(scorePost(recent)).toBeGreaterThan(scorePost(old));
     });
 
@@ -586,9 +678,30 @@ describe("Social Engine", () => {
     it("should sort posts by score descending", () => {
       const now = Date.now();
       const posts: Post[] = [
-        { id: 1, likes: 10, comments: 5, shares: 2, createdAt: now - 3600000, authorFollowers: 100 },
-        { id: 2, likes: 100, comments: 50, shares: 20, createdAt: now - 1800000, authorFollowers: 5000 },
-        { id: 3, likes: 5, comments: 1, shares: 0, createdAt: now - 7200000, authorFollowers: 50 },
+        {
+          id: 1,
+          likes: 10,
+          comments: 5,
+          shares: 2,
+          createdAt: now - 3600000,
+          authorFollowers: 100,
+        },
+        {
+          id: 2,
+          likes: 100,
+          comments: 50,
+          shares: 20,
+          createdAt: now - 1800000,
+          authorFollowers: 5000,
+        },
+        {
+          id: 3,
+          likes: 5,
+          comments: 1,
+          shares: 0,
+          createdAt: now - 7200000,
+          authorFollowers: 50,
+        },
       ];
       const sorted = [...posts].sort((a, b) => scorePost(b) - scorePost(a));
       expect(sorted[0].id).toBe(2);
@@ -649,7 +762,12 @@ describe("Social Engine", () => {
   });
 
   describe("Reputation system", () => {
-    const calculateReputation = (xp: number, posts: number, followers: number, badges: number): number => {
+    const calculateReputation = (
+      xp: number,
+      posts: number,
+      followers: number,
+      badges: number
+    ): number => {
       return Math.floor(xp * 0.1 + posts * 5 + followers * 0.5 + badges * 50);
     };
 
@@ -709,29 +827,56 @@ describe("Encrypted Direct Messages", () => {
     }
 
     it("should create encrypted message", () => {
-      const msg: Message = { id: 1, content: "encrypted_content", isEncrypted: true, burnAfterRead: false };
+      const msg: Message = {
+        id: 1,
+        content: "encrypted_content",
+        isEncrypted: true,
+        burnAfterRead: false,
+      };
       expect(msg.isEncrypted).toBe(true);
     });
 
     it("should create burn-after-read message", () => {
-      const msg: Message = { id: 1, content: "secret", isEncrypted: true, burnAfterRead: true };
+      const msg: Message = {
+        id: 1,
+        content: "secret",
+        isEncrypted: true,
+        burnAfterRead: true,
+      };
       expect(msg.burnAfterRead).toBe(true);
     });
 
     it("should set expiry for disappearing messages", () => {
       const expiresAt = Date.now() + 24 * 3600000;
-      const msg: Message = { id: 1, content: "disappearing", isEncrypted: true, burnAfterRead: false, expiresAt };
+      const msg: Message = {
+        id: 1,
+        content: "disappearing",
+        isEncrypted: true,
+        burnAfterRead: false,
+        expiresAt,
+      };
       expect(msg.expiresAt).toBeGreaterThan(Date.now());
     });
 
     it("should detect expired messages", () => {
-      const msg: Message = { id: 1, content: "old", isEncrypted: true, burnAfterRead: false, expiresAt: Date.now() - 1000 };
+      const msg: Message = {
+        id: 1,
+        content: "old",
+        isEncrypted: true,
+        burnAfterRead: false,
+        expiresAt: Date.now() - 1000,
+      };
       const expired = msg.expiresAt !== undefined && msg.expiresAt < Date.now();
       expect(expired).toBe(true);
     });
 
     it("should not expire messages without expiry", () => {
-      const msg: Message = { id: 1, content: "permanent", isEncrypted: true, burnAfterRead: false };
+      const msg: Message = {
+        id: 1,
+        content: "permanent",
+        isEncrypted: true,
+        burnAfterRead: false,
+      };
       const expired = msg.expiresAt !== undefined && msg.expiresAt < Date.now();
       expect(expired).toBe(false);
     });
@@ -746,18 +891,33 @@ describe("Encrypted Direct Messages", () => {
     }
 
     it("should create conversation with two participants", () => {
-      const conv: Conversation = { id: 1, participants: [1, 2], lastMessageAt: Date.now(), unreadCount: 0 };
+      const conv: Conversation = {
+        id: 1,
+        participants: [1, 2],
+        lastMessageAt: Date.now(),
+        unreadCount: 0,
+      };
       expect(conv.participants.length).toBe(2);
     });
 
     it("should increment unread count on new message", () => {
-      let conv: Conversation = { id: 1, participants: [1, 2], lastMessageAt: Date.now(), unreadCount: 0 };
+      let conv: Conversation = {
+        id: 1,
+        participants: [1, 2],
+        lastMessageAt: Date.now(),
+        unreadCount: 0,
+      };
       conv = { ...conv, unreadCount: conv.unreadCount + 1 };
       expect(conv.unreadCount).toBe(1);
     });
 
     it("should reset unread count on read", () => {
-      let conv: Conversation = { id: 1, participants: [1, 2], lastMessageAt: Date.now(), unreadCount: 5 };
+      let conv: Conversation = {
+        id: 1,
+        participants: [1, 2],
+        lastMessageAt: Date.now(),
+        unreadCount: 5,
+      };
       conv = { ...conv, unreadCount: 0 };
       expect(conv.unreadCount).toBe(0);
     });
@@ -765,11 +925,28 @@ describe("Encrypted Direct Messages", () => {
     it("should sort conversations by last message time", () => {
       const now = Date.now();
       const convs: Conversation[] = [
-        { id: 1, participants: [1, 2], lastMessageAt: now - 3600000, unreadCount: 0 },
-        { id: 2, participants: [1, 3], lastMessageAt: now - 1800000, unreadCount: 2 },
-        { id: 3, participants: [1, 4], lastMessageAt: now - 7200000, unreadCount: 0 },
+        {
+          id: 1,
+          participants: [1, 2],
+          lastMessageAt: now - 3600000,
+          unreadCount: 0,
+        },
+        {
+          id: 2,
+          participants: [1, 3],
+          lastMessageAt: now - 1800000,
+          unreadCount: 2,
+        },
+        {
+          id: 3,
+          participants: [1, 4],
+          lastMessageAt: now - 7200000,
+          unreadCount: 0,
+        },
       ];
-      const sorted = [...convs].sort((a, b) => b.lastMessageAt - a.lastMessageAt);
+      const sorted = [...convs].sort(
+        (a, b) => b.lastMessageAt - a.lastMessageAt
+      );
       expect(sorted[0].id).toBe(2);
     });
   });
@@ -793,17 +970,36 @@ describe("Live Streaming Engine", () => {
     }
 
     it("should start stream with offline status", () => {
-      const stream: Stream = { id: 1, title: "Test Stream", status: "offline", viewerCount: 0, peakViewers: 0 };
+      const stream: Stream = {
+        id: 1,
+        title: "Test Stream",
+        status: "offline",
+        viewerCount: 0,
+        peakViewers: 0,
+      };
       expect(stream.status).toBe("offline");
     });
 
     it("should transition to live status", () => {
-      const stream: Stream = { id: 1, title: "Test", status: "live", viewerCount: 0, peakViewers: 0, startedAt: Date.now() };
+      const stream: Stream = {
+        id: 1,
+        title: "Test",
+        status: "live",
+        viewerCount: 0,
+        peakViewers: 0,
+        startedAt: Date.now(),
+      };
       expect(stream.status).toBe("live");
     });
 
     it("should track peak viewers", () => {
-      let stream: Stream = { id: 1, title: "Test", status: "live", viewerCount: 0, peakViewers: 0 };
+      let stream: Stream = {
+        id: 1,
+        title: "Test",
+        status: "live",
+        viewerCount: 0,
+        peakViewers: 0,
+      };
       stream = { ...stream, viewerCount: 150 };
       if (stream.viewerCount > stream.peakViewers) {
         stream = { ...stream, peakViewers: stream.viewerCount };
@@ -812,7 +1008,13 @@ describe("Live Streaming Engine", () => {
     });
 
     it("should not decrease peak viewers", () => {
-      let stream: Stream = { id: 1, title: "Test", status: "live", viewerCount: 150, peakViewers: 150 };
+      let stream: Stream = {
+        id: 1,
+        title: "Test",
+        status: "live",
+        viewerCount: 150,
+        peakViewers: 150,
+      };
       stream = { ...stream, viewerCount: 100 };
       if (stream.viewerCount > stream.peakViewers) {
         stream = { ...stream, peakViewers: stream.viewerCount };
@@ -831,11 +1033,11 @@ describe("Live Streaming Engine", () => {
 
   describe("Stream donation/gifting", () => {
     const GIFT_VALUES: Record<string, number> = {
-      "heart": 1,
-      "star": 5,
-      "rocket": 10,
-      "diamond": 50,
-      "crown": 100,
+      heart: 1,
+      star: 5,
+      rocket: 10,
+      diamond: 50,
+      crown: 100,
     };
 
     it("should have correct gift values", () => {
@@ -888,7 +1090,8 @@ describe("Sky School Learning Engine", () => {
         score: 0,
         certified: false,
       };
-      const pct = (progress.completedLessons.length / progress.totalLessons) * 100;
+      const pct =
+        (progress.completedLessons.length / progress.totalLessons) * 100;
       expect(pct).toBe(30);
     });
 
@@ -901,7 +1104,8 @@ describe("Sky School Learning Engine", () => {
         score: 85,
         certified: false,
       };
-      const completed = progress.completedLessons.length === progress.totalLessons;
+      const completed =
+        progress.completedLessons.length === progress.totalLessons;
       const passed = progress.score >= 70;
       const shouldCertify = completed && passed;
       expect(shouldCertify).toBe(true);
@@ -941,7 +1145,12 @@ describe("Sky School Learning Engine", () => {
       const q: Question = {
         id: "q1",
         question: "What is DeFi?",
-        options: ["Decentralized Finance", "Digital Finance", "Distributed Finance", "Direct Finance"],
+        options: [
+          "Decentralized Finance",
+          "Digital Finance",
+          "Distributed Finance",
+          "Direct Finance",
+        ],
         correctIndex: 0,
       };
       const userAnswer = 0;
@@ -952,7 +1161,12 @@ describe("Sky School Learning Engine", () => {
       const q: Question = {
         id: "q1",
         question: "What is DeFi?",
-        options: ["Decentralized Finance", "Digital Finance", "Distributed Finance", "Direct Finance"],
+        options: [
+          "Decentralized Finance",
+          "Digital Finance",
+          "Distributed Finance",
+          "Direct Finance",
+        ],
         correctIndex: 0,
       };
       const userAnswer = 2;
@@ -995,34 +1209,83 @@ describe("Charity Engine", () => {
     }
 
     it("should calculate funding percentage", () => {
-      const campaign: Campaign = { id: 1, title: "Test", goal: 10000, raised: 7500, donors: 50, verified: true };
+      const campaign: Campaign = {
+        id: 1,
+        title: "Test",
+        goal: 10000,
+        raised: 7500,
+        donors: 50,
+        verified: true,
+      };
       const pct = (campaign.raised / campaign.goal) * 100;
       expect(pct).toBe(75);
     });
 
     it("should detect fully funded campaign", () => {
-      const campaign: Campaign = { id: 1, title: "Test", goal: 10000, raised: 10000, donors: 100, verified: true };
+      const campaign: Campaign = {
+        id: 1,
+        title: "Test",
+        goal: 10000,
+        raised: 10000,
+        donors: 100,
+        verified: true,
+      };
       const funded = campaign.raised >= campaign.goal;
       expect(funded).toBe(true);
     });
 
     it("should detect overfunded campaign", () => {
-      const campaign: Campaign = { id: 1, title: "Test", goal: 10000, raised: 12000, donors: 150, verified: true };
+      const campaign: Campaign = {
+        id: 1,
+        title: "Test",
+        goal: 10000,
+        raised: 12000,
+        donors: 150,
+        verified: true,
+      };
       const overfunded = campaign.raised > campaign.goal;
       expect(overfunded).toBe(true);
     });
 
     it("should calculate average donation", () => {
-      const campaign: Campaign = { id: 1, title: "Test", goal: 10000, raised: 5000, donors: 25, verified: true };
+      const campaign: Campaign = {
+        id: 1,
+        title: "Test",
+        goal: 10000,
+        raised: 5000,
+        donors: 25,
+        verified: true,
+      };
       const avg = campaign.raised / campaign.donors;
       expect(avg).toBe(200);
     });
 
     it("should only show verified campaigns in public feed", () => {
       const campaigns: Campaign[] = [
-        { id: 1, title: "A", goal: 1000, raised: 500, donors: 5, verified: true },
-        { id: 2, title: "B", goal: 2000, raised: 100, donors: 2, verified: false },
-        { id: 3, title: "C", goal: 3000, raised: 1500, donors: 10, verified: true },
+        {
+          id: 1,
+          title: "A",
+          goal: 1000,
+          raised: 500,
+          donors: 5,
+          verified: true,
+        },
+        {
+          id: 2,
+          title: "B",
+          goal: 2000,
+          raised: 100,
+          donors: 2,
+          verified: false,
+        },
+        {
+          id: 3,
+          title: "C",
+          goal: 3000,
+          raised: 1500,
+          donors: 10,
+          verified: true,
+        },
       ];
       const verified = campaigns.filter(c => c.verified);
       expect(verified.length).toBe(2);
@@ -1042,7 +1305,9 @@ describe("Charity Engine", () => {
         { userId: 2, totalDonated: 2000, campaigns: 8 },
         { userId: 3, totalDonated: 150, campaigns: 1 },
       ];
-      const sorted = [...donors].sort((a, b) => b.totalDonated - a.totalDonated);
+      const sorted = [...donors].sort(
+        (a, b) => b.totalDonated - a.totalDonated
+      );
       expect(sorted[0].userId).toBe(2);
     });
 
@@ -1051,7 +1316,9 @@ describe("Charity Engine", () => {
         { userId: 1, totalDonated: 500, campaigns: 3 },
         { userId: 2, totalDonated: 2000, campaigns: 8 },
       ];
-      const sorted = [...donors].sort((a, b) => b.totalDonated - a.totalDonated);
+      const sorted = [...donors].sort(
+        (a, b) => b.totalDonated - a.totalDonated
+      );
       expect(sorted[0].totalDonated).toBe(2000);
     });
   });
@@ -1238,10 +1505,35 @@ describe("Security Engine", () => {
 describe("Creator Economy", () => {
   describe("Subscription tiers", () => {
     const TIERS = [
-      { id: "free", name: "Free", price: 0, features: ["basic_feed", "limited_dm"] },
-      { id: "supporter", name: "Supporter", price: 4.99, features: ["all_content", "unlimited_dm", "badge"] },
-      { id: "vip", name: "VIP", price: 9.99, features: ["exclusive_content", "direct_access", "vip_badge", "early_access"] },
-      { id: "legend", name: "Legend", price: 24.99, features: ["all_vip", "1on1_calls", "legend_badge", "custom_role"] },
+      {
+        id: "free",
+        name: "Free",
+        price: 0,
+        features: ["basic_feed", "limited_dm"],
+      },
+      {
+        id: "supporter",
+        name: "Supporter",
+        price: 4.99,
+        features: ["all_content", "unlimited_dm", "badge"],
+      },
+      {
+        id: "vip",
+        name: "VIP",
+        price: 9.99,
+        features: [
+          "exclusive_content",
+          "direct_access",
+          "vip_badge",
+          "early_access",
+        ],
+      },
+      {
+        id: "legend",
+        name: "Legend",
+        price: 24.99,
+        features: ["all_vip", "1on1_calls", "legend_badge", "custom_role"],
+      },
     ];
 
     it("should have 4 subscription tiers", () => {
@@ -1306,7 +1598,14 @@ describe("Creator Economy", () => {
 // ═══════════════════════════════════════════════════════════════
 describe("Marketplace Engine", () => {
   describe("Order lifecycle", () => {
-    type OrderStatus = "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
+    type OrderStatus =
+      | "pending"
+      | "paid"
+      | "processing"
+      | "shipped"
+      | "delivered"
+      | "cancelled"
+      | "refunded";
 
     interface Order {
       id: number;
@@ -1316,17 +1615,32 @@ describe("Marketplace Engine", () => {
     }
 
     it("should create order with pending status", () => {
-      const order: Order = { id: 1, status: "pending", total: 99.99, escrowHeld: false };
+      const order: Order = {
+        id: 1,
+        status: "pending",
+        total: 99.99,
+        escrowHeld: false,
+      };
       expect(order.status).toBe("pending");
     });
 
     it("should hold funds in escrow on payment", () => {
-      const order: Order = { id: 1, status: "paid", total: 99.99, escrowHeld: true };
+      const order: Order = {
+        id: 1,
+        status: "paid",
+        total: 99.99,
+        escrowHeld: true,
+      };
       expect(order.escrowHeld).toBe(true);
     });
 
     it("should release escrow on delivery", () => {
-      let order: Order = { id: 1, status: "delivered", total: 99.99, escrowHeld: true };
+      let order: Order = {
+        id: 1,
+        status: "delivered",
+        total: 99.99,
+        escrowHeld: true,
+      };
       order = { ...order, escrowHeld: false };
       expect(order.escrowHeld).toBe(false);
     });

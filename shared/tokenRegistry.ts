@@ -10,13 +10,13 @@
  */
 
 export type TokenRole =
-  | "core"        // SKY4  — primary ecosystem token
-  | "community"   // DOGE  — community engagement & tipping
-  | "governance"  // TRUMP — governance voting & community decisions
-  | "charity"     // CHARITY — charitable giving & impact rewards
+  | "core" // SKY4  — primary ecosystem token
+  | "community" // DOGE  — community engagement & tipping
+  | "governance" // TRUMP — governance voting & community decisions
+  | "charity" // CHARITY — charitable giving & impact rewards
   | "progression" // XP    — user progression & leveling
-  | "creator"     // CREATOR — creator economy rewards
-  | "premium";    // GOLD  — premium features & marketplace
+  | "creator" // CREATOR — creator economy rewards
+  | "premium"; // GOLD  — premium features & marketplace
 
 export interface TokenDefinition {
   /** Canonical symbol used in token_balances.token column */
@@ -192,21 +192,21 @@ export const TOKEN_REGISTRY: TokenDefinition[] = [
 /** Look up a token definition by symbol (case-insensitive) */
 export function getToken(symbol: string): TokenDefinition | undefined {
   return TOKEN_REGISTRY.find(
-    (t) => t.symbol.toUpperCase() === symbol.toUpperCase()
+    t => t.symbol.toUpperCase() === symbol.toUpperCase()
   );
 }
 
 /** All symbols that can appear in token_balances */
-export const ALL_TOKEN_SYMBOLS = TOKEN_REGISTRY.map((t) => t.symbol);
+export const ALL_TOKEN_SYMBOLS = TOKEN_REGISTRY.map(t => t.symbol);
 
 /** Tokens that can be swapped */
-export const SWAPPABLE_TOKENS = TOKEN_REGISTRY.filter((t) => t.swappable);
+export const SWAPPABLE_TOKENS = TOKEN_REGISTRY.filter(t => t.swappable);
 
 /** Tokens that can be staked */
-export const STAKEABLE_TOKENS = TOKEN_REGISTRY.filter((t) => t.stakeable);
+export const STAKEABLE_TOKENS = TOKEN_REGISTRY.filter(t => t.stakeable);
 
 /** Tokens that can be tipped */
-export const TIPPABLE_TOKENS = TOKEN_REGISTRY.filter((t) => t.tippable);
+export const TIPPABLE_TOKENS = TOKEN_REGISTRY.filter(t => t.tippable);
 
 /** Tokens that carry governance voting weight */
-export const GOV_TOKENS = TOKEN_REGISTRY.filter((t) => t.govWeight > 0);
+export const GOV_TOKENS = TOKEN_REGISTRY.filter(t => t.govWeight > 0);

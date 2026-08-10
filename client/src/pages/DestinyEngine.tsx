@@ -26,7 +26,11 @@ const FUTURE_PATHS: FuturePath[] = [
     outcome: "Top 10% earner in the ecosystem",
     icon: "💎",
     color: "yellow",
-    actions: ["Stake 10,000 SKY444", "Complete DeFi course", "Join 3 investment pools"],
+    actions: [
+      "Stake 10,000 SKY444",
+      "Complete DeFi course",
+      "Join 3 investment pools",
+    ],
   },
   {
     id: "builder",
@@ -36,7 +40,11 @@ const FUTURE_PATHS: FuturePath[] = [
     outcome: "Launch your first AI-powered startup",
     icon: "🏗️",
     color: "blue",
-    actions: ["Complete Shadow IDE tutorial", "Deploy first agent", "Submit venture proposal"],
+    actions: [
+      "Complete Shadow IDE tutorial",
+      "Deploy first agent",
+      "Submit venture proposal",
+    ],
   },
   {
     id: "governor",
@@ -46,7 +54,11 @@ const FUTURE_PATHS: FuturePath[] = [
     outcome: "Elected to Digital Nation council",
     icon: "🏛️",
     color: "purple",
-    actions: ["Vote on 20 proposals", "Earn 500 governance XP", "Propose 1 law"],
+    actions: [
+      "Vote on 20 proposals",
+      "Earn 500 governance XP",
+      "Propose 1 law",
+    ],
   },
   {
     id: "legend",
@@ -60,7 +72,15 @@ const FUTURE_PATHS: FuturePath[] = [
   },
 ];
 
-function PathCard({ path, selected, onSelect }: { path: FuturePath; selected: boolean; onSelect: () => void }) {
+function PathCard({
+  path,
+  selected,
+  onSelect,
+}: {
+  path: FuturePath;
+  selected: boolean;
+  onSelect: () => void;
+}) {
   const colorMap: Record<string, string> = {
     yellow: "border-yellow-500/40 bg-yellow-500/10",
     blue: "border-blue-500/40 bg-blue-500/10",
@@ -107,15 +127,16 @@ export default function DestinyEngine() {
   const [simulating, setSimulating] = useState(false);
   const [simResult, setSimResult] = useState<string | null>(null);
 
-  const { data: predictions } = trpc.enterprise.memoryGraph.predictions.useQuery();
+  const { data: predictions } =
+    trpc.enterprise.memoryGraph.predictions.useQuery();
   const { data: goals } = trpc.enterprise.freeWill.goals.useQuery();
 
-  const activePath = FUTURE_PATHS.find((p) => p.id === selectedPath)!;
+  const activePath = FUTURE_PATHS.find(p => p.id === selectedPath)!;
 
   const handleSimulate = async () => {
     setSimulating(true);
     setSimResult(null);
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 2000));
     setSimResult(
       `Based on your current trajectory and ${goals?.length ?? 0} active goals, HOPE AI predicts a ${activePath.probability}% probability of achieving "${activePath.label}" status within ${activePath.timeframe}. Your strongest accelerator is consistent daily engagement. Your biggest risk is inactivity gaps.`
     );
@@ -150,7 +171,7 @@ export default function DestinyEngine() {
             YOUR DESTINY PATHS — SELECT ONE TO SIMULATE
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
-            {FUTURE_PATHS.map((path) => (
+            {FUTURE_PATHS.map(path => (
               <PathCard
                 key={path.id}
                 path={path}
@@ -189,15 +210,25 @@ export default function DestinyEngine() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl font-black text-white">{activePath.probability}%</span>
+                  <span className="text-xl font-black text-white">
+                    {activePath.probability}%
+                  </span>
                 </div>
               </div>
               <div className="flex-1">
-                <div className="text-white font-semibold text-lg mb-1">{activePath.outcome}</div>
-                <div className="text-sm text-white/50">Projected timeframe: {activePath.timeframe}</div>
+                <div className="text-white font-semibold text-lg mb-1">
+                  {activePath.outcome}
+                </div>
+                <div className="text-sm text-white/50">
+                  Projected timeframe: {activePath.timeframe}
+                </div>
                 <div className="flex gap-2 mt-3">
-                  <Badge className="bg-purple-500/20 text-purple-400 border-0 text-xs">AI COMPUTED</Badge>
-                  <Badge className="bg-yellow-500/20 text-yellow-400 border-0 text-xs">LIVE TRACKING</Badge>
+                  <Badge className="bg-purple-500/20 text-purple-400 border-0 text-xs">
+                    AI COMPUTED
+                  </Badge>
+                  <Badge className="bg-yellow-500/20 text-yellow-400 border-0 text-xs">
+                    LIVE TRACKING
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -228,7 +259,9 @@ export default function DestinyEngine() {
               onClick={handleSimulate}
               disabled={simulating}
             >
-              {simulating ? "🔮 HOPE AI COMPUTING YOUR DESTINY..." : "🔮 RUN DESTINY SIMULATION"}
+              {simulating
+                ? "🔮 HOPE AI COMPUTING YOUR DESTINY..."
+                : "🔮 RUN DESTINY SIMULATION"}
             </Button>
 
             {/* Simulation Result */}
@@ -237,53 +270,87 @@ export default function DestinyEngine() {
                 <div className="text-xs text-purple-400 uppercase tracking-widest mb-2">
                   HOPE AI DESTINY REPORT
                 </div>
-                <p className="text-sm text-white/80 leading-relaxed">{simResult}</p>
+                <p className="text-sm text-white/80 leading-relaxed">
+                  {simResult}
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Memory Predictions */}
-        {predictions && Array.isArray(predictions) && predictions.length > 0 && (
-          <Card className="bg-black/60 border-yellow-500/20">
-            <CardHeader>
-              <CardTitle className="text-yellow-400 text-sm uppercase tracking-widest">
-                MEMORY GRAPH PREDICTIONS
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {(predictions as unknown as Array<Record<string, unknown>>).slice(0, 4).map((pred, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
-                  <span className="text-yellow-400 font-mono text-sm w-8">{i + 1}.</span>
-                  <span className="text-sm text-white/70">{String(pred.prediction ?? pred.text ?? JSON.stringify(pred))}</span>
-                  {pred.confidence !== undefined && (
-                    <Badge className="ml-auto bg-yellow-500/10 text-yellow-400 text-xs border-0 shrink-0">
-                      {Math.round(Number(pred.confidence) * 100)}%
-                    </Badge>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+        {predictions &&
+          Array.isArray(predictions) &&
+          predictions.length > 0 && (
+            <Card className="bg-black/60 border-yellow-500/20">
+              <CardHeader>
+                <CardTitle className="text-yellow-400 text-sm uppercase tracking-widest">
+                  MEMORY GRAPH PREDICTIONS
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {(predictions as unknown as Array<Record<string, unknown>>)
+                  .slice(0, 4)
+                  .map((pred, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-white/5"
+                    >
+                      <span className="text-yellow-400 font-mono text-sm w-8">
+                        {i + 1}.
+                      </span>
+                      <span className="text-sm text-white/70">
+                        {String(
+                          pred.prediction ?? pred.text ?? JSON.stringify(pred)
+                        )}
+                      </span>
+                      {pred.confidence !== undefined && (
+                        <Badge className="ml-auto bg-yellow-500/10 text-yellow-400 text-xs border-0 shrink-0">
+                          {Math.round(Number(pred.confidence) * 100)}%
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
+              </CardContent>
+            </Card>
+          )}
 
         {/* AI Council Teaser */}
         <div className="grid md:grid-cols-3 gap-4">
           {[
-            { name: "HOPE AI", role: "Life Advisor", icon: "🧠", advice: "Focus on knowledge building this week" },
-            { name: "ECON AI", role: "Wealth Advisor", icon: "💰", advice: "Staking rewards peak in 3 days" },
-            { name: "GOV AI", role: "Governance Advisor", icon: "🏛️", advice: "2 critical proposals need your vote" },
+            {
+              name: "HOPE AI",
+              role: "Life Advisor",
+              icon: "🧠",
+              advice: "Focus on knowledge building this week",
+            },
+            {
+              name: "ECON AI",
+              role: "Wealth Advisor",
+              icon: "💰",
+              advice: "Staking rewards peak in 3 days",
+            },
+            {
+              name: "GOV AI",
+              role: "Governance Advisor",
+              icon: "🏛️",
+              advice: "2 critical proposals need your vote",
+            },
           ].map((advisor, i) => (
             <Card key={i} className="bg-black/60 border-white/10">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">{advisor.icon}</span>
                   <div>
-                    <div className="text-xs font-bold text-white">{advisor.name}</div>
+                    <div className="text-xs font-bold text-white">
+                      {advisor.name}
+                    </div>
                     <div className="text-xs text-white/40">{advisor.role}</div>
                   </div>
                 </div>
-                <p className="text-xs text-white/60 italic">"{advisor.advice}"</p>
+                <p className="text-xs text-white/60 italic">
+                  "{advisor.advice}"
+                </p>
               </CardContent>
             </Card>
           ))}

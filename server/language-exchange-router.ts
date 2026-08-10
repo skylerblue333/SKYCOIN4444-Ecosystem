@@ -6,22 +6,21 @@ import { TRPCError } from "@trpc/server";
 
 export const languageExchangeRouter = router({
   // Get saved favorite partners
-  getFavorites: protectedProcedure
-    .query(async ({ ctx }) => {
-      try {
-        // Mock favorites for demo
-        return [
-          { partnerId: "p1", savedAt: new Date() },
-          { partnerId: "p3", savedAt: new Date() },
-        ];
-      } catch (error) {
-        console.error("[Language Exchange] Get favorites error:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch favorites",
-        });
-      }
-    }),
+  getFavorites: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      // Mock favorites for demo
+      return [
+        { partnerId: "p1", savedAt: new Date() },
+        { partnerId: "p3", savedAt: new Date() },
+      ];
+    } catch (error) {
+      console.error("[Language Exchange] Get favorites error:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch favorites",
+      });
+    }
+  }),
 
   // Save a favorite partner
   saveFavorite: protectedProcedure
@@ -394,7 +393,8 @@ export const languageExchangeRouter = router({
           status: "submitted",
           reward: 50,
           xpEarned: 250,
-          message: "Translation submitted for review! You'll earn rewards once approved.",
+          message:
+            "Translation submitted for review! You'll earn rewards once approved.",
         };
       } catch (error) {
         console.error("[Language Exchange] Complete bounty error:", error);
@@ -446,7 +446,10 @@ export const languageExchangeRouter = router({
           },
         ];
       } catch (error) {
-        console.error("[Language Exchange] Get teaching opportunities error:", error);
+        console.error(
+          "[Language Exchange] Get teaching opportunities error:",
+          error
+        );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch teaching opportunities",

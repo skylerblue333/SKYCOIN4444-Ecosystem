@@ -14,7 +14,13 @@ export type MemeStatus = "rising" | "peak" | "declining" | "dead" | "classic";
 export type EventStatus = "upcoming" | "active" | "ended" | "cancelled";
 export type RitualStatus = "active" | "paused" | "retired";
 export type HashtagStatus = "trending" | "stable" | "declining" | "banned";
-export type CulturalMomentType = "meme_peak" | "viral_event" | "community_milestone" | "creator_milestone" | "platform_record" | "cultural_shift";
+export type CulturalMomentType =
+  | "meme_peak"
+  | "viral_event"
+  | "community_milestone"
+  | "creator_milestone"
+  | "platform_record"
+  | "cultural_shift";
 
 export interface MemeAsset {
   id: string;
@@ -58,7 +64,14 @@ export interface PlatformEvent {
   id: string;
   title: string;
   description: string;
-  eventType: "seasonal" | "community" | "creator" | "gaming" | "charity" | "cultural" | "launch";
+  eventType:
+    | "seasonal"
+    | "community"
+    | "creator"
+    | "gaming"
+    | "charity"
+    | "cultural"
+    | "launch";
   organizerId?: number;
   status: EventStatus;
   startsAt: Date;
@@ -156,7 +169,13 @@ export interface PlatformLore {
   id: string;
   title: string;
   content: string;
-  loreType: "origin_story" | "platform_legend" | "creator_myth" | "community_tale" | "meme_history" | "record_breaking";
+  loreType:
+    | "origin_story"
+    | "platform_legend"
+    | "creator_myth"
+    | "community_tale"
+    | "meme_history"
+    | "record_breaking";
   relatedEntityId?: string;
   relatedEntityType?: string;
   verifiedBy?: number;
@@ -170,7 +189,12 @@ export interface CollectiveMemory {
   id: string;
   title: string;
   description: string;
-  memoryType: "milestone" | "viral_moment" | "community_event" | "creator_achievement" | "platform_first";
+  memoryType:
+    | "milestone"
+    | "viral_moment"
+    | "community_event"
+    | "creator_achievement"
+    | "platform_first";
   date: Date;
   participantCount: number;
   evidenceUrls: string[];
@@ -190,7 +214,14 @@ export interface CulturalReputation {
   culturalMomentsCreated: number;
   hashtagsLaunched: number;
   loreContributions: number;
-  rank: "lurker" | "participant" | "contributor" | "influencer" | "trendsetter" | "culture_icon" | "legend";
+  rank:
+    | "lurker"
+    | "participant"
+    | "contributor"
+    | "influencer"
+    | "trendsetter"
+    | "culture_icon"
+    | "legend";
   badges: string[];
   updatedAt: Date;
 }
@@ -233,7 +264,25 @@ const _seasonalEvents = new Map<string, SeasonalEvent>();
 // ─── MEME MARKET ENGINE ───────────────────────────────────────────────────────
 
 export const memeMarketEngine = {
-  createMeme(params: Omit<MemeAsset, "id" | "status" | "marketCap" | "price" | "priceHistory" | "holders" | "totalShares" | "circulatingShares" | "usageCount" | "reactionCount" | "shareCount" | "culturalScore" | "createdAt" | "updatedAt">): MemeAsset {
+  createMeme(
+    params: Omit<
+      MemeAsset,
+      | "id"
+      | "status"
+      | "marketCap"
+      | "price"
+      | "priceHistory"
+      | "holders"
+      | "totalShares"
+      | "circulatingShares"
+      | "usageCount"
+      | "reactionCount"
+      | "shareCount"
+      | "culturalScore"
+      | "createdAt"
+      | "updatedAt"
+    >
+  ): MemeAsset {
     const id = `meme_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const initialPrice = 1.0;
     const meme: MemeAsset = {
@@ -257,7 +306,12 @@ export const memeMarketEngine = {
     return meme;
   },
 
-  tradeMeme(memeId: string, traderId: number, tradeType: "buy" | "sell", shares: number): {
+  tradeMeme(
+    memeId: string,
+    traderId: number,
+    tradeType: "buy" | "sell",
+    shares: number
+  ): {
     success: boolean;
     trade?: MemeMarketTrade;
     newPrice?: number;
@@ -265,20 +319,27 @@ export const memeMarketEngine = {
   } {
     const meme = _memes.get(memeId);
     if (!meme) return { success: false, reason: "Meme not found" };
-    if (meme.status === "dead") return { success: false, reason: "Meme is dead" };
+    if (meme.status === "dead")
+      return { success: false, reason: "Meme is dead" };
 
     if (tradeType === "sell") {
       const held = meme.holders.get(traderId) ?? 0;
-      if (held < shares) return { success: false, reason: "Insufficient shares" };
+      if (held < shares)
+        return { success: false, reason: "Insufficient shares" };
     }
-    if (tradeType === "buy" && meme.circulatingShares + shares > meme.totalShares) {
+    if (
+      tradeType === "buy" &&
+      meme.circulatingShares + shares > meme.totalShares
+    ) {
       return { success: false, reason: "Insufficient supply" };
     }
 
     // Bonding curve pricing: price = k * (circulatingShares / totalShares)^2 + base
     const base = 1.0;
     const k = 100;
-    const ratio = (meme.circulatingShares + (tradeType === "buy" ? shares : -shares)) / meme.totalShares;
+    const ratio =
+      (meme.circulatingShares + (tradeType === "buy" ? shares : -shares)) /
+      meme.totalShares;
     const newPrice = base + k * ratio * ratio;
     const totalValue = shares * ((meme.price + newPrice) / 2); // avg price
 
@@ -298,7 +359,8 @@ export const memeMarketEngine = {
     // Update status based on market cap
     if (meme.marketCap > 100000) meme.status = "peak";
     else if (meme.marketCap > 10000) meme.status = "rising";
-    else if (meme.marketCap < 100 && meme.circulatingShares > 0) meme.status = "declining";
+    else if (meme.marketCap < 100 && meme.circulatingShares > 0)
+      meme.status = "declining";
 
     const tradeId = `trade_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const trade: MemeMarketTrade = {
@@ -358,11 +420,15 @@ export const memeMarketEngine = {
       .slice(0, limit);
   },
 
-  getMemePortfolio(userId: number): Array<{ meme: MemeAsset; shares: number; value: number }> {
-    const portfolio: Array<{ meme: MemeAsset; shares: number; value: number }> = [];
+  getMemePortfolio(
+    userId: number
+  ): Array<{ meme: MemeAsset; shares: number; value: number }> {
+    const portfolio: Array<{ meme: MemeAsset; shares: number; value: number }> =
+      [];
     for (const meme of _memes.values()) {
       const shares = meme.holders.get(userId) ?? 0;
-      if (shares > 0) portfolio.push({ meme, shares, value: shares * meme.price });
+      if (shares > 0)
+        portfolio.push({ meme, shares, value: shares * meme.price });
     }
     return portfolio.sort((a, b) => b.value - a.value);
   },
@@ -380,7 +446,8 @@ export const memeMarketEngine = {
       totalMarketCap: memes.reduce((s, m) => s + m.marketCap, 0),
       risingMemes: memes.filter(m => m.status === "rising").length,
       peakMemes: memes.filter(m => m.status === "peak").length,
-      topMemeByMarketCap: memes.sort((a, b) => b.marketCap - a.marketCap)[0] ?? null,
+      topMemeByMarketCap:
+        memes.sort((a, b) => b.marketCap - a.marketCap)[0] ?? null,
     };
   },
 };
@@ -388,7 +455,16 @@ export const memeMarketEngine = {
 // ─── EVENT ENGINE ─────────────────────────────────────────────────────────────
 
 export const eventEngine = {
-  createEvent(params: Omit<PlatformEvent, "id" | "participantCount" | "participantIds" | "totalEngagement" | "createdAt">): PlatformEvent {
+  createEvent(
+    params: Omit<
+      PlatformEvent,
+      | "id"
+      | "participantCount"
+      | "participantIds"
+      | "totalEngagement"
+      | "createdAt"
+    >
+  ): PlatformEvent {
     const id = `event_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const event: PlatformEvent = {
       ...params,
@@ -402,14 +478,22 @@ export const eventEngine = {
     return event;
   },
 
-  joinEvent(eventId: string, userId: number): { success: boolean; reason?: string } {
+  joinEvent(
+    eventId: string,
+    userId: number
+  ): { success: boolean; reason?: string } {
     const event = _events.get(eventId);
     if (!event) return { success: false, reason: "Event not found" };
-    if (event.status !== "active") return { success: false, reason: "Event not active" };
-    if (event.maxParticipants && event.participantCount >= event.maxParticipants) {
+    if (event.status !== "active")
+      return { success: false, reason: "Event not active" };
+    if (
+      event.maxParticipants &&
+      event.participantCount >= event.maxParticipants
+    ) {
       return { success: false, reason: "Event is full" };
     }
-    if (event.participantIds.includes(userId)) return { success: false, reason: "Already joined" };
+    if (event.participantIds.includes(userId))
+      return { success: false, reason: "Already joined" };
     event.participantIds.push(userId);
     event.participantCount++;
 
@@ -422,11 +506,19 @@ export const eventEngine = {
     return { success: true };
   },
 
-  checkMilestone(eventId: string, metric: string, currentValue: number): PlatformEvent | null {
+  checkMilestone(
+    eventId: string,
+    metric: string,
+    currentValue: number
+  ): PlatformEvent | null {
     const event = _events.get(eventId);
     if (!event) return null;
     for (const milestone of event.milestones) {
-      if (milestone.metric === metric && !milestone.achieved && currentValue >= milestone.target) {
+      if (
+        milestone.metric === metric &&
+        !milestone.achieved &&
+        currentValue >= milestone.target
+      ) {
         milestone.achieved = true;
         milestone.achievedAt = new Date();
       }
@@ -437,7 +529,13 @@ export const eventEngine = {
   getActiveEvents(eventType?: PlatformEvent["eventType"]): PlatformEvent[] {
     const now = new Date();
     return Array.from(_events.values())
-      .filter(e => e.status === "active" && e.startsAt <= now && e.endsAt > now && (!eventType || e.eventType === eventType))
+      .filter(
+        e =>
+          e.status === "active" &&
+          e.startsAt <= now &&
+          e.endsAt > now &&
+          (!eventType || e.eventType === eventType)
+      )
       .sort((a, b) => b.participantCount - a.participantCount);
   },
 
@@ -445,18 +543,30 @@ export const eventEngine = {
     return _events.get(id) ?? null;
   },
 
-  createSeasonalEvent(params: Omit<SeasonalEvent, "id" | "totalParticipants" | "createdAt">): SeasonalEvent {
+  createSeasonalEvent(
+    params: Omit<SeasonalEvent, "id" | "totalParticipants" | "createdAt">
+  ): SeasonalEvent {
     const id = `season_event_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const event: SeasonalEvent = { ...params, id, totalParticipants: 0, createdAt: new Date() };
+    const event: SeasonalEvent = {
+      ...params,
+      id,
+      totalParticipants: 0,
+      createdAt: new Date(),
+    };
     _seasonalEvents.set(id, event);
     return event;
   },
 
-  completeChallenge(eventId: string, challengeId: string, userId: number): { success: boolean; reward?: string } {
+  completeChallenge(
+    eventId: string,
+    challengeId: string,
+    userId: number
+  ): { success: boolean; reward?: string } {
     const event = _seasonalEvents.get(eventId);
     if (!event) return { success: false };
     const challenge = event.challenges.find(c => c.id === challengeId);
-    if (!challenge || challenge.completedBy.includes(userId)) return { success: false };
+    if (!challenge || challenge.completedBy.includes(userId))
+      return { success: false };
     if (new Date() > challenge.expiresAt) return { success: false };
     challenge.completedBy.push(userId);
     return { success: true, reward: challenge.reward };
@@ -466,7 +576,17 @@ export const eventEngine = {
 // ─── RITUAL ENGINE ────────────────────────────────────────────────────────────
 
 export const ritualEngine = {
-  createRitual(params: Omit<CommunityRitual, "id" | "participantCount" | "streakRecord" | "currentStreak" | "totalParticipations" | "createdAt">): CommunityRitual {
+  createRitual(
+    params: Omit<
+      CommunityRitual,
+      | "id"
+      | "participantCount"
+      | "streakRecord"
+      | "currentStreak"
+      | "totalParticipations"
+      | "createdAt"
+    >
+  ): CommunityRitual {
     const id = `ritual_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const ritual: CommunityRitual = {
       ...params,
@@ -481,20 +601,28 @@ export const ritualEngine = {
     return ritual;
   },
 
-  participateInRitual(ritualId: string, userId: number): { success: boolean; points?: number; reason?: string } {
+  participateInRitual(
+    ritualId: string,
+    userId: number
+  ): { success: boolean; points?: number; reason?: string } {
     const ritual = _rituals.get(ritualId);
-    if (!ritual || ritual.status !== "active") return { success: false, reason: "Ritual not active" };
+    if (!ritual || ritual.status !== "active")
+      return { success: false, reason: "Ritual not active" };
 
     ritual.participantCount++;
     ritual.totalParticipations++;
     ritual.currentStreak++;
-    if (ritual.currentStreak > ritual.streakRecord) ritual.streakRecord = ritual.currentStreak;
+    if (ritual.currentStreak > ritual.streakRecord)
+      ritual.streakRecord = ritual.currentStreak;
     ritual.lastExecutedAt = new Date();
 
     const totalPoints = ritual.actions.reduce((s, a) => s + a.rewardPoints, 0);
     const rep = memeMarketEngine._getOrCreateReputation(userId);
     rep.communityRitualStreak++;
-    rep.cultureScore = Math.min(1000, rep.cultureScore + Math.floor(totalPoints / 10));
+    rep.cultureScore = Math.min(
+      1000,
+      rep.cultureScore + Math.floor(totalPoints / 10)
+    );
     rep.updatedAt = new Date();
 
     return { success: true, points: totalPoints };
@@ -506,7 +634,11 @@ export const ritualEngine = {
 
   getActiveRituals(communityId?: string): CommunityRitual[] {
     return Array.from(_rituals.values())
-      .filter(r => r.status === "active" && (!communityId || r.communityId === communityId))
+      .filter(
+        r =>
+          r.status === "active" &&
+          (!communityId || r.communityId === communityId)
+      )
       .sort((a, b) => b.participantCount - a.participantCount);
   },
 };
@@ -519,10 +651,13 @@ export const hashtagEconomyEngine = {
     const existing = _hashtags.get(normalized);
     if (existing) {
       existing.postCount++;
-      if (!existing.topCreatorIds.includes(userId)) existing.topCreatorIds.push(userId);
+      if (!existing.topCreatorIds.includes(userId))
+        existing.topCreatorIds.push(userId);
       existing.uniqueUsers = existing.topCreatorIds.length;
       existing.lastUsedAt = new Date();
-      existing.velocity = existing.postCount / Math.max(1, (Date.now() - existing.firstUsedAt.getTime()) / 3600000);
+      existing.velocity =
+        existing.postCount /
+        Math.max(1, (Date.now() - existing.firstUsedAt.getTime()) / 3600000);
       existing.trendScore = Math.min(100, existing.velocity * 2);
       if (existing.postCount > existing.peakPostCount) {
         existing.peakPostCount = existing.postCount;
@@ -565,7 +700,11 @@ export const hashtagEconomyEngine = {
       .slice(0, limit);
   },
 
-  sponsorHashtag(hashtag: string, sponsorId: number, bid: number): HashtagEconomy | null {
+  sponsorHashtag(
+    hashtag: string,
+    sponsorId: number,
+    bid: number
+  ): HashtagEconomy | null {
     const tag = _hashtags.get(hashtag.toLowerCase().replace(/^#/, ""));
     if (!tag) return null;
     tag.monetizationEnabled = true;
@@ -582,9 +721,16 @@ export const hashtagEconomyEngine = {
 // ─── CULTURAL MOMENT ENGINE ───────────────────────────────────────────────────
 
 export const culturalMomentEngine = {
-  recordMoment(params: Omit<CulturalMoment, "id" | "isArchived" | "createdAt">): CulturalMoment {
+  recordMoment(
+    params: Omit<CulturalMoment, "id" | "isArchived" | "createdAt">
+  ): CulturalMoment {
     const id = `moment_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const moment: CulturalMoment = { ...params, id, isArchived: false, createdAt: new Date() };
+    const moment: CulturalMoment = {
+      ...params,
+      id,
+      isArchived: false,
+      createdAt: new Date(),
+    };
     _culturalMoments.set(id, moment);
 
     // Update cultural reputation for related creators
@@ -621,9 +767,20 @@ export const culturalMomentEngine = {
 // ─── PLATFORM LORE ENGINE ─────────────────────────────────────────────────────
 
 export const platformLoreEngine = {
-  createLore(params: Omit<PlatformLore, "id" | "viewCount" | "endorsements" | "createdAt">): PlatformLore {
+  createLore(
+    params: Omit<
+      PlatformLore,
+      "id" | "viewCount" | "endorsements" | "createdAt"
+    >
+  ): PlatformLore {
     const id = `lore_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const lore: PlatformLore = { ...params, id, viewCount: 0, endorsements: 0, createdAt: new Date() };
+    const lore: PlatformLore = {
+      ...params,
+      id,
+      viewCount: 0,
+      endorsements: 0,
+      createdAt: new Date(),
+    };
     _platformLore.set(id, lore);
 
     if (params.relatedEntityType === "user" && params.relatedEntityId) {
@@ -659,7 +816,9 @@ export const platformLoreEngine = {
 // ─── COLLECTIVE MEMORY ENGINE ─────────────────────────────────────────────────
 
 export const collectiveMemoryEngine = {
-  recordMemory(params: Omit<CollectiveMemory, "id" | "createdAt">): CollectiveMemory {
+  recordMemory(
+    params: Omit<CollectiveMemory, "id" | "createdAt">
+  ): CollectiveMemory {
     const id = `memory_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const memory: CollectiveMemory = { ...params, id, createdAt: new Date() };
     _collectiveMemory.set(id, memory);
@@ -670,7 +829,10 @@ export const collectiveMemoryEngine = {
     return _collectiveMemory.get(id) ?? null;
   },
 
-  getTopMemories(memoryType?: CollectiveMemory["memoryType"], limit = 20): CollectiveMemory[] {
+  getTopMemories(
+    memoryType?: CollectiveMemory["memoryType"],
+    limit = 20
+  ): CollectiveMemory[] {
     return Array.from(_collectiveMemory.values())
       .filter(m => m.isPublic && (!memoryType || m.memoryType === memoryType))
       .sort((a, b) => b.culturalScore - a.culturalScore)
@@ -701,7 +863,10 @@ export const culturalReputationEngine = {
     return memeMarketEngine._getOrCreateReputation(userId);
   },
 
-  updateReputation(userId: number, updates: Partial<CulturalReputation>): CulturalReputation {
+  updateReputation(
+    userId: number,
+    updates: Partial<CulturalReputation>
+  ): CulturalReputation {
     const rep = memeMarketEngine._getOrCreateReputation(userId);
     Object.assign(rep, updates);
     rep.rank = this._computeRank(rep.cultureScore);
@@ -740,10 +905,12 @@ export const aiCultureAnalyst = {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `Analyze cultural trend for hashtag #${hashtag} with ${tag?.postCount ?? 0} posts, ${tag?.uniqueUsers ?? 0} unique users, trend score ${tag?.trendScore ?? 0}/100. Return JSON: {"prediction": "string", "sentiment": "positive|neutral|negative", "peakETA": "string", "monetizationPotential": "low|medium|high", "confidence": 0-1}`,
-        }],
+        messages: [
+          {
+            role: "user",
+            content: `Analyze cultural trend for hashtag #${hashtag} with ${tag?.postCount ?? 0} posts, ${tag?.uniqueUsers ?? 0} unique users, trend score ${tag?.trendScore ?? 0}/100. Return JSON: {"prediction": "string", "sentiment": "positive|neutral|negative", "peakETA": "string", "monetizationPotential": "low|medium|high", "confidence": 0-1}`,
+          },
+        ],
         maxTokens: 200,
       });
       const content = (response.choices[0]?.message?.content as string) ?? "";
@@ -760,7 +927,9 @@ export const aiCultureAnalyst = {
           confidence,
         };
       }
-    } catch { /* use defaults */ }
+    } catch {
+      /* use defaults */
+    }
 
     return {
       prediction,

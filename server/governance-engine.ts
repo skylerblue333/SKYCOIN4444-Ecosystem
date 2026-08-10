@@ -41,7 +41,12 @@ export interface Proposal {
 }
 
 export interface ProposalAction {
-  type: "transfer_funds" | "change_parameter" | "add_feature" | "remove_feature" | "upgrade_contract";
+  type:
+    | "transfer_funds"
+    | "change_parameter"
+    | "add_feature"
+    | "remove_feature"
+    | "upgrade_contract";
   target: string;
   value?: number;
   data?: string;
@@ -118,7 +123,9 @@ export class ProposalService {
       votingPower = parseFloat(String(balance?.balance || "0"));
 
       const [staked] = await db
-        .select({ total: sql<string>`COALESCE(SUM(CAST(${schema.stakingPositions.amount} AS DECIMAL(20,2))), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(CAST(${schema.stakingPositions.amount} AS DECIMAL(20,2))), 0)`,
+        })
         .from(schema.stakingPositions)
         .where(
           and(
@@ -132,7 +139,9 @@ export class ProposalService {
     // Minimum voting power to propose
     const MIN_PROPOSAL_POWER = 1000;
     if (votingPower < MIN_PROPOSAL_POWER) {
-      throw new Error(`Insufficient voting power. Need ${MIN_PROPOSAL_POWER}, have ${votingPower.toFixed(0)}`);
+      throw new Error(
+        `Insufficient voting power. Need ${MIN_PROPOSAL_POWER}, have ${votingPower.toFixed(0)}`
+      );
     }
 
     this.proposalCounter++;
@@ -162,11 +171,18 @@ export class ProposalService {
     return proposal;
   }
 
-  async vote(proposalId: string, voterId: number, choice: VoteRecord["choice"], reason?: string): Promise<{ success: boolean; message: string }> {
+  async vote(
+    proposalId: string,
+    voterId: number,
+    choice: VoteRecord["choice"],
+    reason?: string
+  ): Promise<{ success: boolean; message: string }> {
     const proposal = this.proposals.get(proposalId);
     if (!proposal) return { success: false, message: "Proposal not found" };
-    if (proposal.status !== "active") return { success: false, message: "Proposal is not active" };
-    if (new Date() > proposal.endTime) return { success: false, message: "Voting period has ended" };
+    if (proposal.status !== "active")
+      return { success: false, message: "Proposal is not active" };
+    if (new Date() > proposal.endTime)
+      return { success: false, message: "Voting period has ended" };
 
     // Check if already voted
     if (proposal.voters.some(v => v.voterId === voterId)) {
@@ -209,22 +225,35 @@ export class ProposalService {
 
     // Update tallies
     switch (choice) {
-      case "for": proposal.votesFor += votingPower; break;
-      case "against": proposal.votesAgainst += votingPower; break;
-      case "abstain": proposal.votesAbstain += votingPower; break;
+      case "for":
+        proposal.votesFor += votingPower;
+        break;
+      case "against":
+        proposal.votesAgainst += votingPower;
+        break;
+      case "abstain":
+        proposal.votesAbstain += votingPower;
+        break;
     }
 
     // Check quorum
-    const totalVotes = proposal.votesFor + proposal.votesAgainst + proposal.votesAbstain;
+    const totalVotes =
+      proposal.votesFor + proposal.votesAgainst + proposal.votesAbstain;
     proposal.quorumReached = totalVotes >= proposal.quorumRequired;
 
-    return { success: true, message: `Vote recorded: ${choice} with ${votingPower.toFixed(0)} voting power` };
+    return {
+      success: true,
+      message: `Vote recorded: ${choice} with ${votingPower.toFixed(0)} voting power`,
+    };
   }
 
-  async finalizeProposal(proposalId: string): Promise<{ status: string; message: string }> {
+  async finalizeProposal(
+    proposalId: string
+  ): Promise<{ status: string; message: string }> {
     const proposal = this.proposals.get(proposalId);
     if (!proposal) return { status: "error", message: "Proposal not found" };
-    if (proposal.status !== "active") return { status: "error", message: "Proposal already finalized" };
+    if (proposal.status !== "active")
+      return { status: "error", message: "Proposal already finalized" };
 
     if (new Date() < proposal.endTime) {
       return { status: "error", message: "Voting period not yet ended" };
@@ -238,10 +267,16 @@ export class ProposalService {
     if (proposal.votesFor > proposal.votesAgainst) {
       proposal.status = "passed";
       proposal.executionTime = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h timelock
-      return { status: "passed", message: "Proposal passed. Execution in 48 hours." };
+      return {
+        status: "passed",
+        message: "Proposal passed. Execution in 48 hours.",
+      };
     } else {
       proposal.status = "failed";
-      return { status: "failed", message: "Proposal failed. More votes against." };
+      return {
+        status: "failed",
+        message: "Proposal failed. More votes against.",
+      };
     }
   }
 
@@ -264,11 +299,16 @@ export class ProposalService {
   private calculateQuorum(category: Proposal["category"]): number {
     // Quorum varies by category
     switch (category) {
-      case "emergency": return 100000; // Lower quorum for emergencies
-      case "protocol": return 500000; // High quorum for protocol changes
-      case "treasury": return 300000; // Medium for treasury
-      case "community": return 200000; // Lower for community
-      default: return 250000;
+      case "emergency":
+        return 100000; // Lower quorum for emergencies
+      case "protocol":
+        return 500000; // High quorum for protocol changes
+      case "treasury":
+        return 300000; // Medium for treasury
+      case "community":
+        return 200000; // Lower for community
+      default:
+        return 250000;
     }
   }
 }
@@ -280,14 +320,21 @@ export class ProposalService {
 export class DelegationService {
   private delegations: Delegation[] = [];
 
-  async delegate(delegatorId: number, delegateId: number, category?: string): Promise<{ success: boolean; message: string }> {
+  async delegate(
+    delegatorId: number,
+    delegateId: number,
+    category?: string
+  ): Promise<{ success: boolean; message: string }> {
     if (delegatorId === delegateId) {
       return { success: false, message: "Cannot delegate to yourself" };
     }
 
     // Check if already delegated
     const existing = this.delegations.find(
-      d => d.delegatorId === delegatorId && d.isActive && (!category || d.category === category)
+      d =>
+        d.delegatorId === delegatorId &&
+        d.isActive &&
+        (!category || d.category === category)
     );
 
     if (existing) {
@@ -319,12 +366,18 @@ export class DelegationService {
       isActive: true,
     });
 
-    return { success: true, message: `Delegated ${votingPower.toFixed(0)} voting power` };
+    return {
+      success: true,
+      message: `Delegated ${votingPower.toFixed(0)} voting power`,
+    };
   }
 
   async revoke(delegatorId: number, delegateId: number): Promise<boolean> {
     const delegation = this.delegations.find(
-      d => d.delegatorId === delegatorId && d.delegateId === delegateId && d.isActive
+      d =>
+        d.delegatorId === delegatorId &&
+        d.delegateId === delegateId &&
+        d.isActive
     );
 
     if (delegation) {
@@ -340,10 +393,17 @@ export class DelegationService {
       .reduce((sum, d) => sum + d.votingPower, 0);
   }
 
-  getDelegations(userId: number): { delegatedTo: Delegation[]; receivedFrom: Delegation[] } {
+  getDelegations(userId: number): {
+    delegatedTo: Delegation[];
+    receivedFrom: Delegation[];
+  } {
     return {
-      delegatedTo: this.delegations.filter(d => d.delegatorId === userId && d.isActive),
-      receivedFrom: this.delegations.filter(d => d.delegateId === userId && d.isActive),
+      delegatedTo: this.delegations.filter(
+        d => d.delegatorId === userId && d.isActive
+      ),
+      receivedFrom: this.delegations.filter(
+        d => d.delegateId === userId && d.isActive
+      ),
     };
   }
 }
@@ -356,7 +416,10 @@ export class GovernanceAnalyticsService {
   private proposalService: ProposalService;
   private delegationService: DelegationService;
 
-  constructor(proposalService: ProposalService, delegationService: DelegationService) {
+  constructor(
+    proposalService: ProposalService,
+    delegationService: DelegationService
+  ) {
     this.proposalService = proposalService;
     this.delegationService = delegationService;
   }
@@ -364,7 +427,9 @@ export class GovernanceAnalyticsService {
   async getStats(): Promise<GovernanceStats> {
     const allProposals = this.proposalService.getAllProposals(1000);
     const active = allProposals.filter(p => p.status === "active");
-    const passed = allProposals.filter(p => p.status === "passed" || p.status === "executed");
+    const passed = allProposals.filter(
+      p => p.status === "passed" || p.status === "executed"
+    );
     const failed = allProposals.filter(p => p.status === "failed");
 
     // Calculate unique voters
@@ -372,9 +437,11 @@ export class GovernanceAnalyticsService {
     allProposals.forEach(p => p.voters.forEach(v => voterSet.add(v.voterId)));
 
     // Average participation
-    const avgParticipation = allProposals.length > 0
-      ? allProposals.reduce((sum, p) => sum + p.voters.length, 0) / allProposals.length
-      : 0;
+    const avgParticipation =
+      allProposals.length > 0
+        ? allProposals.reduce((sum, p) => sum + p.voters.length, 0) /
+          allProposals.length
+        : 0;
 
     return {
       totalProposals: allProposals.length,
@@ -396,8 +463,10 @@ export class GovernanceAnalyticsService {
 
 export const proposalService = new ProposalService();
 export const delegationService = new DelegationService();
-export const governanceAnalytics = new GovernanceAnalyticsService(proposalService, delegationService);
-
+export const governanceAnalytics = new GovernanceAnalyticsService(
+  proposalService,
+  delegationService
+);
 
 // ═══════════════════════════════════════════════════════════════
 // GOVERNANCE ENGINE v2 — ADVANCED DAO EXTENSIONS
@@ -487,7 +556,11 @@ export function getTreasuryState(): DAOTreasury {
   return { ...daoTreasury, transactions: [...daoTreasury.transactions] };
 }
 
-export function depositToTreasury(amount: number, description: string, authorizedBy?: number): TreasuryTransaction {
+export function depositToTreasury(
+  amount: number,
+  description: string,
+  authorizedBy?: number
+): TreasuryTransaction {
   const tx: TreasuryTransaction = {
     id: `tx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     type: "deposit",
@@ -499,14 +572,23 @@ export function depositToTreasury(amount: number, description: string, authorize
   };
   daoTreasury.totalFunds += amount;
   daoTreasury.transactions.unshift(tx);
-  if (daoTreasury.transactions.length > 500) daoTreasury.transactions.splice(500);
+  if (daoTreasury.transactions.length > 500)
+    daoTreasury.transactions.splice(500);
   daoTreasury.lastUpdated = Date.now();
   return tx;
 }
 
-export function allocateFromTreasury(amount: number, description: string, authorizedBy: number): { success: boolean; tx?: TreasuryTransaction; error?: string } {
+export function allocateFromTreasury(
+  amount: number,
+  description: string,
+  authorizedBy: number
+): { success: boolean; tx?: TreasuryTransaction; error?: string } {
   const available = daoTreasury.totalFunds - daoTreasury.allocatedFunds;
-  if (amount > available) return { success: false, error: `Insufficient treasury funds. Available: ${available}` };
+  if (amount > available)
+    return {
+      success: false,
+      error: `Insufficient treasury funds. Available: ${available}`,
+    };
   const tx: TreasuryTransaction = {
     id: `tx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     type: "grant",
@@ -537,7 +619,11 @@ export function getTreasuryStats() {
 // ─── Governance Grants ────────────────────────────────────────
 
 export function createGovernanceGrant(params: {
-  proposalId: string; recipientId: number; amount: number; purpose: string; milestones?: Partial<GrantMilestone>[];
+  proposalId: string;
+  recipientId: number;
+  amount: number;
+  purpose: string;
+  milestones?: Partial<GrantMilestone>[];
 }): GovernanceGrant {
   const grant: GovernanceGrant = {
     id: `grant_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -564,11 +650,18 @@ export function approveGrant(grantId: string): boolean {
   const grant = governanceGrants.get(grantId);
   if (!grant || grant.status !== "pending") return false;
   grant.status = "approved";
-  allocateFromTreasury(grant.amount, `Grant: ${grant.purpose}`, grant.recipientId);
+  allocateFromTreasury(
+    grant.amount,
+    `Grant: ${grant.purpose}`,
+    grant.recipientId
+  );
   return true;
 }
 
-export function completeMilestone(grantId: string, milestoneId: string): boolean {
+export function completeMilestone(
+  grantId: string,
+  milestoneId: string
+): boolean {
   const grant = governanceGrants.get(grantId);
   if (!grant) return false;
   const milestone = grant.milestones.find(m => m.id === milestoneId);
@@ -581,12 +674,18 @@ export function completeMilestone(grantId: string, milestoneId: string): boolean
 }
 
 export function getGrantsByRecipient(recipientId: number): GovernanceGrant[] {
-  return Array.from(governanceGrants.values()).filter(g => g.recipientId === recipientId);
+  return Array.from(governanceGrants.values()).filter(
+    g => g.recipientId === recipientId
+  );
 }
 
 // ─── Veto System ─────────────────────────────────────────────
 
-export function vetoProposal(proposalId: string, vetoedBy: number, reason: string): VetoRecord {
+export function vetoProposal(
+  proposalId: string,
+  vetoedBy: number,
+  reason: string
+): VetoRecord {
   const veto: VetoRecord = {
     id: `veto_${Date.now()}`,
     proposalId,
@@ -607,7 +706,9 @@ export function overrideVeto(vetoId: string): boolean {
 }
 
 export function getProposalVetos(proposalId: string): VetoRecord[] {
-  return Array.from(vetoRecords.values()).filter(v => v.proposalId === proposalId && !v.overridden);
+  return Array.from(vetoRecords.values()).filter(
+    v => v.proposalId === proposalId && !v.overridden
+  );
 }
 
 // ─── Governance Reputation ────────────────────────────────────
@@ -638,28 +739,44 @@ export function updateReputationOnVote(userId: number): void {
   updateReputationTier(rep);
 }
 
-export function updateReputationOnProposal(userId: number, passed: boolean): void {
+export function updateReputationOnProposal(
+  userId: number,
+  passed: boolean
+): void {
   const rep = getOrCreateReputation(userId);
   rep.proposalsCreated++;
-  if (passed) { rep.proposalsPassed++; rep.participationScore += 50; }
+  if (passed) {
+    rep.proposalsPassed++;
+    rep.participationScore += 50;
+  }
   rep.lastActive = Date.now();
   updateReputationTier(rep);
 }
 
 function updateReputationTier(rep: GovernanceReputation): void {
-  if (rep.participationScore >= 5000 || rep.proposalsPassed >= 10) rep.tier = "council";
-  else if (rep.participationScore >= 1000 || rep.delegationsReceived >= 5) rep.tier = "delegate";
+  if (rep.participationScore >= 5000 || rep.proposalsPassed >= 10)
+    rep.tier = "council";
+  else if (rep.participationScore >= 1000 || rep.delegationsReceived >= 5)
+    rep.tier = "delegate";
   else rep.tier = "citizen";
   // Award badges
-  if (rep.votescast >= 10 && !rep.badges.includes("active_voter")) rep.badges.push("active_voter");
-  if (rep.proposalsPassed >= 3 && !rep.badges.includes("proposal_champion")) rep.badges.push("proposal_champion");
-  if (rep.participationScore >= 1000 && !rep.badges.includes("governance_leader")) rep.badges.push("governance_leader");
+  if (rep.votescast >= 10 && !rep.badges.includes("active_voter"))
+    rep.badges.push("active_voter");
+  if (rep.proposalsPassed >= 3 && !rep.badges.includes("proposal_champion"))
+    rep.badges.push("proposal_champion");
+  if (
+    rep.participationScore >= 1000 &&
+    !rep.badges.includes("governance_leader")
+  )
+    rep.badges.push("governance_leader");
   // Voting power scales with tier
   const tierMultiplier = { citizen: 1, delegate: 2.5, council: 5, founder: 10 };
   rep.votingPower = Math.floor(100 * tierMultiplier[rep.tier]);
 }
 
-export function getTopGovernanceParticipants(limit = 20): GovernanceReputation[] {
+export function getTopGovernanceParticipants(
+  limit = 20
+): GovernanceReputation[] {
   return Array.from(governanceReputations.values())
     .sort((a, b) => b.participationScore - a.participationScore)
     .slice(0, limit);
@@ -669,10 +786,17 @@ export function getGovernanceV2Stats() {
   return {
     treasury: getTreasuryStats(),
     totalGrants: governanceGrants.size,
-    approvedGrants: Array.from(governanceGrants.values()).filter(g => g.status === "approved").length,
-    disbursedGrants: Array.from(governanceGrants.values()).filter(g => g.status === "disbursed").length,
-    activeVetos: Array.from(vetoRecords.values()).filter(v => !v.overridden).length,
+    approvedGrants: Array.from(governanceGrants.values()).filter(
+      g => g.status === "approved"
+    ).length,
+    disbursedGrants: Array.from(governanceGrants.values()).filter(
+      g => g.status === "disbursed"
+    ).length,
+    activeVetos: Array.from(vetoRecords.values()).filter(v => !v.overridden)
+      .length,
     totalParticipants: governanceReputations.size,
-    councilMembers: Array.from(governanceReputations.values()).filter(r => r.tier === "council").length,
+    councilMembers: Array.from(governanceReputations.values()).filter(
+      r => r.tier === "council"
+    ).length,
   };
 }

@@ -1,6 +1,6 @@
-import { router, publicProcedure, protectedProcedure } from './_core/trpc';
-import { maxParallelMiningEngine } from './max-parallel-mining';
-import { z } from 'zod';
+import { router, publicProcedure, protectedProcedure } from "./_core/trpc";
+import { maxParallelMiningEngine } from "./max-parallel-mining";
+import { z } from "zod";
 
 /**
  * Max Parallel Mining Router
@@ -19,11 +19,13 @@ export const maxParallelMiningRouter = router({
 
       return {
         success: true,
-        message: 'Max parallel mining started',
+        message: "Max parallel mining started",
         stats: maxParallelMiningEngine.getStats(),
       };
     } catch (error) {
-      throw new Error(`Failed to start mining: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to start mining: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   }),
 
@@ -37,7 +39,7 @@ export const maxParallelMiningRouter = router({
 
     return {
       success: true,
-      message: 'Mining stopped',
+      message: "Mining stopped",
       stats: maxParallelMiningEngine.getStats(),
     };
   }),
@@ -54,7 +56,7 @@ export const maxParallelMiningRouter = router({
       collaborators: stats.collaborators,
       totalEarnings: `$${stats.totalEarnings.toFixed(2)}`,
       isRunning: stats.isRunning,
-      status: stats.isRunning ? 'MINING' : 'IDLE',
+      status: stats.isRunning ? "MINING" : "IDLE",
     };
   }),
 
@@ -64,7 +66,7 @@ export const maxParallelMiningRouter = router({
   getCollaborators: publicProcedure.query(async () => {
     const collaborators = maxParallelMiningEngine.getCollaborators();
 
-    return collaborators.map((c) => ({
+    return collaborators.map(c => ({
       id: c.id,
       name: c.name,
       wallet: c.wallet,
@@ -109,7 +111,7 @@ export const maxParallelMiningRouter = router({
     const collaborators = maxParallelMiningEngine.getCollaborators();
 
     return {
-      status: stats.isRunning ? 'ACTIVE' : 'IDLE',
+      status: stats.isRunning ? "ACTIVE" : "IDLE",
       workers: {
         active: stats.workers,
         totalHashrate: stats.hashrate.toLocaleString(),
@@ -118,10 +120,10 @@ export const maxParallelMiningRouter = router({
         total: `$${stats.totalEarnings.toFixed(2)}`,
         collaborators: collaborators.length,
       },
-      collaborators: collaborators.map((c) => ({
+      collaborators: collaborators.map(c => ({
         name: c.name,
         share: `${c.share}%`,
-        wallet: c.wallet.substring(0, 10) + '...',
+        wallet: c.wallet.substring(0, 10) + "...",
       })),
     };
   }),

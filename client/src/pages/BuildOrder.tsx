@@ -3,7 +3,21 @@
  * Production build order: dependency layers in strict sequence
  * Identity → Chat → Feed → AI → Actions → Real-time → Simulation → Money → Scale
  */
-import { CheckCircle, Circle, Clock, Zap, Database, MessageSquare, Rss, Brain, Activity, Globe, DollarSign, Shield, Layers } from "lucide-react";
+import {
+  CheckCircle,
+  Circle,
+  Clock,
+  Zap,
+  Database,
+  MessageSquare,
+  Rss,
+  Brain,
+  Activity,
+  Globe,
+  DollarSign,
+  Shield,
+  Layers,
+} from "lucide-react";
 
 const PHASES = [
   {
@@ -15,7 +29,12 @@ const PHASES = [
     color: "text-green-400",
     bg: "bg-green-500/10 border-green-500/20",
     status: "complete",
-    items: ["Auth system (users, sessions)", "PostgreSQL schema (users, posts, messages, actions)", "API gateway (single entry point)", "Basic logging system"],
+    items: [
+      "Auth system (users, sessions)",
+      "PostgreSQL schema (users, posts, messages, actions)",
+      "API gateway (single entry point)",
+      "Basic logging system",
+    ],
   },
   {
     phase: 2,
@@ -26,7 +45,12 @@ const PHASES = [
     color: "text-blue-400",
     bg: "bg-blue-500/10 border-blue-500/20",
     status: "complete",
-    items: ["WebSocket server", "chat-service", "Message persistence", "Simple React chat UI"],
+    items: [
+      "WebSocket server",
+      "chat-service",
+      "Message persistence",
+      "Simple React chat UI",
+    ],
   },
   {
     phase: 3,
@@ -37,7 +61,12 @@ const PHASES = [
     color: "text-cyan-400",
     bg: "bg-cyan-500/10 border-cyan-500/20",
     status: "complete",
-    items: ["Posts table integration", "Feed API", "Basic feed UI", "Redis caching for feed"],
+    items: [
+      "Posts table integration",
+      "Feed API",
+      "Basic feed UI",
+      "Redis caching for feed",
+    ],
   },
   {
     phase: 4,
@@ -48,7 +77,12 @@ const PHASES = [
     color: "text-purple-400",
     bg: "bg-purple-500/10 border-purple-500/20",
     status: "complete",
-    items: ["AI service (intent parsing)", "Response generator", "Chat → AI pipeline", "Basic context memory"],
+    items: [
+      "AI service (intent parsing)",
+      "Response generator",
+      "Chat → AI pipeline",
+      "Basic context memory",
+    ],
   },
   {
     phase: 5,
@@ -59,7 +93,12 @@ const PHASES = [
     color: "text-orange-400",
     bg: "bg-orange-500/10 border-orange-500/20",
     status: "complete",
-    items: ["Action service", "Action execution pipeline", "Event emitter system", "Action UI cards"],
+    items: [
+      "Action service",
+      "Action execution pipeline",
+      "Event emitter system",
+      "Action UI cards",
+    ],
   },
   {
     phase: 6,
@@ -70,7 +109,12 @@ const PHASES = [
     color: "text-yellow-400",
     bg: "bg-yellow-500/10 border-yellow-500/20",
     status: "in-progress",
-    items: ["Event bus (Redis pub/sub)", "WebSocket gateway", "Frontend real-time store (Zustand)", "Live feed updates"],
+    items: [
+      "Event bus (Redis pub/sub)",
+      "WebSocket gateway",
+      "Frontend real-time store (Zustand)",
+      "Live feed updates",
+    ],
   },
   {
     phase: 7,
@@ -81,7 +125,12 @@ const PHASES = [
     color: "text-cyan-400",
     bg: "bg-cyan-500/10 border-cyan-500/20",
     status: "in-progress",
-    items: ["Persona system", "Simulation tick engine", "Auto-post generation", "Trend detection system"],
+    items: [
+      "Persona system",
+      "Simulation tick engine",
+      "Auto-post generation",
+      "Trend detection system",
+    ],
   },
   {
     phase: 8,
@@ -92,7 +141,12 @@ const PHASES = [
     color: "text-green-400",
     bg: "bg-green-500/10 border-green-500/20",
     status: "in-progress",
-    items: ["Wallet system", "Payment integration (Stripe)", "Action pricing engine", "Transaction logging"],
+    items: [
+      "Wallet system",
+      "Payment integration (Stripe)",
+      "Action pricing engine",
+      "Transaction logging",
+    ],
   },
   {
     phase: 9,
@@ -103,7 +157,12 @@ const PHASES = [
     color: "text-purple-400",
     bg: "bg-purple-500/10 border-purple-500/20",
     status: "in-progress",
-    items: ["Legacy shell", "OS shell", "Mode switching system", "Shared state layer"],
+    items: [
+      "Legacy shell",
+      "OS shell",
+      "Mode switching system",
+      "Shared state layer",
+    ],
   },
   {
     phase: 10,
@@ -114,13 +173,23 @@ const PHASES = [
     color: "text-red-400",
     bg: "bg-red-500/10 border-red-500/20",
     status: "pending",
-    items: ["Rate limiting", "Monitoring (logs + metrics)", "Auto-scaling rules", "Error recovery system", "Performance optimization"],
+    items: [
+      "Rate limiting",
+      "Monitoring (logs + metrics)",
+      "Auto-scaling rules",
+      "Error recovery system",
+      "Performance optimization",
+    ],
   },
 ];
 
 const STATUS_ICONS = {
   complete: { icon: CheckCircle, color: "text-green-400", label: "Complete" },
-  "in-progress": { icon: Clock, color: "text-yellow-400", label: "In Progress" },
+  "in-progress": {
+    icon: Clock,
+    color: "text-yellow-400",
+    label: "In Progress",
+  },
   pending: { icon: Circle, color: "text-muted-foreground", label: "Pending" },
 };
 
@@ -139,13 +208,19 @@ export default function BuildOrder() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Production Build Order</h1>
-            <p className="text-sm text-muted-foreground">Phase 42 — Dependency-ordered implementation sequence</p>
+            <p className="text-sm text-muted-foreground">
+              Phase 42 — Dependency-ordered implementation sequence
+            </p>
           </div>
         </div>
         <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl text-sm text-orange-400">
-          Key insight: Build dependency layers in strict order — not features in parallel.
+          Key insight: Build dependency layers in strict order — not features in
+          parallel.
           <br />
-          <span className="text-muted-foreground">Identity → Chat → Feed → AI → Actions → Real-time → Simulation → Money → Scale</span>
+          <span className="text-muted-foreground">
+            Identity → Chat → Feed → AI → Actions → Real-time → Simulation →
+            Money → Scale
+          </span>
         </div>
       </div>
 
@@ -160,7 +235,9 @@ export default function BuildOrder() {
           <div className="text-xs text-muted-foreground">In Progress</div>
         </div>
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-muted-foreground">{pending}</div>
+          <div className="text-2xl font-bold text-muted-foreground">
+            {pending}
+          </div>
           <div className="text-xs text-muted-foreground">Pending</div>
         </div>
       </div>
@@ -169,12 +246,16 @@ export default function BuildOrder() {
       <div className="card p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium">Overall Progress</span>
-          <span className="text-sm text-muted-foreground">{Math.round(((complete + inProgress * 0.5) / PHASES.length) * 100)}%</span>
+          <span className="text-sm text-muted-foreground">
+            {Math.round(((complete + inProgress * 0.5) / PHASES.length) * 100)}%
+          </span>
         </div>
         <div className="h-2 bg-secondary rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-green-500 to-yellow-500 rounded-full transition-all"
-            style={{ width: `${((complete + inProgress * 0.5) / PHASES.length) * 100}%` }}
+            style={{
+              width: `${((complete + inProgress * 0.5) / PHASES.length) * 100}%`,
+            }}
           />
         </div>
       </div>
@@ -183,17 +264,22 @@ export default function BuildOrder() {
       <div className="space-y-3">
         {PHASES.map((p, idx) => {
           const PhaseIcon = p.icon;
-          const StatusInfo = STATUS_ICONS[p.status as keyof typeof STATUS_ICONS];
+          const StatusInfo =
+            STATUS_ICONS[p.status as keyof typeof STATUS_ICONS];
           const StatusIcon = StatusInfo.icon;
           return (
             <div key={p.phase} className={`card p-4 border ${p.bg}`}>
               <div className="flex items-start gap-4">
                 {/* Phase number + connector */}
                 <div className="flex flex-col items-center shrink-0">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${p.status === "complete" ? "bg-green-500/20 text-green-400" : p.status === "in-progress" ? "bg-yellow-500/20 text-yellow-400" : "bg-secondary text-muted-foreground"}`}>
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${p.status === "complete" ? "bg-green-500/20 text-green-400" : p.status === "in-progress" ? "bg-yellow-500/20 text-yellow-400" : "bg-secondary text-muted-foreground"}`}
+                  >
                     {p.phase}
                   </div>
-                  {idx < PHASES.length - 1 && <div className="w-0.5 h-4 bg-border mt-1" />}
+                  {idx < PHASES.length - 1 && (
+                    <div className="w-0.5 h-4 bg-border mt-1" />
+                  )}
                 </div>
 
                 {/* Content */}
@@ -201,16 +287,25 @@ export default function BuildOrder() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <PhaseIcon className={`w-4 h-4 ${p.color}`} />
                     <span className="font-semibold text-sm">{p.title}</span>
-                    <span className="text-xs text-muted-foreground">{p.days}</span>
-                    <div className={`flex items-center gap-1 ml-auto text-xs ${StatusInfo.color}`}>
+                    <span className="text-xs text-muted-foreground">
+                      {p.days}
+                    </span>
+                    <div
+                      className={`flex items-center gap-1 ml-auto text-xs ${StatusInfo.color}`}
+                    >
                       <StatusIcon className="w-3 h-3" />
                       {StatusInfo.label}
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1 mb-2">Goal: {p.goal}</p>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                    Goal: {p.goal}
+                  </p>
                   <div className="flex flex-wrap gap-1.5">
                     {p.items.map(item => (
-                      <span key={item} className="px-2 py-0.5 rounded-full bg-secondary/50 text-xs text-muted-foreground">
+                      <span
+                        key={item}
+                        className="px-2 py-0.5 rounded-full bg-secondary/50 text-xs text-muted-foreground"
+                      >
                         {item}
                       </span>
                     ))}

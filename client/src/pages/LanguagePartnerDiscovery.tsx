@@ -4,11 +4,25 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Star, MessageCircle, Heart, MapPin, Clock, Zap, Video, MessageSquare } from "lucide-react";
+import {
+  Star,
+  MessageCircle,
+  Heart,
+  MapPin,
+  Clock,
+  Zap,
+  Video,
+  MessageSquare,
+} from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Partner {
   id: string;
@@ -192,26 +206,34 @@ export default function LanguagePartnerDiscovery() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [proficiencyFilter, setProficiencyFilter] = useState<string[]>([]);
   const [availabilityFilter, setAvailabilityFilter] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<"rating" | "recent" | "responsive">("rating");
+  const [sortBy, setSortBy] = useState<"rating" | "recent" | "responsive">(
+    "rating"
+  );
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [showVideoPreview, setShowVideoPreview] = useState(false);
 
   // Fetch real partners from tRPC
-  const { data: realPartners = MOCK_PARTNERS, isLoading } = trpc.languageExchange.getPartners.useQuery({}, {
-    retry: 1,
-    staleTime: 60000,
-  });
+  const { data: realPartners = MOCK_PARTNERS, isLoading } =
+    trpc.languageExchange.getPartners.useQuery(
+      {},
+      {
+        retry: 1,
+        staleTime: 60000,
+      }
+    );
 
   // Fetch saved favorites
-  const { data: savedFavorites = [] } = trpc.languageExchange.getFavorites.useQuery(undefined, {
-    retry: 1,
-  });
+  const { data: savedFavorites = [] } =
+    trpc.languageExchange.getFavorites.useQuery(undefined, {
+      retry: 1,
+    });
 
   // Wire mutations
   const connectMutation = trpc.languageExchange.requestSession.useMutation();
   const saveFavoriteMutation = trpc.languageExchange.saveFavorite.useMutation();
-  const removeFavoriteMutation = trpc.languageExchange.removeFavorite.useMutation();
+  const removeFavoriteMutation =
+    trpc.languageExchange.removeFavorite.useMutation();
 
   // Sync favorites from DB
   React.useEffect(() => {
@@ -242,12 +264,16 @@ export default function LanguagePartnerDiscovery() {
 
     // Filter by proficiency
     if (proficiencyFilter.length > 0) {
-      result = result.filter((p: Partner) => proficiencyFilter.includes(p.proficiency));
+      result = result.filter((p: Partner) =>
+        proficiencyFilter.includes(p.proficiency)
+      );
     }
 
     // Filter by availability
     if (availabilityFilter.length > 0) {
-      result = result.filter((p: Partner) => availabilityFilter.includes(p.availability));
+      result = result.filter((p: Partner) =>
+        availabilityFilter.includes(p.availability)
+      );
     }
 
     // Sort
@@ -259,7 +285,12 @@ export default function LanguagePartnerDiscovery() {
           new Date(b.joinedDate).getTime() - new Date(a.joinedDate).getTime()
       );
     } else if (sortBy === "responsive") {
-      const timeOrder: Record<string, number> = { "< 30 min": 0, "< 1 hour": 1, "< 2 hours": 2, "< 3 hours": 3 };
+      const timeOrder: Record<string, number> = {
+        "< 30 min": 0,
+        "< 1 hour": 1,
+        "< 2 hours": 2,
+        "< 3 hours": 3,
+      };
       result.sort(
         (a: Partner, b: Partner) =>
           (timeOrder[a.responseTime as keyof typeof timeOrder] || 999) -
@@ -268,7 +299,14 @@ export default function LanguagePartnerDiscovery() {
     }
 
     return result;
-  }, [searchTerm, selectedInterests, proficiencyFilter, availabilityFilter, sortBy, realPartners]);
+  }, [
+    searchTerm,
+    selectedInterests,
+    proficiencyFilter,
+    availabilityFilter,
+    sortBy,
+    realPartners,
+  ]);
 
   const toggleInterest = (interest: string) => {
     setSelectedInterests(prev =>
@@ -280,29 +318,35 @@ export default function LanguagePartnerDiscovery() {
 
   const toggleFavorite = (partnerId: string) => {
     if (favorites.has(partnerId)) {
-      removeFavoriteMutation.mutate({ partnerId }, {
-        onSuccess: () => {
-          setFavorites(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(partnerId);
-            return newSet;
-          });
-          toast.success("Removed from favorites");
-        },
-        onError: () => {
-          toast.error("Failed to remove favorite");
-        },
-      });
+      removeFavoriteMutation.mutate(
+        { partnerId },
+        {
+          onSuccess: () => {
+            setFavorites(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(partnerId);
+              return newSet;
+            });
+            toast.success("Removed from favorites");
+          },
+          onError: () => {
+            toast.error("Failed to remove favorite");
+          },
+        }
+      );
     } else {
-      saveFavoriteMutation.mutate({ partnerId }, {
-        onSuccess: () => {
-          setFavorites(prev => new Set([...prev, partnerId]));
-          toast.success("Added to favorites");
-        },
-        onError: () => {
-          toast.error("Failed to add favorite");
-        },
-      });
+      saveFavoriteMutation.mutate(
+        { partnerId },
+        {
+          onSuccess: () => {
+            setFavorites(prev => new Set([...prev, partnerId]));
+            toast.success("Added to favorites");
+          },
+          onError: () => {
+            toast.error("Failed to add favorite");
+          },
+        }
+      );
     }
   };
 
@@ -396,7 +440,10 @@ export default function LanguagePartnerDiscovery() {
                   </label>
                   <div className="space-y-2">
                     {["A1", "A2", "B1", "B2", "C1", "C2"].map(level => (
-                      <label key={level} className="flex items-center gap-2 cursor-pointer">
+                      <label
+                        key={level}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
                         <Checkbox
                           checked={proficiencyFilter.includes(level)}
                           onCheckedChange={() => {
@@ -420,8 +467,17 @@ export default function LanguagePartnerDiscovery() {
                     Availability
                   </label>
                   <div className="space-y-2">
-                    {["mornings", "evenings", "weekdays", "weekends", "flexible"].map(avail => (
-                      <label key={avail} className="flex items-center gap-2 cursor-pointer">
+                    {[
+                      "mornings",
+                      "evenings",
+                      "weekdays",
+                      "weekends",
+                      "flexible",
+                    ].map(avail => (
+                      <label
+                        key={avail}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
                         <Checkbox
                           checked={availabilityFilter.includes(avail)}
                           onCheckedChange={() => {
@@ -433,7 +489,9 @@ export default function LanguagePartnerDiscovery() {
                           }}
                           className="border-purple-500"
                         />
-                        <span className="text-sm text-purple-100 capitalize">{avail}</span>
+                        <span className="text-sm text-purple-100 capitalize">
+                          {avail}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -471,7 +529,11 @@ export default function LanguagePartnerDiscovery() {
                   {INTERESTS.map(interest => (
                     <Badge
                       key={interest}
-                      variant={selectedInterests.includes(interest) ? "default" : "outline"}
+                      variant={
+                        selectedInterests.includes(interest)
+                          ? "default"
+                          : "outline"
+                      }
                       className={`cursor-pointer transition-all ${
                         selectedInterests.includes(interest)
                           ? "bg-purple-600 border-purple-500"
@@ -487,7 +549,8 @@ export default function LanguagePartnerDiscovery() {
 
               {/* Results Count */}
               <div className="mb-4 text-sm text-purple-300">
-                Showing {filteredPartners.length} partner{filteredPartners.length !== 1 ? "s" : ""}
+                Showing {filteredPartners.length} partner
+                {filteredPartners.length !== 1 ? "s" : ""}
               </div>
 
               {/* Partner Cards Grid */}
@@ -504,7 +567,9 @@ export default function LanguagePartnerDiscovery() {
                           <div className="flex items-center gap-3">
                             <div className="text-4xl">{partner.avatar}</div>
                             <div>
-                              <h3 className="font-bold text-white text-lg">{partner.name}</h3>
+                              <h3 className="font-bold text-white text-lg">
+                                {partner.name}
+                              </h3>
                               <p className="text-xs text-purple-300">
                                 {partner.nativeLang} → {partner.learningLang}
                               </p>
@@ -513,38 +578,57 @@ export default function LanguagePartnerDiscovery() {
                           <button
                             onClick={() => toggleFavorite(partner.id)}
                             className="text-purple-300 hover:text-red-400 transition-colors"
-                            disabled={saveFavoriteMutation.isPending || removeFavoriteMutation.isPending}
+                            disabled={
+                              saveFavoriteMutation.isPending ||
+                              removeFavoriteMutation.isPending
+                            }
                           >
                             <Heart
                               size={20}
-                              fill={favorites.has(partner.id) ? "currentColor" : "none"}
+                              fill={
+                                favorites.has(partner.id)
+                                  ? "currentColor"
+                                  : "none"
+                              }
                             />
                           </button>
                         </div>
 
                         {/* Bio */}
-                        <p className="text-sm text-purple-200 mb-4">{partner.bio}</p>
+                        <p className="text-sm text-purple-200 mb-4">
+                          {partner.bio}
+                        </p>
 
                         {/* Stats */}
                         <div className="grid grid-cols-3 gap-2 mb-4 text-xs">
                           <div className="bg-slate-900/50 rounded p-2">
                             <div className="flex items-center gap-1 text-yellow-400 mb-1">
                               <Star size={14} fill="currentColor" />
-                              <span className="font-bold">{partner.rating}</span>
+                              <span className="font-bold">
+                                {partner.rating}
+                              </span>
                             </div>
-                            <div className="text-purple-300">{partner.sessionsCompleted} sessions</div>
+                            <div className="text-purple-300">
+                              {partner.sessionsCompleted} sessions
+                            </div>
                           </div>
                           <div className="bg-slate-900/50 rounded p-2">
                             <div className="flex items-center gap-1 text-cyan-400 mb-1">
                               <Clock size={14} />
-                              <span className="font-bold">{partner.responseTime}</span>
+                              <span className="font-bold">
+                                {partner.responseTime}
+                              </span>
                             </div>
-                            <div className="text-purple-300 capitalize">{partner.availability}</div>
+                            <div className="text-purple-300 capitalize">
+                              {partner.availability}
+                            </div>
                           </div>
                           <div className="bg-slate-900/50 rounded p-2">
                             <div className="flex items-center gap-1 text-green-400 mb-1">
                               <Zap size={14} />
-                              <span className="font-bold">{partner.proficiency}</span>
+                              <span className="font-bold">
+                                {partner.proficiency}
+                              </span>
                             </div>
                             <div className="text-purple-300">Proficiency</div>
                           </div>
@@ -622,7 +706,9 @@ export default function LanguagePartnerDiscovery() {
                 </div>
               ) : (
                 <Card className="bg-slate-900/80 border-purple-500/30 p-12 text-center">
-                  <p className="text-purple-300 mb-4">No partners match your filters</p>
+                  <p className="text-purple-300 mb-4">
+                    No partners match your filters
+                  </p>
                   <Button
                     variant="outline"
                     className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10"
@@ -647,7 +733,9 @@ export default function LanguagePartnerDiscovery() {
         <Dialog open={showVideoPreview} onOpenChange={setShowVideoPreview}>
           <DialogContent className="bg-slate-900 border-purple-500/30 max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-white">{selectedPartner.name}</DialogTitle>
+              <DialogTitle className="text-white">
+                {selectedPartner.name}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               {/* Video Preview */}
@@ -668,18 +756,26 @@ export default function LanguagePartnerDiscovery() {
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-slate-800 p-2 rounded">
                     <p className="text-purple-400 text-xs">Proficiency</p>
-                    <p className="text-white font-bold">{selectedPartner.proficiency}</p>
+                    <p className="text-white font-bold">
+                      {selectedPartner.proficiency}
+                    </p>
                   </div>
                   <div className="bg-slate-800 p-2 rounded">
                     <p className="text-purple-400 text-xs">Rating</p>
-                    <p className="text-white font-bold">{selectedPartner.rating} ⭐</p>
+                    <p className="text-white font-bold">
+                      {selectedPartner.rating} ⭐
+                    </p>
                   </div>
                 </div>
                 <div className="bg-slate-800 p-2 rounded">
                   <p className="text-purple-400 text-xs mb-1">Interests</p>
                   <div className="flex flex-wrap gap-1">
                     {selectedPartner.interests.map(interest => (
-                      <Badge key={interest} variant="secondary" className="text-xs">
+                      <Badge
+                        key={interest}
+                        variant="secondary"
+                        className="text-xs"
+                      >
                         {interest}
                       </Badge>
                     ))}

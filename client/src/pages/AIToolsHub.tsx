@@ -7,10 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
-  Sparkles, Code2, FileText, Image, TrendingUp, Shield,
-  Zap, Brain, Globe, Search, ChevronRight, Lock,
-  Cpu, Eye, MessageSquare, BarChart3, Wand2, Bot,
-  FlaskConical, Crosshair, Fingerprint, Radio, Layers
+  Sparkles,
+  Code2,
+  FileText,
+  Image,
+  TrendingUp,
+  Shield,
+  Zap,
+  Brain,
+  Globe,
+  Search,
+  ChevronRight,
+  Lock,
+  Cpu,
+  Eye,
+  MessageSquare,
+  BarChart3,
+  Wand2,
+  Bot,
+  FlaskConical,
+  Crosshair,
+  Fingerprint,
+  Radio,
+  Layers,
 } from "lucide-react";
 
 const TOOLS = [
@@ -160,13 +179,15 @@ const CATEGORIES = [
 ];
 
 export default function AIToolsHub() {
-  
   const [activeCategory, setActiveCategory] = useState("all");
   const [query, setQuery] = useState("");
 
   const filtered = TOOLS.filter(t => {
     const matchCat = activeCategory === "all" || t.category === activeCategory;
-    const matchQ = !query || t.name.toLowerCase().includes(query.toLowerCase()) || t.desc.toLowerCase().includes(query.toLowerCase());
+    const matchQ =
+      !query ||
+      t.name.toLowerCase().includes(query.toLowerCase()) ||
+      t.desc.toLowerCase().includes(query.toLowerCase());
     return matchCat && matchQ;
   });
 
@@ -175,8 +196,14 @@ export default function AIToolsHub() {
       {/* Hero */}
       <div className="relative overflow-hidden py-16 px-4">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-10" style={{ background: "oklch(0.72 0.28 305)" }} />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-10" style={{ background: "oklch(0.72 0.28 340)" }} />
+          <div
+            className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-10"
+            style={{ background: "oklch(0.72 0.28 305)" }}
+          />
+          <div
+            className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-10"
+            style={{ background: "oklch(0.72 0.28 340)" }}
+          />
         </div>
         <div className="max-w-screen-xl mx-auto text-center relative">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium mb-6">
@@ -189,26 +216,46 @@ export default function AIToolsHub() {
             </span>
           </h1>
           <p className="text-lg text-white/50 max-w-xl mx-auto mb-8">
-            {TOOLS.length} tools. Code generation, content creation, market analysis, and grey-area capabilities — all in one place.
+            {TOOLS.length} tools. Code generation, content creation, market
+            analysis, and grey-area capabilities — all in one place.
           </p>
           <div className="relative max-w-md mx-auto">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-            <input value={query} onChange={e => setQuery(e.target.value)}
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
               placeholder="Search tools…"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-purple-500/40 transition-colors" />
+              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-purple-500/40 transition-colors"
+            />
           </div>
         </div>
       </div>
 
       <div className="max-w-screen-xl mx-auto px-4 pb-16">
         {/* Category filter */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-8" style={{ scrollbarWidth: "none" }}>
+        <div
+          className="flex items-center gap-2 overflow-x-auto pb-2 mb-8"
+          style={{ scrollbarWidth: "none" }}
+        >
           {CATEGORIES.map(c => (
-            <button key={c.id} onClick={() => setActiveCategory(c.id)}
+            <button
+              key={c.id}
+              onClick={() => setActiveCategory(c.id)}
               className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeCategory === c.id ? "text-white" : "text-white/40 hover:text-white/70 bg-white/3 hover:bg-white/5"}`}
-              style={activeCategory === c.id ? { background: "linear-gradient(135deg, oklch(0.72 0.28 305 / 0.3), oklch(0.72 0.28 340 / 0.2))", border: "1px solid oklch(0.72 0.28 305 / 0.3)" } : {}}>
+              style={
+                activeCategory === c.id
+                  ? {
+                      background:
+                        "linear-gradient(135deg, oklch(0.72 0.28 305 / 0.3), oklch(0.72 0.28 340 / 0.2))",
+                      border: "1px solid oklch(0.72 0.28 305 / 0.3)",
+                    }
+                  : {}
+              }
+            >
               {c.label}
-              {c.id === "grey" && <span className="ml-1.5 text-[10px] text-orange-400">⚠</span>}
+              {c.id === "grey" && (
+                <span className="ml-1.5 text-[10px] text-orange-400">⚠</span>
+              )}
             </button>
           ))}
         </div>
@@ -219,8 +266,15 @@ export default function AIToolsHub() {
             <div className="flex items-start gap-3">
               <FlaskConical className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-orange-300 mb-1">Grey Area Tools — Use Responsibly</p>
-                <p className="text-xs text-white/50">These tools are provided for educational, research, and authorized security testing purposes only. Misuse may violate laws. By accessing these tools you agree to use them ethically and legally.</p>
+                <p className="text-sm font-semibold text-orange-300 mb-1">
+                  Grey Area Tools — Use Responsibly
+                </p>
+                <p className="text-xs text-white/50">
+                  These tools are provided for educational, research, and
+                  authorized security testing purposes only. Misuse may violate
+                  laws. By accessing these tools you agree to use them ethically
+                  and legally.
+                </p>
               </div>
             </div>
           </div>
@@ -233,19 +287,30 @@ export default function AIToolsHub() {
             return (
               <Link key={tool.id} href={tool.href}>
                 <div className="group relative bg-[#0e0a1a]/90 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all duration-200 cursor-pointer overflow-hidden h-full">
-                  <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${tool.color} opacity-30 group-hover:opacity-70 transition-opacity`} />
+                  <div
+                    className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${tool.color} opacity-30 group-hover:opacity-70 transition-opacity`}
+                  />
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.color} p-0.5`}>
+                    <div
+                      className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.color} p-0.5`}
+                    >
                       <div className="w-full h-full rounded-[14px] bg-[#0e0a1a] flex items-center justify-center">
                         <Icon className="w-5 h-5 text-white" />
                       </div>
                     </div>
-                    <Badge className={`text-[10px] ${tool.badgeColor}`}>{tool.badge}</Badge>
+                    <Badge className={`text-[10px] ${tool.badgeColor}`}>
+                      {tool.badge}
+                    </Badge>
                   </div>
-                  <h3 className="text-base font-bold text-white mb-2 group-hover:text-purple-200 transition-colors">{tool.name}</h3>
-                  <p className="text-sm text-white/45 leading-relaxed mb-4">{tool.desc}</p>
+                  <h3 className="text-base font-bold text-white mb-2 group-hover:text-purple-200 transition-colors">
+                    {tool.name}
+                  </h3>
+                  <p className="text-sm text-white/45 leading-relaxed mb-4">
+                    {tool.desc}
+                  </p>
                   <div className="flex items-center gap-1 text-xs text-purple-400 group-hover:text-purple-300 transition-colors">
-                    Open Tool <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    Open Tool{" "}
+                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </div>
               </Link>

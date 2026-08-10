@@ -40,7 +40,12 @@ interface Tip {
 
 // ─── Feed Ranking Engine ──────────────────────────────────────────────────────
 
-function rankPost(post: Post, author: User, viewerFollowsAuthor: boolean, nowMs: number): number {
+function rankPost(
+  post: Post,
+  author: User,
+  viewerFollowsAuthor: boolean,
+  nowMs: number
+): number {
   const ageHours = (nowMs - post.createdAt.getTime()) / (1000 * 60 * 60);
   const decayFactor = 1 / Math.pow(ageHours + 2, 1.5);
 
@@ -55,7 +60,14 @@ function rankPost(post: Post, author: User, viewerFollowsAuthor: boolean, nowMs:
   const mediaBoost = post.hasMedia ? 1.2 : 1.0;
   const premiumBoost = post.isPremium ? 0.8 : 1.0; // premium posts shown less in public feed
 
-  return engagementScore * decayFactor * authorBoost * followBoost * mediaBoost * premiumBoost;
+  return (
+    engagementScore *
+    decayFactor *
+    authorBoost *
+    followBoost *
+    mediaBoost *
+    premiumBoost
+  );
 }
 
 function rankFeed(
@@ -86,9 +98,9 @@ function calculateTrending(
   windowMs = 3 * 60 * 60 * 1000,
   nowMs = Date.now()
 ): TrendingTag[] {
-  const recent = posts.filter((p) => nowMs - p.createdAt.getTime() < windowMs);
+  const recent = posts.filter(p => nowMs - p.createdAt.getTime() < windowMs);
   const older = posts.filter(
-    (p) =>
+    p =>
       nowMs - p.createdAt.getTime() >= windowMs &&
       nowMs - p.createdAt.getTime() < windowMs * 2
   );
@@ -145,7 +157,7 @@ function sendTip(
 }
 
 function getCreatorTips(creatorId: number): Tip[] {
-  return tipLedger.filter((t) => t.recipientId === creatorId);
+  return tipLedger.filter(t => t.recipientId === creatorId);
 }
 
 function getTotalTipRevenue(creatorId: number): number {
@@ -211,19 +223,44 @@ function makeUser(overrides: Partial<User> = {}): User {
 
 describe("Social Engine — Feed Ranking", () => {
   it("ranks more engaging posts higher", () => {
-    const highEngagement = makePost({ id: 1, likes: 1000, comments: 200, shares: 100, views: 5000 });
-    const lowEngagement = makePost({ id: 2, likes: 1, comments: 0, shares: 0, views: 5 });
+    const highEngagement = makePost({
+      id: 1,
+      likes: 1000,
+      comments: 200,
+      shares: 100,
+      views: 5000,
+    });
+    const lowEngagement = makePost({
+      id: 2,
+      likes: 1,
+      comments: 0,
+      shares: 0,
+      views: 5,
+    });
     const author = makeUser({ id: 1 });
     const authors = new Map([[1, author]]);
     const followed = new Set<number>();
 
-    const ranked = rankFeed([lowEngagement, highEngagement], authors, followed, NOW);
+    const ranked = rankFeed(
+      [lowEngagement, highEngagement],
+      authors,
+      followed,
+      NOW
+    );
     expect(ranked[0].id).toBe(1);
   });
 
   it("newer posts rank higher than older with same engagement", () => {
-    const newPost = makePost({ id: 1, userId: 1, createdAt: new Date(NOW - 30 * 60 * 1000) }); // 30 min ago
-    const oldPost = makePost({ id: 2, userId: 1, createdAt: new Date(NOW - 24 * 60 * 60 * 1000) }); // 24h ago
+    const newPost = makePost({
+      id: 1,
+      userId: 1,
+      createdAt: new Date(NOW - 30 * 60 * 1000),
+    }); // 30 min ago
+    const oldPost = makePost({
+      id: 2,
+      userId: 1,
+      createdAt: new Date(NOW - 24 * 60 * 60 * 1000),
+    }); // 24h ago
     const author = makeUser({ id: 1 });
     const authors = new Map([[1, author]]);
     const followed = new Set<number>();
@@ -241,7 +278,12 @@ describe("Social Engine — Feed Ranking", () => {
     ]);
     const followed = new Set([10]);
 
-    const ranked = rankFeed([unfollowedPost, followedPost], authors, followed, NOW);
+    const ranked = rankFeed(
+      [unfollowedPost, followedPost],
+      authors,
+      followed,
+      NOW
+    );
     expect(ranked[0].id).toBe(1);
   });
 
@@ -254,7 +296,12 @@ describe("Social Engine — Feed Ranking", () => {
     ]);
     const followed = new Set<number>();
 
-    const ranked = rankFeed([unverifiedPost, verifiedPost], authors, followed, NOW);
+    const ranked = rankFeed(
+      [unverifiedPost, verifiedPost],
+      authors,
+      followed,
+      NOW
+    );
     expect(ranked[0].id).toBe(1);
   });
 
@@ -269,8 +316,18 @@ describe("Social Engine — Feed Ranking", () => {
   });
 
   it("premium posts are slightly penalized in public feed", () => {
-    const premiumPost = makePost({ id: 1, userId: 1, isPremium: true, likes: 50 });
-    const publicPost = makePost({ id: 2, userId: 1, isPremium: false, likes: 50 });
+    const premiumPost = makePost({
+      id: 1,
+      userId: 1,
+      isPremium: true,
+      likes: 50,
+    });
+    const publicPost = makePost({
+      id: 2,
+      userId: 1,
+      isPremium: false,
+      likes: 50,
+    });
     const authors = new Map([[1, makeUser({ id: 1 })]]);
     const followed = new Set<number>();
 
@@ -279,8 +336,20 @@ describe("Social Engine — Feed Ranking", () => {
   });
 
   it("comments are weighted more than likes", () => {
-    const commentPost = makePost({ id: 1, userId: 1, likes: 0, comments: 10, shares: 0 });
-    const likePost = makePost({ id: 2, userId: 1, likes: 15, comments: 0, shares: 0 });
+    const commentPost = makePost({
+      id: 1,
+      userId: 1,
+      likes: 0,
+      comments: 10,
+      shares: 0,
+    });
+    const likePost = makePost({
+      id: 2,
+      userId: 1,
+      likes: 15,
+      comments: 0,
+      shares: 0,
+    });
     const authors = new Map([[1, makeUser({ id: 1 })]]);
     const followed = new Set<number>();
 
@@ -290,8 +359,20 @@ describe("Social Engine — Feed Ranking", () => {
 
   it("shares are weighted more than comments", () => {
     // shares*3 > comments*2 when shares=6 (18) vs comments=8 (16)
-    const sharePost = makePost({ id: 1, userId: 1, likes: 0, comments: 0, shares: 6 });
-    const commentPost = makePost({ id: 2, userId: 1, likes: 0, comments: 8, shares: 0 });
+    const sharePost = makePost({
+      id: 1,
+      userId: 1,
+      likes: 0,
+      comments: 0,
+      shares: 6,
+    });
+    const commentPost = makePost({
+      id: 2,
+      userId: 1,
+      likes: 0,
+      comments: 8,
+      shares: 0,
+    });
     const authors = new Map([[1, makeUser({ id: 1 })]]);
     const followed = new Set<number>();
 
@@ -300,7 +381,11 @@ describe("Social Engine — Feed Ranking", () => {
   });
 
   it("returns posts in array of same length", () => {
-    const posts = [makePost({ id: 1, userId: 1 }), makePost({ id: 2, userId: 1 }), makePost({ id: 3, userId: 1 })];
+    const posts = [
+      makePost({ id: 1, userId: 1 }),
+      makePost({ id: 2, userId: 1 }),
+      makePost({ id: 3, userId: 1 }),
+    ];
     const authors = new Map([[1, makeUser({ id: 1 })]]);
     const ranked = rankFeed(posts, authors, new Set(), NOW);
     expect(ranked).toHaveLength(3);
@@ -312,9 +397,18 @@ describe("Social Engine — Trending", () => {
 
   it("identifies trending tags from recent posts", () => {
     const posts = [
-      makePost({ tags: ["#crypto", "#web3"], createdAt: new Date(NOW - 30 * 60 * 1000) }),
-      makePost({ tags: ["#crypto", "#defi"], createdAt: new Date(NOW - 60 * 60 * 1000) }),
-      makePost({ tags: ["#crypto"], createdAt: new Date(NOW - 90 * 60 * 1000) }),
+      makePost({
+        tags: ["#crypto", "#web3"],
+        createdAt: new Date(NOW - 30 * 60 * 1000),
+      }),
+      makePost({
+        tags: ["#crypto", "#defi"],
+        createdAt: new Date(NOW - 60 * 60 * 1000),
+      }),
+      makePost({
+        tags: ["#crypto"],
+        createdAt: new Date(NOW - 90 * 60 * 1000),
+      }),
     ];
     const trending = calculateTrending(posts, 3 * 60 * 60 * 1000, NOW);
     expect(trending[0].tag).toBe("#crypto");
@@ -323,7 +417,10 @@ describe("Social Engine — Trending", () => {
 
   it("returns at most 10 trending tags", () => {
     const posts = Array.from({ length: 20 }, (_, i) =>
-      makePost({ tags: [`#tag${i}`], createdAt: new Date(NOW - 30 * 60 * 1000) })
+      makePost({
+        tags: [`#tag${i}`],
+        createdAt: new Date(NOW - 30 * 60 * 1000),
+      })
     );
     const trending = calculateTrending(posts, 3 * 60 * 60 * 1000, NOW);
     expect(trending.length).toBeLessThanOrEqual(10);
@@ -333,16 +430,22 @@ describe("Social Engine — Trending", () => {
     const posts = [
       // New burst: #newtrend appears 5 times in recent window
       ...Array.from({ length: 5 }, () =>
-        makePost({ tags: ["#newtrend"], createdAt: new Date(NOW - 30 * 60 * 1000) })
+        makePost({
+          tags: ["#newtrend"],
+          createdAt: new Date(NOW - 30 * 60 * 1000),
+        })
       ),
       // Old popular: #oldtag appeared 10 times in older window
       ...Array.from({ length: 10 }, () =>
-        makePost({ tags: ["#oldtag"], createdAt: new Date(NOW - 4 * 60 * 60 * 1000) })
+        makePost({
+          tags: ["#oldtag"],
+          createdAt: new Date(NOW - 4 * 60 * 60 * 1000),
+        })
       ),
     ];
     const trending = calculateTrending(posts, 3 * 60 * 60 * 1000, NOW);
-    const newTrendIdx = trending.findIndex((t) => t.tag === "#newtrend");
-    const oldTagIdx = trending.findIndex((t) => t.tag === "#oldtag");
+    const newTrendIdx = trending.findIndex(t => t.tag === "#newtrend");
+    const oldTagIdx = trending.findIndex(t => t.tag === "#oldtag");
     if (newTrendIdx !== -1 && oldTagIdx !== -1) {
       expect(newTrendIdx).toBeLessThan(oldTagIdx);
     }
@@ -461,11 +564,15 @@ describe("Social Engine — Follow Graph", () => {
 
 describe("Social Engine — Reputation Score", () => {
   function calculateReputation(user: User, posts: Post[], tips: Tip[]): number {
-    const postScore = posts.filter((p) => p.userId === user.id).length * 2;
-    const likeScore = posts
-      .filter((p) => p.userId === user.id)
-      .reduce((sum, p) => sum + p.likes, 0) * 0.1;
-    const tipScore = tips.filter((t) => t.recipientId === user.id).reduce((sum, t) => sum + t.amount, 0) * 0.5;
+    const postScore = posts.filter(p => p.userId === user.id).length * 2;
+    const likeScore =
+      posts
+        .filter(p => p.userId === user.id)
+        .reduce((sum, p) => sum + p.likes, 0) * 0.1;
+    const tipScore =
+      tips
+        .filter(t => t.recipientId === user.id)
+        .reduce((sum, t) => sum + t.amount, 0) * 0.5;
     const verifiedBonus = user.isVerified ? 50 : 0;
     return Math.min(1000, postScore + likeScore + tipScore + verifiedBonus);
   }
@@ -480,8 +587,12 @@ describe("Social Engine — Reputation Score", () => {
 
   it("more posts increase reputation", () => {
     const user = makeUser({ id: 1 });
-    const posts5 = Array.from({ length: 5 }, (_, i) => makePost({ id: i, userId: 1 }));
-    const posts10 = Array.from({ length: 10 }, (_, i) => makePost({ id: i, userId: 1 }));
+    const posts5 = Array.from({ length: 5 }, (_, i) =>
+      makePost({ id: i, userId: 1 })
+    );
+    const posts10 = Array.from({ length: 10 }, (_, i) =>
+      makePost({ id: i, userId: 1 })
+    );
     const rep5 = calculateReputation(user, posts5, []);
     const rep10 = calculateReputation(user, posts10, []);
     expect(rep10).toBeGreaterThan(rep5);

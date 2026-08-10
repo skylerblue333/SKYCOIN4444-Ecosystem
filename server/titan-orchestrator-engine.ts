@@ -119,7 +119,7 @@ export interface DeadLetterQueueEntry {
  */
 export interface Worker {
   id: string;
-  status: 'IDLE' | 'BUSY' | 'OFFLINE';
+  status: "IDLE" | "BUSY" | "OFFLINE";
   lastHeartbeat: number;
   capabilities: string[]; // e.g., ['data-processing', 'api-calls']
   currentTaskId?: string;
@@ -205,7 +205,9 @@ export class TitanOrchestratorEngine {
    * @param task The task to add.
    * @returns The added task.
    */
-  public addTask(task: Omit<Task, 'id' | 'status' | 'createdAt' | 'retriesAttempted'>): Task {
+  public addTask(
+    task: Omit<Task, "id" | "status" | "createdAt" | "retriesAttempted">
+  ): Task {
     const newTask: Task = {
       ...task,
       id: generateUniqueId(),
@@ -227,10 +229,13 @@ export class TitanOrchestratorEngine {
    * @returns The task if found, otherwise undefined.
    */
   public getTask(taskId: string): Task | undefined {
-    return this.taskQueue.find(task => task.id === taskId) ||
-           Array.from(this.workflowInstances.values()).flatMap(wi => Array.from(wi.taskStates.keys()))
-             .map(id => this.getTaskFromWorkflow(id))
-             .find(task => task?.id === taskId);
+    return (
+      this.taskQueue.find(task => task.id === taskId) ||
+      Array.from(this.workflowInstances.values())
+        .flatMap(wi => Array.from(wi.taskStates.keys()))
+        .map(id => this.getTaskFromWorkflow(id))
+        .find(task => task?.id === taskId)
+    );
   }
 
   /**
@@ -241,13 +246,22 @@ export class TitanOrchestratorEngine {
    * @param error Optional error message.
    * @returns True if the task was updated, false otherwise.
    */
-  public updateTaskStatus(taskId: string, status: TaskStatus, result?: Record<string, any>, error?: string): boolean {
+  public updateTaskStatus(
+    taskId: string,
+    status: TaskStatus,
+    result?: Record<string, any>,
+    error?: string
+  ): boolean {
     const task = this.taskQueue.find(t => t.id === taskId);
     if (task) {
       task.status = status;
       if (result) task.result = result;
       if (error) task.error = error;
-      if (status === TaskStatus.COMPLETED || status === TaskStatus.FAILED || status === TaskStatus.CANCELLED) {
+      if (
+        status === TaskStatus.COMPLETED ||
+        status === TaskStatus.FAILED ||
+        status === TaskStatus.CANCELLED
+      ) {
         task.completedAt = Date.now();
       }
       console.log(`Task ${taskId} status updated to ${status}`);
@@ -276,13 +290,17 @@ export class TitanOrchestratorEngine {
    * @param definition The workflow definition.
    * @returns The defined workflow.
    */
-  public defineWorkflow(definition: Omit<WorkflowDefinition, 'id'>): WorkflowDefinition {
+  public defineWorkflow(
+    definition: Omit<WorkflowDefinition, "id">
+  ): WorkflowDefinition {
     const newDefinition: WorkflowDefinition = {
       ...definition,
       id: generateUniqueId(),
     };
     this.workflowDefinitions.set(newDefinition.id, newDefinition);
-    console.log(`Workflow defined: ${newDefinition.name} (${newDefinition.id})`);
+    console.log(
+      `Workflow defined: ${newDefinition.name} (${newDefinition.id})`
+    );
     return newDefinition;
   }
 
@@ -291,7 +309,9 @@ export class TitanOrchestratorEngine {
    * @param workflowDefinitionId The ID of the workflow definition.
    * @returns The new workflow instance, or undefined if definition not found.
    */
-  public startWorkflow(workflowDefinitionId: string): WorkflowInstance | undefined {
+  public startWorkflow(
+    workflowDefinitionId: string
+  ): WorkflowInstance | undefined {
     const definition = this.workflowDefinitions.get(workflowDefinitionId);
     if (!definition) {
       console.error(`Workflow definition ${workflowDefinitionId} not found.`);
@@ -300,7 +320,9 @@ export class TitanOrchestratorEngine {
 
     const instanceId = generateUniqueId();
     const taskStates = new Map<string, TaskStatus>();
-    definition.tasks.forEach(task => taskStates.set(task.id, TaskStatus.PENDING));
+    definition.tasks.forEach(task =>
+      taskStates.set(task.id, TaskStatus.PENDING)
+    );
 
     const newInstance: WorkflowInstance = {
       id: instanceId,
@@ -317,7 +339,13 @@ export class TitanOrchestratorEngine {
     definition.startTaskIds.forEach(taskId => {
       const task = definition.tasks.find(t => t.id === taskId);
       if (task && task.dependencies.length === 0) {
-        const { status: _s, id: _id, createdAt: _ca, retriesAttempted: _ra, ...taskData } = task;
+        const {
+          status: _s,
+          id: _id,
+          createdAt: _ca,
+          retriesAttempted: _ra,
+          ...taskData
+        } = task;
         this.addTask(taskData);
         newInstance.taskStates.set(taskId, TaskStatus.RUNNING);
         newInstance.currentTasks.push(taskId);
@@ -326,7 +354,9 @@ export class TitanOrchestratorEngine {
 
     newInstance.status = TaskStatus.RUNNING;
     newInstance.startedAt = Date.now();
-    console.log(`Workflow instance ${instanceId} started for definition ${workflowDefinitionId}`);
+    console.log(
+      `Workflow instance ${instanceId} started for definition ${workflowDefinitionId}`
+    );
     return newInstance;
   }
 
@@ -335,16 +365,23 @@ export class TitanOrchestratorEngine {
    * @param completedTaskId The ID of the task that just completed.
    * @param status The final status of the completed task.
    */
-  private processWorkflowDependencies(completedTaskId: string, status: TaskStatus): void {
+  private processWorkflowDependencies(
+    completedTaskId: string,
+    status: TaskStatus
+  ): void {
     this.workflowInstances.forEach(instance => {
       if (instance.taskStates.has(completedTaskId)) {
         instance.taskStates.set(completedTaskId, status);
-        instance.currentTasks = instance.currentTasks.filter(id => id !== completedTaskId);
+        instance.currentTasks = instance.currentTasks.filter(
+          id => id !== completedTaskId
+        );
 
         if (status === TaskStatus.FAILED) {
           instance.failedTasks.push(completedTaskId);
           instance.status = TaskStatus.FAILED; // Mark workflow as failed if any task fails
-          console.error(`Workflow instance ${instance.id} failed due to task ${completedTaskId}`);
+          console.error(
+            `Workflow instance ${instance.id} failed due to task ${completedTaskId}`
+          );
           return;
         }
 
@@ -358,28 +395,41 @@ export class TitanOrchestratorEngine {
 
         dependentTasks.forEach(dependentTask => {
           // Check if all dependencies for the dependent task are met
-          const allDependenciesMet = dependentTask.dependencies.every(depId =>
-            instance.taskStates.get(depId) === TaskStatus.COMPLETED
+          const allDependenciesMet = dependentTask.dependencies.every(
+            depId => instance.taskStates.get(depId) === TaskStatus.COMPLETED
           );
 
-          if (allDependenciesMet && instance.taskStates.get(dependentTask.id) === TaskStatus.PENDING) {
-            const { status: _ds, id: _did, createdAt: _dca, retriesAttempted: _dra, ...depTaskData } = dependentTask;
+          if (
+            allDependenciesMet &&
+            instance.taskStates.get(dependentTask.id) === TaskStatus.PENDING
+          ) {
+            const {
+              status: _ds,
+              id: _did,
+              createdAt: _dca,
+              retriesAttempted: _dra,
+              ...depTaskData
+            } = dependentTask;
             this.addTask(depTaskData);
             instance.taskStates.set(dependentTask.id, TaskStatus.RUNNING);
             instance.currentTasks.push(dependentTask.id);
-            console.log(`Dependent task ${dependentTask.id} added to queue for workflow ${instance.id}`);
+            console.log(
+              `Dependent task ${dependentTask.id} added to queue for workflow ${instance.id}`
+            );
           }
         });
 
         // Check if workflow is complete
-        const allTasksCompleted = definition.tasks.every(task =>
-          instance.taskStates.get(task.id) === TaskStatus.COMPLETED
+        const allTasksCompleted = definition.tasks.every(
+          task => instance.taskStates.get(task.id) === TaskStatus.COMPLETED
         );
 
         if (allTasksCompleted) {
           instance.status = TaskStatus.COMPLETED;
           instance.completedAt = Date.now();
-          console.log(`Workflow instance ${instance.id} completed successfully.`);
+          console.log(
+            `Workflow instance ${instance.id} completed successfully.`
+          );
         }
       }
     });
@@ -400,14 +450,18 @@ export class TitanOrchestratorEngine {
    * @param job The job to schedule.
    * @returns The scheduled job.
    */
-  public scheduleJob(job: Omit<ScheduledJob, 'id' | 'nextRunAt'>): ScheduledJob {
+  public scheduleJob(
+    job: Omit<ScheduledJob, "id" | "nextRunAt">
+  ): ScheduledJob {
     const newJob: ScheduledJob = {
       ...job,
       id: generateUniqueId(),
       nextRunAt: parseCronSchedule(job.cronSchedule),
     };
     this.scheduledJobs.set(newJob.id, newJob);
-    console.log(`Job scheduled: ${newJob.name} (${newJob.id}) to run at ${new Date(newJob.nextRunAt).toISOString()}`);
+    console.log(
+      `Job scheduled: ${newJob.name} (${newJob.id}) to run at ${new Date(newJob.nextRunAt).toISOString()}`
+    );
     return newJob;
   }
 
@@ -418,7 +472,10 @@ export class TitanOrchestratorEngine {
     if (this.cronSchedulerInterval) {
       clearInterval(this.cronSchedulerInterval);
     }
-    this.cronSchedulerInterval = setInterval(() => this.checkScheduledJobs(), CRON_CHECK_INTERVAL_MS);
+    this.cronSchedulerInterval = setInterval(
+      () => this.checkScheduledJobs(),
+      CRON_CHECK_INTERVAL_MS
+    );
     console.log("Cron scheduler started.");
   }
 
@@ -433,10 +490,18 @@ export class TitanOrchestratorEngine {
         // Assuming the taskId in ScheduledJob refers to a predefined task or workflow
         const taskDefinition = this.getTaskFromWorkflow(job.taskId);
         if (taskDefinition) {
-          const { status: _ts, id: _tid, createdAt: _tca, retriesAttempted: _tra, ...taskDefData } = taskDefinition;
+          const {
+            status: _ts,
+            id: _tid,
+            createdAt: _tca,
+            retriesAttempted: _tra,
+            ...taskDefData
+          } = taskDefinition;
           this.addTask(taskDefData);
         } else {
-          console.warn(`Scheduled job ${job.id} refers to unknown task ID ${job.taskId}`);
+          console.warn(
+            `Scheduled job ${job.id} refers to unknown task ID ${job.taskId}`
+          );
         }
         job.lastRunAt = now;
         job.nextRunAt = parseCronSchedule(job.cronSchedule);
@@ -456,7 +521,7 @@ export class TitanOrchestratorEngine {
   public registerWorker(workerId: string, capabilities: string[]): Worker {
     const newWorker: Worker = {
       id: workerId,
-      status: 'IDLE',
+      status: "IDLE",
       lastHeartbeat: Date.now(),
       capabilities: capabilities,
     };
@@ -473,7 +538,11 @@ export class TitanOrchestratorEngine {
    * @param currentTaskId Optional ID of the task the worker is currently executing.
    * @returns True if updated, false otherwise.
    */
-  public updateWorkerStatus(workerId: string, status: 'IDLE' | 'BUSY' | 'OFFLINE', currentTaskId?: string): boolean {
+  public updateWorkerStatus(
+    workerId: string,
+    status: "IDLE" | "BUSY" | "OFFLINE",
+    currentTaskId?: string
+  ): boolean {
     const worker = this.workers.get(workerId);
     if (worker) {
       worker.status = status;
@@ -490,15 +559,20 @@ export class TitanOrchestratorEngine {
    * Assigns pending tasks to available workers.
    */
   private assignTasksToWorkers(): void {
-    const availableWorkers = Array.from(this.workers.values()).filter(w => w.status === 'IDLE');
+    const availableWorkers = Array.from(this.workers.values()).filter(
+      w => w.status === "IDLE"
+    );
     if (availableWorkers.length === 0 || this.taskQueue.length === 0) {
       return;
     }
 
     for (const worker of availableWorkers) {
-      const taskIndex = this.taskQueue.findIndex(task =>
-        task.status === TaskStatus.PENDING &&
-        worker.capabilities.some(cap => task.payload.requiredCapabilities?.includes(cap) || true) // Simplified capability matching
+      const taskIndex = this.taskQueue.findIndex(
+        task =>
+          task.status === TaskStatus.PENDING &&
+          worker.capabilities.some(
+            cap => task.payload.requiredCapabilities?.includes(cap) || true
+          ) // Simplified capability matching
       );
 
       if (taskIndex !== -1) {
@@ -508,7 +582,7 @@ export class TitanOrchestratorEngine {
         task.status = TaskStatus.RUNNING;
         task.startedAt = Date.now();
         task.workerId = worker.id;
-        worker.status = 'BUSY';
+        worker.status = "BUSY";
         worker.currentTaskId = task.id;
         this.workers.set(worker.id, worker);
 
@@ -516,7 +590,10 @@ export class TitanOrchestratorEngine {
         // For this simulation, we'll just log and assume execution happens.
         console.log(`Task ${task.id} assigned to worker ${worker.id}`);
         // Simulate task completion/failure after a delay
-        setTimeout(() => this.simulateTaskExecution(task), DEFAULT_TASK_TIMEOUT_MS / 2);
+        setTimeout(
+          () => this.simulateTaskExecution(task),
+          DEFAULT_TASK_TIMEOUT_MS / 2
+        );
       } else {
         break; // No more suitable tasks for this worker
       }
@@ -531,12 +608,14 @@ export class TitanOrchestratorEngine {
   private simulateTaskExecution(task: Task): void {
     const success = Math.random() > 0.2; // 80% success rate
     if (success) {
-      this.updateTaskStatus(task.id, TaskStatus.COMPLETED, { simulatedResult: `Task ${task.id} completed.` });
+      this.updateTaskStatus(task.id, TaskStatus.COMPLETED, {
+        simulatedResult: `Task ${task.id} completed.`,
+      });
     } else {
-      this.handleTaskFailure(task, 'Simulated execution failure.');
+      this.handleTaskFailure(task, "Simulated execution failure.");
     }
     if (task.workerId) {
-      this.updateWorkerStatus(task.workerId, 'IDLE');
+      this.updateWorkerStatus(task.workerId, "IDLE");
       this.assignTasksToWorkers(); // Try to assign new tasks after one completes
     }
   }
@@ -555,9 +634,18 @@ export class TitanOrchestratorEngine {
     const retryPolicy = DEFAULT_RETRY_POLICY; // Could be task-specific
 
     if (task.retriesAttempted <= retryPolicy.maxAttempts) {
-      const delay = retryPolicy.delayMs * Math.pow(retryPolicy.backoffFactor, task.retriesAttempted - 1);
-      console.warn(`Task ${task.id} failed. Retrying in ${delay}ms (attempt ${task.retriesAttempted}/${retryPolicy.maxAttempts}).`);
-      this.updateTaskStatus(task.id, TaskStatus.RETRYING, undefined, errorMessage);
+      const delay =
+        retryPolicy.delayMs *
+        Math.pow(retryPolicy.backoffFactor, task.retriesAttempted - 1);
+      console.warn(
+        `Task ${task.id} failed. Retrying in ${delay}ms (attempt ${task.retriesAttempted}/${retryPolicy.maxAttempts}).`
+      );
+      this.updateTaskStatus(
+        task.id,
+        TaskStatus.RETRYING,
+        undefined,
+        errorMessage
+      );
       setTimeout(() => {
         task.status = TaskStatus.PENDING; // Re-add to queue for retry
         this.taskQueue.push(task);
@@ -565,9 +653,16 @@ export class TitanOrchestratorEngine {
         this.assignTasksToWorkers();
       }, delay);
     } else {
-      console.error(`Task ${task.id} failed after ${task.retriesAttempted} retries. Moving to Dead Letter Queue.`);
+      console.error(
+        `Task ${task.id} failed after ${task.retriesAttempted} retries. Moving to Dead Letter Queue.`
+      );
       this.moveToDeadLetterQueue(task, errorMessage);
-      this.updateTaskStatus(task.id, TaskStatus.FAILED, undefined, errorMessage);
+      this.updateTaskStatus(
+        task.id,
+        TaskStatus.FAILED,
+        undefined,
+        errorMessage
+      );
     }
   }
 
@@ -604,7 +699,9 @@ export class TitanOrchestratorEngine {
    */
   public removeDeadLetterQueueEntry(entryId: string): boolean {
     const initialLength = this.deadLetterQueue.length;
-    this.deadLetterQueue = this.deadLetterQueue.filter(entry => entry.id !== entryId);
+    this.deadLetterQueue = this.deadLetterQueue.filter(
+      entry => entry.id !== entryId
+    );
     return this.deadLetterQueue.length < initialLength;
   }
 
@@ -644,7 +741,9 @@ export class TitanOrchestratorEngine {
       this.taskMonitors.set(record.taskId, []);
     }
     this.taskMonitors.get(record.taskId)?.push(record);
-    console.log(`Metric recorded for task ${record.taskId}: ${record.metric} = ${record.value}`);
+    console.log(
+      `Metric recorded for task ${record.taskId}: ${record.metric} = ${record.value}`
+    );
   }
 
   /**
@@ -663,7 +762,9 @@ export class TitanOrchestratorEngine {
    * @param definitionId The ID of the workflow definition.
    * @returns The workflow definition if found, otherwise undefined.
    */
-  public getWorkflowDefinition(definitionId: string): WorkflowDefinition | undefined {
+  public getWorkflowDefinition(
+    definitionId: string
+  ): WorkflowDefinition | undefined {
     return this.workflowDefinitions.get(definitionId);
   }
 
@@ -684,7 +785,9 @@ export class TitanOrchestratorEngine {
   public async suggestWorkflowImprovements(prompt: string): Promise<string> {
     console.log("Invoking LLM for workflow improvements...");
     try {
-      const response = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+      const response = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
       return String(response.choices[0]?.message?.content || "");
     } catch (error) {
       console.error("Error invoking LLM:", error);

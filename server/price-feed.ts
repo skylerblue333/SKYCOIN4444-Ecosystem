@@ -22,8 +22,16 @@ let cache: CacheEntry | null = null;
 const CACHE_TTL = 60_000; // 60 seconds
 
 const COIN_IDS = [
-  "bitcoin", "ethereum", "solana", "binancecoin", "cardano",
-  "polkadot", "chainlink", "uniswap", "avalanche-2", "matic-network"
+  "bitcoin",
+  "ethereum",
+  "solana",
+  "binancecoin",
+  "cardano",
+  "polkadot",
+  "chainlink",
+  "uniswap",
+  "avalanche-2",
+  "matic-network",
 ];
 
 // SKY444 simulated token data
@@ -47,12 +55,12 @@ export async function fetchLivePrices(): Promise<PriceData[]> {
   try {
     const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${COIN_IDS.join(",")}&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h`;
     const response = await fetch(url, {
-      headers: { "Accept": "application/json" },
+      headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(8000),
     });
 
     if (!response.ok) throw new Error(`CoinGecko HTTP ${response.status}`);
-    const data = await response.json() as PriceData[];
+    const data = (await response.json()) as PriceData[];
     const withSky = [SKY444_DATA, ...data];
     cache = { data: withSky, fetchedAt: now };
     return withSky;
@@ -61,11 +69,56 @@ export async function fetchLivePrices(): Promise<PriceData[]> {
     // Fallback static prices
     const fallback: PriceData[] = [
       SKY444_DATA,
-      { id: "bitcoin", symbol: "btc", name: "Bitcoin", current_price: 69420, price_change_percentage_24h: 1.23, market_cap: 1_360_000_000_000, total_volume: 28_000_000_000, image: "" },
-      { id: "ethereum", symbol: "eth", name: "Ethereum", current_price: 3880, price_change_percentage_24h: 2.11, market_cap: 466_000_000_000, total_volume: 14_000_000_000, image: "" },
-      { id: "solana", symbol: "sol", name: "Solana", current_price: 172, price_change_percentage_24h: -0.88, market_cap: 80_000_000_000, total_volume: 3_200_000_000, image: "" },
-      { id: "binancecoin", symbol: "bnb", name: "BNB", current_price: 598, price_change_percentage_24h: 0.44, market_cap: 87_000_000_000, total_volume: 1_800_000_000, image: "" },
-      { id: "cardano", symbol: "ada", name: "Cardano", current_price: 0.48, price_change_percentage_24h: -1.2, market_cap: 17_000_000_000, total_volume: 440_000_000, image: "" },
+      {
+        id: "bitcoin",
+        symbol: "btc",
+        name: "Bitcoin",
+        current_price: 69420,
+        price_change_percentage_24h: 1.23,
+        market_cap: 1_360_000_000_000,
+        total_volume: 28_000_000_000,
+        image: "",
+      },
+      {
+        id: "ethereum",
+        symbol: "eth",
+        name: "Ethereum",
+        current_price: 3880,
+        price_change_percentage_24h: 2.11,
+        market_cap: 466_000_000_000,
+        total_volume: 14_000_000_000,
+        image: "",
+      },
+      {
+        id: "solana",
+        symbol: "sol",
+        name: "Solana",
+        current_price: 172,
+        price_change_percentage_24h: -0.88,
+        market_cap: 80_000_000_000,
+        total_volume: 3_200_000_000,
+        image: "",
+      },
+      {
+        id: "binancecoin",
+        symbol: "bnb",
+        name: "BNB",
+        current_price: 598,
+        price_change_percentage_24h: 0.44,
+        market_cap: 87_000_000_000,
+        total_volume: 1_800_000_000,
+        image: "",
+      },
+      {
+        id: "cardano",
+        symbol: "ada",
+        name: "Cardano",
+        current_price: 0.48,
+        price_change_percentage_24h: -1.2,
+        market_cap: 17_000_000_000,
+        total_volume: 440_000_000,
+        image: "",
+      },
     ];
     if (!cache) cache = { data: fallback, fetchedAt: now };
     return cache.data;
@@ -74,7 +127,9 @@ export async function fetchLivePrices(): Promise<PriceData[]> {
 
 export async function fetchTokenPrice(coinId: string): Promise<number | null> {
   const prices = await fetchLivePrices();
-  const coin = prices.find(p => p.id === coinId || p.symbol === coinId.toLowerCase());
+  const coin = prices.find(
+    p => p.id === coinId || p.symbol === coinId.toLowerCase()
+  );
   return coin?.current_price ?? null;
 }
 
@@ -167,10 +222,17 @@ export interface TrendSignal {
 // ─── Extended Caches ─────────────────────────────────────────
 
 const ohlcvCache = new Map<string, { data: OHLCVBar[]; fetchedAt: number }>();
-const priceHistoryCache = new Map<string, { prices: [number, number][]; fetchedAt: number }>();
+const priceHistoryCache = new Map<
+  string,
+  { prices: [number, number][]; fetchedAt: number }
+>();
 const priceAlerts: PriceAlert[] = [];
-const portfolioSnapshots = new Map<number, { snapshot: PortfolioValuation; timestamp: number }>();
-let marketSummaryCache: { data: MarketSummary; fetchedAt: number } | null = null;
+const portfolioSnapshots = new Map<
+  number,
+  { snapshot: PortfolioValuation; timestamp: number }
+>();
+let marketSummaryCache: { data: MarketSummary; fetchedAt: number } | null =
+  null;
 
 const OHLCV_CACHE_TTL = 5 * 60_000;
 const MARKET_SUMMARY_TTL = 2 * 60_000;
@@ -178,38 +240,265 @@ const MARKET_SUMMARY_TTL = 2 * 60_000;
 // ─── All Supported Tokens ─────────────────────────────────────
 
 export const ALL_SUPPORTED_TOKENS = [
-  { id: "sky444",          symbol: "SKY444",  name: "SKYCOIN4444",     decimals: 18, mineable: true,  isNative: true  },
-  { id: "bitcoin",         symbol: "BTC",     name: "Bitcoin",         decimals: 8,  mineable: true,  isNative: false },
-  { id: "ethereum",        symbol: "ETH",     name: "Ethereum",        decimals: 18, mineable: false, isNative: false },
-  { id: "solana",          symbol: "SOL",     name: "Solana",          decimals: 9,  mineable: false, isNative: false },
-  { id: "dogecoin",        symbol: "DOGE",    name: "Dogecoin",        decimals: 8,  mineable: true,  isNative: false },
-  { id: "tether",          symbol: "USDT",    name: "Tether",          decimals: 6,  mineable: false, isNative: false },
-  { id: "monero",          symbol: "XMR",     name: "Monero",          decimals: 12, mineable: true,  isNative: false },
-  { id: "trump",           symbol: "TRUMP",   name: "Official Trump",  decimals: 6,  mineable: true,  isNative: false },
-  { id: "binancecoin",     symbol: "BNB",     name: "BNB",             decimals: 18, mineable: false, isNative: false },
-  { id: "cardano",         symbol: "ADA",     name: "Cardano",         decimals: 6,  mineable: false, isNative: false },
-  { id: "polkadot",        symbol: "DOT",     name: "Polkadot",        decimals: 10, mineable: false, isNative: false },
-  { id: "chainlink",       symbol: "LINK",    name: "Chainlink",       decimals: 18, mineable: false, isNative: false },
-  { id: "uniswap",         symbol: "UNI",     name: "Uniswap",         decimals: 18, mineable: false, isNative: false },
-  { id: "avalanche-2",     symbol: "AVAX",    name: "Avalanche",       decimals: 18, mineable: false, isNative: false },
-  { id: "matic-network",   symbol: "MATIC",   name: "Polygon",         decimals: 18, mineable: false, isNative: false },
+  {
+    id: "sky444",
+    symbol: "SKY444",
+    name: "SKYCOIN4444",
+    decimals: 18,
+    mineable: true,
+    isNative: true,
+  },
+  {
+    id: "bitcoin",
+    symbol: "BTC",
+    name: "Bitcoin",
+    decimals: 8,
+    mineable: true,
+    isNative: false,
+  },
+  {
+    id: "ethereum",
+    symbol: "ETH",
+    name: "Ethereum",
+    decimals: 18,
+    mineable: false,
+    isNative: false,
+  },
+  {
+    id: "solana",
+    symbol: "SOL",
+    name: "Solana",
+    decimals: 9,
+    mineable: false,
+    isNative: false,
+  },
+  {
+    id: "dogecoin",
+    symbol: "DOGE",
+    name: "Dogecoin",
+    decimals: 8,
+    mineable: true,
+    isNative: false,
+  },
+  {
+    id: "tether",
+    symbol: "USDT",
+    name: "Tether",
+    decimals: 6,
+    mineable: false,
+    isNative: false,
+  },
+  {
+    id: "monero",
+    symbol: "XMR",
+    name: "Monero",
+    decimals: 12,
+    mineable: true,
+    isNative: false,
+  },
+  {
+    id: "trump",
+    symbol: "TRUMP",
+    name: "Official Trump",
+    decimals: 6,
+    mineable: true,
+    isNative: false,
+  },
+  {
+    id: "binancecoin",
+    symbol: "BNB",
+    name: "BNB",
+    decimals: 18,
+    mineable: false,
+    isNative: false,
+  },
+  {
+    id: "cardano",
+    symbol: "ADA",
+    name: "Cardano",
+    decimals: 6,
+    mineable: false,
+    isNative: false,
+  },
+  {
+    id: "polkadot",
+    symbol: "DOT",
+    name: "Polkadot",
+    decimals: 10,
+    mineable: false,
+    isNative: false,
+  },
+  {
+    id: "chainlink",
+    symbol: "LINK",
+    name: "Chainlink",
+    decimals: 18,
+    mineable: false,
+    isNative: false,
+  },
+  {
+    id: "uniswap",
+    symbol: "UNI",
+    name: "Uniswap",
+    decimals: 18,
+    mineable: false,
+    isNative: false,
+  },
+  {
+    id: "avalanche-2",
+    symbol: "AVAX",
+    name: "Avalanche",
+    decimals: 18,
+    mineable: false,
+    isNative: false,
+  },
+  {
+    id: "matic-network",
+    symbol: "MATIC",
+    name: "Polygon",
+    decimals: 18,
+    mineable: false,
+    isNative: false,
+  },
 ];
 
-export const MINEABLE_TOKENS = ALL_SUPPORTED_TOKENS.filter(t => t.mineable).map(t => t.id);
+export const MINEABLE_TOKENS = ALL_SUPPORTED_TOKENS.filter(t => t.mineable).map(
+  t => t.id
+);
 
 // ─── Fallback Prices ─────────────────────────────────────────
 
 const FALLBACK_PRICES: Record<string, Partial<ExtendedPriceData>> = {
-  sky444:        { current_price: 0.0888,   price_change_percentage_24h: 4.44,   market_cap: 88_800_000,          total_volume: 4_440_000,        high_24h: 0.0944,   low_24h: 0.0832,  ath: 0.444,    ath_change_percentage: -80, circulating_supply: 1_000_000_000, total_supply: 4_444_444_444, max_supply: 4_444_444_444 },
-  bitcoin:       { current_price: 69_420,   price_change_percentage_24h: 1.23,   market_cap: 1_360_000_000_000,   total_volume: 28_000_000_000,   high_24h: 71_000,   low_24h: 68_200,  ath: 73_750,   ath_change_percentage: -5.9, circulating_supply: 19_700_000, total_supply: 21_000_000, max_supply: 21_000_000 },
-  ethereum:      { current_price: 3_880,    price_change_percentage_24h: 2.11,   market_cap: 466_000_000_000,     total_volume: 14_000_000_000,   high_24h: 3_960,    low_24h: 3_780,   ath: 4_878,    ath_change_percentage: -20.5, circulating_supply: 120_000_000, total_supply: null, max_supply: null },
-  solana:        { current_price: 172,      price_change_percentage_24h: -0.88,  market_cap: 80_000_000_000,      total_volume: 3_200_000_000,    high_24h: 178,      low_24h: 168,     ath: 260,      ath_change_percentage: -33.8, circulating_supply: 465_000_000, total_supply: null, max_supply: null },
-  dogecoin:      { current_price: 0.165,    price_change_percentage_24h: 3.21,   market_cap: 24_000_000_000,      total_volume: 1_200_000_000,    high_24h: 0.172,    low_24h: 0.158,   ath: 0.74,     ath_change_percentage: -77.7, circulating_supply: 145_000_000_000, total_supply: null, max_supply: null },
-  tether:        { current_price: 1.0,      price_change_percentage_24h: 0.01,   market_cap: 110_000_000_000,     total_volume: 50_000_000_000,   high_24h: 1.001,    low_24h: 0.999,   ath: 1.32,     ath_change_percentage: -24.2, circulating_supply: 110_000_000_000, total_supply: 110_000_000_000, max_supply: null },
-  monero:        { current_price: 168,      price_change_percentage_24h: 1.55,   market_cap: 3_100_000_000,       total_volume: 88_000_000,       high_24h: 172,      low_24h: 164,     ath: 517,      ath_change_percentage: -67.5, circulating_supply: 18_400_000, total_supply: null, max_supply: null },
-  trump:         { current_price: 14.22,    price_change_percentage_24h: 8.88,   market_cap: 2_844_000_000,       total_volume: 444_000_000,      high_24h: 15.44,    low_24h: 12.88,   ath: 75.35,    ath_change_percentage: -81.1, circulating_supply: 200_000_000, total_supply: 1_000_000_000, max_supply: 1_000_000_000 },
-  binancecoin:   { current_price: 598,      price_change_percentage_24h: 0.44,   market_cap: 87_000_000_000,      total_volume: 1_800_000_000,    high_24h: 612,      low_24h: 590,     ath: 686,      ath_change_percentage: -12.8, circulating_supply: 145_000_000, total_supply: 145_000_000, max_supply: 200_000_000 },
-  cardano:       { current_price: 0.48,     price_change_percentage_24h: -1.2,   market_cap: 17_000_000_000,      total_volume: 440_000_000,      high_24h: 0.495,    low_24h: 0.468,   ath: 3.10,     ath_change_percentage: -84.5, circulating_supply: 35_000_000_000, total_supply: 45_000_000_000, max_supply: 45_000_000_000 },
+  sky444: {
+    current_price: 0.0888,
+    price_change_percentage_24h: 4.44,
+    market_cap: 88_800_000,
+    total_volume: 4_440_000,
+    high_24h: 0.0944,
+    low_24h: 0.0832,
+    ath: 0.444,
+    ath_change_percentage: -80,
+    circulating_supply: 1_000_000_000,
+    total_supply: 4_444_444_444,
+    max_supply: 4_444_444_444,
+  },
+  bitcoin: {
+    current_price: 69_420,
+    price_change_percentage_24h: 1.23,
+    market_cap: 1_360_000_000_000,
+    total_volume: 28_000_000_000,
+    high_24h: 71_000,
+    low_24h: 68_200,
+    ath: 73_750,
+    ath_change_percentage: -5.9,
+    circulating_supply: 19_700_000,
+    total_supply: 21_000_000,
+    max_supply: 21_000_000,
+  },
+  ethereum: {
+    current_price: 3_880,
+    price_change_percentage_24h: 2.11,
+    market_cap: 466_000_000_000,
+    total_volume: 14_000_000_000,
+    high_24h: 3_960,
+    low_24h: 3_780,
+    ath: 4_878,
+    ath_change_percentage: -20.5,
+    circulating_supply: 120_000_000,
+    total_supply: null,
+    max_supply: null,
+  },
+  solana: {
+    current_price: 172,
+    price_change_percentage_24h: -0.88,
+    market_cap: 80_000_000_000,
+    total_volume: 3_200_000_000,
+    high_24h: 178,
+    low_24h: 168,
+    ath: 260,
+    ath_change_percentage: -33.8,
+    circulating_supply: 465_000_000,
+    total_supply: null,
+    max_supply: null,
+  },
+  dogecoin: {
+    current_price: 0.165,
+    price_change_percentage_24h: 3.21,
+    market_cap: 24_000_000_000,
+    total_volume: 1_200_000_000,
+    high_24h: 0.172,
+    low_24h: 0.158,
+    ath: 0.74,
+    ath_change_percentage: -77.7,
+    circulating_supply: 145_000_000_000,
+    total_supply: null,
+    max_supply: null,
+  },
+  tether: {
+    current_price: 1.0,
+    price_change_percentage_24h: 0.01,
+    market_cap: 110_000_000_000,
+    total_volume: 50_000_000_000,
+    high_24h: 1.001,
+    low_24h: 0.999,
+    ath: 1.32,
+    ath_change_percentage: -24.2,
+    circulating_supply: 110_000_000_000,
+    total_supply: 110_000_000_000,
+    max_supply: null,
+  },
+  monero: {
+    current_price: 168,
+    price_change_percentage_24h: 1.55,
+    market_cap: 3_100_000_000,
+    total_volume: 88_000_000,
+    high_24h: 172,
+    low_24h: 164,
+    ath: 517,
+    ath_change_percentage: -67.5,
+    circulating_supply: 18_400_000,
+    total_supply: null,
+    max_supply: null,
+  },
+  trump: {
+    current_price: 14.22,
+    price_change_percentage_24h: 8.88,
+    market_cap: 2_844_000_000,
+    total_volume: 444_000_000,
+    high_24h: 15.44,
+    low_24h: 12.88,
+    ath: 75.35,
+    ath_change_percentage: -81.1,
+    circulating_supply: 200_000_000,
+    total_supply: 1_000_000_000,
+    max_supply: 1_000_000_000,
+  },
+  binancecoin: {
+    current_price: 598,
+    price_change_percentage_24h: 0.44,
+    market_cap: 87_000_000_000,
+    total_volume: 1_800_000_000,
+    high_24h: 612,
+    low_24h: 590,
+    ath: 686,
+    ath_change_percentage: -12.8,
+    circulating_supply: 145_000_000,
+    total_supply: 145_000_000,
+    max_supply: 200_000_000,
+  },
+  cardano: {
+    current_price: 0.48,
+    price_change_percentage_24h: -1.2,
+    market_cap: 17_000_000_000,
+    total_volume: 440_000_000,
+    high_24h: 0.495,
+    low_24h: 0.468,
+    ath: 3.1,
+    ath_change_percentage: -84.5,
+    circulating_supply: 35_000_000_000,
+    total_supply: 45_000_000_000,
+    max_supply: 45_000_000_000,
+  },
 };
 
 // ─── Simulated Price Drift (for SKY444 and TRUMP) ────────────
@@ -218,7 +507,9 @@ const priceSeeds = new Map<string, number>();
 function simulatedPrice(coinId: string, basePrice: number): number {
   const seed = priceSeeds.get(coinId) || Math.random();
   priceSeeds.set(coinId, seed);
-  const drift = (Math.sin(Date.now() / 60_000 + seed * 100) * 0.02) + (Math.random() - 0.5) * 0.005;
+  const drift =
+    Math.sin(Date.now() / 60_000 + seed * 100) * 0.02 +
+    (Math.random() - 0.5) * 0.005;
   return Math.max(basePrice * 0.5, basePrice * (1 + drift));
 }
 
@@ -229,22 +520,37 @@ export async function fetchExtendedPrices(): Promise<ExtendedPriceData[]> {
   if (cache && now - cache.fetchedAt < CACHE_TTL) {
     return cache.data as ExtendedPriceData[];
   }
-  const coinIds = ALL_SUPPORTED_TOKENS.filter(t => t.id !== "sky444" && t.id !== "trump").map(t => t.id);
+  const coinIds = ALL_SUPPORTED_TOKENS.filter(
+    t => t.id !== "sky444" && t.id !== "trump"
+  ).map(t => t.id);
   try {
     const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds.join(",")}&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h,7d,30d`;
-    const response = await fetch(url, { headers: { "Accept": "application/json" }, signal: AbortSignal.timeout(8000) });
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(8000),
+    });
     if (!response.ok) throw new Error(`CoinGecko HTTP ${response.status}`);
-    const data = await response.json() as ExtendedPriceData[];
+    const data = (await response.json()) as ExtendedPriceData[];
     const sky444: ExtendedPriceData = {
       ...(FALLBACK_PRICES.sky444 as ExtendedPriceData),
-      id: "sky444", symbol: "sky444", name: "SKYCOIN4444",
-      current_price: simulatedPrice("sky444", FALLBACK_PRICES.sky444.current_price!),
+      id: "sky444",
+      symbol: "sky444",
+      name: "SKYCOIN4444",
+      current_price: simulatedPrice(
+        "sky444",
+        FALLBACK_PRICES.sky444.current_price!
+      ),
       image: "",
     };
     const trump: ExtendedPriceData = {
       ...(FALLBACK_PRICES.trump as ExtendedPriceData),
-      id: "trump", symbol: "trump", name: "Official Trump",
-      current_price: simulatedPrice("trump", FALLBACK_PRICES.trump.current_price!),
+      id: "trump",
+      symbol: "trump",
+      name: "Official Trump",
+      current_price: simulatedPrice(
+        "trump",
+        FALLBACK_PRICES.trump.current_price!
+      ),
       image: "",
     };
     const withCustom = [sky444, trump, ...data];
@@ -260,9 +566,12 @@ function buildFallbackPrices(): ExtendedPriceData[] {
     const fb = FALLBACK_PRICES[token.id] || {};
     const base = fb.current_price || 1;
     return {
-      id: token.id, symbol: token.symbol.toLowerCase(), name: token.name,
+      id: token.id,
+      symbol: token.symbol.toLowerCase(),
+      name: token.name,
       current_price: simulatedPrice(token.id, base),
-      price_change_percentage_24h: fb.price_change_percentage_24h || (Math.random() - 0.5) * 10,
+      price_change_percentage_24h:
+        fb.price_change_percentage_24h || (Math.random() - 0.5) * 10,
       market_cap: fb.market_cap || base * 1_000_000,
       total_volume: fb.total_volume || base * 100_000,
       high_24h: fb.high_24h || base * 1.05,
@@ -279,16 +588,33 @@ function buildFallbackPrices(): ExtendedPriceData[] {
 
 // ─── OHLCV Data ───────────────────────────────────────────────
 
-export async function fetchOHLCV(coinId: string, days = 7): Promise<OHLCVBar[]> {
+export async function fetchOHLCV(
+  coinId: string,
+  days = 7
+): Promise<OHLCVBar[]> {
   const cacheKey = `${coinId}:${days}`;
   const cached = ohlcvCache.get(cacheKey);
-  if (cached && Date.now() - cached.fetchedAt < OHLCV_CACHE_TTL) return cached.data;
+  if (cached && Date.now() - cached.fetchedAt < OHLCV_CACHE_TTL)
+    return cached.data;
   try {
     const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=usd&days=${days}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) throw new Error(`OHLCV HTTP ${res.status}`);
-    const raw = await res.json() as [number, number, number, number, number][];
-    const bars: OHLCVBar[] = raw.map(([ts, o, h, l, c]) => ({ timestamp: ts, open: o, high: h, low: l, close: c, volume: 0 }));
+    const raw = (await res.json()) as [
+      number,
+      number,
+      number,
+      number,
+      number,
+    ][];
+    const bars: OHLCVBar[] = raw.map(([ts, o, h, l, c]) => ({
+      timestamp: ts,
+      open: o,
+      high: h,
+      low: l,
+      close: c,
+      volume: 0,
+    }));
     ohlcvCache.set(cacheKey, { data: bars, fetchedAt: Date.now() });
     return bars;
   } catch {
@@ -308,23 +634,37 @@ function generateSimulatedOHLCV(coinId: string, days: number): OHLCVBar[] {
     const high = price * (1 + Math.random() * 0.01);
     const low = price * (1 - Math.random() * 0.01);
     const open = price * (1 + (Math.random() - 0.5) * 0.005);
-    bars.push({ timestamp: now - i * 3_600_000, open, high, low, close: price, volume: basePrice * 1_000_000 * Math.random() });
+    bars.push({
+      timestamp: now - i * 3_600_000,
+      open,
+      high,
+      low,
+      close: price,
+      volume: basePrice * 1_000_000 * Math.random(),
+    });
   }
   return bars;
 }
 
 // ─── Price History ────────────────────────────────────────────
 
-export async function fetchPriceHistory(coinId: string, days = 30): Promise<[number, number][]> {
+export async function fetchPriceHistory(
+  coinId: string,
+  days = 30
+): Promise<[number, number][]> {
   const cacheKey = `hist:${coinId}:${days}`;
   const cached = priceHistoryCache.get(cacheKey);
-  if (cached && Date.now() - cached.fetchedAt < OHLCV_CACHE_TTL) return cached.prices;
+  if (cached && Date.now() - cached.fetchedAt < OHLCV_CACHE_TTL)
+    return cached.prices;
   try {
     const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=daily`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) throw new Error(`History HTTP ${res.status}`);
-    const data = await res.json() as { prices: [number, number][] };
-    priceHistoryCache.set(cacheKey, { prices: data.prices, fetchedAt: Date.now() });
+    const data = (await res.json()) as { prices: [number, number][] };
+    priceHistoryCache.set(cacheKey, {
+      prices: data.prices,
+      fetchedAt: Date.now(),
+    });
     return data.prices;
   } catch {
     const fb = FALLBACK_PRICES[coinId];
@@ -343,13 +683,26 @@ export async function fetchPriceHistory(coinId: string, days = 30): Promise<[num
 // ─── Market Summary ───────────────────────────────────────────
 
 export async function fetchMarketSummary(): Promise<MarketSummary> {
-  if (marketSummaryCache && Date.now() - marketSummaryCache.fetchedAt < MARKET_SUMMARY_TTL) {
+  if (
+    marketSummaryCache &&
+    Date.now() - marketSummaryCache.fetchedAt < MARKET_SUMMARY_TTL
+  ) {
     return marketSummaryCache.data;
   }
   try {
-    const res = await fetch("https://api.coingecko.com/api/v3/global", { signal: AbortSignal.timeout(8000) });
+    const res = await fetch("https://api.coingecko.com/api/v3/global", {
+      signal: AbortSignal.timeout(8000),
+    });
     if (!res.ok) throw new Error(`Global HTTP ${res.status}`);
-    const json = await res.json() as { data: { total_market_cap: Record<string, number>; total_volume: Record<string, number>; market_cap_percentage: Record<string, number>; market_cap_change_percentage_24h_usd: number; active_cryptocurrencies: number } };
+    const json = (await res.json()) as {
+      data: {
+        total_market_cap: Record<string, number>;
+        total_volume: Record<string, number>;
+        market_cap_percentage: Record<string, number>;
+        market_cap_change_percentage_24h_usd: number;
+        active_cryptocurrencies: number;
+      };
+    };
     const d = json.data;
     const fearGreed = Math.floor(Math.random() * 100);
     const summary: MarketSummary = {
@@ -367,7 +720,17 @@ export async function fetchMarketSummary(): Promise<MarketSummary> {
     return summary;
   } catch {
     const fearGreed = 55 + Math.floor(Math.random() * 20);
-    return { totalMarketCap: 2_500_000_000_000, totalVolume24h: 80_000_000_000, btcDominance: 52.4, ethDominance: 17.8, fearGreedIndex: fearGreed, fearGreedLabel: fearGreedLabel(fearGreed), activeCoins: 12_847, marketCapChange24h: 1.2, timestamp: Date.now() };
+    return {
+      totalMarketCap: 2_500_000_000_000,
+      totalVolume24h: 80_000_000_000,
+      btcDominance: 52.4,
+      ethDominance: 17.8,
+      fearGreedIndex: fearGreed,
+      fearGreedLabel: fearGreedLabel(fearGreed),
+      activeCoins: 12_847,
+      marketCapChange24h: 1.2,
+      timestamp: Date.now(),
+    };
   }
 }
 
@@ -381,7 +744,9 @@ function fearGreedLabel(index: number): string {
 
 // ─── Portfolio Valuation ──────────────────────────────────────
 
-export async function valuatePortfolio(holdings: Array<{ coinId: string; amount: number; costBasis?: number }>): Promise<PortfolioValuation> {
+export async function valuatePortfolio(
+  holdings: Array<{ coinId: string; amount: number; costBasis?: number }>
+): Promise<PortfolioValuation> {
   const prices = await fetchExtendedPrices();
   const priceMap = new Map(prices.map(p => [p.id, p]));
   const btcPrice = priceMap.get("bitcoin")?.current_price || 69_420;
@@ -401,14 +766,42 @@ export async function valuatePortfolio(holdings: Array<{ coinId: string; amount:
     const pnlPercent = costBasis > 0 ? (pnlUSD / costBasis) * 100 : 0;
     totalValueUSD += valueUSD;
     totalCostBasis += costBasis;
-    if (change24h > bestChange) { bestChange = change24h; bestCoin = h.coinId; }
-    if (change24h < worstChange) { worstChange = change24h; worstCoin = h.coinId; }
-    return { coinId: h.coinId, symbol: priceData?.symbol || h.coinId, amount: h.amount, priceUSD, valueUSD, allocation: 0, change24h, pnlUSD, pnlPercent, costBasis };
+    if (change24h > bestChange) {
+      bestChange = change24h;
+      bestCoin = h.coinId;
+    }
+    if (change24h < worstChange) {
+      worstChange = change24h;
+      worstCoin = h.coinId;
+    }
+    return {
+      coinId: h.coinId,
+      symbol: priceData?.symbol || h.coinId,
+      amount: h.amount,
+      priceUSD,
+      valueUSD,
+      allocation: 0,
+      change24h,
+      pnlUSD,
+      pnlPercent,
+      costBasis,
+    };
   });
-  valuatedHoldings.forEach(h => { h.allocation = totalValueUSD > 0 ? (h.valueUSD / totalValueUSD) * 100 : 0; });
+  valuatedHoldings.forEach(h => {
+    h.allocation = totalValueUSD > 0 ? (h.valueUSD / totalValueUSD) * 100 : 0;
+  });
   const totalPnlUSD = totalCostBasis > 0 ? totalValueUSD - totalCostBasis : 0;
-  const totalPnlPercent = totalCostBasis > 0 ? (totalPnlUSD / totalCostBasis) * 100 : 0;
-  return { totalValueUSD, totalValueBTC: totalValueUSD / btcPrice, holdings: valuatedHoldings, totalPnlUSD, totalPnlPercent, bestPerformer: bestCoin, worstPerformer: worstCoin };
+  const totalPnlPercent =
+    totalCostBasis > 0 ? (totalPnlUSD / totalCostBasis) * 100 : 0;
+  return {
+    totalValueUSD,
+    totalValueBTC: totalValueUSD / btcPrice,
+    holdings: valuatedHoldings,
+    totalPnlUSD,
+    totalPnlPercent,
+    bestPerformer: bestCoin,
+    worstPerformer: worstCoin,
+  };
 }
 
 // ─── Technical Analysis / Trend Signals ──────────────────────
@@ -426,31 +819,72 @@ export async function computeTrendSignal(coinId: string): Promise<TrendSignal> {
   const priceAboveMa20 = currentPrice > ma20;
   const priceAboveMa50 = currentPrice > ma50;
   const bollingerPosition: TrendSignal["indicators"]["bollingerPosition"] =
-    currentPrice >= upper ? "upper" : currentPrice <= lower ? "lower" : "middle";
+    currentPrice >= upper
+      ? "upper"
+      : currentPrice <= lower
+        ? "lower"
+        : "middle";
   let score = 0;
   const reasoning: string[] = [];
-  if (rsi < 30) { score += 2; reasoning.push(`RSI oversold (${rsi.toFixed(1)})`); }
-  else if (rsi > 70) { score -= 2; reasoning.push(`RSI overbought (${rsi.toFixed(1)})`); }
-  if (macdSignal === "bullish") { score += 1; reasoning.push("MACD bullish crossover"); }
-  else if (macdSignal === "bearish") { score -= 1; reasoning.push("MACD bearish crossover"); }
-  if (priceAboveMa20) { score += 1; reasoning.push("Price above MA20"); }
-  if (priceAboveMa50) { score += 1; reasoning.push("Price above MA50"); }
-  if (bollingerPosition === "lower") { score += 1; reasoning.push("Near Bollinger lower band"); }
-  else if (bollingerPosition === "upper") { score -= 1; reasoning.push("Near Bollinger upper band"); }
+  if (rsi < 30) {
+    score += 2;
+    reasoning.push(`RSI oversold (${rsi.toFixed(1)})`);
+  } else if (rsi > 70) {
+    score -= 2;
+    reasoning.push(`RSI overbought (${rsi.toFixed(1)})`);
+  }
+  if (macdSignal === "bullish") {
+    score += 1;
+    reasoning.push("MACD bullish crossover");
+  } else if (macdSignal === "bearish") {
+    score -= 1;
+    reasoning.push("MACD bearish crossover");
+  }
+  if (priceAboveMa20) {
+    score += 1;
+    reasoning.push("Price above MA20");
+  }
+  if (priceAboveMa50) {
+    score += 1;
+    reasoning.push("Price above MA50");
+  }
+  if (bollingerPosition === "lower") {
+    score += 1;
+    reasoning.push("Near Bollinger lower band");
+  } else if (bollingerPosition === "upper") {
+    score -= 1;
+    reasoning.push("Near Bollinger upper band");
+  }
   let signal: TrendSignal["signal"] = "neutral";
   if (score >= 3) signal = "strong_buy";
   else if (score >= 1) signal = "buy";
   else if (score <= -3) signal = "strong_sell";
   else if (score <= -1) signal = "sell";
-  return { coinId, signal, confidence: Math.min(95, Math.abs(score) * 20 + 40), indicators: { rsi, macdSignal, volumeSpike, priceAboveMa20, priceAboveMa50, bollingerPosition }, reasoning, timestamp: Date.now() };
+  return {
+    coinId,
+    signal,
+    confidence: Math.min(95, Math.abs(score) * 20 + 40),
+    indicators: {
+      rsi,
+      macdSignal,
+      volumeSpike,
+      priceAboveMa20,
+      priceAboveMa50,
+      bollingerPosition,
+    },
+    reasoning,
+    timestamp: Date.now(),
+  };
 }
 
 function computeRSI(prices: number[], period = 14): number {
   if (prices.length < period + 1) return 50;
-  let gains = 0, losses = 0;
+  let gains = 0,
+    losses = 0;
   for (let i = prices.length - period; i < prices.length; i++) {
     const diff = prices[i] - prices[i - 1];
-    if (diff > 0) gains += diff; else losses -= diff;
+    if (diff > 0) gains += diff;
+    else losses -= diff;
   }
   const avgGain = gains / period;
   const avgLoss = losses / period;
@@ -465,16 +899,23 @@ function computeMA(prices: number[], period: number): number {
   return slice.reduce((a, b) => a + b, 0) / period;
 }
 
-function computeBollinger(prices: number[], period = 20): { upper: number; middle: number; lower: number } {
+function computeBollinger(
+  prices: number[],
+  period = 20
+): { upper: number; middle: number; lower: number } {
   const ma = computeMA(prices, period);
-  if (prices.length < period) return { upper: ma * 1.02, middle: ma, lower: ma * 0.98 };
+  if (prices.length < period)
+    return { upper: ma * 1.02, middle: ma, lower: ma * 0.98 };
   const slice = prices.slice(-period);
-  const variance = slice.reduce((sum, p) => sum + Math.pow(p - ma, 2), 0) / period;
+  const variance =
+    slice.reduce((sum, p) => sum + Math.pow(p - ma, 2), 0) / period;
   const stdDev = Math.sqrt(variance);
   return { upper: ma + 2 * stdDev, middle: ma, lower: ma - 2 * stdDev };
 }
 
-function computeMACDSignal(prices: number[]): "bullish" | "bearish" | "neutral" {
+function computeMACDSignal(
+  prices: number[]
+): "bullish" | "bearish" | "neutral" {
   if (prices.length < 26) return "neutral";
   const ema12 = computeEMA(prices, 12);
   const ema26 = computeEMA(prices, 26);
@@ -497,8 +938,21 @@ function computeEMA(prices: number[], period: number): number {
 
 // ─── Price Alerts ─────────────────────────────────────────────
 
-export function createPriceAlert(userId: number, coinId: string, targetPrice: number, direction: "above" | "below"): PriceAlert {
-  const alert: PriceAlert = { id: `alert_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, userId, coinId, targetPrice, direction, triggered: false, createdAt: Date.now() };
+export function createPriceAlert(
+  userId: number,
+  coinId: string,
+  targetPrice: number,
+  direction: "above" | "below"
+): PriceAlert {
+  const alert: PriceAlert = {
+    id: `alert_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    userId,
+    coinId,
+    targetPrice,
+    direction,
+    triggered: false,
+    createdAt: Date.now(),
+  };
   priceAlerts.push(alert);
   return alert;
 }
@@ -511,8 +965,15 @@ export async function checkPriceAlerts(): Promise<PriceAlert[]> {
     if (alert.triggered) continue;
     const currentPrice = priceMap.get(alert.coinId);
     if (currentPrice === undefined) continue;
-    const hit = alert.direction === "above" ? currentPrice >= alert.targetPrice : currentPrice <= alert.targetPrice;
-    if (hit) { alert.triggered = true; alert.triggeredAt = Date.now(); triggered.push(alert); }
+    const hit =
+      alert.direction === "above"
+        ? currentPrice >= alert.targetPrice
+        : currentPrice <= alert.targetPrice;
+    if (hit) {
+      alert.triggered = true;
+      alert.triggeredAt = Date.now();
+      triggered.push(alert);
+    }
   }
   return triggered;
 }
@@ -522,7 +983,9 @@ export function getUserPriceAlerts(userId: number): PriceAlert[] {
 }
 
 export function deletePriceAlert(alertId: string, userId: number): boolean {
-  const idx = priceAlerts.findIndex(a => a.id === alertId && a.userId === userId);
+  const idx = priceAlerts.findIndex(
+    a => a.id === alertId && a.userId === userId
+  );
   if (idx === -1) return false;
   priceAlerts.splice(idx, 1);
   return true;
@@ -530,8 +993,19 @@ export function deletePriceAlert(alertId: string, userId: number): boolean {
 
 // ─── Swap Rate Engine ─────────────────────────────────────────
 
-export async function getSwapRate(fromCoinId: string, toCoinId: string, amount: number): Promise<{
-  fromAmount: number; toAmount: number; rate: number; priceImpact: number; fee: number; feeAmount: number; minReceived: number; slippage: number;
+export async function getSwapRate(
+  fromCoinId: string,
+  toCoinId: string,
+  amount: number
+): Promise<{
+  fromAmount: number;
+  toAmount: number;
+  rate: number;
+  priceImpact: number;
+  fee: number;
+  feeAmount: number;
+  minReceived: number;
+  slippage: number;
 }> {
   const prices = await fetchExtendedPrices();
   const priceMap = new Map(prices.map(p => [p.id, p.current_price]));
@@ -545,18 +1019,39 @@ export async function getSwapRate(fromCoinId: string, toCoinId: string, amount: 
   const priceImpact = Math.min(5, (usdValue / 1_000_000) * 0.1);
   const slippage = 0.5;
   const minReceived = toAmount * (1 - slippage / 100);
-  return { fromAmount: amount, toAmount, rate: fromPrice / toPrice, priceImpact, fee: fee * 100, feeAmount, minReceived, slippage };
+  return {
+    fromAmount: amount,
+    toAmount,
+    rate: fromPrice / toPrice,
+    priceImpact,
+    fee: fee * 100,
+    feeAmount,
+    minReceived,
+    slippage,
+  };
 }
 
 // ─── Staking APY Engine ───────────────────────────────────────
 
-export function getStakingAPY(coinId: string, lockDays: number): { apy: number; dailyRate: number; projectedReward: number } {
+export function getStakingAPY(
+  coinId: string,
+  lockDays: number
+): { apy: number; dailyRate: number; projectedReward: number } {
   const baseAPYs: Record<string, number> = {
-    sky444: 44.4, bitcoin: 3.5, ethereum: 4.2, solana: 6.8, dogecoin: 8.0,
-    tether: 5.0, monero: 2.5, trump: 22.2, binancecoin: 5.5, cardano: 4.8,
+    sky444: 44.4,
+    bitcoin: 3.5,
+    ethereum: 4.2,
+    solana: 6.8,
+    dogecoin: 8.0,
+    tether: 5.0,
+    monero: 2.5,
+    trump: 22.2,
+    binancecoin: 5.5,
+    cardano: 4.8,
   };
   const baseAPY = baseAPYs[coinId] || 5.0;
-  const lockBonus = lockDays >= 365 ? 1.5 : lockDays >= 90 ? 1.2 : lockDays >= 30 ? 1.1 : 1.0;
+  const lockBonus =
+    lockDays >= 365 ? 1.5 : lockDays >= 90 ? 1.2 : lockDays >= 30 ? 1.1 : 1.0;
   const apy = baseAPY * lockBonus;
   const dailyRate = apy / 365 / 100;
   const projectedReward = dailyRate * lockDays;
@@ -565,9 +1060,13 @@ export function getStakingAPY(coinId: string, lockDays: number): { apy: number; 
 
 // ─── Mining Reward Engine ─────────────────────────────────────
 
-export function computeMiningReward(coinId: string, hashRatePercent: number, durationSeconds: number): { reward: number; usdValue: number; hashRate: string; efficiency: number } {
+export function computeMiningReward(
+  coinId: string,
+  hashRatePercent: number,
+  durationSeconds: number
+): { reward: number; usdValue: number; hashRate: string; efficiency: number } {
   const miningRates: Record<string, number> = {
-    sky444: 100,    // tokens per hour at 100% hashrate
+    sky444: 100, // tokens per hour at 100% hashrate
     bitcoin: 0.000001,
     dogecoin: 0.5,
     monero: 0.002,
@@ -578,7 +1077,12 @@ export function computeMiningReward(coinId: string, hashRatePercent: number, dur
   const hoursElapsed = durationSeconds / 3600;
   const reward = baseRate * efficiency * hoursElapsed;
   const hashRateMH = hashRatePercent * 0.5;
-  return { reward, usdValue: 0, hashRate: `${hashRateMH.toFixed(1)} MH/s`, efficiency };
+  return {
+    reward,
+    usdValue: 0,
+    hashRate: `${hashRateMH.toFixed(1)} MH/s`,
+    efficiency,
+  };
 }
 
 // ─── End of price-feed engine v2 ────────────────────────────

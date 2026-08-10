@@ -9,12 +9,33 @@
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type RegionStatus = "healthy" | "degraded" | "critical" | "offline" | "maintenance";
-export type ShardStatus = "active" | "rebalancing" | "migrating" | "readonly" | "offline";
-export type TrafficPolicy = "round_robin" | "least_connections" | "latency_based" | "geo_affinity" | "weighted";
+export type RegionStatus =
+  "healthy" | "degraded" | "critical" | "offline" | "maintenance";
+export type ShardStatus =
+  "active" | "rebalancing" | "migrating" | "readonly" | "offline";
+export type TrafficPolicy =
+  | "round_robin"
+  | "least_connections"
+  | "latency_based"
+  | "geo_affinity"
+  | "weighted";
 export type IncidentSeverity = "p0" | "p1" | "p2" | "p3" | "p4";
-export type IncidentStatus = "detected" | "acknowledged" | "investigating" | "mitigating" | "resolved" | "post_mortem";
-export type CostCategory = "compute" | "storage" | "bandwidth" | "database" | "cdn" | "ai" | "monitoring" | "other";
+export type IncidentStatus =
+  | "detected"
+  | "acknowledged"
+  | "investigating"
+  | "mitigating"
+  | "resolved"
+  | "post_mortem";
+export type CostCategory =
+  | "compute"
+  | "storage"
+  | "bandwidth"
+  | "database"
+  | "cdn"
+  | "ai"
+  | "monitoring"
+  | "other";
 
 export interface Region {
   id: string;
@@ -174,7 +195,9 @@ export interface EdgeNode {
 export interface DataSovereigntyPolicy {
   id: string;
   countryCode: string;
-  dataTypes: Array<"user_pii" | "financial" | "health" | "content" | "analytics">;
+  dataTypes: Array<
+    "user_pii" | "financial" | "health" | "content" | "analytics"
+  >;
   allowedRegionIds: string[];
   encryptionRequired: boolean;
   retentionDays: number;
@@ -239,29 +262,75 @@ export const regionManager = {
     return region;
   },
 
-  updateHealth(regionId: string, metrics: Partial<Pick<Region, "cpuUtilization" | "memoryUtilization" | "diskUtilization" | "networkInMbps" | "networkOutMbps" | "activeConnections" | "requestsPerSecond" | "errorRate" | "p99LatencyMs" | "latencyMs">>): Region | null {
+  updateHealth(
+    regionId: string,
+    metrics: Partial<
+      Pick<
+        Region,
+        | "cpuUtilization"
+        | "memoryUtilization"
+        | "diskUtilization"
+        | "networkInMbps"
+        | "networkOutMbps"
+        | "activeConnections"
+        | "requestsPerSecond"
+        | "errorRate"
+        | "p99LatencyMs"
+        | "latencyMs"
+      >
+    >
+  ): Region | null {
     const region = _regions.get(regionId);
     if (!region) return null;
     Object.assign(region, metrics);
     region.lastHealthCheck = new Date();
 
     // Auto-determine status
-    if (region.errorRate > 0.1 || region.cpuUtilization > 95) region.status = "critical";
-    else if (region.errorRate > 0.05 || region.cpuUtilization > 80) region.status = "degraded";
+    if (region.errorRate > 0.1 || region.cpuUtilization > 95)
+      region.status = "critical";
+    else if (region.errorRate > 0.05 || region.cpuUtilization > 80)
+      region.status = "degraded";
     else region.status = "healthy";
 
     // Fire alerts if needed
     if (region.cpuUtilization > 90) {
-      this._fireAlert(`cpu_${regionId}`, "CPU Critical", "critical", `region-${regionId}`, regionId, `CPU > 90%`, region.cpuUtilization, 90);
+      this._fireAlert(
+        `cpu_${regionId}`,
+        "CPU Critical",
+        "critical",
+        `region-${regionId}`,
+        regionId,
+        `CPU > 90%`,
+        region.cpuUtilization,
+        90
+      );
     }
     if (region.errorRate > 0.05) {
-      this._fireAlert(`err_${regionId}`, "High Error Rate", "critical", `region-${regionId}`, regionId, `Error rate > 5%`, region.errorRate * 100, 5);
+      this._fireAlert(
+        `err_${regionId}`,
+        "High Error Rate",
+        "critical",
+        `region-${regionId}`,
+        regionId,
+        `Error rate > 5%`,
+        region.errorRate * 100,
+        5
+      );
     }
 
     return region;
   },
 
-  _fireAlert(id: string, name: string, severity: InfrastructureAlert["severity"], service: string, regionId: string, condition: string, current: number, threshold: number): void {
+  _fireAlert(
+    id: string,
+    name: string,
+    severity: InfrastructureAlert["severity"],
+    service: string,
+    regionId: string,
+    condition: string,
+    current: number,
+    threshold: number
+  ): void {
     const existing = _alerts.get(id);
     if (existing && existing.isActive) return;
     const alert: InfrastructureAlert = {
@@ -285,7 +354,9 @@ export const regionManager = {
   },
 
   getAllRegions(): Region[] {
-    return Array.from(_regions.values()).sort((a, b) => (a.isPrimary ? -1 : 1) - (b.isPrimary ? -1 : 1));
+    return Array.from(_regions.values()).sort(
+      (a, b) => (a.isPrimary ? -1 : 1) - (b.isPrimary ? -1 : 1)
+    );
   },
 
   getHealthyRegions(): Region[] {
@@ -298,7 +369,10 @@ export const regionManager = {
     return result;
   },
 
-  failoverRegion(fromRegionId: string, toRegionId: string): { success: boolean; affectedRoutes: string[] } {
+  failoverRegion(
+    fromRegionId: string,
+    toRegionId: string
+  ): { success: boolean; affectedRoutes: string[] } {
     const from = _regions.get(fromRegionId);
     const to = _regions.get(toRegionId);
     if (!from || !to) return { success: false, affectedRoutes: [] };
@@ -310,7 +384,8 @@ export const regionManager = {
       if (route.regionWeights[fromRegionId] !== undefined) {
         const weight = route.regionWeights[fromRegionId];
         delete route.regionWeights[fromRegionId];
-        route.regionWeights[toRegionId] = (route.regionWeights[toRegionId] ?? 0) + weight;
+        route.regionWeights[toRegionId] =
+          (route.regionWeights[toRegionId] ?? 0) + weight;
         route.updatedAt = new Date();
         affectedRoutes.push(route.id);
       }
@@ -330,20 +405,29 @@ export const shardManager = {
   },
 
   getShardForKey(shardType: Shard["shardType"], key: string): Shard | null {
-    const shards = Array.from(_shards.values()).filter(s => s.shardType === shardType && s.status === "active" && s.isPrimary);
+    const shards = Array.from(_shards.values()).filter(
+      s => s.shardType === shardType && s.status === "active" && s.isPrimary
+    );
     for (const shard of shards) {
       if (key >= shard.minKey && key <= shard.maxKey) return shard;
     }
     return shards[0] ?? null;
   },
 
-  rebalanceShards(shardType: Shard["shardType"]): { moved: number; plans: CapacityPlan[] } {
-    const shards = Array.from(_shards.values()).filter(s => s.shardType === shardType && s.isPrimary);
+  rebalanceShards(shardType: Shard["shardType"]): {
+    moved: number;
+    plans: CapacityPlan[];
+  } {
+    const shards = Array.from(_shards.values()).filter(
+      s => s.shardType === shardType && s.isPrimary
+    );
     const plans: CapacityPlan[] = [];
     let moved = 0;
 
     // Find overloaded shards (>80% of avg)
-    const avgRecords = shards.reduce((s, sh) => s + sh.recordCount, 0) / Math.max(1, shards.length);
+    const avgRecords =
+      shards.reduce((s, sh) => s + sh.recordCount, 0) /
+      Math.max(1, shards.length);
     for (const shard of shards) {
       if (shard.recordCount > avgRecords * 1.5) {
         const planId = `cap_${shard.id}_${Date.now()}`;
@@ -370,14 +454,27 @@ export const shardManager = {
     return { moved, plans };
   },
 
-  updateShardMetrics(shardId: string, metrics: Partial<Pick<Shard, "recordCount" | "sizeBytes" | "writeQPS" | "readQPS" | "replicationLag">>): Shard | null {
+  updateShardMetrics(
+    shardId: string,
+    metrics: Partial<
+      Pick<
+        Shard,
+        "recordCount" | "sizeBytes" | "writeQPS" | "readQPS" | "replicationLag"
+      >
+    >
+  ): Shard | null {
     const shard = _shards.get(shardId);
     if (!shard) return null;
     Object.assign(shard, metrics);
     return shard;
   },
 
-  getShardStats(): { totalShards: number; byType: Record<string, number>; totalRecords: number; totalSizeGB: number } {
+  getShardStats(): {
+    totalShards: number;
+    byType: Record<string, number>;
+    totalRecords: number;
+    totalSizeGB: number;
+  } {
     const shards = Array.from(_shards.values());
     const byType: Record<string, number> = {};
     let totalRecords = 0;
@@ -387,21 +484,36 @@ export const shardManager = {
       totalRecords += s.recordCount;
       totalSizeBytes += s.sizeBytes;
     }
-    return { totalShards: shards.length, byType, totalRecords, totalSizeGB: totalSizeBytes / (1024 ** 3) };
+    return {
+      totalShards: shards.length,
+      byType,
+      totalRecords,
+      totalSizeGB: totalSizeBytes / 1024 ** 3,
+    };
   },
 };
 
 // ─── TRAFFIC MANAGER ─────────────────────────────────────────────────────────
 
 export const trafficManager = {
-  createRoute(params: Omit<TrafficRoute, "id" | "createdAt" | "updatedAt">): TrafficRoute {
+  createRoute(
+    params: Omit<TrafficRoute, "id" | "createdAt" | "updatedAt">
+  ): TrafficRoute {
     const id = `route_${params.serviceName}_${Date.now()}`;
-    const route: TrafficRoute = { ...params, id, createdAt: new Date(), updatedAt: new Date() };
+    const route: TrafficRoute = {
+      ...params,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     _trafficRoutes.set(id, route);
     return route;
   },
 
-  updateWeights(routeId: string, weights: Record<string, number>): TrafficRoute | null {
+  updateWeights(
+    routeId: string,
+    weights: Record<string, number>
+  ): TrafficRoute | null {
     const route = _trafficRoutes.get(routeId);
     if (!route) return null;
     // Normalize weights to sum to 100
@@ -414,7 +526,11 @@ export const trafficManager = {
   },
 
   getRouteForService(serviceName: string): TrafficRoute | null {
-    return Array.from(_trafficRoutes.values()).find(r => r.serviceName === serviceName && r.isActive) ?? null;
+    return (
+      Array.from(_trafficRoutes.values()).find(
+        r => r.serviceName === serviceName && r.isActive
+      ) ?? null
+    );
   },
 
   selectRegion(serviceName: string): string | null {
@@ -422,8 +538,9 @@ export const trafficManager = {
     if (!route) return null;
 
     const healthyRegions = regionManager.getHealthyRegions().map(r => r.id);
-    const eligibleWeights = Object.entries(route.regionWeights)
-      .filter(([regionId]) => healthyRegions.includes(regionId));
+    const eligibleWeights = Object.entries(route.regionWeights).filter(
+      ([regionId]) => healthyRegions.includes(regionId)
+    );
 
     if (eligibleWeights.length === 0) return route.failoverRegionId ?? null;
 
@@ -437,18 +554,31 @@ export const trafficManager = {
     return eligibleWeights[0]?.[0] ?? null;
   },
 
-  getTrafficStats(): { totalRoutes: number; activeRoutes: number; byPolicy: Record<string, number> } {
+  getTrafficStats(): {
+    totalRoutes: number;
+    activeRoutes: number;
+    byPolicy: Record<string, number>;
+  } {
     const routes = Array.from(_trafficRoutes.values());
     const byPolicy: Record<string, number> = {};
     for (const r of routes) byPolicy[r.policy] = (byPolicy[r.policy] ?? 0) + 1;
-    return { totalRoutes: routes.length, activeRoutes: routes.filter(r => r.isActive).length, byPolicy };
+    return {
+      totalRoutes: routes.length,
+      activeRoutes: routes.filter(r => r.isActive).length,
+      byPolicy,
+    };
   },
 };
 
 // ─── SLA MONITOR ─────────────────────────────────────────────────────────────
 
 export const slaMonitor = {
-  createTarget(params: Omit<SLATarget, "currentValue" | "isBreached" | "breachCount" | "updatedAt">): SLATarget {
+  createTarget(
+    params: Omit<
+      SLATarget,
+      "currentValue" | "isBreached" | "breachCount" | "updatedAt"
+    >
+  ): SLATarget {
     const target: SLATarget = {
       ...params,
       currentValue: 0,
@@ -467,8 +597,11 @@ export const slaMonitor = {
     const wasBreached = target.isBreached;
 
     // Check breach: for availability/throughput higher is better; for latency/error_rate lower is better
-    const higherIsBetter = target.metric === "availability" || target.metric === "throughput";
-    target.isBreached = higherIsBetter ? currentValue < target.target : currentValue > target.target;
+    const higherIsBetter =
+      target.metric === "availability" || target.metric === "throughput";
+    target.isBreached = higherIsBetter
+      ? currentValue < target.target
+      : currentValue > target.target;
 
     if (target.isBreached && !wasBreached) {
       target.breachCount++;
@@ -482,18 +615,31 @@ export const slaMonitor = {
     totalTargets: number;
     breachedTargets: number;
     overallHealth: number;
-    byService: Record<string, { breached: boolean; value: number; target: number }>;
+    byService: Record<
+      string,
+      { breached: boolean; value: number; target: number }
+    >;
   } {
     const targets = Array.from(_slaTargets.values());
     const breached = targets.filter(t => t.isBreached);
-    const byService: Record<string, { breached: boolean; value: number; target: number }> = {};
+    const byService: Record<
+      string,
+      { breached: boolean; value: number; target: number }
+    > = {};
     for (const t of targets) {
-      byService[`${t.serviceName}_${t.metric}`] = { breached: t.isBreached, value: t.currentValue, target: t.target };
+      byService[`${t.serviceName}_${t.metric}`] = {
+        breached: t.isBreached,
+        value: t.currentValue,
+        target: t.target,
+      };
     }
     return {
       totalTargets: targets.length,
       breachedTargets: breached.length,
-      overallHealth: targets.length > 0 ? (targets.length - breached.length) / targets.length : 1,
+      overallHealth:
+        targets.length > 0
+          ? (targets.length - breached.length) / targets.length
+          : 1,
       byService,
     };
   },
@@ -506,16 +652,20 @@ export const slaMonitor = {
 // ─── INCIDENT MANAGER ────────────────────────────────────────────────────────
 
 export const incidentManager = {
-  createIncident(params: Omit<Incident, "id" | "timeline" | "createdAt">): Incident {
+  createIncident(
+    params: Omit<Incident, "id" | "timeline" | "createdAt">
+  ): Incident {
     const id = `inc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const incident: Incident = {
       ...params,
       id,
-      timeline: [{
-        timestamp: params.detectedAt,
-        action: "Incident detected",
-        isAutomatic: true,
-      }],
+      timeline: [
+        {
+          timestamp: params.detectedAt,
+          action: "Incident detected",
+          isAutomatic: true,
+        },
+      ],
       createdAt: new Date(),
     };
     _incidents.set(id, incident);
@@ -527,25 +677,46 @@ export const incidentManager = {
     if (!incident || incident.status !== "detected") return null;
     incident.status = "acknowledged";
     incident.acknowledgedAt = new Date();
-    incident.timeline.push({ timestamp: new Date(), action: `Acknowledged by user ${userId}`, performedBy: userId, isAutomatic: false });
+    incident.timeline.push({
+      timestamp: new Date(),
+      action: `Acknowledged by user ${userId}`,
+      performedBy: userId,
+      isAutomatic: false,
+    });
     return incident;
   },
 
-  updateStatus(incidentId: string, status: IncidentStatus, action: string, userId?: number): Incident | null {
+  updateStatus(
+    incidentId: string,
+    status: IncidentStatus,
+    action: string,
+    userId?: number
+  ): Incident | null {
     const incident = _incidents.get(incidentId);
     if (!incident) return null;
     incident.status = status;
     if (status === "resolved") {
       incident.resolvedAt = new Date();
-      incident.mttrMinutes = Math.round((incident.resolvedAt.getTime() - incident.detectedAt.getTime()) / 60000);
+      incident.mttrMinutes = Math.round(
+        (incident.resolvedAt.getTime() - incident.detectedAt.getTime()) / 60000
+      );
     }
-    incident.timeline.push({ timestamp: new Date(), action, performedBy: userId, isAutomatic: !userId });
+    incident.timeline.push({
+      timestamp: new Date(),
+      action,
+      performedBy: userId,
+      isAutomatic: !userId,
+    });
     return incident;
   },
 
   getActiveIncidents(severity?: IncidentSeverity): Incident[] {
     return Array.from(_incidents.values())
-      .filter(i => !["resolved", "post_mortem"].includes(i.status) && (!severity || i.severity === severity))
+      .filter(
+        i =>
+          !["resolved", "post_mortem"].includes(i.status) &&
+          (!severity || i.severity === severity)
+      )
       .sort((a, b) => {
         const order = { p0: 0, p1: 1, p2: 2, p3: 3, p4: 4 };
         return order[a.severity] - order[b.severity];
@@ -558,10 +729,17 @@ export const incidentManager = {
 
   getMTTR(days = 30): number {
     const cutoff = new Date(Date.now() - days * 86400000);
-    const resolved = Array.from(_incidents.values())
-      .filter(i => i.status === "resolved" && i.resolvedAt && i.resolvedAt >= cutoff && i.mttrMinutes !== undefined);
+    const resolved = Array.from(_incidents.values()).filter(
+      i =>
+        i.status === "resolved" &&
+        i.resolvedAt &&
+        i.resolvedAt >= cutoff &&
+        i.mttrMinutes !== undefined
+    );
     if (resolved.length === 0) return 0;
-    return resolved.reduce((s, i) => s + (i.mttrMinutes ?? 0), 0) / resolved.length;
+    return (
+      resolved.reduce((s, i) => s + (i.mttrMinutes ?? 0), 0) / resolved.length
+    );
   },
 };
 
@@ -582,7 +760,9 @@ export const costIntelligenceEngine = {
     byService: Record<string, number>;
     trend: "increasing" | "stable" | "decreasing";
   } {
-    const records = Array.from(_costRecords.values()).filter(r => !period || r.period === period);
+    const records = Array.from(_costRecords.values()).filter(
+      r => !period || r.period === period
+    );
     const byCategory: Record<string, number> = {};
     const byRegion: Record<string, number> = {};
     const byService: Record<string, number> = {};
@@ -591,18 +771,25 @@ export const costIntelligenceEngine = {
     for (const r of records) {
       total += r.amount;
       byCategory[r.category] = (byCategory[r.category] ?? 0) + r.amount;
-      if (r.regionId) byRegion[r.regionId] = (byRegion[r.regionId] ?? 0) + r.amount;
+      if (r.regionId)
+        byRegion[r.regionId] = (byRegion[r.regionId] ?? 0) + r.amount;
       byService[r.serviceName] = (byService[r.serviceName] ?? 0) + r.amount;
     }
 
     // Simple trend: compare last 2 periods
-    const periods = [...new Set(Array.from(_costRecords.values()).map(r => r.period))].sort();
+    const periods = [
+      ...new Set(Array.from(_costRecords.values()).map(r => r.period)),
+    ].sort();
     let trend: "increasing" | "stable" | "decreasing" = "stable";
     if (periods.length >= 2) {
       const lastPeriod = periods[periods.length - 1];
       const prevPeriod = periods[periods.length - 2];
-      const lastTotal = Array.from(_costRecords.values()).filter(r => r.period === lastPeriod).reduce((s, r) => s + r.amount, 0);
-      const prevTotal = Array.from(_costRecords.values()).filter(r => r.period === prevPeriod).reduce((s, r) => s + r.amount, 0);
+      const lastTotal = Array.from(_costRecords.values())
+        .filter(r => r.period === lastPeriod)
+        .reduce((s, r) => s + r.amount, 0);
+      const prevTotal = Array.from(_costRecords.values())
+        .filter(r => r.period === prevPeriod)
+        .reduce((s, r) => s + r.amount, 0);
       if (lastTotal > prevTotal * 1.05) trend = "increasing";
       else if (lastTotal < prevTotal * 0.95) trend = "decreasing";
     }
@@ -639,7 +826,10 @@ export const costIntelligenceEngine = {
     return optimizations;
   },
 
-  approveOptimization(optimizationId: string, approvedBy: number): CostOptimization | null {
+  approveOptimization(
+    optimizationId: string,
+    approvedBy: number
+  ): CostOptimization | null {
     const opt = _costOptimizations.get(optimizationId);
     if (!opt || opt.status !== "identified") return null;
     opt.status = "approved";
@@ -671,7 +861,19 @@ export const edgeComputingEngine = {
     return node;
   },
 
-  updateEdgeMetrics(nodeId: string, metrics: Partial<Pick<EdgeNode, "cachedAssets" | "cacheHitRate" | "requestsPerSecond" | "bandwidthMbps" | "latencyToOriginMs">>): EdgeNode | null {
+  updateEdgeMetrics(
+    nodeId: string,
+    metrics: Partial<
+      Pick<
+        EdgeNode,
+        | "cachedAssets"
+        | "cacheHitRate"
+        | "requestsPerSecond"
+        | "bandwidthMbps"
+        | "latencyToOriginMs"
+      >
+    >
+  ): EdgeNode | null {
     const node = _edgeNodes.get(nodeId);
     if (!node) return null;
     Object.assign(node, metrics, { lastSyncAt: new Date() });
@@ -679,17 +881,30 @@ export const edgeComputingEngine = {
   },
 
   getNearestEdgeNode(userRegion: string): EdgeNode | null {
-    const nodes = Array.from(_edgeNodes.values()).filter(n => n.status === "healthy");
+    const nodes = Array.from(_edgeNodes.values()).filter(
+      n => n.status === "healthy"
+    );
     if (nodes.length === 0) return null;
     // Simple: find node in same region or lowest latency
-    return nodes.find(n => n.regionId === userRegion) ?? nodes.sort((a, b) => a.latencyToOriginMs - b.latencyToOriginMs)[0] ?? null;
+    return (
+      nodes.find(n => n.regionId === userRegion) ??
+      nodes.sort((a, b) => a.latencyToOriginMs - b.latencyToOriginMs)[0] ??
+      null
+    );
   },
 
-  getEdgeStats(): { totalNodes: number; avgCacheHitRate: number; totalBandwidthMbps: number } {
+  getEdgeStats(): {
+    totalNodes: number;
+    avgCacheHitRate: number;
+    totalBandwidthMbps: number;
+  } {
     const nodes = Array.from(_edgeNodes.values());
     return {
       totalNodes: nodes.length,
-      avgCacheHitRate: nodes.length > 0 ? nodes.reduce((s, n) => s + n.cacheHitRate, 0) / nodes.length : 0,
+      avgCacheHitRate:
+        nodes.length > 0
+          ? nodes.reduce((s, n) => s + n.cacheHitRate, 0) / nodes.length
+          : 0,
       totalBandwidthMbps: nodes.reduce((s, n) => s + n.bandwidthMbps, 0),
     };
   },
@@ -698,9 +913,16 @@ export const edgeComputingEngine = {
 // ─── DATA SOVEREIGNTY ENGINE ─────────────────────────────────────────────────
 
 export const dataSovereigntyEngine = {
-  createPolicy(params: Omit<DataSovereigntyPolicy, "id" | "createdAt" | "updatedAt">): DataSovereigntyPolicy {
+  createPolicy(
+    params: Omit<DataSovereigntyPolicy, "id" | "createdAt" | "updatedAt">
+  ): DataSovereigntyPolicy {
     const id = `dsp_${params.countryCode}`;
-    const policy: DataSovereigntyPolicy = { ...params, id, createdAt: new Date(), updatedAt: new Date() };
+    const policy: DataSovereigntyPolicy = {
+      ...params,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     _sovereigntyPolicies.set(id, policy);
     return policy;
   },
@@ -709,7 +931,11 @@ export const dataSovereigntyEngine = {
     return _sovereigntyPolicies.get(`dsp_${countryCode}`) ?? null;
   },
 
-  validateDataPlacement(countryCode: string, regionId: string, dataType: DataSovereigntyPolicy["dataTypes"][number]): {
+  validateDataPlacement(
+    countryCode: string,
+    regionId: string,
+    dataType: DataSovereigntyPolicy["dataTypes"][number]
+  ): {
     isCompliant: boolean;
     reason?: string;
   } {
@@ -717,7 +943,10 @@ export const dataSovereigntyEngine = {
     if (!policy) return { isCompliant: true };
     if (!policy.dataTypes.includes(dataType)) return { isCompliant: true };
     if (!policy.allowedRegionIds.includes(regionId)) {
-      return { isCompliant: false, reason: `${dataType} data for ${countryCode} must be stored in: ${policy.allowedRegionIds.join(", ")}` };
+      return {
+        isCompliant: false,
+        reason: `${dataType} data for ${countryCode} must be stored in: ${policy.allowedRegionIds.join(", ")}`,
+      };
     }
     return { isCompliant: true };
   },
@@ -737,11 +966,22 @@ export const observabilityEngine = {
     return metric;
   },
 
-  queryMetrics(serviceName: string, metricName: string, since: Date): ObservabilityMetric[] {
-    return _metrics.filter(m => m.serviceName === serviceName && m.metricName === metricName && m.timestamp >= since);
+  queryMetrics(
+    serviceName: string,
+    metricName: string,
+    since: Date
+  ): ObservabilityMetric[] {
+    return _metrics.filter(
+      m =>
+        m.serviceName === serviceName &&
+        m.metricName === metricName &&
+        m.timestamp >= since
+    );
   },
 
-  getActiveAlerts(severity?: InfrastructureAlert["severity"]): InfrastructureAlert[] {
+  getActiveAlerts(
+    severity?: InfrastructureAlert["severity"]
+  ): InfrastructureAlert[] {
     return Array.from(_alerts.values())
       .filter(a => a.isActive && (!severity || a.severity === severity))
       .sort((a, b) => b.firedAt.getTime() - a.firedAt.getTime());
@@ -768,10 +1008,15 @@ export const observabilityEngine = {
     return {
       totalMetrics: _metrics.length,
       activeAlerts: Array.from(_alerts.values()).filter(a => a.isActive).length,
-      criticalAlerts: Array.from(_alerts.values()).filter(a => a.isActive && a.severity === "critical").length,
+      criticalAlerts: Array.from(_alerts.values()).filter(
+        a => a.isActive && a.severity === "critical"
+      ).length,
       activeIncidents: incidentManager.getActiveIncidents().length,
       slaHealth: slaReport.overallHealth,
-      avgRegionLatency: regions.length > 0 ? regions.reduce((s, r) => s + r.latencyMs, 0) / regions.length : 0,
+      avgRegionLatency:
+        regions.length > 0
+          ? regions.reduce((s, r) => s + r.latencyMs, 0) / regions.length
+          : 0,
     };
   },
 };
@@ -780,7 +1025,12 @@ export const observabilityEngine = {
 
 export const infrastructureOrchestrator = {
   getGlobalStatus(): {
-    regions: { total: number; healthy: number; degraded: number; critical: number };
+    regions: {
+      total: number;
+      healthy: number;
+      degraded: number;
+      critical: number;
+    };
     shards: { total: number; active: number; rebalancing: number };
     incidents: { active: number; p0: number; p1: number };
     costs: { monthly: number; trend: string };

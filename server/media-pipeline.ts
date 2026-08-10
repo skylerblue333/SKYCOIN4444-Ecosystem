@@ -181,7 +181,9 @@ export const uploadFlow = {
       createdAt: new Date(),
     };
     _uploadSessions.set(sessionId, session);
-    log.info(`Upload session created: ${sessionId}`, { data: { userId: params.userId, mediaType, sizeBytes: params.sizeBytes } });
+    log.info(`Upload session created: ${sessionId}`, {
+      data: { userId: params.userId, mediaType, sizeBytes: params.sizeBytes },
+    });
     return session;
   },
 
@@ -189,7 +191,10 @@ export const uploadFlow = {
    * Step 2: Confirm the upload completed and trigger downstream processing.
    * Called by the client after the S3 upload succeeds.
    */
-  async confirmUpload(sessionId: string, actualSizeBytes?: number): Promise<{
+  async confirmUpload(
+    sessionId: string,
+    actualSizeBytes?: number
+  ): Promise<{
     assetId: string;
     cdnUrl: string;
     transcodeJobId?: string;
@@ -197,14 +202,18 @@ export const uploadFlow = {
   }> {
     const session = _uploadSessions.get(sessionId);
     if (!session) throw new Error(`Upload session ${sessionId} not found`);
-    if (session.confirmed) throw new Error(`Upload session ${sessionId} already confirmed`);
-    if (new Date() > session.expiresAt) throw new Error(`Upload session ${sessionId} expired`);
+    if (session.confirmed)
+      throw new Error(`Upload session ${sessionId} already confirmed`);
+    if (new Date() > session.expiresAt)
+      throw new Error(`Upload session ${sessionId} expired`);
 
     session.confirmed = true;
     if (actualSizeBytes) session.sizeBytes = actualSizeBytes;
 
     const assetId = `asset_${crypto.randomBytes(8).toString("hex")}`;
-    const cdnDomain = process.env.CDN_DOMAIN ?? `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
+    const cdnDomain =
+      process.env.CDN_DOMAIN ??
+      `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
     const cdnUrl = `https://${cdnDomain}/${session.s3Key}`;
 
     let transcodeJobId: string | undefined;
@@ -242,7 +251,12 @@ export const uploadFlow = {
     });
 
     log.info(`Upload confirmed: ${assetId}`, {
-      data: { sessionId, assetId, mediaType: session.mediaType, transcodeJobId },
+      data: {
+        sessionId,
+        assetId,
+        mediaType: session.mediaType,
+        transcodeJobId,
+      },
     });
 
     return { assetId, cdnUrl, transcodeJobId, moderationQueued: true };
@@ -261,13 +275,16 @@ export const uploadFlow = {
 };
 
 // ─── Transcode Engine ─────────────────────────────────────────────────────────
-const RENDITION_CONFIGS: Record<VideoRendition["quality"], Omit<VideoRendition, "quality" | "s3Key" | "sizeBytes" | "status">> = {
+const RENDITION_CONFIGS: Record<
+  VideoRendition["quality"],
+  Omit<VideoRendition, "quality" | "s3Key" | "sizeBytes" | "status">
+> = {
   "2160p": { width: 3840, height: 2160, bitrate: 20000, fps: 30 },
   "1080p": { width: 1920, height: 1080, bitrate: 8000, fps: 30 },
-  "720p":  { width: 1280, height: 720,  bitrate: 4000, fps: 30 },
-  "480p":  { width: 854,  height: 480,  bitrate: 1500, fps: 30 },
-  "360p":  { width: 640,  height: 360,  bitrate: 800,  fps: 30 },
-  "240p":  { width: 426,  height: 240,  bitrate: 400,  fps: 24 },
+  "720p": { width: 1280, height: 720, bitrate: 4000, fps: 30 },
+  "480p": { width: 854, height: 480, bitrate: 1500, fps: 30 },
+  "360p": { width: 640, height: 360, bitrate: 800, fps: 30 },
+  "240p": { width: 426, height: 240, bitrate: 400, fps: 24 },
 };
 
 export const transcodeEngine = {
@@ -313,7 +330,9 @@ export const transcodeEngine = {
       priority: "normal",
     });
 
-    log.info(`Transcode job created: ${jobId}`, { data: { assetId: params.assetId, qualities } });
+    log.info(`Transcode job created: ${jobId}`, {
+      data: { assetId: params.assetId, qualities },
+    });
     return job;
   },
 
@@ -332,7 +351,11 @@ export const transcodeEngine = {
    * Called by the media worker when transcoding completes.
    * Updates job status and generates the HLS manifest.
    */
-  markCompleted(jobId: string, durationSeconds: number, renditionSizes: Record<string, number>): HLSManifest | null {
+  markCompleted(
+    jobId: string,
+    durationSeconds: number,
+    renditionSizes: Record<string, number>
+  ): HLSManifest | null {
     const job = _transcodeJobs.get(jobId);
     if (!job) return null;
 
@@ -346,7 +369,9 @@ export const transcodeEngine = {
       rendition.sizeBytes = renditionSizes[rendition.quality] ?? 0;
     }
 
-    const cdnDomain = process.env.CDN_DOMAIN ?? `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
+    const cdnDomain =
+      process.env.CDN_DOMAIN ??
+      `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
     const manifest: HLSManifest = {
       masterPlaylistKey: job.hlsManifestKey!,
       masterPlaylistUrl: `https://${cdnDomain}/${job.hlsManifestKey}`,
@@ -362,7 +387,9 @@ export const transcodeEngine = {
       createdAt: new Date(),
     };
 
-    log.info(`Transcode completed: ${jobId}`, { data: { assetId: job.assetId, durationSeconds } });
+    log.info(`Transcode completed: ${jobId}`, {
+      data: { assetId: job.assetId, durationSeconds },
+    });
     return manifest;
   },
 
@@ -372,7 +399,9 @@ export const transcodeEngine = {
     job.status = "failed";
     job.errorMessage = errorMessage;
     job.completedAt = new Date();
-    log.error(`Transcode failed: ${jobId}`, { error: { message: errorMessage } });
+    log.error(`Transcode failed: ${jobId}`, {
+      error: { message: errorMessage },
+    });
   },
 
   getStats() {
@@ -389,28 +418,39 @@ export const transcodeEngine = {
 
 // ─── Thumbnail Generator ──────────────────────────────────────────────────────
 const THUMBNAIL_SIZES = {
-  small:  { width: 160,  height: 90  },
-  medium: { width: 480,  height: 270 },
-  large:  { width: 1280, height: 720 },
-  og:     { width: 1200, height: 630 },
+  small: { width: 160, height: 90 },
+  medium: { width: 480, height: 270 },
+  large: { width: 1280, height: 720 },
+  og: { width: 1200, height: 630 },
 };
 
 export const thumbnailGenerator = {
-  async generate(assetId: string, sourceUrl: string, userId: number): Promise<ThumbnailSet> {
-    const cdnDomain = process.env.CDN_DOMAIN ?? `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
+  async generate(
+    assetId: string,
+    sourceUrl: string,
+    userId: number
+  ): Promise<ThumbnailSet> {
+    const cdnDomain =
+      process.env.CDN_DOMAIN ??
+      `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
     const prefix = `thumbnails/${assetId}`;
 
     // Production: use Sharp (for images) or ffmpeg (for video frames)
     // const image = sharp(await fetch(sourceUrl).then(r => r.buffer()));
     // const { width, height } = await image.metadata();
 
-    const thumbnails: ThumbnailSet["thumbnails"] = (Object.entries(THUMBNAIL_SIZES) as [keyof typeof THUMBNAIL_SIZES, { width: number; height: number }][]).map(([size, dims]) => ({
+    const thumbnails: ThumbnailSet["thumbnails"] = (
+      Object.entries(THUMBNAIL_SIZES) as [
+        keyof typeof THUMBNAIL_SIZES,
+        { width: number; height: number },
+      ][]
+    ).map(([size, dims]) => ({
       size,
       width: dims.width,
       height: dims.height,
       s3Key: `${prefix}/${size}.webp`,
       url: `https://${cdnDomain}/${prefix}/${size}.webp`,
-      sizeBytes: dims.width * dims.height * 3 / 10, // rough estimate
+      sizeBytes: (dims.width * dims.height * 3) / 10, // rough estimate
     }));
 
     const set: ThumbnailSet = {
@@ -419,7 +459,9 @@ export const thumbnailGenerator = {
       generatedAt: new Date(),
     };
     _thumbnailSets.set(assetId, set);
-    log.info(`Thumbnails generated for asset ${assetId}`, { data: { assetId, count: thumbnails.length } });
+    log.info(`Thumbnails generated for asset ${assetId}`, {
+      data: { assetId, count: thumbnails.length },
+    });
     return set;
   },
 
@@ -427,13 +469,18 @@ export const thumbnailGenerator = {
     return _thumbnailSets.get(assetId) ?? null;
   },
 
-  getUrl(assetId: string, size: keyof typeof THUMBNAIL_SIZES = "medium"): string {
+  getUrl(
+    assetId: string,
+    size: keyof typeof THUMBNAIL_SIZES = "medium"
+  ): string {
     const set = _thumbnailSets.get(assetId);
     if (set) {
       const thumb = set.thumbnails.find(t => t.size === size);
       if (thumb) return thumb.url;
     }
-    const cdnDomain = process.env.CDN_DOMAIN ?? `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
+    const cdnDomain =
+      process.env.CDN_DOMAIN ??
+      `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
     return `https://${cdnDomain}/thumbnails/${assetId}/${size}.webp`;
   },
 };
@@ -453,9 +500,15 @@ const MODERATION_CATEGORIES = [
 ];
 
 export const mediaModerator = {
-  async moderate(assetId: string, mediaUrl: string, authorId: number): Promise<ModerationResult> {
+  async moderate(
+    assetId: string,
+    mediaUrl: string,
+    authorId: number
+  ): Promise<ModerationResult> {
     // Check cache first
-    const cached = await cache.get<ModerationResult>(cacheKeys.aiInference(`mod:${assetId}`));
+    const cached = await cache.get<ModerationResult>(
+      cacheKeys.aiInference(`mod:${assetId}`)
+    );
     if (cached) return cached;
 
     log.info(`Moderating asset ${assetId}`, { data: { assetId, authorId } });
@@ -465,11 +518,22 @@ export const mediaModerator = {
     // const response = await rekognition.send(new DetectModerationLabelsCommand({ Image: { S3Object: { Bucket: bucket, Name: s3Key } }, MinConfidence: 50 }));
 
     // Deterministic scoring based on URL hash (not random)
-    const hash = crypto.createHash("sha256").update(assetId + mediaUrl).digest("hex");
+    const hash = crypto
+      .createHash("sha256")
+      .update(assetId + mediaUrl)
+      .digest("hex");
     const hashNum = parseInt(hash.slice(0, 8), 16) / 0xffffffff;
 
     const categories = MODERATION_CATEGORIES.map(name => {
-      const categoryHash = parseInt(crypto.createHash("md5").update(name + assetId).digest("hex").slice(0, 4), 16) / 0xffff;
+      const categoryHash =
+        parseInt(
+          crypto
+            .createHash("md5")
+            .update(name + assetId)
+            .digest("hex")
+            .slice(0, 4),
+          16
+        ) / 0xffff;
       const confidence = categoryHash * 0.3; // Most content is safe
       return { name, confidence, flagged: confidence > 0.7 };
     });
@@ -477,8 +541,12 @@ export const mediaModerator = {
     const maxConfidence = Math.max(...categories.map(c => c.confidence));
     const flaggedCategories = categories.filter(c => c.flagged);
 
-    const decision: ModerationDecision = maxConfidence > 0.8 ? "rejected" :
-      maxConfidence > 0.5 ? "manual_review" : "approved";
+    const decision: ModerationDecision =
+      maxConfidence > 0.8
+        ? "rejected"
+        : maxConfidence > 0.5
+          ? "manual_review"
+          : "approved";
 
     const result: ModerationResult = {
       assetId,
@@ -488,7 +556,10 @@ export const mediaModerator = {
       reviewedAt: new Date(),
       reviewedBy: "ai",
       appealable: decision !== "approved",
-      notes: flaggedCategories.length > 0 ? `Flagged: ${flaggedCategories.map(c => c.name).join(", ")}` : undefined,
+      notes:
+        flaggedCategories.length > 0
+          ? `Flagged: ${flaggedCategories.map(c => c.name).join(", ")}`
+          : undefined,
     };
 
     _moderationResults.set(assetId, result);
@@ -504,10 +575,16 @@ export const mediaModerator = {
     return _moderationResults.get(assetId) ?? null;
   },
 
-  async appealDecision(assetId: string, appealerId: number, reason: string): Promise<{ appealId: string; status: "pending" }> {
+  async appealDecision(
+    assetId: string,
+    appealerId: number,
+    reason: string
+  ): Promise<{ appealId: string; status: "pending" }> {
     const result = _moderationResults.get(assetId);
-    if (!result) throw new Error(`No moderation result found for asset ${assetId}`);
-    if (!result.appealable) throw new Error(`Decision for asset ${assetId} is not appealable`);
+    if (!result)
+      throw new Error(`No moderation result found for asset ${assetId}`);
+    if (!result.appealable)
+      throw new Error(`Decision for asset ${assetId} is not appealable`);
 
     const appealId = `appeal_${crypto.randomBytes(8).toString("hex")}`;
     log.info(`Moderation appeal submitted: ${appealId}`, {
@@ -537,13 +614,17 @@ export const clipGenerator = {
     endSeconds: number;
     isPublic?: boolean;
   }): Promise<MediaClip> {
-    if (params.endSeconds <= params.startSeconds) throw new Error("End time must be after start time");
-    if (params.endSeconds - params.startSeconds > 60) throw new Error("Clips cannot exceed 60 seconds");
+    if (params.endSeconds <= params.startSeconds)
+      throw new Error("End time must be after start time");
+    if (params.endSeconds - params.startSeconds > 60)
+      throw new Error("Clips cannot exceed 60 seconds");
 
     const clipId = `clip_${crypto.randomBytes(8).toString("hex")}`;
     const durationSeconds = params.endSeconds - params.startSeconds;
     const s3Key = `clips/${params.userId}/${clipId}.mp4`;
-    const cdnDomain = process.env.CDN_DOMAIN ?? `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
+    const cdnDomain =
+      process.env.CDN_DOMAIN ??
+      `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
 
     // Production: use ffmpeg to extract the segment
     // await ffmpeg(sourceUrl).setStartTime(params.startSeconds).setDuration(durationSeconds).output(s3Key).run();
@@ -573,7 +654,9 @@ export const clipGenerator = {
       inputUrl: `https://${cdnDomain}/${s3Key}`,
     });
 
-    log.info(`Clip created: ${clipId}`, { data: { sourceAssetId: params.sourceAssetId, durationSeconds } });
+    log.info(`Clip created: ${clipId}`, {
+      data: { sourceAssetId: params.sourceAssetId, durationSeconds },
+    });
     return clip;
   },
 
@@ -604,8 +687,18 @@ export const clipGenerator = {
 
 // ─── CDN Manager ──────────────────────────────────────────────────────────────
 export const cdnManager = {
-  buildUrl(s3Key: string, options?: { width?: number; height?: number; quality?: number; format?: "webp" | "jpeg" | "png" }): string {
-    const cdnDomain = process.env.CDN_DOMAIN ?? `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
+  buildUrl(
+    s3Key: string,
+    options?: {
+      width?: number;
+      height?: number;
+      quality?: number;
+      format?: "webp" | "jpeg" | "png";
+    }
+  ): string {
+    const cdnDomain =
+      process.env.CDN_DOMAIN ??
+      `${process.env.S3_BUCKET ?? "shadowchat-media"}.s3.amazonaws.com`;
     const base = `https://${cdnDomain}/${s3Key}`;
 
     if (!options) return base;
@@ -631,7 +724,9 @@ export const cdnManager = {
       createdAt: new Date(),
     };
     _cdnInvalidations.set(invalidationId, inv);
-    log.info(`CDN invalidation created: ${invalidationId}`, { data: { paths: paths.length } });
+    log.info(`CDN invalidation created: ${invalidationId}`, {
+      data: { paths: paths.length },
+    });
     // Simulate completion after 30 seconds
     setTimeout(() => {
       const i = _cdnInvalidations.get(invalidationId);
@@ -659,7 +754,9 @@ export const storageLifecycle = {
    * Move old, infrequently-accessed media to cheaper S3 storage tiers.
    * In production: update S3 object storage class via CopyObject API.
    */
-  async archiveOldMedia(olderThanDays = 90): Promise<{ archived: number; estimatedSavings: number }> {
+  async archiveOldMedia(
+    olderThanDays = 90
+  ): Promise<{ archived: number; estimatedSavings: number }> {
     // Production: query DB for assets older than olderThanDays with low view counts
     // Move to S3 Glacier Instant Retrieval (saves ~68% vs Standard)
     log.info(`Archiving media older than ${olderThanDays} days`);
@@ -669,7 +766,9 @@ export const storageLifecycle = {
   /**
    * Delete media that has been soft-deleted for more than 30 days.
    */
-  async purgeDeletedMedia(olderThanDays = 30): Promise<{ purged: number; bytesFreed: number }> {
+  async purgeDeletedMedia(
+    olderThanDays = 30
+  ): Promise<{ purged: number; bytesFreed: number }> {
     log.info(`Purging deleted media older than ${olderThanDays} days`);
     return { purged: 0, bytesFreed: 0 };
   },
@@ -704,8 +803,10 @@ export const mediaPipelineStats = {
     return {
       uploadSessions: {
         total: _uploadSessions.size,
-        confirmed: Array.from(_uploadSessions.values()).filter(s => s.confirmed).length,
-        pending: Array.from(_uploadSessions.values()).filter(s => !s.confirmed).length,
+        confirmed: Array.from(_uploadSessions.values()).filter(s => s.confirmed)
+          .length,
+        pending: Array.from(_uploadSessions.values()).filter(s => !s.confirmed)
+          .length,
       },
       transcoding: transcodeEngine.getStats(),
       thumbnails: { generated: _thumbnailSets.size },
@@ -713,7 +814,9 @@ export const mediaPipelineStats = {
       clips: { total: _clips.size },
       cdnInvalidations: {
         total: _cdnInvalidations.size,
-        completed: Array.from(_cdnInvalidations.values()).filter(i => i.status === "completed").length,
+        completed: Array.from(_cdnInvalidations.values()).filter(
+          i => i.status === "completed"
+        ).length,
       },
     };
   },
@@ -730,7 +833,13 @@ export const videoModerationAI = mediaModerator;
 
 // ─── COMMANDMENT 9A: initiateUpload alias ────────────────────────────────────
 export const _mediaPipelineAliases = {
-  async initiateUpload(params: { userId: number; fileName: string; fileSize: number; mimeType: string; purpose: string }) {
+  async initiateUpload(params: {
+    userId: number;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    purpose: string;
+  }) {
     const uploadId = `upload_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const fileKey = `uploads/${params.userId}/${uploadId}/${params.fileName}`;
     return {

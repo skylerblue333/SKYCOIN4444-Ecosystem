@@ -3,9 +3,9 @@
  * Complete macro management system
  */
 
-import { publicProcedure, protectedProcedure, router } from './_core/trpc';
-import { z } from 'zod';
-import { voiceMacroSystem } from './voice-macros';
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import { voiceMacroSystem } from "./voice-macros";
 
 export const voiceMacrosRouter = router({
   /**
@@ -45,7 +45,10 @@ export const voiceMacrosRouter = router({
   executeMacro: protectedProcedure
     .input(z.object({ macroId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const result = await voiceMacroSystem.executeMacro(input.macroId, String(ctx.user!.id));
+      const result = await voiceMacroSystem.executeMacro(
+        input.macroId,
+        String(ctx.user!.id)
+      );
       return result;
     }),
 
@@ -56,7 +59,7 @@ export const voiceMacrosRouter = router({
     const macros = voiceMacroSystem.getUserMacros(String(ctx.user!.id));
     return {
       count: macros.length,
-      macros: macros.map((m) => ({
+      macros: macros.map(m => ({
         id: m.id,
         name: m.name,
         description: m.description,
@@ -74,7 +77,7 @@ export const voiceMacrosRouter = router({
     const macros = voiceMacroSystem.getPublicMacros();
     return {
       count: macros.length,
-      macros: macros.map((m) => ({
+      macros: macros.map(m => ({
         id: m.id,
         name: m.name,
         description: m.description,
@@ -91,7 +94,10 @@ export const voiceMacrosRouter = router({
   deleteMacro: protectedProcedure
     .input(z.object({ macroId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const success = voiceMacroSystem.deleteMacro(input.macroId, String(ctx.user!.id));
+      const success = voiceMacroSystem.deleteMacro(
+        input.macroId,
+        String(ctx.user!.id)
+      );
       return { success };
     }),
 
@@ -110,7 +116,11 @@ export const voiceMacrosRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const { macroId, ...updates } = input;
-      const success = voiceMacroSystem.updateMacro(macroId, updates, String(ctx.user!.id));
+      const success = voiceMacroSystem.updateMacro(
+        macroId,
+        updates,
+        String(ctx.user!.id)
+      );
       return { success };
     }),
 

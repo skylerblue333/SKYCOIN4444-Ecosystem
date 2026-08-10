@@ -1,9 +1,9 @@
-import crypto from 'crypto';
-import { getDb } from './db';
+import crypto from "crypto";
+import { getDb } from "./db";
 
 /**
  * Predictive World Modeling Engine
- * 
+ *
  * Capabilities:
  * - Economy simulation (30+ days ahead)
  * - Governance simulation
@@ -72,7 +72,7 @@ export class PredictiveWorldModelingEngine {
     const startState = this.getCurrentWorldState();
     const steps: WorldState[] = [startState];
 
-    let currentState = { ...startState };
+    const currentState = { ...startState };
 
     for (let day = 1; day <= days; day++) {
       // Simulate token emission
@@ -85,19 +85,28 @@ export class PredictiveWorldModelingEngine {
 
       // Simulate market cap
       currentState.economyMetrics.marketCap =
-        currentState.economyMetrics.circulatingSupply * currentState.economyMetrics.tokenPrice;
+        currentState.economyMetrics.circulatingSupply *
+        currentState.economyMetrics.tokenPrice;
 
       // Simulate velocity
-      currentState.economyMetrics.velocity = this.calculateVelocity(currentState);
+      currentState.economyMetrics.velocity =
+        this.calculateVelocity(currentState);
 
       // Simulate user metrics
-      currentState.userMetrics = this.simulateUserMetrics(currentState.userMetrics, day);
+      currentState.userMetrics = this.simulateUserMetrics(
+        currentState.userMetrics,
+        day
+      );
 
       // Simulate governance
-      currentState.governanceMetrics = this.simulateGovernance(currentState.governanceMetrics);
+      currentState.governanceMetrics = this.simulateGovernance(
+        currentState.governanceMetrics
+      );
 
       // Simulate market
-      currentState.marketMetrics = this.simulateMarketMetrics(currentState.marketMetrics);
+      currentState.marketMetrics = this.simulateMarketMetrics(
+        currentState.marketMetrics
+      );
 
       currentState.timestamp = startState.timestamp + day * 86400000; // Add days in ms
       steps.push({ ...currentState });
@@ -111,7 +120,7 @@ export class PredictiveWorldModelingEngine {
       steps,
       duration: days,
       confidence,
-      scenarios: ['base_case', 'bull_case', 'bear_case'],
+      scenarios: ["base_case", "bull_case", "bear_case"],
       createdAt: Date.now(),
     };
 
@@ -127,7 +136,7 @@ export class PredictiveWorldModelingEngine {
     const startState = this.getCurrentWorldState();
     const steps: WorldState[] = [startState];
 
-    let currentState = { ...startState };
+    const currentState = { ...startState };
 
     for (let day = 1; day <= days; day++) {
       // Simulate proposal creation
@@ -141,7 +150,8 @@ export class PredictiveWorldModelingEngine {
       );
 
       // Simulate consensus
-      currentState.governanceMetrics.consensusHealth = this.calculateConsensusHealth(currentState);
+      currentState.governanceMetrics.consensusHealth =
+        this.calculateConsensusHealth(currentState);
 
       currentState.timestamp = startState.timestamp + day * 86400000;
       steps.push({ ...currentState });
@@ -155,7 +165,11 @@ export class PredictiveWorldModelingEngine {
       steps,
       duration: days,
       confidence,
-      scenarios: ['high_participation', 'low_participation', 'consensus_breakdown'],
+      scenarios: [
+        "high_participation",
+        "low_participation",
+        "consensus_breakdown",
+      ],
       createdAt: Date.now(),
     };
 
@@ -171,19 +185,26 @@ export class PredictiveWorldModelingEngine {
     const startState = this.getCurrentWorldState();
     const steps: WorldState[] = [startState];
 
-    let currentState = { ...startState };
+    const currentState = { ...startState };
 
     for (let day = 1; day <= days; day++) {
       // Simulate DAU growth
       const dauGrowth = Math.random() * 0.1 - 0.02; // -2% to +10%
-      currentState.userMetrics.dau = Math.floor(currentState.userMetrics.dau * (1 + dauGrowth));
+      currentState.userMetrics.dau = Math.floor(
+        currentState.userMetrics.dau * (1 + dauGrowth)
+      );
 
       // Simulate MAU growth
       const mauGrowth = Math.random() * 0.08 - 0.01; // -1% to +8%
-      currentState.userMetrics.mau = Math.floor(currentState.userMetrics.mau * (1 + mauGrowth));
+      currentState.userMetrics.mau = Math.floor(
+        currentState.userMetrics.mau * (1 + mauGrowth)
+      );
 
       // Simulate retention
-      currentState.userMetrics.retention7d = Math.max(0.3, currentState.userMetrics.retention7d + (Math.random() - 0.5) * 0.05);
+      currentState.userMetrics.retention7d = Math.max(
+        0.3,
+        currentState.userMetrics.retention7d + (Math.random() - 0.5) * 0.05
+      );
 
       // Simulate churn
       currentState.userMetrics.churn = 1 - currentState.userMetrics.retention7d;
@@ -200,7 +221,7 @@ export class PredictiveWorldModelingEngine {
       steps,
       duration: days,
       confidence,
-      scenarios: ['growth_scenario', 'stagnation_scenario', 'decline_scenario'],
+      scenarios: ["growth_scenario", "stagnation_scenario", "decline_scenario"],
       createdAt: Date.now(),
     };
 
@@ -211,7 +232,10 @@ export class PredictiveWorldModelingEngine {
   /**
    * Create scenario planning
    */
-  async createScenario(name: string, description: string): Promise<ScenarioPlanning> {
+  async createScenario(
+    name: string,
+    description: string
+  ): Promise<ScenarioPlanning> {
     const scenarioId = crypto.randomUUID();
 
     const scenario: ScenarioPlanning = {
@@ -285,17 +309,28 @@ export class PredictiveWorldModelingEngine {
    * Calculate velocity
    */
   private calculateVelocity(state: WorldState): number {
-    return state.economyMetrics.marketCap / (state.economyMetrics.circulatingSupply * state.economyMetrics.tokenPrice + 1);
+    return (
+      state.economyMetrics.marketCap /
+      (state.economyMetrics.circulatingSupply *
+        state.economyMetrics.tokenPrice +
+        1)
+    );
   }
 
   /**
    * Simulate user metrics
    */
-  private simulateUserMetrics(metrics: WorldState['userMetrics'], day: number): WorldState['userMetrics'] {
+  private simulateUserMetrics(
+    metrics: WorldState["userMetrics"],
+    day: number
+  ): WorldState["userMetrics"] {
     return {
       dau: Math.floor(metrics.dau * (1 + (Math.random() - 0.5) * 0.1)),
       mau: Math.floor(metrics.mau * (1 + (Math.random() - 0.5) * 0.08)),
-      retention7d: Math.max(0.3, metrics.retention7d + (Math.random() - 0.5) * 0.05),
+      retention7d: Math.max(
+        0.3,
+        metrics.retention7d + (Math.random() - 0.5) * 0.05
+      ),
       churn: Math.min(0.7, metrics.churn + (Math.random() - 0.5) * 0.03),
     };
   }
@@ -303,22 +338,41 @@ export class PredictiveWorldModelingEngine {
   /**
    * Simulate governance
    */
-  private simulateGovernance(metrics: WorldState['governanceMetrics']): WorldState['governanceMetrics'] {
+  private simulateGovernance(
+    metrics: WorldState["governanceMetrics"]
+  ): WorldState["governanceMetrics"] {
     return {
-      activeProposals: Math.max(0, metrics.activeProposals + Math.floor((Math.random() - 0.5) * 4)),
-      participationRate: Math.min(1, Math.max(0, metrics.participationRate + (Math.random() - 0.5) * 0.1)),
-      consensusHealth: Math.min(1, Math.max(0, metrics.consensusHealth + (Math.random() - 0.5) * 0.1)),
+      activeProposals: Math.max(
+        0,
+        metrics.activeProposals + Math.floor((Math.random() - 0.5) * 4)
+      ),
+      participationRate: Math.min(
+        1,
+        Math.max(0, metrics.participationRate + (Math.random() - 0.5) * 0.1)
+      ),
+      consensusHealth: Math.min(
+        1,
+        Math.max(0, metrics.consensusHealth + (Math.random() - 0.5) * 0.1)
+      ),
     };
   }
 
   /**
    * Simulate market metrics
    */
-  private simulateMarketMetrics(metrics: WorldState['marketMetrics']): WorldState['marketMetrics'] {
+  private simulateMarketMetrics(
+    metrics: WorldState["marketMetrics"]
+  ): WorldState["marketMetrics"] {
     return {
       volume24h: metrics.volume24h * (1 + (Math.random() - 0.5) * 0.3),
-      volatility: Math.max(0.05, Math.min(0.5, metrics.volatility + (Math.random() - 0.5) * 0.05)),
-      dominance: Math.max(0.01, Math.min(0.5, metrics.dominance + (Math.random() - 0.5) * 0.02)),
+      volatility: Math.max(
+        0.05,
+        Math.min(0.5, metrics.volatility + (Math.random() - 0.5) * 0.05)
+      ),
+      dominance: Math.max(
+        0.01,
+        Math.min(0.5, metrics.dominance + (Math.random() - 0.5) * 0.02)
+      ),
     };
   }
 
@@ -335,7 +389,8 @@ export class PredictiveWorldModelingEngine {
    */
   private calculateConsensusHealth(state: WorldState): number {
     const participationFactor = state.governanceMetrics.participationRate * 0.5;
-    const proposalFactor = Math.min(1, state.governanceMetrics.activeProposals / 20) * 0.3;
+    const proposalFactor =
+      Math.min(1, state.governanceMetrics.activeProposals / 20) * 0.3;
     return Math.min(1, participationFactor + proposalFactor + 0.2);
   }
 
@@ -344,10 +399,10 @@ export class PredictiveWorldModelingEngine {
    */
   private generateMitigation(description: string): string[] {
     return [
-      'Implement monitoring and early warning systems',
-      'Prepare contingency plans and backup strategies',
-      'Increase communication and transparency',
-      'Build community resilience and engagement',
+      "Implement monitoring and early warning systems",
+      "Prepare contingency plans and backup strategies",
+      "Increase communication and transparency",
+      "Build community resilience and engagement",
     ];
   }
 

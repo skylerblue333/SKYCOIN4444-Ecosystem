@@ -67,7 +67,7 @@ export const voiceAccessibilityRouter = router({
       results: Array.from({ length: 10 }, (_, i) => ({
         id: `article-${i}`,
         title: `Article ${i}`,
-        relevance: 1 - (i * 0.08),
+        relevance: 1 - i * 0.08,
       })),
     })),
 

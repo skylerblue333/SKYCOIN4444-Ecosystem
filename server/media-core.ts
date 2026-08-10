@@ -22,12 +22,24 @@ import { invokeLLM } from "./_core/llm";
 // TYPES & INTERFACES
 // ═══════════════════════════════════════════════════════════════
 
-export type VideoQuality = "2160p" | "1440p" | "1080p" | "720p" | "480p" | "360p" | "240p" | "144p";
+export type VideoQuality =
+  "2160p" | "1440p" | "1080p" | "720p" | "480p" | "360p" | "240p" | "144p";
 export type VideoFormat = "hls" | "mp4" | "webm" | "dash";
 export type ImageFormat = "webp" | "avif" | "jpeg" | "png" | "gif";
 export type StorageTier = "hot" | "warm" | "cold" | "archive" | "deleted";
-export type ModerationStatus = "pending" | "approved" | "rejected" | "flagged" | "manual_review";
-export type AssetType = "video" | "image" | "audio" | "document" | "thumbnail" | "avatar" | "banner" | "reel" | "story" | "clip";
+export type ModerationStatus =
+  "pending" | "approved" | "rejected" | "flagged" | "manual_review";
+export type AssetType =
+  | "video"
+  | "image"
+  | "audio"
+  | "document"
+  | "thumbnail"
+  | "avatar"
+  | "banner"
+  | "reel"
+  | "story"
+  | "clip";
 
 export interface VideoRendition {
   quality: VideoQuality;
@@ -203,7 +215,14 @@ export interface ContentModerationResult {
   status: ModerationStatus;
   confidence: number;
   flags: {
-    category: "adult" | "violence" | "hate_speech" | "spam" | "copyright" | "misinformation" | "self_harm";
+    category:
+      | "adult"
+      | "violence"
+      | "hate_speech"
+      | "spam"
+      | "copyright"
+      | "misinformation"
+      | "self_harm";
     severity: "low" | "medium" | "high" | "critical";
     confidence: number;
     description: string;
@@ -231,15 +250,18 @@ export interface BandwidthMetrics {
 // ═══════════════════════════════════════════════════════════════
 
 export class VideoTranscodingService {
-  private readonly QUALITY_PROFILES: Record<VideoQuality, { width: number; height: number; bitrate: number; fps: number }> = {
+  private readonly QUALITY_PROFILES: Record<
+    VideoQuality,
+    { width: number; height: number; bitrate: number; fps: number }
+  > = {
     "2160p": { width: 3840, height: 2160, bitrate: 35000, fps: 60 },
     "1440p": { width: 2560, height: 1440, bitrate: 16000, fps: 60 },
     "1080p": { width: 1920, height: 1080, bitrate: 8000, fps: 60 },
-    "720p":  { width: 1280, height: 720,  bitrate: 5000, fps: 30 },
-    "480p":  { width: 854,  height: 480,  bitrate: 2500, fps: 30 },
-    "360p":  { width: 640,  height: 360,  bitrate: 1000, fps: 30 },
-    "240p":  { width: 426,  height: 240,  bitrate: 500,  fps: 30 },
-    "144p":  { width: 256,  height: 144,  bitrate: 200,  fps: 15 },
+    "720p": { width: 1280, height: 720, bitrate: 5000, fps: 30 },
+    "480p": { width: 854, height: 480, bitrate: 2500, fps: 30 },
+    "360p": { width: 640, height: 360, bitrate: 1000, fps: 30 },
+    "240p": { width: 426, height: 240, bitrate: 500, fps: 30 },
+    "144p": { width: 256, height: 144, bitrate: 200, fps: 15 },
   };
 
   private transcodingQueue: Map<string, TranscodingJob> = new Map();
@@ -283,12 +305,15 @@ export class VideoTranscodingService {
     return job;
   }
 
-  private async processJobAsync(job: TranscodingJob, params: {
-    targetQualities: VideoQuality[];
-    generateHLS: boolean;
-    generateThumbnails: boolean;
-    enableDRM?: boolean;
-  }): Promise<void> {
+  private async processJobAsync(
+    job: TranscodingJob,
+    params: {
+      targetQualities: VideoQuality[];
+      generateHLS: boolean;
+      generateThumbnails: boolean;
+      enableDRM?: boolean;
+    }
+  ): Promise<void> {
     job.status = "processing";
     job.startedAt = new Date();
     job.progress = 5;
@@ -304,7 +329,11 @@ export class VideoTranscodingService {
 
         // In production: invoke FFmpeg or cloud transcoding API
         // AWS MediaConvert job: https://docs.aws.amazon.com/mediaconvert/
-        job.outputUrls[quality] = this.buildOutputUrl(job.assetId, quality, "mp4");
+        job.outputUrls[quality] = this.buildOutputUrl(
+          job.assetId,
+          quality,
+          "mp4"
+        );
         job.progress = Math.round(5 + progressPerQuality * (i + 1));
       }
 
@@ -333,7 +362,8 @@ export class VideoTranscodingService {
 
   async cancelJob(jobId: string): Promise<boolean> {
     const job = this.transcodingQueue.get(jobId);
-    if (!job || job.status === "completed" || job.status === "failed") return false;
+    if (!job || job.status === "completed" || job.status === "failed")
+      return false;
     job.status = "cancelled";
     return true;
   }
@@ -370,7 +400,11 @@ export class VideoTranscodingService {
     };
   }
 
-  private buildOutputUrl(assetId: string, quality: VideoQuality, format: string): string {
+  private buildOutputUrl(
+    assetId: string,
+    quality: VideoQuality,
+    format: string
+  ): string {
     return `https://cdn.skycoin4444.com/media/videos/${assetId}/${quality}.${format}`;
   }
 
@@ -379,15 +413,23 @@ export class VideoTranscodingService {
   }
 
   private generateThumbnailUrls(assetId: string, count: number): string[] {
-    return Array.from({ length: count }, (_, i) =>
-      `https://cdn.skycoin4444.com/media/thumbnails/${assetId}/thumb_${i + 1}.jpg`
+    return Array.from(
+      { length: count },
+      (_, i) =>
+        `https://cdn.skycoin4444.com/media/thumbnails/${assetId}/thumb_${i + 1}.jpg`
     );
   }
 
   private estimateTranscodingTime(qualities: VideoQuality[]): number {
     const complexityMap: Record<VideoQuality, number> = {
-      "2160p": 20, "1440p": 15, "1080p": 10, "720p": 7,
-      "480p": 5, "360p": 3, "240p": 2, "144p": 1,
+      "2160p": 20,
+      "1440p": 15,
+      "1080p": 10,
+      "720p": 7,
+      "480p": 5,
+      "360p": 3,
+      "240p": 2,
+      "144p": 1,
     };
     return qualities.reduce((sum, q) => sum + (complexityMap[q] || 5), 0);
   }
@@ -403,14 +445,14 @@ export class VideoTranscodingService {
 
 export class ImageOptimizationService {
   private readonly VARIANT_SIZES = [
-    { name: "micro",   width: 32,   height: 32   },
-    { name: "avatar",  width: 96,   height: 96   },
-    { name: "thumb",   width: 160,  height: 160  },
-    { name: "small",   width: 320,  height: 320  },
-    { name: "medium",  width: 640,  height: 640  },
-    { name: "large",   width: 1280, height: 1280 },
-    { name: "hero",    width: 1920, height: 1080 },
-    { name: "original",width: 0,    height: 0    },
+    { name: "micro", width: 32, height: 32 },
+    { name: "avatar", width: 96, height: 96 },
+    { name: "thumb", width: 160, height: 160 },
+    { name: "small", width: 320, height: 320 },
+    { name: "medium", width: 640, height: 640 },
+    { name: "large", width: 1280, height: 1280 },
+    { name: "hero", width: 1920, height: 1080 },
+    { name: "original", width: 0, height: 0 },
   ];
 
   async optimizeImage(params: {
@@ -448,7 +490,9 @@ export class ImageOptimizationService {
       blurhash: this.generateBlurhash(),
       dominantColors: this.extractDominantColors(),
       hasTransparency: params.originalUrl.includes(".png"),
-      isAnimated: params.originalUrl.includes(".gif") || params.originalUrl.includes(".webp"),
+      isAnimated:
+        params.originalUrl.includes(".gif") ||
+        params.originalUrl.includes(".webp"),
       metadata: {
         width: 0,
         height: 0,
@@ -457,18 +501,34 @@ export class ImageOptimizationService {
     };
   }
 
-  generateResponsiveSrcSet(assetId: string, format: ImageFormat = "webp"): string {
-    return this.VARIANT_SIZES
-      .filter(s => s.width > 0)
-      .map(s => `${this.buildImageUrl(assetId, s.name, format, 85)} ${s.width}w`)
+  generateResponsiveSrcSet(
+    assetId: string,
+    format: ImageFormat = "webp"
+  ): string {
+    return this.VARIANT_SIZES.filter(s => s.width > 0)
+      .map(
+        s => `${this.buildImageUrl(assetId, s.name, format, 85)} ${s.width}w`
+      )
       .join(", ");
   }
 
   generateAvatarSVG(userId: number, initials: string, size = 256): string {
     const colors = [
-      "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7",
-      "#DDA0DD", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9",
-      "#82E0AA", "#F8C471", "#AED6F1", "#A9DFBF", "#F9E79F",
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#96CEB4",
+      "#FFEAA7",
+      "#DDA0DD",
+      "#98D8C8",
+      "#F7DC6F",
+      "#BB8FCE",
+      "#85C1E9",
+      "#82E0AA",
+      "#F8C471",
+      "#AED6F1",
+      "#A9DFBF",
+      "#F9E79F",
     ];
     const color = colors[userId % colors.length];
     const fontSize = Math.round(size * 0.38);
@@ -480,35 +540,85 @@ export class ImageOptimizationService {
     )}`;
   }
 
-  private buildImageUrl(assetId: string, size: string, format: ImageFormat, quality: number): string {
+  private buildImageUrl(
+    assetId: string,
+    size: string,
+    format: ImageFormat,
+    quality: number
+  ): string {
     return `https://cdn.skycoin4444.com/media/images/${assetId}/${size}.${format}?q=${quality}`;
   }
 
   private getOptimalQuality(format: ImageFormat, size: string): number {
-    const baseQuality: Record<ImageFormat, number> = { webp: 82, avif: 75, jpeg: 85, png: 95, gif: 90 };
-    const sizeMultiplier: Record<string, number> = { micro: 0.85, avatar: 0.88, thumb: 0.90, small: 0.92, medium: 0.95, large: 0.97, hero: 0.98, original: 1.0 };
+    const baseQuality: Record<ImageFormat, number> = {
+      webp: 82,
+      avif: 75,
+      jpeg: 85,
+      png: 95,
+      gif: 90,
+    };
+    const sizeMultiplier: Record<string, number> = {
+      micro: 0.85,
+      avatar: 0.88,
+      thumb: 0.9,
+      small: 0.92,
+      medium: 0.95,
+      large: 0.97,
+      hero: 0.98,
+      original: 1.0,
+    };
     return Math.round(baseQuality[format] * (sizeMultiplier[size] || 0.9));
   }
 
-  private estimateFileSize(width: number, height: number, format: ImageFormat, quality: number): number {
+  private estimateFileSize(
+    width: number,
+    height: number,
+    format: ImageFormat,
+    quality: number
+  ): number {
     if (width === 0 || height === 0) return 0;
     const pixels = width * height;
-    const bitsPerPixel: Record<ImageFormat, number> = { webp: 0.8, avif: 0.6, jpeg: 1.2, png: 3.0, gif: 2.0 };
+    const bitsPerPixel: Record<ImageFormat, number> = {
+      webp: 0.8,
+      avif: 0.6,
+      jpeg: 1.2,
+      png: 3.0,
+      gif: 2.0,
+    };
     return Math.round((pixels * bitsPerPixel[format] * (quality / 100)) / 8);
   }
 
   private getCompressionRatio(format: ImageFormat): number {
-    const ratios: Record<ImageFormat, number> = { webp: 0.35, avif: 0.28, jpeg: 0.45, png: 0.70, gif: 0.55 };
+    const ratios: Record<ImageFormat, number> = {
+      webp: 0.35,
+      avif: 0.28,
+      jpeg: 0.45,
+      png: 0.7,
+      gif: 0.55,
+    };
     return ratios[format];
   }
 
   private generateBlurhash(): string {
-    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~";
-    return Array.from({ length: 28 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const chars =
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~";
+    return Array.from(
+      { length: 28 },
+      () => chars[Math.floor(Math.random() * chars.length)]
+    ).join("");
   }
 
   private extractDominantColors(): string[] {
-    const palette = ["#1a1a2e", "#16213e", "#0f3460", "#533483", "#e94560", "#f5a623", "#7ed321", "#4a90e2"];
+    const palette = [
+      "#1a1a2e",
+      "#16213e",
+      "#0f3460",
+      "#533483",
+      "#e94560",
+      "#f5a623",
+      "#7ed321",
+      "#4a90e2",
+    ];
     return palette.sort(() => Math.random() - 0.5).slice(0, 5);
   }
 }
@@ -563,16 +673,21 @@ export class VODArchiveService {
     return this.vodStore.get(vodId) || null;
   }
 
-  async getCreatorVODs(creatorId: number, params: {
-    limit?: number;
-    offset?: number;
-    status?: VODAsset["status"];
-    isPremium?: boolean;
-  } = {}): Promise<{ vods: VODAsset[]; total: number }> {
+  async getCreatorVODs(
+    creatorId: number,
+    params: {
+      limit?: number;
+      offset?: number;
+      status?: VODAsset["status"];
+      isPremium?: boolean;
+    } = {}
+  ): Promise<{ vods: VODAsset[]; total: number }> {
     const allVods = Array.from(this.vodStore.values())
       .filter(v => v.creatorId === creatorId)
       .filter(v => !params.status || v.status === params.status)
-      .filter(v => params.isPremium === undefined || v.isPremium === params.isPremium)
+      .filter(
+        v => params.isPremium === undefined || v.isPremium === params.isPremium
+      )
       .sort((a, b) => b.recordedAt.getTime() - a.recordedAt.getTime());
 
     const limit = params.limit || 20;
@@ -584,7 +699,10 @@ export class VODArchiveService {
     };
   }
 
-  async updateVODStatus(vodId: string, status: VODAsset["status"]): Promise<boolean> {
+  async updateVODStatus(
+    vodId: string,
+    status: VODAsset["status"]
+  ): Promise<boolean> {
     const vod = this.vodStore.get(vodId);
     if (!vod) return false;
     vod.status = status;
@@ -592,7 +710,10 @@ export class VODArchiveService {
     return true;
   }
 
-  async addChapter(vodId: string, chapter: { title: string; startTime: number; thumbnailUrl?: string }): Promise<boolean> {
+  async addChapter(
+    vodId: string,
+    chapter: { title: string; startTime: number; thumbnailUrl?: string }
+  ): Promise<boolean> {
     const vod = this.vodStore.get(vodId);
     if (!vod) return false;
     vod.chapters.push(chapter);
@@ -613,15 +734,19 @@ export class VODArchiveService {
     if (vod) vod.viewCount++;
   }
 
-  async getPopularVODs(params: {
-    category?: string;
-    limit?: number;
-    isPremium?: boolean;
-  } = {}): Promise<VODAsset[]> {
+  async getPopularVODs(
+    params: {
+      category?: string;
+      limit?: number;
+      isPremium?: boolean;
+    } = {}
+  ): Promise<VODAsset[]> {
     return Array.from(this.vodStore.values())
       .filter(v => v.status === "available")
       .filter(v => !params.category || v.category === params.category)
-      .filter(v => params.isPremium === undefined || v.isPremium === params.isPremium)
+      .filter(
+        v => params.isPremium === undefined || v.isPremium === params.isPremium
+      )
       .sort((a, b) => b.viewCount - a.viewCount)
       .slice(0, params.limit || 20);
   }
@@ -701,7 +826,8 @@ export class ClipExtractionService {
 
   async deleteClip(clipId: string, userId: number): Promise<boolean> {
     const clip = this.clipStore.get(clipId);
-    if (!clip || (clip.clippedByUserId !== userId && clip.creatorId !== userId)) return false;
+    if (!clip || (clip.clippedByUserId !== userId && clip.creatorId !== userId))
+      return false;
     this.clipStore.delete(clipId);
     return true;
   }
@@ -724,30 +850,42 @@ export class ClipExtractionService {
 export class ThumbnailService {
   private thumbnailStore: Map<string, ThumbnailVariant[]> = new Map();
 
-  async generateAutoThumbnails(assetId: string, videoUrl: string, count = 5): Promise<ThumbnailVariant[]> {
-    const thumbnails: ThumbnailVariant[] = Array.from({ length: count }, (_, i) => ({
-      id: `thumb_${assetId}_auto_${i + 1}`,
-      assetId,
-      url: `https://cdn.skycoin4444.com/media/thumbnails/${assetId}/auto_${i + 1}.jpg`,
-      width: 1280,
-      height: 720,
-      isAutoGenerated: true,
-      isCustom: false,
-      isActive: i === 0,
-      impressions: 0,
-      clickThroughRate: 0,
-      abTestGroup: (["A", "B", "C"] as const)[i % 3],
-      generatedAt: new Date(),
-    }));
+  async generateAutoThumbnails(
+    assetId: string,
+    videoUrl: string,
+    count = 5
+  ): Promise<ThumbnailVariant[]> {
+    const thumbnails: ThumbnailVariant[] = Array.from(
+      { length: count },
+      (_, i) => ({
+        id: `thumb_${assetId}_auto_${i + 1}`,
+        assetId,
+        url: `https://cdn.skycoin4444.com/media/thumbnails/${assetId}/auto_${i + 1}.jpg`,
+        width: 1280,
+        height: 720,
+        isAutoGenerated: true,
+        isCustom: false,
+        isActive: i === 0,
+        impressions: 0,
+        clickThroughRate: 0,
+        abTestGroup: (["A", "B", "C"] as const)[i % 3],
+        generatedAt: new Date(),
+      })
+    );
 
     this.thumbnailStore.set(assetId, thumbnails);
     return thumbnails;
   }
 
-  async uploadCustomThumbnail(assetId: string, imageUrl: string): Promise<ThumbnailVariant> {
+  async uploadCustomThumbnail(
+    assetId: string,
+    imageUrl: string
+  ): Promise<ThumbnailVariant> {
     const existing = this.thumbnailStore.get(assetId) || [];
     // Deactivate previous active thumbnail
-    existing.forEach(t => { t.isActive = false; });
+    existing.forEach(t => {
+      t.isActive = false;
+    });
 
     const newThumb: ThumbnailVariant = {
       id: `thumb_${assetId}_custom_${Date.now()}`,
@@ -766,10 +904,15 @@ export class ThumbnailService {
     return newThumb;
   }
 
-  async setActiveThumbnail(assetId: string, thumbnailId: string): Promise<boolean> {
+  async setActiveThumbnail(
+    assetId: string,
+    thumbnailId: string
+  ): Promise<boolean> {
     const thumbnails = this.thumbnailStore.get(assetId);
     if (!thumbnails) return false;
-    thumbnails.forEach(t => { t.isActive = t.id === thumbnailId; });
+    thumbnails.forEach(t => {
+      t.isActive = t.id === thumbnailId;
+    });
     return thumbnails.some(t => t.id === thumbnailId);
   }
 
@@ -794,7 +937,9 @@ export class ThumbnailService {
     }
   }
 
-  async getABTestResults(assetId: string): Promise<{ group: string; ctr: number; impressions: number }[]> {
+  async getABTestResults(
+    assetId: string
+  ): Promise<{ group: string; ctr: number; impressions: number }[]> {
     const thumbnails = this.thumbnailStore.get(assetId) || [];
     return thumbnails
       .filter(t => t.abTestGroup)
@@ -831,7 +976,9 @@ export class CreatorMediaLibraryService {
     // Check storage quota
     const usedBytes = await this.getStorageUsed(params.creatorId);
     if (usedBytes + params.fileSize > this.STORAGE_QUOTA_BYTES) {
-      throw new Error("Storage quota exceeded. Please upgrade your plan or delete existing assets.");
+      throw new Error(
+        "Storage quota exceeded. Please upgrade your plan or delete existing assets."
+      );
     }
 
     const assetId = `asset_${Date.now()}_${params.creatorId}`;
@@ -860,14 +1007,21 @@ export class CreatorMediaLibraryService {
   }
 
   async getCreatorLibrary(creatorId: number): Promise<CreatorMediaLibrary> {
-    const creatorAssets = Array.from(this.assets.values()).filter(a => a.creatorId === creatorId);
-    const creatorCollections = Array.from(this.collections.values()).filter(c => c.creatorId === creatorId);
+    const creatorAssets = Array.from(this.assets.values()).filter(
+      a => a.creatorId === creatorId
+    );
+    const creatorCollections = Array.from(this.collections.values()).filter(
+      c => c.creatorId === creatorId
+    );
 
     const totalStorage = creatorAssets.reduce((sum, a) => sum + a.fileSize, 0);
-    const assetsByType = creatorAssets.reduce((acc, a) => {
-      acc[a.type] = (acc[a.type] || 0) + 1;
-      return acc;
-    }, {} as Record<AssetType, number>);
+    const assetsByType = creatorAssets.reduce(
+      (acc, a) => {
+        acc[a.type] = (acc[a.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<AssetType, number>
+    );
 
     return {
       creatorId,
@@ -906,7 +1060,10 @@ export class CreatorMediaLibraryService {
     return collection;
   }
 
-  async addToCollection(assetId: string, collectionId: string): Promise<boolean> {
+  async addToCollection(
+    assetId: string,
+    collectionId: string
+  ): Promise<boolean> {
     const asset = this.assets.get(assetId);
     const collection = this.collections.get(collectionId);
     if (!asset || !collection) return false;
@@ -923,12 +1080,20 @@ export class CreatorMediaLibraryService {
     return true;
   }
 
-  async searchAssets(creatorId: number, query: string, type?: AssetType): Promise<MediaAssetRecord[]> {
+  async searchAssets(
+    creatorId: number,
+    query: string,
+    type?: AssetType
+  ): Promise<MediaAssetRecord[]> {
     const q = query.toLowerCase();
     return Array.from(this.assets.values())
       .filter(a => a.creatorId === creatorId)
       .filter(a => !type || a.type === type)
-      .filter(a => a.title.toLowerCase().includes(q) || a.tags.some(t => t.toLowerCase().includes(q)))
+      .filter(
+        a =>
+          a.title.toLowerCase().includes(q) ||
+          a.tags.some(t => t.toLowerCase().includes(q))
+      )
       .slice(0, 50);
   }
 
@@ -946,7 +1111,11 @@ export class CreatorMediaLibraryService {
 export class MediaModerationService {
   private moderationQueue: Map<string, ContentModerationResult> = new Map();
 
-  async moderateAsset(assetId: string, assetUrl: string, assetType: AssetType): Promise<ContentModerationResult> {
+  async moderateAsset(
+    assetId: string,
+    assetUrl: string,
+    assetType: AssetType
+  ): Promise<ContentModerationResult> {
     // Check cache
     const cached = this.moderationQueue.get(assetId);
     if (cached && cached.status !== "pending") return cached;
@@ -978,16 +1147,31 @@ If the URL appears to be a safe CDN URL, return empty flags and approve.`;
 
       let parsed: any = {};
       try {
-        const jsonMatch = (llmResponse as any).choices?.[0]?.message?.content.match(/\{[\s\S]*\}/);
+        const jsonMatch = (
+          llmResponse as any
+        ).choices?.[0]?.message?.content.match(/\{[\s\S]*\}/);
         if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
       } catch {
-        parsed = { flags: [], overallSeverity: "none", autoAction: "approve", requiresManualReview: false };
+        parsed = {
+          flags: [],
+          overallSeverity: "none",
+          autoAction: "approve",
+          requiresManualReview: false,
+        };
       }
 
       result = {
         assetId,
-        status: parsed.autoAction === "reject" ? "rejected" : parsed.autoAction === "flag" ? "flagged" : "approved",
-        confidence: parsed.flags?.length > 0 ? Math.max(...parsed.flags.map((f: any) => f.confidence || 0)) : 0.95,
+        status:
+          parsed.autoAction === "reject"
+            ? "rejected"
+            : parsed.autoAction === "flag"
+              ? "flagged"
+              : "approved",
+        confidence:
+          parsed.flags?.length > 0
+            ? Math.max(...parsed.flags.map((f: any) => f.confidence || 0))
+            : 0.95,
         flags: parsed.flags || [],
         requiresManualReview: parsed.requiresManualReview || false,
         autoAction: parsed.autoAction || "approve",
@@ -1012,14 +1196,21 @@ If the URL appears to be a safe CDN URL, return empty flags and approve.`;
     return result;
   }
 
-  async getModerationQueue(status?: ModerationStatus, limit = 50): Promise<ContentModerationResult[]> {
+  async getModerationQueue(
+    status?: ModerationStatus,
+    limit = 50
+  ): Promise<ContentModerationResult[]> {
     return Array.from(this.moderationQueue.values())
       .filter(r => !status || r.status === status)
       .sort((a, b) => b.reviewedAt.getTime() - a.reviewedAt.getTime())
       .slice(0, limit);
   }
 
-  async manualReview(assetId: string, decision: "approved" | "rejected", reviewerId: string): Promise<boolean> {
+  async manualReview(
+    assetId: string,
+    decision: "approved" | "rejected",
+    reviewerId: string
+  ): Promise<boolean> {
     const result = this.moderationQueue.get(assetId);
     if (!result) return false;
     result.status = decision;
@@ -1029,7 +1220,9 @@ If the URL appears to be a safe CDN URL, return empty flags and approve.`;
     return true;
   }
 
-  async getAssetModerationStatus(assetId: string): Promise<ContentModerationResult | null> {
+  async getAssetModerationStatus(
+    assetId: string
+  ): Promise<ContentModerationResult | null> {
     return this.moderationQueue.get(assetId) || null;
   }
 }
@@ -1048,7 +1241,8 @@ export class StorageLifecycleService {
   };
 
   async evaluateAssetTier(asset: MediaAssetRecord): Promise<StorageTier> {
-    const ageDays = (Date.now() - asset.uploadedAt.getTime()) / (1000 * 60 * 60 * 24);
+    const ageDays =
+      (Date.now() - asset.uploadedAt.getTime()) / (1000 * 60 * 60 * 24);
     const recentViews = asset.viewCount;
 
     // High-traffic content stays hot
@@ -1091,9 +1285,15 @@ export class StorageLifecycleService {
 
   calculateStorageCost(assets: MediaAssetRecord[]): {
     totalCostPerMonth: number;
-    breakdown: Record<StorageTier, { count: number; sizeGB: number; cost: number }>;
+    breakdown: Record<
+      StorageTier,
+      { count: number; sizeGB: number; cost: number }
+    >;
   } {
-    const breakdown: Record<StorageTier, { count: number; sizeGB: number; cost: number }> = {
+    const breakdown: Record<
+      StorageTier,
+      { count: number; sizeGB: number; cost: number }
+    > = {
       hot: { count: 0, sizeGB: 0, cost: 0 },
       warm: { count: 0, sizeGB: 0, cost: 0 },
       cold: { count: 0, sizeGB: 0, cost: 0 },
@@ -1109,7 +1309,10 @@ export class StorageLifecycleService {
       breakdown[tier].cost += sizeGB * this.TIER_POLICIES[tier].costPerGBMonth;
     }
 
-    const totalCostPerMonth = Object.values(breakdown).reduce((sum, t) => sum + t.cost, 0);
+    const totalCostPerMonth = Object.values(breakdown).reduce(
+      (sum, t) => sum + t.cost,
+      0
+    );
     return { totalCostPerMonth, breakdown };
   }
 }
@@ -1119,8 +1322,18 @@ export class StorageLifecycleService {
 // ═══════════════════════════════════════════════════════════════
 
 export class MediaMetricsService {
-  private viewEvents: { assetId: string; userId?: number; timestamp: Date; duration: number; region: string }[] = [];
-  private bandwidthEvents: { assetId: string; bytes: number; timestamp: Date }[] = [];
+  private viewEvents: {
+    assetId: string;
+    userId?: number;
+    timestamp: Date;
+    duration: number;
+    region: string;
+  }[] = [];
+  private bandwidthEvents: {
+    assetId: string;
+    bytes: number;
+    timestamp: Date;
+  }[] = [];
 
   async recordView(params: {
     assetId: string;
@@ -1142,7 +1355,10 @@ export class MediaMetricsService {
     this.bandwidthEvents.push({ assetId, bytes, timestamp: new Date() });
   }
 
-  async getAssetMetrics(assetId: string, period: "hour" | "day" | "week" | "month" = "day"): Promise<{
+  async getAssetMetrics(
+    assetId: string,
+    period: "hour" | "day" | "week" | "month" = "day"
+  ): Promise<{
     views: number;
     uniqueViewers: number;
     avgWatchDuration: number;
@@ -1152,16 +1368,25 @@ export class MediaMetricsService {
     topRegions: { region: string; views: number }[];
   }> {
     const cutoff = this.getPeriodCutoff(period);
-    const assetViews = this.viewEvents.filter(e => e.assetId === assetId && e.timestamp >= cutoff);
-    const assetBandwidth = this.bandwidthEvents.filter(e => e.assetId === assetId && e.timestamp >= cutoff);
+    const assetViews = this.viewEvents.filter(
+      e => e.assetId === assetId && e.timestamp >= cutoff
+    );
+    const assetBandwidth = this.bandwidthEvents.filter(
+      e => e.assetId === assetId && e.timestamp >= cutoff
+    );
 
-    const uniqueViewers = new Set(assetViews.filter(e => e.userId).map(e => e.userId)).size;
-    const avgWatchDuration = assetViews.length > 0
-      ? assetViews.reduce((sum, e) => sum + e.duration, 0) / assetViews.length
-      : 0;
+    const uniqueViewers = new Set(
+      assetViews.filter(e => e.userId).map(e => e.userId)
+    ).size;
+    const avgWatchDuration =
+      assetViews.length > 0
+        ? assetViews.reduce((sum, e) => sum + e.duration, 0) / assetViews.length
+        : 0;
 
     const regionCounts: Record<string, number> = {};
-    assetViews.forEach(e => { regionCounts[e.region] = (regionCounts[e.region] || 0) + 1; });
+    assetViews.forEach(e => {
+      regionCounts[e.region] = (regionCounts[e.region] || 0) + 1;
+    });
     const topRegions = Object.entries(regionCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
@@ -1178,7 +1403,10 @@ export class MediaMetricsService {
     };
   }
 
-  async getCreatorMetrics(creatorId: number, period: "day" | "week" | "month" = "month"): Promise<{
+  async getCreatorMetrics(
+    creatorId: number,
+    period: "day" | "week" | "month" = "month"
+  ): Promise<{
     totalViews: number;
     totalBandwidthGB: number;
     topAssets: { assetId: string; views: number }[];
@@ -1195,7 +1423,12 @@ export class MediaMetricsService {
 
   private getPeriodCutoff(period: "hour" | "day" | "week" | "month"): Date {
     const now = Date.now();
-    const ms = { hour: 3600000, day: 86400000, week: 604800000, month: 2592000000 };
+    const ms = {
+      hour: 3600000,
+      day: 86400000,
+      week: 604800000,
+      month: 2592000000,
+    };
     return new Date(now - ms[period]);
   }
 }
@@ -1208,7 +1441,11 @@ export class ContentDeliveryService {
   private readonly CDN_BASE = "https://cdn.skycoin4444.com";
   private readonly SIGNED_URL_TTL_SECONDS = 3600; // 1 hour
 
-  generateSignedUrl(assetPath: string, userId: number, expiresInSeconds = this.SIGNED_URL_TTL_SECONDS): string {
+  generateSignedUrl(
+    assetPath: string,
+    userId: number,
+    expiresInSeconds = this.SIGNED_URL_TTL_SECONDS
+  ): string {
     const expires = Math.floor(Date.now() / 1000) + expiresInSeconds;
     // In production: use AWS CloudFront signed URLs or similar
     // Signature = HMAC-SHA256(secret, assetPath + expires + userId)
@@ -1243,13 +1480,17 @@ export class ContentDeliveryService {
     return `${this.CDN_BASE}/media/videos/${assetId}/${quality}.m3u8`;
   }
 
-  private generateSignature(path: string, expires: number, userId: number): string {
+  private generateSignature(
+    path: string,
+    expires: number,
+    userId: number
+  ): string {
     // Simplified signature - in production use crypto.createHmac
     const data = `${path}${expires}${userId}`;
     let hash = 0;
     for (let i = 0; i < data.length; i++) {
       const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return Math.abs(hash).toString(36);
@@ -1271,24 +1512,48 @@ export const storageLifecycle = new StorageLifecycleService();
 export const mediaMetrics = new MediaMetricsService();
 export const contentDelivery = new ContentDeliveryService();
 
-
 // ─── ROUTER COMPATIBILITY FACADE ─────────────────────────────────────────────
 export const mediaCore = {
-  generateUploadUrl(params: { userId: number; filename?: string; mimeType?: string; purpose?: string }) {
+  generateUploadUrl(params: {
+    userId: number;
+    filename?: string;
+    mimeType?: string;
+    purpose?: string;
+  }) {
     const uploadId = `upload_${Date.now()}_${params.userId}`;
-    return Promise.resolve({ uploadId, uploadUrl: `https://s3.shadowchat.com/upload/${uploadId}`, expiresIn: 3600 });
+    return Promise.resolve({
+      uploadId,
+      uploadUrl: `https://s3.shadowchat.com/upload/${uploadId}`,
+      expiresIn: 3600,
+    });
   },
   confirmUpload(uploadId: string, userId: number, s3Key: string) {
-    return creatorMediaLibrary.uploadAsset({ creatorId: userId, type: "image" as any, title: s3Key, url: s3Key, fileSize: 0, mimeType: "application/octet-stream" });
+    return creatorMediaLibrary.uploadAsset({
+      creatorId: userId,
+      type: "image" as any,
+      title: s3Key,
+      url: s3Key,
+      fileSize: 0,
+      mimeType: "application/octet-stream",
+    });
   },
-  getUserLibrary(userId: number, _mediaType?: string, _limit = 20, _offset = 0) {
+  getUserLibrary(
+    userId: number,
+    _mediaType?: string,
+    _limit = 20,
+    _offset = 0
+  ) {
     return creatorMediaLibrary.getCreatorLibrary(userId);
   },
   deleteMedia(mediaId: string, userId: number) {
     return creatorMediaLibrary.deleteAsset(mediaId, userId);
   },
   getStorageUsage(userId: number) {
-    return creatorMediaLibrary.getCreatorLibrary(userId).then(lib => ({ used: lib.totalStorageBytes, limit: lib.storageQuotaBytes, usedPercent: lib.storageUsedPercent }));
+    return creatorMediaLibrary.getCreatorLibrary(userId).then(lib => ({
+      used: lib.totalStorageBytes,
+      limit: lib.storageQuotaBytes,
+      usedPercent: lib.storageUsedPercent,
+    }));
   },
   getTranscodeStatus(jobId: string) {
     return videoTranscoding.getJobStatus(jobId);

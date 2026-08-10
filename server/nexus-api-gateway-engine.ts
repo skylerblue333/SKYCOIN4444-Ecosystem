@@ -134,7 +134,10 @@ class RateLimiter {
       }
     }
 
-    const totalUsage = Array.from(currentUsage.values()).reduce((sum, count) => sum + count, 0);
+    const totalUsage = Array.from(currentUsage.values()).reduce(
+      (sum, count) => sum + count,
+      0
+    );
     const limit = this.limits.get(key) || this.defaultLimit;
 
     if (totalUsage < limit) {
@@ -158,7 +161,10 @@ class RateLimiter {
       }
     }
 
-    const totalUsage = Array.from(currentUsage.values()).reduce((sum, count) => sum + count, 0);
+    const totalUsage = Array.from(currentUsage.values()).reduce(
+      (sum, count) => sum + count,
+      0
+    );
     const limit = this.limits.get(key) || this.defaultLimit;
 
     return Math.max(0, limit - totalUsage);
@@ -189,7 +195,9 @@ class CircuitBreaker {
       if (Date.now() - this.lastFailureTime > this.resetTimeout) {
         this.state = "HALF_OPEN";
       } else {
-        throw new Error("CircuitBreaker: Service is currently unavailable (OPEN state).");
+        throw new Error(
+          "CircuitBreaker: Service is currently unavailable (OPEN state)."
+        );
       }
     }
 
@@ -243,7 +251,9 @@ class RetryLogic {
         if (i === this.attempts - 1) {
           throw error;
         }
-        await new Promise(resolve => setTimeout(resolve, this.delayMs * (i + 1)));
+        await new Promise(resolve =>
+          setTimeout(resolve, this.delayMs * (i + 1))
+        );
       }
     }
     throw new Error("RetryLogic: Failed after multiple attempts."); // Should not be reached
@@ -295,9 +305,17 @@ class WebhookManager {
     }
   }
 
-  private async sendWebhook(subscription: WebhookSubscription, event: string, payload: object): Promise<void> {
+  private async sendWebhook(
+    subscription: WebhookSubscription,
+    event: string,
+    payload: object
+  ): Promise<void> {
     const timestamp = Date.now();
-    const signature = this.generateSignature(timestamp, payload, subscription.secret);
+    const signature = this.generateSignature(
+      timestamp,
+      payload,
+      subscription.secret
+    );
 
     try {
       // Simulate HTTP POST request
@@ -321,7 +339,11 @@ class WebhookManager {
     }
   }
 
-  private generateSignature(timestamp: number, payload: object, secret: string): string {
+  private generateSignature(
+    timestamp: number,
+    payload: object,
+    secret: string
+  ): string {
     // In a real scenario, use HMAC-SHA256
     const data = `${timestamp}.${JSON.stringify(payload)}`;
     // const hmac = crypto.createHmac("sha256", secret);
@@ -356,7 +378,12 @@ class ApiKeyManager {
     this.apiKeys.set(mockApiKey.key, mockApiKey);
   }
 
-  public async createApiKey(owner: string, permissions: string[], rateLimitOverride?: number, expiresAt?: number): Promise<ApiKey> {
+  public async createApiKey(
+    owner: string,
+    permissions: string[],
+    rateLimitOverride?: number,
+    expiresAt?: number
+  ): Promise<ApiKey> {
     const newKey = `sk-${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
     const apiKey: ApiKey = {
       key: newKey,
@@ -367,7 +394,15 @@ class ApiKeyManager {
       createdAt: Date.now(),
       isActive: true,
     };
-    const newApiKey: ApiKey = { key: newKey, isActive: true, createdAt: Date.now(), rateLimitOverride, expiresAt, owner: "system", permissions: [] };
+    const newApiKey: ApiKey = {
+      key: newKey,
+      isActive: true,
+      createdAt: Date.now(),
+      rateLimitOverride,
+      expiresAt,
+      owner: "system",
+      permissions: [],
+    };
     this.apiKeys.set(newKey, newApiKey);
     // Persist API key in a real scenario
     return newApiKey;
@@ -375,7 +410,11 @@ class ApiKeyManager {
 
   public async getApiKey(key: string): Promise<ApiKey | undefined> {
     const apiKey = this.apiKeys.get(key);
-    if (apiKey && apiKey.isActive && (!apiKey.expiresAt || apiKey.expiresAt > Date.now())) {
+    if (
+      apiKey &&
+      apiKey.isActive &&
+      (!apiKey.expiresAt || apiKey.expiresAt > Date.now())
+    ) {
       return apiKey;
     }
     return undefined;
@@ -403,7 +442,12 @@ class UsageAnalytics {
     this.usageRecords = [];
   }
 
-  public async recordUsage(apiKey: string, endpoint: string, statusCode: number, latency: number): Promise<void> {
+  public async recordUsage(
+    apiKey: string,
+    endpoint: string,
+    statusCode: number,
+    latency: number
+  ): Promise<void> {
     const record: UsageRecord = {
       apiKey,
       endpoint,
@@ -416,17 +460,27 @@ class UsageAnalytics {
     console.log("Usage recorded:", record);
   }
 
-  public async getUsageSummary(apiKey?: string, endpoint?: string, periodMs?: number): Promise<UsageRecord[]> {
+  public async getUsageSummary(
+    apiKey?: string,
+    endpoint?: string,
+    periodMs?: number
+  ): Promise<UsageRecord[]> {
     let filteredRecords = this.usageRecords;
     if (apiKey) {
-      filteredRecords = filteredRecords.filter(record => record.apiKey === apiKey);
+      filteredRecords = filteredRecords.filter(
+        record => record.apiKey === apiKey
+      );
     }
     if (endpoint) {
-      filteredRecords = filteredRecords.filter(record => record.endpoint === endpoint);
+      filteredRecords = filteredRecords.filter(
+        record => record.endpoint === endpoint
+      );
     }
     if (periodMs) {
       const cutoff = Date.now() - periodMs;
-      filteredRecords = filteredRecords.filter(record => record.timestamp >= cutoff);
+      filteredRecords = filteredRecords.filter(
+        record => record.timestamp >= cutoff
+      );
     }
     return filteredRecords;
   }
@@ -451,10 +505,15 @@ class UsageAnalytics {
     return "";
   }
 
-  public async predictUsageTrends(apiKey?: string, endpoint?: string): Promise<string> {
+  public async predictUsageTrends(
+    apiKey?: string,
+    endpoint?: string
+  ): Promise<string> {
     // This is where AI-powered methods would come in handy
     const prompt = `Predict future API usage trends for ${apiKey || "all API keys"} and ${endpoint || "all endpoints"} based on the following historical data: ${JSON.stringify(this.usageRecords.slice(-100))}. Provide a brief summary of expected trends.`;
-    const llmResponse = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+    const llmResponse = await invokeLLM({
+      messages: [{ role: "user", content: prompt }],
+    });
     return String(llmResponse.choices[0]?.message?.content || "");
   }
 }
@@ -482,9 +541,13 @@ class ApiDocumentationGenerator {
         summary: `[${endpoint.method}] ${endpoint.path} (v${endpoint.version})`,
         description: `API endpoint for ${endpoint.path} version ${endpoint.version}.`,
         tags: [`v${endpoint.version}`],
-        security: endpoint.authenticationRequired ? [{ ApiKeyAuth: [] }] : undefined,
+        security: endpoint.authenticationRequired
+          ? [{ ApiKeyAuth: [] }]
+          : undefined,
         parameters: [], // Populate with schema details
-        requestBody: endpoint.schema ? { content: { "application/json": { schema: endpoint.schema } } } : undefined,
+        requestBody: endpoint.schema
+          ? { content: { "application/json": { schema: endpoint.schema } } }
+          : undefined,
         responses: {
           "200": { description: "Successful response" },
           "401": { description: "Unauthorized" },
@@ -516,13 +579,18 @@ class ApiDocumentationGenerator {
 
   public async generateMarkdownDocs(): Promise<string> {
     let markdown = "# SKYCOIN4444 NEXUS API Gateway Documentation\n\n";
-    markdown += "This document provides an overview of the API endpoints available through the SKYCOIN4444 NEXUS API Gateway.\n\n";
+    markdown +=
+      "This document provides an overview of the API endpoints available through the SKYCOIN4444 NEXUS API Gateway.\n\n";
 
-    const versions = Array.from(new Set(this.endpoints.map(e => e.version))).sort();
+    const versions = Array.from(
+      new Set(this.endpoints.map(e => e.version))
+    ).sort();
 
     for (const version of versions) {
       markdown += `## API Version v${version}\n\n`;
-      const versionEndpoints = this.endpoints.filter(e => e.version === version);
+      const versionEndpoints = this.endpoints.filter(
+        e => e.version === version
+      );
 
       for (const endpoint of versionEndpoints) {
         markdown += `### ${endpoint.method} ${endpoint.path}\n\n`;
@@ -572,16 +640,27 @@ class NexusApiGatewayEngine {
     this.apiKeyManager = new ApiKeyManager();
     this.webhookManager = new WebhookManager(config.webhookSecret);
     this.usageAnalytics = new UsageAnalytics();
-    this.documentationGenerator = new ApiDocumentationGenerator(Array.from(this.endpoints.values()));
+    this.documentationGenerator = new ApiDocumentationGenerator(
+      Array.from(this.endpoints.values())
+    );
     this.circuitBreakers = new Map();
     this.retryLogics = new Map();
 
     // Initialize circuit breakers and retry logics for known external services/endpoints
     // This would typically be dynamic or loaded from configuration
     if (this.config.enableCircuitBreaker) {
-      this.circuitBreakers.set("external-service-A", new CircuitBreaker(this.config.circuitBreakerThreshold, this.config.circuitBreakerResetTimeout));
+      this.circuitBreakers.set(
+        "external-service-A",
+        new CircuitBreaker(
+          this.config.circuitBreakerThreshold,
+          this.config.circuitBreakerResetTimeout
+        )
+      );
     }
-    this.retryLogics.set("external-service-A", new RetryLogic(this.config.retryAttempts, this.config.retryDelayMs));
+    this.retryLogics.set(
+      "external-service-A",
+      new RetryLogic(this.config.retryAttempts, this.config.retryDelayMs)
+    );
   }
 
   public async start(): Promise<void> {
@@ -601,7 +680,9 @@ class NexusApiGatewayEngine {
       this.rateLimiter.setLimit(key, endpointConfig.rateLimit);
     }
     // Re-initialize documentation generator with updated endpoints
-    this.documentationGenerator = new ApiDocumentationGenerator(Array.from(this.endpoints.values()));
+    this.documentationGenerator = new ApiDocumentationGenerator(
+      Array.from(this.endpoints.values())
+    );
   }
 
   private getEndpointKey(endpointConfig: EndpointConfig): string {
@@ -619,7 +700,13 @@ class NexusApiGatewayEngine {
       const version = urlParts[2] ? urlParts[2].substring(1) : "1"; // Assuming v1, v2, etc.
       const path = `/${urlParts.slice(3).join("/")}`; // Remaining path
 
-      const endpointKey = this.getEndpointKey({ path, method: req.method as any, version, handler: async () => {}, authenticationRequired: false });
+      const endpointKey = this.getEndpointKey({
+        path,
+        method: req.method as any,
+        version,
+        handler: async () => {},
+        authenticationRequired: false,
+      });
       const endpointConfig = this.endpoints.get(endpointKey);
 
       if (!endpointConfig) {
@@ -630,7 +717,8 @@ class NexusApiGatewayEngine {
       // 2. Authentication Middleware
       let apiKey: ApiKey | undefined;
       if (endpointConfig.authenticationRequired) {
-        const apiKeyHeaderValue = req.headers[this.config.apiKeyHeader.toLowerCase()];
+        const apiKeyHeaderValue =
+          req.headers[this.config.apiKeyHeader.toLowerCase()];
         if (!apiKeyHeaderValue || typeof apiKeyHeaderValue !== "string") {
           return this.sendError(res, 401, "API Key missing or invalid.");
         }
@@ -642,20 +730,31 @@ class NexusApiGatewayEngine {
       }
 
       // 3. Rate Limiting
-      const rateLimitKey = apiKey ? `apikey-${apiKey!.key}` : `endpoint-${endpointKey}`;
-      const effectiveRateLimit = apiKey?.rateLimitOverride || endpointConfig.rateLimit || this.config.defaultRateLimit;
+      const rateLimitKey = apiKey
+        ? `apikey-${apiKey!.key}`
+        : `endpoint-${endpointKey}`;
+      const effectiveRateLimit =
+        apiKey?.rateLimitOverride ||
+        endpointConfig.rateLimit ||
+        this.config.defaultRateLimit;
       this.rateLimiter.setLimit(rateLimitKey, effectiveRateLimit);
 
       if (!(await this.rateLimiter.check(rateLimitKey))) {
         res.setHeader("X-RateLimit-Limit", effectiveRateLimit.toString());
-        res.setHeader("X-RateLimit-Remaining", (await this.rateLimiter.getRemaining(rateLimitKey)).toString());
+        res.setHeader(
+          "X-RateLimit-Remaining",
+          (await this.rateLimiter.getRemaining(rateLimitKey)).toString()
+        );
         return this.sendError(res, 429, "Too Many Requests.");
       }
       res.setHeader("X-RateLimit-Limit", effectiveRateLimit.toString());
-      res.setHeader("X-RateLimit-Remaining", (await this.rateLimiter.getRemaining(rateLimitKey)).toString());
+      res.setHeader(
+        "X-RateLimit-Remaining",
+        (await this.rateLimiter.getRemaining(rateLimitKey)).toString()
+      );
 
       // 4. Request Transformation (simplified)
-      let transformedReqBody = req.body;
+      const transformedReqBody = req.body;
       if (endpointConfig.schema) {
         // In a real scenario, use a validation library like Joi or Zod
         // if (!validate(transformedReqBody, endpointConfig.schema)) {
@@ -665,13 +764,17 @@ class NexusApiGatewayEngine {
       }
 
       // 5. Circuit Breaker & Retry Logic for external calls (example)
-      const externalServiceCircuitBreaker = this.circuitBreakers.get("external-service-A");
-      const externalServiceRetryLogic = this.retryLogics.get("external-service-A");
+      const externalServiceCircuitBreaker =
+        this.circuitBreakers.get("external-service-A");
+      const externalServiceRetryLogic =
+        this.retryLogics.get("external-service-A");
 
       let handlerResult: any;
       if (externalServiceCircuitBreaker && externalServiceRetryLogic) {
         handlerResult = await externalServiceRetryLogic.execute(() =>
-          externalServiceCircuitBreaker.execute(() => endpointConfig.handler(req, res))
+          externalServiceCircuitBreaker.execute(() =>
+            endpointConfig.handler(req, res)
+          )
         );
       } else {
         handlerResult = await endpointConfig.handler(req, res);
@@ -684,21 +787,40 @@ class NexusApiGatewayEngine {
       }
 
       // 7. Webhook Management (trigger events post-successful response)
-      if (endpointConfig.webhookEvents && endpointConfig.webhookEvents.length > 0) {
+      if (
+        endpointConfig.webhookEvents &&
+        endpointConfig.webhookEvents.length > 0
+      ) {
         for (const event of endpointConfig.webhookEvents) {
-          await this.webhookManager.publish(event, { ...handlerResult, requestId: context.requestId });
+          await this.webhookManager.publish(event, {
+            ...handlerResult,
+            requestId: context.requestId,
+          });
         }
       }
 
       // 8. Usage Analytics
       const latency = Date.now() - startTime;
-      await this.usageAnalytics.recordUsage(context.apiKey?.key || "anonymous", endpointKey, res.statusCode || 200, latency);
-
+      await this.usageAnalytics.recordUsage(
+        context.apiKey?.key || "anonymous",
+        endpointKey,
+        res.statusCode || 200,
+        latency
+      );
     } catch (error: any) {
       console.error("API Gateway error:", error);
       const latency = Date.now() - startTime;
-      await this.usageAnalytics.recordUsage(context.apiKey?.key || "anonymous", context.endpointConfig?.path || "unknown", res.statusCode || 500, latency);
-      this.sendError(res, error.statusCode || 500, error.message || "Internal Server Error");
+      await this.usageAnalytics.recordUsage(
+        context.apiKey?.key || "anonymous",
+        context.endpointConfig?.path || "unknown",
+        res.statusCode || 500,
+        latency
+      );
+      this.sendError(
+        res,
+        error.statusCode || 500,
+        error.message || "Internal Server Error"
+      );
     }
   }
 
@@ -725,7 +847,9 @@ class NexusApiGatewayEngine {
     return this.documentationGenerator;
   }
 
-  public async generateApiDocs(format: "openapi" | "markdown"): Promise<object | string> {
+  public async generateApiDocs(
+    format: "openapi" | "markdown"
+  ): Promise<object | string> {
     if (format === "openapi") {
       return this.documentationGenerator.generateOpenApiSpec();
     } else if (format === "markdown") {
@@ -765,7 +889,9 @@ const DEFAULT_API_GATEWAY_CONFIG: ApiGatewayConfig = {
 };
 
 // --- Singleton Instance ---
-const nexusApiGatewayEngine = new NexusApiGatewayEngine(DEFAULT_API_GATEWAY_CONFIG);
+const nexusApiGatewayEngine = new NexusApiGatewayEngine(
+  DEFAULT_API_GATEWAY_CONFIG
+);
 
 // --- Example Usage / Endpoint Registration (for demonstration) ---
 // In a real application, endpoints would be registered dynamically or via configuration
@@ -777,12 +903,21 @@ nexusApiGatewayEngine.registerEndpoint({
   rateLimit: 50,
   handler: async (req, res) => {
     // Simulate fetching users from a database
-    const users = [{ id: "1", name: "Alice" }, { id: "2", name: "Bob" }];
+    const users = [
+      { id: "1", name: "Alice" },
+      { id: "2", name: "Bob" },
+    ];
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(users));
   },
-  responseSchema: { type: "array", items: { type: "object", properties: { id: { type: "string" }, name: { type: "string" } } } },
+  responseSchema: {
+    type: "array",
+    items: {
+      type: "object",
+      properties: { id: { type: "string" }, name: { type: "string" } },
+    },
+  },
 });
 
 nexusApiGatewayEngine.registerEndpoint({
@@ -797,9 +932,15 @@ nexusApiGatewayEngine.registerEndpoint({
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(newUser));
     // Publish webhook event
-    await nexusApiGatewayEngine.getWebhookManager().publish("user.created", newUser);
+    await nexusApiGatewayEngine
+      .getWebhookManager()
+      .publish("user.created", newUser);
   },
-  schema: { type: "object", required: ["name"], properties: { name: { type: "string" } } },
+  schema: {
+    type: "object",
+    required: ["name"],
+    properties: { name: { type: "string" } },
+  },
   webhookEvents: ["user.created"],
 });
 
@@ -816,5 +957,12 @@ nexusApiGatewayEngine.registerEndpoint({
 });
 
 // --- Exports ---
-export { NexusApiGatewayEngine, ApiGatewayConfig, EndpointConfig, WebhookSubscription, ApiKey, UsageRecord };
+export {
+  NexusApiGatewayEngine,
+  ApiGatewayConfig,
+  EndpointConfig,
+  WebhookSubscription,
+  ApiKey,
+  UsageRecord,
+};
 export default nexusApiGatewayEngine;

@@ -6,7 +6,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Play, Calendar, Users, Eye, Heart, Share2, Settings, Loader2, Radio, Clock } from "lucide-react";
+import {
+  Play,
+  Calendar,
+  Users,
+  Eye,
+  Heart,
+  Share2,
+  Settings,
+  Loader2,
+  Radio,
+  Clock,
+} from "lucide-react";
 
 interface Stream {
   id: string;
@@ -93,8 +104,12 @@ export function LivestreamDashboard() {
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Livestream Dashboard</h1>
-            <p className="text-slate-400">Manage your live streams and broadcasts</p>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Livestream Dashboard
+            </h1>
+            <p className="text-slate-400">
+              Manage your live streams and broadcasts
+            </p>
           </div>
           <Button className="bg-red-600 hover:bg-red-700 flex items-center gap-2">
             <Radio className="w-4 h-4" />
@@ -102,20 +117,35 @@ export function LivestreamDashboard() {
           </Button>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-4 bg-slate-800 border border-slate-700">
-            <TabsTrigger value="live" className="text-slate-300">Live</TabsTrigger>
-            <TabsTrigger value="scheduled" className="text-slate-300">Scheduled</TabsTrigger>
-            <TabsTrigger value="ended" className="text-slate-300">Ended</TabsTrigger>
-            <TabsTrigger value="create" className="text-slate-300">Create</TabsTrigger>
+            <TabsTrigger value="live" className="text-slate-300">
+              Live
+            </TabsTrigger>
+            <TabsTrigger value="scheduled" className="text-slate-300">
+              Scheduled
+            </TabsTrigger>
+            <TabsTrigger value="ended" className="text-slate-300">
+              Ended
+            </TabsTrigger>
+            <TabsTrigger value="create" className="text-slate-300">
+              Create
+            </TabsTrigger>
           </TabsList>
 
           {/* Live Streams */}
           <TabsContent value="live" className="space-y-4">
             {mockStreams
-              .filter((s) => s.status === "live")
-              .map((stream) => (
-                <Card key={stream.id} className="border-slate-700 bg-slate-800/50 overflow-hidden">
+              .filter(s => s.status === "live")
+              .map(stream => (
+                <Card
+                  key={stream.id}
+                  className="border-slate-700 bg-slate-800/50 overflow-hidden"
+                >
                   <div className="flex gap-4 p-4">
                     <div className="w-40 h-24 bg-slate-700 rounded-lg flex items-center justify-center relative">
                       <div className="absolute top-2 left-2">
@@ -124,8 +154,12 @@ export function LivestreamDashboard() {
                       <Play className="w-8 h-8 text-white/50" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-white mb-1">{stream.title}</h3>
-                      <p className="text-sm text-slate-400 mb-3">{stream.description}</p>
+                      <h3 className="text-lg font-bold text-white mb-1">
+                        {stream.title}
+                      </h3>
+                      <p className="text-sm text-slate-400 mb-3">
+                        {stream.description}
+                      </p>
                       <div className="flex gap-6 text-sm">
                         <div className="flex items-center gap-1 text-slate-300">
                           <Eye className="w-4 h-4" />
@@ -142,11 +176,18 @@ export function LivestreamDashboard() {
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                      <Button
+                        size="sm"
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
                         <Settings className="w-4 h-4 mr-1" />
                         Settings
                       </Button>
-                      <Button size="sm" variant="outline" className="border-slate-600">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-slate-600"
+                      >
                         <Share2 className="w-4 h-4 mr-1" />
                         Share
                       </Button>
@@ -159,21 +200,31 @@ export function LivestreamDashboard() {
           {/* Scheduled Streams */}
           <TabsContent value="scheduled" className="space-y-4">
             {mockStreams
-              .filter((s) => s.status === "scheduled")
-              .map((stream) => (
-                <Card key={stream.id} className="border-slate-700 bg-slate-800/50">
+              .filter(s => s.status === "scheduled")
+              .map(stream => (
+                <Card
+                  key={stream.id}
+                  className="border-slate-700 bg-slate-800/50"
+                >
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-lg font-bold text-white mb-1">{stream.title}</h3>
-                        <p className="text-sm text-slate-400 mb-2">{stream.description}</p>
+                        <h3 className="text-lg font-bold text-white mb-1">
+                          {stream.title}
+                        </h3>
+                        <p className="text-sm text-slate-400 mb-2">
+                          {stream.description}
+                        </p>
                         <div className="flex items-center gap-2 text-sm text-slate-300">
                           <Calendar className="w-4 h-4" />
                           {stream.scheduledAt?.toLocaleString()}
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={() => handleGoLive(stream.id)} className="bg-red-600 hover:bg-red-700">
+                        <Button
+                          onClick={() => handleGoLive(stream.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
                           Go Live
                         </Button>
                         <Button variant="outline" className="border-slate-600">
@@ -189,13 +240,18 @@ export function LivestreamDashboard() {
           {/* Ended Streams */}
           <TabsContent value="ended" className="space-y-4">
             {mockStreams
-              .filter((s) => s.status === "ended")
-              .map((stream) => (
-                <Card key={stream.id} className="border-slate-700 bg-slate-800/50">
+              .filter(s => s.status === "ended")
+              .map(stream => (
+                <Card
+                  key={stream.id}
+                  className="border-slate-700 bg-slate-800/50"
+                >
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-lg font-bold text-white mb-1">{stream.title}</h3>
+                        <h3 className="text-lg font-bold text-white mb-1">
+                          {stream.title}
+                        </h3>
                         <div className="flex gap-6 text-sm text-slate-400">
                           <span>{stream.viewers.toLocaleString()} viewers</span>
                           <span>{stream.duration} minutes</span>
@@ -220,27 +276,40 @@ export function LivestreamDashboard() {
           <TabsContent value="create" className="space-y-4">
             <Card className="border-slate-700 bg-slate-800/50">
               <CardHeader>
-                <CardTitle className="text-white">Schedule a New Stream</CardTitle>
+                <CardTitle className="text-white">
+                  Schedule a New Stream
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateStream} className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-slate-300 mb-2 block">Stream Title</label>
+                    <label className="text-sm font-medium text-slate-300 mb-2 block">
+                      Stream Title
+                    </label>
                     <Input
                       placeholder="Enter stream title"
                       value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      onChange={e =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
                       className="bg-slate-700 border-slate-600 text-white"
                       disabled={isCreating}
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-slate-300 mb-2 block">Description</label>
+                    <label className="text-sm font-medium text-slate-300 mb-2 block">
+                      Description
+                    </label>
                     <Textarea
                       placeholder="Describe your stream"
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={e =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
                       className="bg-slate-700 border-slate-600 text-white"
                       disabled={isCreating}
                       rows={4}
@@ -248,11 +317,18 @@ export function LivestreamDashboard() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-slate-300 mb-2 block">Scheduled Time (Optional)</label>
+                    <label className="text-sm font-medium text-slate-300 mb-2 block">
+                      Scheduled Time (Optional)
+                    </label>
                     <Input
                       type="datetime-local"
                       value={formData.scheduledTime}
-                      onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
+                      onChange={e =>
+                        setFormData({
+                          ...formData,
+                          scheduledTime: e.target.value,
+                        })
+                      }
                       className="bg-slate-700 border-slate-600 text-white"
                       disabled={isCreating}
                     />

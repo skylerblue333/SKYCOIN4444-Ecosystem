@@ -1,17 +1,18 @@
 // @ts-nocheck
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/_core/hooks/useAuth';
-import { trpc } from '@/lib/trpc';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 const LearningPage: React.FC = () => {
-  
-  const [activeTab, setActiveTab] = useState<'browse' | 'enrolled' | 'certificates'>('browse');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<
+    "browse" | "enrolled" | "certificates"
+  >("browse");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Queries
   const coursesQuery = trpc.wave3Learning.getCourses.useQuery(
@@ -33,10 +34,10 @@ const LearningPage: React.FC = () => {
   const enrollMutation = trpc.wave3Learning.enrollCourse.useMutation({
     onSuccess: () => {
       enrollmentsQuery.refetch();
-      toast.success('Enrolled successfully');
+      toast.success("Enrolled successfully");
     },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to enroll');
+    onError: error => {
+      toast.error(error.message || "Failed to enroll");
     },
   });
 
@@ -44,10 +45,10 @@ const LearningPage: React.FC = () => {
     onSuccess: () => {
       certificatesQuery.refetch();
       enrollmentsQuery.refetch();
-      toast.success('Course completed! Certificate issued');
+      toast.success("Course completed! Certificate issued");
     },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to complete course');
+    onError: error => {
+      toast.error(error.message || "Failed to complete course");
     },
   });
 
@@ -67,14 +68,14 @@ const LearningPage: React.FC = () => {
 
       {/* Tabs */}
       <div className="flex gap-2 border-b">
-        {(['browse', 'enrolled', 'certificates'] as const).map((tab) => (
+        {(["browse", "enrolled", "certificates"] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 font-medium capitalize ${
               activeTab === tab
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab}
@@ -83,13 +84,13 @@ const LearningPage: React.FC = () => {
       </div>
 
       {/* Browse Tab */}
-      {activeTab === 'browse' && (
+      {activeTab === "browse" && (
         <div className="space-y-4">
           <div className="flex gap-2">
             <Input
               placeholder="Search courses..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="flex-1"
             />
           </div>
@@ -103,9 +104,14 @@ const LearningPage: React.FC = () => {
               </>
             ) : (coursesQuery.data?.courses || []).length > 0 ? (
               (coursesQuery.data?.courses || []).map((course: any) => (
-                <Card key={course.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={course.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardHeader>
-                    <CardTitle className="line-clamp-2">{course.title}</CardTitle>
+                    <CardTitle className="line-clamp-2">
+                      {course.title}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground line-clamp-3">
@@ -127,7 +133,9 @@ const LearningPage: React.FC = () => {
                         disabled={enrollMutation.isPending}
                         className="w-full"
                       >
-                        {enrollMutation.isPending ? 'Enrolling...' : 'Enroll Now'}
+                        {enrollMutation.isPending
+                          ? "Enrolling..."
+                          : "Enroll Now"}
                       </Button>
                     )}
                   </CardContent>
@@ -141,7 +149,7 @@ const LearningPage: React.FC = () => {
       )}
 
       {/* Enrolled Tab */}
-      {activeTab === 'enrolled' && isAuthenticated && (
+      {activeTab === "enrolled" && isAuthenticated && (
         <Card>
           <CardHeader>
             <CardTitle>My Courses</CardTitle>
@@ -154,43 +162,54 @@ const LearningPage: React.FC = () => {
               </div>
             ) : (enrollmentsQuery.data?.enrollments || []).length > 0 ? (
               <div className="space-y-2">
-                {(enrollmentsQuery.data?.enrollments || []).map((enrollment: any) => (
-                  <div key={enrollment.id} className="p-3 rounded-lg border border-border">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium">{enrollment.course.title}</p>
-                        <div className="w-full bg-muted rounded-full h-2 mt-2">
-                          <div
-                            className="bg-primary h-2 rounded-full"
-                            style={{ width: `${enrollment.progress}%` }}
-                          />
+                {(enrollmentsQuery.data?.enrollments || []).map(
+                  (enrollment: any) => (
+                    <div
+                      key={enrollment.id}
+                      className="p-3 rounded-lg border border-border"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">
+                            {enrollment.course.title}
+                          </p>
+                          <div className="w-full bg-muted rounded-full h-2 mt-2">
+                            <div
+                              className="bg-primary h-2 rounded-full"
+                              style={{ width: `${enrollment.progress}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {enrollment.progress}% complete
+                          </p>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {enrollment.progress}% complete
-                        </p>
+                        {enrollment.progress === 100 && (
+                          <Button
+                            onClick={() => handleComplete(enrollment.course.id)}
+                            disabled={completeMutation.isPending}
+                            size="sm"
+                          >
+                            {completeMutation.isPending
+                              ? "Issuing..."
+                              : "Get Certificate"}
+                          </Button>
+                        )}
                       </div>
-                      {enrollment.progress === 100 && (
-                        <Button
-                          onClick={() => handleComplete(enrollment.course.id)}
-                          disabled={completeMutation.isPending}
-                          size="sm"
-                        >
-                          {completeMutation.isPending ? 'Issuing...' : 'Get Certificate'}
-                        </Button>
-                      )}
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Not enrolled in any courses</p>
+              <p className="text-sm text-muted-foreground">
+                Not enrolled in any courses
+              </p>
             )}
           </CardContent>
         </Card>
       )}
 
       {/* Certificates Tab */}
-      {activeTab === 'certificates' && isAuthenticated && (
+      {activeTab === "certificates" && isAuthenticated && (
         <Card>
           <CardHeader>
             <CardTitle>My Certificates</CardTitle>
@@ -203,24 +222,34 @@ const LearningPage: React.FC = () => {
               </div>
             ) : (certificatesQuery.data?.certificates || []).length > 0 ? (
               <div className="space-y-2">
-                {(certificatesQuery.data?.certificates || []).map((cert: any) => (
-                  <div key={cert.id} className="p-3 rounded-lg border border-border bg-green-50">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium text-green-900">{cert.course.title}</p>
-                        <p className="text-xs text-green-700">
-                          Certificate #{cert.certificateNumber}
-                        </p>
-                        <p className="text-xs text-green-600">
-                          Issued: {new Date(cert.issuedAt).toLocaleDateString()}
-                        </p>
+                {(certificatesQuery.data?.certificates || []).map(
+                  (cert: any) => (
+                    <div
+                      key={cert.id}
+                      className="p-3 rounded-lg border border-border bg-green-50"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium text-green-900">
+                            {cert.course.title}
+                          </p>
+                          <p className="text-xs text-green-700">
+                            Certificate #{cert.certificateNumber}
+                          </p>
+                          <p className="text-xs text-green-600">
+                            Issued:{" "}
+                            {new Date(cert.issuedAt).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No certificates yet</p>
+              <p className="text-sm text-muted-foreground">
+                No certificates yet
+              </p>
             )}
           </CardContent>
         </Card>

@@ -5,7 +5,19 @@
  * Trending content radiates energy. Everything is alive.
  */
 import { useState, useEffect, useRef } from "react";
-import { Brain, Zap, TrendingUp, Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Sparkles, Activity, Eye } from "lucide-react";
+import {
+  Brain,
+  Zap,
+  TrendingUp,
+  Heart,
+  MessageCircle,
+  Share2,
+  Bookmark,
+  MoreHorizontal,
+  Sparkles,
+  Activity,
+  Eye,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
@@ -31,13 +43,32 @@ const AI_HIGHLIGHTS = [
 ];
 
 const ENERGY_LEVELS = ["low", "medium", "high", "viral"] as const;
-type EnergyLevel = typeof ENERGY_LEVELS[number];
+type EnergyLevel = (typeof ENERGY_LEVELS)[number];
 
-const ENERGY_STYLES: Record<EnergyLevel, { ring: string; glow: string; badge: string }> = {
-  low: { ring: "ring-border/30", glow: "", badge: "bg-secondary text-muted-foreground" },
-  medium: { ring: "ring-blue-500/30", glow: "shadow-blue-500/10", badge: "bg-blue-500/20 text-blue-400" },
-  high: { ring: "ring-purple-500/40", glow: "shadow-purple-500/20", badge: "bg-purple-500/20 text-purple-400" },
-  viral: { ring: "ring-pink-500/60", glow: "shadow-pink-500/30", badge: "bg-pink-500/20 text-pink-400" },
+const ENERGY_STYLES: Record<
+  EnergyLevel,
+  { ring: string; glow: string; badge: string }
+> = {
+  low: {
+    ring: "ring-border/30",
+    glow: "",
+    badge: "bg-secondary text-muted-foreground",
+  },
+  medium: {
+    ring: "ring-blue-500/30",
+    glow: "shadow-blue-500/10",
+    badge: "bg-blue-500/20 text-blue-400",
+  },
+  high: {
+    ring: "ring-purple-500/40",
+    glow: "shadow-purple-500/20",
+    badge: "bg-purple-500/20 text-purple-400",
+  },
+  viral: {
+    ring: "ring-pink-500/60",
+    glow: "shadow-pink-500/30",
+    badge: "bg-pink-500/20 text-pink-400",
+  },
 };
 
 interface FeedPost {
@@ -63,7 +94,8 @@ const MOCK_POSTS: FeedPost[] = [
     author: "NOVA",
     authorInitial: "N",
     authorColor: "from-purple-500 to-pink-500",
-    content: "The next phase of Web3 social isn't about decentralization — it's about AI-mediated trust. When your reputation is computed, not claimed, everything changes.",
+    content:
+      "The next phase of Web3 social isn't about decentralization — it's about AI-mediated trust. When your reputation is computed, not claimed, everything changes.",
     time: "2m ago",
     likes: 847,
     comments: 124,
@@ -79,7 +111,8 @@ const MOCK_POSTS: FeedPost[] = [
     author: "Skyler",
     authorInitial: "S",
     authorColor: "from-cyan-500 to-blue-500",
-    content: "Just deployed the action engine. Chat is now a command terminal. Every message can become a payment, a task, or a hire. This is what the OS feels like.",
+    content:
+      "Just deployed the action engine. Chat is now a command terminal. Every message can become a payment, a task, or a hire. This is what the OS feels like.",
     time: "8m ago",
     likes: 312,
     comments: 67,
@@ -95,7 +128,8 @@ const MOCK_POSTS: FeedPost[] = [
     author: "CIPHER",
     authorInitial: "C",
     authorColor: "from-green-500 to-emerald-500",
-    content: "SKY444 staking APY just hit 34.7%. Treasury at $2.1M. Governance vote passes tomorrow.",
+    content:
+      "SKY444 staking APY just hit 34.7%. Treasury at $2.1M. Governance vote passes tomorrow.",
     time: "15m ago",
     likes: 203,
     comments: 41,
@@ -111,7 +145,8 @@ const MOCK_POSTS: FeedPost[] = [
     author: "PRISM",
     authorInitial: "P",
     authorColor: "from-orange-500 to-red-500",
-    content: "Feed ranking model v3 is live. Engagement prediction accuracy: 91.4%. The feed now knows what you want before you do.",
+    content:
+      "Feed ranking model v3 is live. Engagement prediction accuracy: 91.4%. The feed now knows what you want before you do.",
     time: "22m ago",
     likes: 156,
     comments: 29,
@@ -127,7 +162,8 @@ const MOCK_POSTS: FeedPost[] = [
     author: "Alex Rivera",
     authorInitial: "A",
     authorColor: "from-pink-500 to-rose-500",
-    content: "The dating compatibility engine just matched me with someone who has 94% alignment. We've been talking for 3 hours. This is different.",
+    content:
+      "The dating compatibility engine just matched me with someone who has 94% alignment. We've been talking for 3 hours. This is different.",
     time: "1h ago",
     likes: 89,
     comments: 18,
@@ -140,7 +176,15 @@ const MOCK_POSTS: FeedPost[] = [
   },
 ];
 
-function AmbientPost({ post, onLike, onBookmark }: { post: FeedPost; onLike: (id: number) => void; onBookmark: (id: number) => void }) {
+function AmbientPost({
+  post,
+  onLike,
+  onBookmark,
+}: {
+  post: FeedPost;
+  onLike: (id: number) => void;
+  onBookmark: (id: number) => void;
+}) {
   const [showAI, setShowAI] = useState(false);
   const energy = ENERGY_STYLES[post.energy];
 
@@ -153,8 +197,14 @@ function AmbientPost({ post, onLike, onBookmark }: { post: FeedPost; onLike: (id
       {/* Energy indicator */}
       {post.energy !== "low" && (
         <div className="absolute -top-1.5 -right-1.5">
-          <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${energy.badge}`}>
-            {post.energy === "viral" ? "🔥 Viral" : post.energy === "high" ? "⚡ Hot" : "📈 Rising"}
+          <span
+            className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${energy.badge}`}
+          >
+            {post.energy === "viral"
+              ? "🔥 Viral"
+              : post.energy === "high"
+                ? "⚡ Hot"
+                : "📈 Rising"}
           </span>
         </div>
       )}
@@ -162,7 +212,9 @@ function AmbientPost({ post, onLike, onBookmark }: { post: FeedPost; onLike: (id
       <div className="p-4">
         {/* Author */}
         <div className="flex items-center gap-2.5 mb-3">
-          <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${post.authorColor} flex items-center justify-center text-sm font-bold text-white shrink-0`}>
+          <div
+            className={`w-8 h-8 rounded-full bg-gradient-to-br ${post.authorColor} flex items-center justify-center text-sm font-bold text-white shrink-0`}
+          >
             {post.authorInitial}
           </div>
           <div className="flex-1 min-w-0">
@@ -175,14 +227,19 @@ function AmbientPost({ post, onLike, onBookmark }: { post: FeedPost; onLike: (id
         </div>
 
         {/* Content */}
-        <p className={`text-muted-foreground mb-3 leading-relaxed ${post.size === "featured" ? "text-base" : "text-sm"}`}>
+        <p
+          className={`text-muted-foreground mb-3 leading-relaxed ${post.size === "featured" ? "text-base" : "text-sm"}`}
+        >
           {post.content}
         </p>
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {post.tags.map(tag => (
-            <span key={tag} className="text-xs text-purple-400 hover:text-purple-300 cursor-pointer transition-colors">
+            <span
+              key={tag}
+              className="text-xs text-purple-400 hover:text-purple-300 cursor-pointer transition-colors"
+            >
               {tag}
             </span>
           ))}
@@ -211,7 +268,9 @@ function AmbientPost({ post, onLike, onBookmark }: { post: FeedPost; onLike: (id
             onClick={() => onLike(post.id)}
             className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all ${post.isLiked ? "text-pink-400 bg-pink-500/10" : "text-muted-foreground hover:text-pink-400 hover:bg-pink-500/10"}`}
           >
-            <Heart className={`w-3.5 h-3.5 ${post.isLiked ? "fill-current" : ""}`} />
+            <Heart
+              className={`w-3.5 h-3.5 ${post.isLiked ? "fill-current" : ""}`}
+            />
             {post.likes}
           </button>
           <button className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-blue-400 hover:bg-blue-500/10 transition-all">
@@ -225,7 +284,9 @@ function AmbientPost({ post, onLike, onBookmark }: { post: FeedPost; onLike: (id
             onClick={() => onBookmark(post.id)}
             className={`ml-auto flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all ${post.isBookmarked ? "text-yellow-400 bg-yellow-500/10" : "text-muted-foreground hover:text-yellow-400 hover:bg-yellow-500/10"}`}
           >
-            <Bookmark className={`w-3.5 h-3.5 ${post.isBookmarked ? "fill-current" : ""}`} />
+            <Bookmark
+              className={`w-3.5 h-3.5 ${post.isBookmarked ? "fill-current" : ""}`}
+            />
           </button>
         </div>
       </div>
@@ -249,32 +310,51 @@ export default function AmbientFeed() {
   }, []);
 
   const handleLike = (id: number) => {
-    setPosts(prev => prev.map(p => p.id === id ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 } : p));
+    setPosts(prev =>
+      prev.map(p =>
+        p.id === id
+          ? {
+              ...p,
+              isLiked: !p.isLiked,
+              likes: p.isLiked ? p.likes - 1 : p.likes + 1,
+            }
+          : p
+      )
+    );
   };
 
   const handleBookmark = (id: number) => {
-    setPosts(prev => prev.map(p => p.id === id ? { ...p, isBookmarked: !p.isBookmarked } : p));
+    setPosts(prev =>
+      prev.map(p => (p.id === id ? { ...p, isBookmarked: !p.isBookmarked } : p))
+    );
   };
 
   // Merge real feed data if available
-  const displayPosts = feedData.data && feedData.data.length > 0
-    ? feedData.data.slice(0, 3).map((p: any, i: number) => ({
-        id: p.id,
-        author: p.author?.username || "User",
-        authorInitial: (p.author?.username || "U")[0].toUpperCase(),
-        authorColor: ["from-purple-500 to-pink-500", "from-cyan-500 to-blue-500", "from-green-500 to-emerald-500"][i % 3],
-        content: p.content || "",
-        time: "just now",
-        likes: p.likeCount || 0,
-        comments: p.commentCount || 0,
-        energy: (["medium", "high", "viral"] as EnergyLevel[])[i % 3],
-        aiHighlight: i === 0 ? "High relevance: matches your interests" : null,
-        tags: [] as string[],
-        isLiked: false,
-        isBookmarked: false,
-        size: (i === 0 ? "featured" : "normal") as "featured" | "normal" | "compact",
-      }))
-    : posts;
+  const displayPosts =
+    feedData.data && feedData.data.length > 0
+      ? feedData.data.slice(0, 3).map((p: any, i: number) => ({
+          id: p.id,
+          author: p.author?.username || "User",
+          authorInitial: (p.author?.username || "U")[0].toUpperCase(),
+          authorColor: [
+            "from-purple-500 to-pink-500",
+            "from-cyan-500 to-blue-500",
+            "from-green-500 to-emerald-500",
+          ][i % 3],
+          content: p.content || "",
+          time: "just now",
+          likes: p.likeCount || 0,
+          comments: p.commentCount || 0,
+          energy: (["medium", "high", "viral"] as EnergyLevel[])[i % 3],
+          aiHighlight:
+            i === 0 ? "High relevance: matches your interests" : null,
+          tags: [] as string[],
+          isLiked: false,
+          isBookmarked: false,
+          size: (i === 0 ? "featured" : "normal") as
+            "featured" | "normal" | "compact",
+        }))
+      : posts;
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -289,7 +369,14 @@ export default function AmbientFeed() {
               top: `${p.y}%`,
               width: `${p.size}px`,
               height: `${p.size}px`,
-              background: p.color === "purple" ? "#a855f7" : p.color === "cyan" ? "#06b6d4" : p.color === "pink" ? "#ec4899" : "#3b82f6",
+              background:
+                p.color === "purple"
+                  ? "#a855f7"
+                  : p.color === "cyan"
+                    ? "#06b6d4"
+                    : p.color === "pink"
+                      ? "#ec4899"
+                      : "#3b82f6",
               animationDelay: `${p.delay}s`,
               animationDuration: `${p.duration}s`,
             }}
@@ -305,7 +392,9 @@ export default function AmbientFeed() {
               <Activity className="w-5 h-5 text-purple-400" />
               Ambient Feed
             </h1>
-            <p className="text-xs text-muted-foreground">Feed as living environment</p>
+            <p className="text-xs text-muted-foreground">
+              Feed as living environment
+            </p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -337,7 +426,9 @@ export default function AmbientFeed() {
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shrink-0">
               <Sparkles className="w-3 h-3 text-white" />
             </div>
-            <p className="text-xs text-cyan-300 transition-all duration-500">{AI_HIGHLIGHTS[ambientHighlight]}</p>
+            <p className="text-xs text-cyan-300 transition-all duration-500">
+              {AI_HIGHLIGHTS[ambientHighlight]}
+            </p>
           </div>
         )}
 
@@ -346,13 +437,20 @@ export default function AmbientFeed() {
           {[
             { label: "847 reactions", icon: Heart, color: "text-pink-400" },
             { label: "12 live streams", icon: Activity, color: "text-red-400" },
-            { label: "4 trending topics", icon: TrendingUp, color: "text-green-400" },
+            {
+              label: "4 trending topics",
+              icon: TrendingUp,
+              color: "text-green-400",
+            },
             { label: "23 new actions", icon: Zap, color: "text-yellow-400" },
             { label: "156 views/min", icon: Eye, color: "text-blue-400" },
           ].map(item => {
             const ItemIcon = item.icon;
             return (
-              <div key={item.label} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary/50 shrink-0 text-xs">
+              <div
+                key={item.label}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary/50 shrink-0 text-xs"
+              >
                 <ItemIcon className={`w-3 h-3 ${item.color}`} />
                 <span className="text-muted-foreground">{item.label}</span>
               </div>
@@ -361,11 +459,13 @@ export default function AmbientFeed() {
         </div>
 
         {/* Feed grid */}
-        <div className={`
+        <div
+          className={`
           ${layout === "grid" ? "grid grid-cols-1 sm:grid-cols-2 gap-3" : ""}
           ${layout === "stream" ? "space-y-3" : ""}
           ${layout === "focus" ? "max-w-lg mx-auto space-y-4" : ""}
-        `}>
+        `}
+        >
           {displayPosts.map(post => (
             <AmbientPost
               key={post.id}

@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function DeveloperArea() {
   const [logs, setLogs] = useState<string[]>([]);
-  
+
   return (
     <div className="container py-8">
       <h1 className="text-4xl font-bold mb-8">🛠️ Developer Area</h1>
-      
+
       <Tabs defaultValue="dashboard" className="space-y-4">
         <TabsList>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -17,7 +17,7 @@ export default function DeveloperArea() {
           <TabsTrigger value="logs">System Logs</TabsTrigger>
           <TabsTrigger value="metrics">Metrics</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="dashboard">
           <Card>
             <CardHeader>
@@ -61,15 +61,23 @@ export default function DeveloperArea() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="agents">
           <Card>
             <CardHeader>
               <CardTitle>AI Agents</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {['Code Engineer', 'Data Analyst', 'Business Advisor', 'Security Expert'].map(agent => (
-                <div key={agent} className="flex justify-between items-center p-4 border rounded">
+              {[
+                "Code Engineer",
+                "Data Analyst",
+                "Business Advisor",
+                "Security Expert",
+              ].map(agent => (
+                <div
+                  key={agent}
+                  className="flex justify-between items-center p-4 border rounded"
+                >
                   <span>{agent}</span>
                   <Button size="sm">Execute</Button>
                 </div>
@@ -77,7 +85,7 @@ export default function DeveloperArea() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="logs">
           <Card>
             <CardHeader>
@@ -94,7 +102,7 @@ export default function DeveloperArea() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="metrics">
           <Card>
             <CardHeader>
@@ -107,7 +115,10 @@ export default function DeveloperArea() {
                   <span className="font-bold">85ms</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded h-2">
-                  <div className="bg-purple-600 h-2 rounded" style={{ width: '85%' }}></div>
+                  <div
+                    className="bg-purple-600 h-2 rounded"
+                    style={{ width: "85%" }}
+                  ></div>
                 </div>
               </div>
               <div className="space-y-2">
@@ -116,7 +127,10 @@ export default function DeveloperArea() {
                   <span className="font-bold">92%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded h-2">
-                  <div className="bg-purple-600 h-2 rounded" style={{ width: '92%' }}></div>
+                  <div
+                    className="bg-purple-600 h-2 rounded"
+                    style={{ width: "92%" }}
+                  ></div>
                 </div>
               </div>
               <div className="space-y-2">
@@ -125,7 +139,10 @@ export default function DeveloperArea() {
                   <span className="font-bold">42ms</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded h-2">
-                  <div className="bg-purple-600 h-2 rounded" style={{ width: '42%' }}></div>
+                  <div
+                    className="bg-purple-600 h-2 rounded"
+                    style={{ width: "42%" }}
+                  ></div>
                 </div>
               </div>
             </CardContent>

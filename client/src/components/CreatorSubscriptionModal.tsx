@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Star, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -28,7 +33,12 @@ const TIERS = [
     icon: Crown,
     color: "text-purple-400",
     bg: "bg-purple-500/10 border-purple-500/30",
-    features: ["All Supporter perks", "Exclusive content", "Direct messages", "Premium badge"],
+    features: [
+      "All Supporter perks",
+      "Exclusive content",
+      "Direct messages",
+      "Premium badge",
+    ],
     popular: true,
   },
   {
@@ -38,11 +48,22 @@ const TIERS = [
     icon: Zap,
     color: "text-yellow-400",
     bg: "bg-yellow-500/10 border-yellow-500/30",
-    features: ["All Premium perks", "1-on-1 calls", "Custom content requests", "VIP badge", "Revenue share"],
+    features: [
+      "All Premium perks",
+      "1-on-1 calls",
+      "Custom content requests",
+      "VIP badge",
+      "Revenue share",
+    ],
   },
 ];
 
-export function CreatorSubscriptionModal({ open, onOpenChange, creatorName = "Creator", creatorId = 1 }: CreatorSubscriptionModalProps & { creatorId?: number }) {
+export function CreatorSubscriptionModal({
+  open,
+  onOpenChange,
+  creatorName = "Creator",
+  creatorId = 1,
+}: CreatorSubscriptionModalProps & { creatorId?: number }) {
   const [selected, setSelected] = useState("premium");
 
   const subscribe = trpc.creator.subscribe.useMutation({
@@ -68,7 +89,9 @@ export function CreatorSubscriptionModal({ open, onOpenChange, creatorName = "Cr
                 key={tier.id}
                 onClick={() => setSelected(tier.id)}
                 className={`relative p-4 rounded-xl border-2 text-left transition-all ${
-                  isSelected ? `${tier.bg} border-current` : "border-border hover:border-muted-foreground/50"
+                  isSelected
+                    ? `${tier.bg} border-current`
+                    : "border-border hover:border-muted-foreground/50"
                 }`}
               >
                 {tier.popular && (
@@ -81,11 +104,19 @@ export function CreatorSubscriptionModal({ open, onOpenChange, creatorName = "Cr
                     <Icon className={`w-5 h-5 ${tier.color}`} />
                     <span className="font-semibold">{tier.name}</span>
                   </div>
-                  <span className="font-bold text-lg">${tier.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                  <span className="font-bold text-lg">
+                    ${tier.price}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      /mo
+                    </span>
+                  </span>
                 </div>
                 <ul className="space-y-1">
                   {tier.features.map(f => (
-                    <li key={f} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <li
+                      key={f}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                    >
                       <Check className="w-3 h-3 text-purple-400 flex-shrink-0" />
                       {f}
                     </li>
@@ -97,10 +128,17 @@ export function CreatorSubscriptionModal({ open, onOpenChange, creatorName = "Cr
         </div>
         <Button
           className="w-full mt-2"
-          onClick={() => subscribe.mutate({ creatorId, tier: selected as "supporter" | "premium" | "vip" })}
+          onClick={() =>
+            subscribe.mutate({
+              creatorId,
+              tier: selected as "supporter" | "premium" | "vip",
+            })
+          }
           disabled={subscribe.isPending}
         >
-          {subscribe.isPending ? "Processing..." : `Subscribe — $${TIERS.find(t => t.id === selected)?.price}/mo`}
+          {subscribe.isPending
+            ? "Processing..."
+            : `Subscribe — $${TIERS.find(t => t.id === selected)?.price}/mo`}
         </Button>
       </DialogContent>
     </Dialog>

@@ -121,14 +121,17 @@ export interface StreamAnalytics {
 // ═══════════════════════════════════════════════════════════════
 
 export class StreamLifecycleService {
-  async createStream(hostId: number, data: {
-    title: string;
-    description?: string;
-    category?: string;
-    tags?: string[];
-    scheduledFor?: Date;
-    thumbnailUrl?: string;
-  }): Promise<number | null> {
+  async createStream(
+    hostId: number,
+    data: {
+      title: string;
+      description?: string;
+      category?: string;
+      tags?: string[];
+      scheduledFor?: Date;
+      thumbnailUrl?: string;
+    }
+  ): Promise<number | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -151,22 +154,31 @@ export class StreamLifecycleService {
     if (!db) return false;
 
     const [stream] = await db
-      .select({ streamerId: schema.streams.streamerId, status: schema.streams.status })
+      .select({
+        streamerId: schema.streams.streamerId,
+        status: schema.streams.status,
+      })
       .from(schema.streams)
       .where(eq(schema.streams.id, streamId));
 
     if (!stream || stream.streamerId !== hostId) return false;
     if (stream.status === "live") return true;
 
-    await db.update(schema.streams).set({
-      status: "live",
-      startedAt: new Date(),
-    }).where(eq(schema.streams.id, streamId));
+    await db
+      .update(schema.streams)
+      .set({
+        status: "live",
+        startedAt: new Date(),
+      })
+      .where(eq(schema.streams.id, streamId));
 
     return true;
   }
 
-  async endStream(streamId: number, hostId: number): Promise<StreamAnalytics | null> {
+  async endStream(
+    streamId: number,
+    hostId: number
+  ): Promise<StreamAnalytics | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -178,10 +190,13 @@ export class StreamLifecycleService {
     if (!stream || stream.streamerId !== hostId) return null;
 
     const endedAt = new Date();
-    await db.update(schema.streams).set({
-      status: "ended",
-      endedAt,
-    }).where(eq(schema.streams.id, streamId));
+    await db
+      .update(schema.streams)
+      .set({
+        status: "ended",
+        endedAt,
+      })
+      .where(eq(schema.streams.id, streamId));
 
     const durationSec = stream.startedAt
       ? (endedAt.getTime() - new Date(stream.startedAt).getTime()) / 1000
@@ -192,7 +207,8 @@ export class StreamLifecycleService {
       peakConcurrent: stream.peakViewers || 0,
       averageConcurrent: Math.floor((stream.peakViewers || 0) * 0.6),
       totalUnique: stream.viewerCount || 0,
-      chatRate: durationSec > 0 ? (stream.totalViews || 0) / (durationSec / 60) : 0,
+      chatRate:
+        durationSec > 0 ? (stream.totalViews || 0) / (durationSec / 60) : 0,
       donationTotal: 0,
       donationCount: 0,
       avgViewDuration: durationSec * 0.4,
@@ -200,7 +216,10 @@ export class StreamLifecycleService {
       newSubscribers: 0,
       viewerRetention: [100, 85, 72, 60, 50, 42, 35, 30],
       chatSentiment: 0.75,
-      engagementScore: Math.min(100, (stream.totalViews || 0) / Math.max(1, stream.viewerCount || 1) * 50),
+      engagementScore: Math.min(
+        100,
+        ((stream.totalViews || 0) / Math.max(1, stream.viewerCount || 1)) * 50
+      ),
     };
   }
 
@@ -256,12 +275,16 @@ export class StreamLifecycleService {
       .limit(limit);
   }
 
-  async updateStreamMetadata(streamId: number, hostId: number, data: {
-    title?: string;
-    description?: string;
-    category?: string;
-    tags?: string[];
-  }): Promise<boolean> {
+  async updateStreamMetadata(
+    streamId: number,
+    hostId: number,
+    data: {
+      title?: string;
+      description?: string;
+      category?: string;
+      tags?: string[];
+    }
+  ): Promise<boolean> {
     const db = await getDb();
     if (!db) return false;
 
@@ -277,7 +300,10 @@ export class StreamLifecycleService {
     if (data.description) updates.description = data.description;
     if (data.category) updates.category = data.category;
 
-    await db.update(schema.streams).set(updates).where(eq(schema.streams.id, streamId));
+    await db
+      .update(schema.streams)
+      .set(updates)
+      .where(eq(schema.streams.id, streamId));
     return true;
   }
 }
@@ -291,7 +317,13 @@ export class StreamChatService {
   private lastMessageTime = new Map<string, number>(); // `${streamId}:${userId}` -> timestamp
   private pinnedMessages = new Map<number, StreamChatMessage>(); // streamId -> pinned message
 
-  async sendMessage(streamId: number, userId: number, username: string, content: string, type: "message" | "donation" | "system" = "message"): Promise<StreamChatMessage | null> {
+  async sendMessage(
+    streamId: number,
+    userId: number,
+    username: string,
+    content: string,
+    type: "message" | "donation" | "system" = "message"
+  ): Promise<StreamChatMessage | null> {
     // Check slow mode
     const slowModeDelay = this.slowModeStreams.get(streamId);
     if (slowModeDelay && type === "message") {
@@ -307,9 +339,12 @@ export class StreamChatService {
     if (!db) return null;
 
     // Increment total views as a proxy for chat activity
-    await db.update(schema.streams).set({
-      totalViews: sql`${schema.streams.totalViews} + 1`,
-    }).where(eq(schema.streams.id, streamId));
+    await db
+      .update(schema.streams)
+      .set({
+        totalViews: sql`${schema.streams.totalViews} + 1`,
+      })
+      .where(eq(schema.streams.id, streamId));
 
     const message: StreamChatMessage = {
       id: Date.now(),
@@ -350,7 +385,12 @@ export class StreamChatService {
     return this.pinnedMessages.get(streamId) || null;
   }
 
-  async timeoutUser(streamId: number, userId: number, durationSeconds: number, reason?: string): Promise<boolean> {
+  async timeoutUser(
+    streamId: number,
+    userId: number,
+    durationSeconds: number,
+    reason?: string
+  ): Promise<boolean> {
     const db = await getDb();
     if (!db) return false;
 
@@ -366,7 +406,11 @@ export class StreamChatService {
     return true;
   }
 
-  async banUser(streamId: number, userId: number, reason?: string): Promise<boolean> {
+  async banUser(
+    streamId: number,
+    userId: number,
+    reason?: string
+  ): Promise<boolean> {
     const db = await getDb();
     if (!db) return false;
 
@@ -393,10 +437,17 @@ export class StreamDonationService {
     silver: { min: 10, max: 49, color: "#C0C0C0", displayDuration: 5 },
     gold: { min: 50, max: 199, color: "#FFD700", displayDuration: 10 },
     diamond: { min: 200, max: 999, color: "#B9F2FF", displayDuration: 20 },
-    legendary: { min: 1000, max: Infinity, color: "#FF00FF", displayDuration: 60 },
+    legendary: {
+      min: 1000,
+      max: Infinity,
+      color: "#FF00FF",
+      displayDuration: 60,
+    },
   };
 
-  getTier(amount: number): "bronze" | "silver" | "gold" | "diamond" | "legendary" {
+  getTier(
+    amount: number
+  ): "bronze" | "silver" | "gold" | "diamond" | "legendary" {
     if (amount >= 1000) return "legendary";
     if (amount >= 200) return "diamond";
     if (amount >= 50) return "gold";
@@ -404,7 +455,12 @@ export class StreamDonationService {
     return "bronze";
   }
 
-  async processDonation(streamId: number, donorId: number, amount: number, message: string): Promise<StreamDonation | null> {
+  async processDonation(
+    streamId: number,
+    donorId: number,
+    amount: number,
+    message: string
+  ): Promise<StreamDonation | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -440,7 +496,10 @@ export class StreamDonationService {
     };
   }
 
-  async getTopDonors(streamId: number, limit = 10): Promise<{ userId: number; totalAmount: number; donationCount: number }[]> {
+  async getTopDonors(
+    streamId: number,
+    limit = 10
+  ): Promise<{ userId: number; totalAmount: number; donationCount: number }[]> {
     const db = await getDb();
     if (!db) return [];
 
@@ -470,7 +529,10 @@ export class StreamDonationService {
     }));
   }
 
-  async getDonationGoalProgress(streamId: number, goalAmount: number): Promise<{ current: number; goal: number; percentage: number }> {
+  async getDonationGoalProgress(
+    streamId: number,
+    goalAmount: number
+  ): Promise<{ current: number; goal: number; percentage: number }> {
     const db = await getDb();
     if (!db) return { current: 0, goal: goalAmount, percentage: 0 };
 
@@ -493,13 +555,21 @@ export class StreamDonationService {
 // ═══════════════════════════════════════════════════════════════
 
 export class StreamRaidService {
-  async initiateRaid(fromStreamId: number, hostId: number, toStreamId: number): Promise<StreamRaid | null> {
+  async initiateRaid(
+    fromStreamId: number,
+    hostId: number,
+    toStreamId: number
+  ): Promise<StreamRaid | null> {
     const db = await getDb();
     if (!db) return null;
 
     // Verify the raider is the host
     const [fromStream] = await db
-      .select({ streamerId: schema.streams.streamerId, viewerCount: schema.streams.viewerCount, status: schema.streams.status })
+      .select({
+        streamerId: schema.streams.streamerId,
+        viewerCount: schema.streams.viewerCount,
+        status: schema.streams.status,
+      })
       .from(schema.streams)
       .where(eq(schema.streams.id, fromStreamId));
 
@@ -516,15 +586,21 @@ export class StreamRaidService {
     const viewerCount = fromStream.viewerCount || 0;
 
     // Transfer viewers
-    await db.update(schema.streams).set({
-      viewerCount: sql`${schema.streams.viewerCount} + ${viewerCount}`,
-    }).where(eq(schema.streams.id, toStreamId));
+    await db
+      .update(schema.streams)
+      .set({
+        viewerCount: sql`${schema.streams.viewerCount} + ${viewerCount}`,
+      })
+      .where(eq(schema.streams.id, toStreamId));
 
     // End the raiding stream
-    await db.update(schema.streams).set({
-      status: "ended",
-      endedAt: new Date(),
-    }).where(eq(schema.streams.id, fromStreamId));
+    await db
+      .update(schema.streams)
+      .set({
+        status: "ended",
+        endedAt: new Date(),
+      })
+      .where(eq(schema.streams.id, fromStreamId));
 
     return {
       id: Date.now(),
@@ -546,11 +622,15 @@ export class StreamRaidService {
 // ═══════════════════════════════════════════════════════════════
 
 export class StreamClipService {
-  async createClip(streamId: number, creatorId: number, data: {
-    title: string;
-    startTimestamp: number;
-    endTimestamp: number;
-  }): Promise<StreamClip | null> {
+  async createClip(
+    streamId: number,
+    creatorId: number,
+    data: {
+      title: string;
+      startTimestamp: number;
+      endTimestamp: number;
+    }
+  ): Promise<StreamClip | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -597,11 +677,14 @@ export class StreamAnalyticsService {
 
     if (!stream) return null;
 
-    const duration = stream.startedAt && stream.endedAt
-      ? (new Date(stream.endedAt).getTime() - new Date(stream.startedAt).getTime()) / 1000
-      : stream.startedAt
-        ? (Date.now() - new Date(stream.startedAt).getTime()) / 1000
-        : 0;
+    const duration =
+      stream.startedAt && stream.endedAt
+        ? (new Date(stream.endedAt).getTime() -
+            new Date(stream.startedAt).getTime()) /
+          1000
+        : stream.startedAt
+          ? (Date.now() - new Date(stream.startedAt).getTime()) / 1000
+          : 0;
 
     return {
       streamId,
@@ -620,7 +703,10 @@ export class StreamAnalyticsService {
     };
   }
 
-  async getCreatorAnalytics(hostId: number, days = 30): Promise<{
+  async getCreatorAnalytics(
+    hostId: number,
+    days = 30
+  ): Promise<{
     totalStreams: number;
     totalHours: number;
     avgViewers: number;
@@ -629,7 +715,15 @@ export class StreamAnalyticsService {
     topCategory: string;
   }> {
     const db = await getDb();
-    if (!db) return { totalStreams: 0, totalHours: 0, avgViewers: 0, totalDonations: 0, followerGrowth: 0, topCategory: "General" };
+    if (!db)
+      return {
+        totalStreams: 0,
+        totalHours: 0,
+        avgViewers: 0,
+        totalDonations: 0,
+        followerGrowth: 0,
+        topCategory: "General",
+      };
 
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
@@ -648,7 +742,12 @@ export class StreamAnalyticsService {
         )
       );
 
-    const stats = streams[0] || { count: 0, totalViewers: 0, totalDonations: "0", avgPeak: 0 };
+    const stats = streams[0] || {
+      count: 0,
+      totalViewers: 0,
+      totalDonations: "0",
+      avgPeak: 0,
+    };
 
     return {
       totalStreams: stats.count || 0,
@@ -673,7 +772,12 @@ export class StreamAnalyticsService {
   private calculateEngagement(stream: any): number {
     const viewers = stream.viewerCount || 1;
     const totalViews = stream.totalViews || 0;
-    return Math.min(100, Math.round((totalViews / viewers) * 30 + (stream.peakViewers > 10 ? 20 : 0)));
+    return Math.min(
+      100,
+      Math.round(
+        (totalViews / viewers) * 30 + (stream.peakViewers > 10 ? 20 : 0)
+      )
+    );
   }
 }
 
@@ -682,9 +786,16 @@ export class StreamAnalyticsService {
 // ═══════════════════════════════════════════════════════════════
 
 export class CoStreamService {
-  private activeCoStreams = new Map<number, { hostIds: number[]; startedAt: Date }>();
+  private activeCoStreams = new Map<
+    number,
+    { hostIds: number[]; startedAt: Date }
+  >();
 
-  async inviteCoHost(streamId: number, hostId: number, inviteeId: number): Promise<boolean> {
+  async inviteCoHost(
+    streamId: number,
+    hostId: number,
+    inviteeId: number
+  ): Promise<boolean> {
     const db = await getDb();
     if (!db) return false;
 
@@ -715,7 +826,10 @@ export class CoStreamService {
         existing.hostIds.push(userId);
       }
     } else {
-      this.activeCoStreams.set(streamId, { hostIds: [userId], startedAt: new Date() });
+      this.activeCoStreams.set(streamId, {
+        hostIds: [userId],
+        startedAt: new Date(),
+      });
     }
     return true;
   }
@@ -742,14 +856,54 @@ export class CoStreamService {
 
 export class StreamCategoryService {
   private readonly CATEGORIES = [
-    { id: "gaming", name: "Gaming", icon: "🎮", subcategories: ["FPS", "MOBA", "RPG", "Strategy", "Sports", "Racing"] },
-    { id: "creative", name: "Creative", icon: "🎨", subcategories: ["Art", "Music", "Cooking", "Crafts", "Writing"] },
-    { id: "irl", name: "IRL", icon: "📷", subcategories: ["Travel", "Fitness", "Food", "Events", "Daily Life"] },
-    { id: "crypto", name: "Crypto & Web3", icon: "💎", subcategories: ["Trading", "DeFi", "NFTs", "Education", "News"] },
-    { id: "education", name: "Education", icon: "📚", subcategories: ["Programming", "Science", "Language", "Business"] },
-    { id: "music", name: "Music", icon: "🎵", subcategories: ["DJ", "Live Performance", "Production", "Karaoke"] },
-    { id: "talk", name: "Just Chatting", icon: "💬", subcategories: ["Q&A", "Debate", "Podcast", "Interviews"] },
-    { id: "esports", name: "Esports", icon: "🏆", subcategories: ["Tournaments", "Analysis", "Watch Party"] },
+    {
+      id: "gaming",
+      name: "Gaming",
+      icon: "🎮",
+      subcategories: ["FPS", "MOBA", "RPG", "Strategy", "Sports", "Racing"],
+    },
+    {
+      id: "creative",
+      name: "Creative",
+      icon: "🎨",
+      subcategories: ["Art", "Music", "Cooking", "Crafts", "Writing"],
+    },
+    {
+      id: "irl",
+      name: "IRL",
+      icon: "📷",
+      subcategories: ["Travel", "Fitness", "Food", "Events", "Daily Life"],
+    },
+    {
+      id: "crypto",
+      name: "Crypto & Web3",
+      icon: "💎",
+      subcategories: ["Trading", "DeFi", "NFTs", "Education", "News"],
+    },
+    {
+      id: "education",
+      name: "Education",
+      icon: "📚",
+      subcategories: ["Programming", "Science", "Language", "Business"],
+    },
+    {
+      id: "music",
+      name: "Music",
+      icon: "🎵",
+      subcategories: ["DJ", "Live Performance", "Production", "Karaoke"],
+    },
+    {
+      id: "talk",
+      name: "Just Chatting",
+      icon: "💬",
+      subcategories: ["Q&A", "Debate", "Podcast", "Interviews"],
+    },
+    {
+      id: "esports",
+      name: "Esports",
+      icon: "🏆",
+      subcategories: ["Tournaments", "Analysis", "Watch Party"],
+    },
   ];
 
   getCategories(): typeof this.CATEGORIES {
@@ -773,7 +927,9 @@ export class StreamCategoryService {
       .limit(limit);
   }
 
-  async getPopularCategories(limit = 8): Promise<{ category: string; streamCount: number; viewerCount: number }[]> {
+  async getPopularCategories(
+    limit = 8
+  ): Promise<{ category: string; streamCount: number; viewerCount: number }[]> {
     const db = await getDb();
     if (!db) return [];
 

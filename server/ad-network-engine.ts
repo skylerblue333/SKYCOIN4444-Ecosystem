@@ -20,8 +20,24 @@ import { payoutLedger } from "./payment-core";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type AdFormat = "banner" | "interstitial" | "native_feed" | "native_story" | "pre_roll" | "mid_roll" | "sponsored_post" | "sponsored_reel" | "community_takeover";
-export type AdStatus = "draft" | "pending_review" | "active" | "paused" | "completed" | "rejected" | "archived";
+export type AdFormat =
+  | "banner"
+  | "interstitial"
+  | "native_feed"
+  | "native_story"
+  | "pre_roll"
+  | "mid_roll"
+  | "sponsored_post"
+  | "sponsored_reel"
+  | "community_takeover";
+export type AdStatus =
+  | "draft"
+  | "pending_review"
+  | "active"
+  | "paused"
+  | "completed"
+  | "rejected"
+  | "archived";
 export type BidStrategy = "cpm" | "cpc" | "cpa" | "cpv" | "fixed";
 
 export interface Advertiser {
@@ -59,7 +75,13 @@ export interface AdCampaign {
   id: string;
   advertiserId: string;
   name: string;
-  objective: "awareness" | "engagement" | "traffic" | "conversions" | "app_installs" | "creator_sponsorship";
+  objective:
+    | "awareness"
+    | "engagement"
+    | "traffic"
+    | "conversions"
+    | "app_installs"
+    | "creator_sponsorship";
   status: AdStatus;
   budget: number;
   dailyBudget: number;
@@ -123,8 +145,22 @@ export interface SponsorshipDeal {
   advertiserId: string;
   creatorId: number;
   campaignId?: string;
-  dealType: "sponsored_post" | "sponsored_video" | "brand_ambassador" | "product_review" | "giveaway" | "affiliate";
-  status: "proposed" | "negotiating" | "accepted" | "in_progress" | "delivered" | "completed" | "cancelled" | "disputed";
+  dealType:
+    | "sponsored_post"
+    | "sponsored_video"
+    | "brand_ambassador"
+    | "product_review"
+    | "giveaway"
+    | "affiliate";
+  status:
+    | "proposed"
+    | "negotiating"
+    | "accepted"
+    | "in_progress"
+    | "delivered"
+    | "completed"
+    | "cancelled"
+    | "disputed";
   proposedAmount: number;
   agreedAmount?: number;
   currency: string;
@@ -164,38 +200,124 @@ export interface AdRevenueShare {
 // ─── AD INVENTORY MANAGER ─────────────────────────────────────────────────────
 
 class AdInventoryManager {
-  private placements = new Map<string, {
-    id: string;
-    name: string;
-    format: AdFormat;
-    pageType: string;
-    position: string;
-    estimatedDailyImpressions: number;
-    floorCPM: number;
-    isActive: boolean;
-  }>();
+  private placements = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      format: AdFormat;
+      pageType: string;
+      position: string;
+      estimatedDailyImpressions: number;
+      floorCPM: number;
+      isActive: boolean;
+    }
+  >();
 
   constructor() {
     // Initialize standard placements
-    this.registerPlacement("feed_native_1", "Feed Native Ad 1", "native_feed", "feed", "position_1", 500000, 2.50);
-    this.registerPlacement("feed_native_2", "Feed Native Ad 2", "native_feed", "feed", "position_5", 400000, 2.00);
-    this.registerPlacement("story_interstitial", "Story Interstitial", "interstitial", "stories", "between_stories", 200000, 5.00);
-    this.registerPlacement("stream_pre_roll", "Stream Pre-Roll", "pre_roll", "streaming", "pre_roll", 150000, 8.00);
-    this.registerPlacement("stream_mid_roll", "Stream Mid-Roll", "mid_roll", "streaming", "mid_roll", 100000, 10.00);
-    this.registerPlacement("reel_pre_roll", "Reel Pre-Roll", "pre_roll", "reels", "pre_roll", 300000, 7.00);
-    this.registerPlacement("community_banner", "Community Banner", "banner", "community", "top_banner", 250000, 1.50);
-    this.registerPlacement("marketplace_native", "Marketplace Native", "native_feed", "marketplace", "search_results", 100000, 3.00);
+    this.registerPlacement(
+      "feed_native_1",
+      "Feed Native Ad 1",
+      "native_feed",
+      "feed",
+      "position_1",
+      500000,
+      2.5
+    );
+    this.registerPlacement(
+      "feed_native_2",
+      "Feed Native Ad 2",
+      "native_feed",
+      "feed",
+      "position_5",
+      400000,
+      2.0
+    );
+    this.registerPlacement(
+      "story_interstitial",
+      "Story Interstitial",
+      "interstitial",
+      "stories",
+      "between_stories",
+      200000,
+      5.0
+    );
+    this.registerPlacement(
+      "stream_pre_roll",
+      "Stream Pre-Roll",
+      "pre_roll",
+      "streaming",
+      "pre_roll",
+      150000,
+      8.0
+    );
+    this.registerPlacement(
+      "stream_mid_roll",
+      "Stream Mid-Roll",
+      "mid_roll",
+      "streaming",
+      "mid_roll",
+      100000,
+      10.0
+    );
+    this.registerPlacement(
+      "reel_pre_roll",
+      "Reel Pre-Roll",
+      "pre_roll",
+      "reels",
+      "pre_roll",
+      300000,
+      7.0
+    );
+    this.registerPlacement(
+      "community_banner",
+      "Community Banner",
+      "banner",
+      "community",
+      "top_banner",
+      250000,
+      1.5
+    );
+    this.registerPlacement(
+      "marketplace_native",
+      "Marketplace Native",
+      "native_feed",
+      "marketplace",
+      "search_results",
+      100000,
+      3.0
+    );
   }
 
-  registerPlacement(id: string, name: string, format: AdFormat, pageType: string, position: string, dailyImpressions: number, floorCPM: number): void {
-    this.placements.set(id, { id, name, format, pageType, position, estimatedDailyImpressions: dailyImpressions, floorCPM, isActive: true });
+  registerPlacement(
+    id: string,
+    name: string,
+    format: AdFormat,
+    pageType: string,
+    position: string,
+    dailyImpressions: number,
+    floorCPM: number
+  ): void {
+    this.placements.set(id, {
+      id,
+      name,
+      format,
+      pageType,
+      position,
+      estimatedDailyImpressions: dailyImpressions,
+      floorCPM,
+      isActive: true,
+    });
   }
 
   getPlacement(placementId: string) {
     return this.placements.get(placementId);
   }
 
-  getAvailablePlacements(format?: AdFormat): typeof this.placements extends Map<string, infer V> ? V[] : never[] {
+  getAvailablePlacements(
+    format?: AdFormat
+  ): typeof this.placements extends Map<string, infer V> ? V[] : never[] {
     const all = Array.from(this.placements.values()).filter(p => p.isActive);
     return (format ? all.filter(p => p.format === format) : all) as any;
   }
@@ -227,17 +349,29 @@ class RTBAuctionEngine {
       if (campaign.status !== "active") return false;
       if (campaign.spent >= campaign.budget) return false;
       if (campaign.spent >= campaign.dailyBudget) return false;
-      if (new Date() < campaign.startDate || new Date() > campaign.endDate) return false;
-      return this.matchesTargeting(campaign.targeting, userId, userInterests, country, deviceType);
+      if (new Date() < campaign.startDate || new Date() > campaign.endDate)
+        return false;
+      return this.matchesTargeting(
+        campaign.targeting,
+        userId,
+        userInterests,
+        country,
+        deviceType
+      );
     });
 
     if (eligible.length === 0) return null;
 
     // Calculate effective CPM for each campaign
-    const bids = eligible.map(campaign => {
-      const effectiveCPM = this.calculateEffectiveCPM(campaign, userInterests);
-      return { campaign, effectiveCPM };
-    }).filter(b => b.effectiveCPM >= floorCPM);
+    const bids = eligible
+      .map(campaign => {
+        const effectiveCPM = this.calculateEffectiveCPM(
+          campaign,
+          userInterests
+        );
+        return { campaign, effectiveCPM };
+      })
+      .filter(b => b.effectiveCPM >= floorCPM);
 
     if (bids.length === 0) return null;
 
@@ -260,9 +394,25 @@ class RTBAuctionEngine {
     return result;
   }
 
-  private matchesTargeting(targeting: AdTargeting, userId: number | undefined, interests: string[], country: string, deviceType: string): boolean {
-    if (targeting.countries && targeting.countries.length > 0 && !targeting.countries.includes(country)) return false;
-    if (targeting.deviceTypes && targeting.deviceTypes.length > 0 && !targeting.deviceTypes.includes(deviceType)) return false;
+  private matchesTargeting(
+    targeting: AdTargeting,
+    userId: number | undefined,
+    interests: string[],
+    country: string,
+    deviceType: string
+  ): boolean {
+    if (
+      targeting.countries &&
+      targeting.countries.length > 0 &&
+      !targeting.countries.includes(country)
+    )
+      return false;
+    if (
+      targeting.deviceTypes &&
+      targeting.deviceTypes.length > 0 &&
+      !targeting.deviceTypes.includes(deviceType)
+    )
+      return false;
     if (targeting.interests && targeting.interests.length > 0) {
       const hasInterest = targeting.interests.some(i => interests.includes(i));
       if (!hasInterest) return false;
@@ -270,22 +420,48 @@ class RTBAuctionEngine {
     return true;
   }
 
-  private calculateEffectiveCPM(campaign: AdCampaign, userInterests: string[]): number {
+  private calculateEffectiveCPM(
+    campaign: AdCampaign,
+    userInterests: string[]
+  ): number {
     let baseCPM = campaign.bidAmount;
-    if (campaign.bidStrategy === "cpc") baseCPM = campaign.bidAmount * (campaign.ctr || 0.02) * 1000;
-    const interestMatch = campaign.targeting.interests?.filter(i => userInterests.includes(i)).length || 0;
-    const relevanceBoost = 1 + (interestMatch * 0.1);
+    if (campaign.bidStrategy === "cpc")
+      baseCPM = campaign.bidAmount * (campaign.ctr || 0.02) * 1000;
+    const interestMatch =
+      campaign.targeting.interests?.filter(i => userInterests.includes(i))
+        .length || 0;
+    const relevanceBoost = 1 + interestMatch * 0.1;
     return baseCPM * relevanceBoost;
   }
 
-  getAuctionStats(days = 7): { totalAuctions: number; fillRate: number; avgCPM: number; topCampaigns: string[] } {
+  getAuctionStats(days = 7): {
+    totalAuctions: number;
+    fillRate: number;
+    avgCPM: number;
+    topCampaigns: string[];
+  } {
     const since = new Date(Date.now() - days * 86400000);
     const recent = this.auctionHistory.filter(a => a.timestamp >= since);
-    const avgCPM = recent.length > 0 ? recent.reduce((sum, a) => sum + a.secondPrice, 0) / recent.length : 0;
+    const avgCPM =
+      recent.length > 0
+        ? recent.reduce((sum, a) => sum + a.secondPrice, 0) / recent.length
+        : 0;
     const campaignCounts = new Map<string, number>();
-    for (const a of recent) campaignCounts.set(a.campaignId, (campaignCounts.get(a.campaignId) || 0) + 1);
-    const topCampaigns = Array.from(campaignCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id]) => id);
-    return { totalAuctions: recent.length, fillRate: 0.75, avgCPM, topCampaigns };
+    for (const a of recent)
+      campaignCounts.set(
+        a.campaignId,
+        (campaignCounts.get(a.campaignId) || 0) + 1
+      );
+    const topCampaigns = Array.from(campaignCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([id]) => id);
+    return {
+      totalAuctions: recent.length,
+      fillRate: 0.75,
+      avgCPM,
+      topCampaigns,
+    };
   }
 }
 
@@ -310,7 +486,9 @@ class ImpressionTracker {
     creatorId?: number
   ): AdImpression {
     const revenueGenerated = cpm / 1000;
-    const creatorRevenue = creatorId ? revenueGenerated * this.CREATOR_REVENUE_SHARE : 0;
+    const creatorRevenue = creatorId
+      ? revenueGenerated * this.CREATOR_REVENUE_SHARE
+      : 0;
     const impression: AdImpression = {
       id: `imp_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       campaignId,
@@ -331,7 +509,8 @@ class ImpressionTracker {
     };
     this.impressions.push(impression);
     if (userId) {
-      if (!this.frequencyCaps.has(String(userId))) this.frequencyCaps.set(String(userId), new Map());
+      if (!this.frequencyCaps.has(String(userId)))
+        this.frequencyCaps.set(String(userId), new Map());
       const userCaps = this.frequencyCaps.get(String(userId))!;
       userCaps.set(campaignId, (userCaps.get(campaignId) || 0) + 1);
     }
@@ -351,7 +530,11 @@ class ImpressionTracker {
     if (impression) impression.wasConverted = true;
   }
 
-  isFrequencyCapped(userId: number, campaignId: string, maxFrequency = 5): boolean {
+  isFrequencyCapped(
+    userId: number,
+    campaignId: string,
+    maxFrequency = 5
+  ): boolean {
     const userCaps = this.frequencyCaps.get(String(userId));
     if (!userCaps) return false;
     return (userCaps.get(campaignId) || 0) >= maxFrequency;
@@ -366,31 +549,50 @@ class ImpressionTracker {
     totalSpend: number;
     avgCPM: number;
   } {
-    const campaignImpressions = this.impressions.filter(i => i.campaignId === campaignId);
+    const campaignImpressions = this.impressions.filter(
+      i => i.campaignId === campaignId
+    );
     const clicks = campaignImpressions.filter(i => i.wasClicked).length;
     const conversions = campaignImpressions.filter(i => i.wasConverted).length;
-    const totalSpend = campaignImpressions.reduce((sum, i) => sum + i.revenueGenerated, 0);
+    const totalSpend = campaignImpressions.reduce(
+      (sum, i) => sum + i.revenueGenerated,
+      0
+    );
     return {
       impressions: campaignImpressions.length,
       clicks,
       conversions,
-      ctr: campaignImpressions.length > 0 ? (clicks / campaignImpressions.length) * 100 : 0,
+      ctr:
+        campaignImpressions.length > 0
+          ? (clicks / campaignImpressions.length) * 100
+          : 0,
       cvr: clicks > 0 ? (conversions / clicks) * 100 : 0,
       totalSpend,
-      avgCPM: campaignImpressions.length > 0 ? (totalSpend / campaignImpressions.length) * 1000 : 0,
+      avgCPM:
+        campaignImpressions.length > 0
+          ? (totalSpend / campaignImpressions.length) * 1000
+          : 0,
     };
   }
 
   getCreatorAdRevenue(creatorId: number, days = 30): AdRevenueShare {
     const since = new Date(Date.now() - days * 86400000);
-    const creatorImpressions = this.impressions.filter(i => i.creatorId === creatorId && i.timestamp >= since);
-    const revenue = creatorImpressions.reduce((sum, i) => sum + (i.creatorRevenue || 0), 0);
+    const creatorImpressions = this.impressions.filter(
+      i => i.creatorId === creatorId && i.timestamp >= since
+    );
+    const revenue = creatorImpressions.reduce(
+      (sum, i) => sum + (i.creatorRevenue || 0),
+      0
+    );
     return {
       creatorId,
       period: `${days}d`,
       impressions: creatorImpressions.length,
       clicks: creatorImpressions.filter(i => i.wasClicked).length,
-      revenue: creatorImpressions.reduce((sum, i) => sum + i.revenueGenerated, 0),
+      revenue: creatorImpressions.reduce(
+        (sum, i) => sum + i.revenueGenerated,
+        0
+      ),
       revenueShare: revenue,
       paidOut: false,
     };
@@ -400,7 +602,10 @@ class ImpressionTracker {
     const since = new Date(Date.now() - days * 86400000);
     return this.impressions
       .filter(i => i.timestamp >= since)
-      .reduce((sum, i) => sum + i.revenueGenerated * this.PLATFORM_REVENUE_SHARE, 0);
+      .reduce(
+        (sum, i) => sum + i.revenueGenerated * this.PLATFORM_REVENUE_SHARE,
+        0
+      );
   }
 }
 
@@ -463,20 +668,34 @@ class SponsorshipEngine {
     return deal;
   }
 
-  acceptDeal(dealId: string, creatorId: number, agreedAmount?: number): { success: boolean; error?: string } {
+  acceptDeal(
+    dealId: string,
+    creatorId: number,
+    agreedAmount?: number
+  ): { success: boolean; error?: string } {
     const deal = this.deals.get(dealId);
-    if (!deal || deal.creatorId !== creatorId) return { success: false, error: "Deal not found" };
-    if (deal.status !== "proposed" && deal.status !== "negotiating") return { success: false, error: "Deal cannot be accepted" };
+    if (!deal || deal.creatorId !== creatorId)
+      return { success: false, error: "Deal not found" };
+    if (deal.status !== "proposed" && deal.status !== "negotiating")
+      return { success: false, error: "Deal cannot be accepted" };
     deal.status = "accepted";
     deal.agreedAmount = agreedAmount || deal.proposedAmount;
     deal.paymentStatus = "escrowed";
     return { success: true };
   }
 
-  submitDeliverable(dealId: string, creatorId: number, contentUrl: string, impressions: number, engagement: number): { success: boolean; error?: string } {
+  submitDeliverable(
+    dealId: string,
+    creatorId: number,
+    contentUrl: string,
+    impressions: number,
+    engagement: number
+  ): { success: boolean; error?: string } {
     const deal = this.deals.get(dealId);
-    if (!deal || deal.creatorId !== creatorId) return { success: false, error: "Deal not found" };
-    if (deal.status !== "accepted" && deal.status !== "in_progress") return { success: false, error: "Deal not in progress" };
+    if (!deal || deal.creatorId !== creatorId)
+      return { success: false, error: "Deal not found" };
+    if (deal.status !== "accepted" && deal.status !== "in_progress")
+      return { success: false, error: "Deal not in progress" };
     deal.status = "delivered";
     deal.deliveredContentUrl = contentUrl;
     deal.impressionsDelivered = impressions;
@@ -484,10 +703,15 @@ class SponsorshipEngine {
     return { success: true };
   }
 
-  completeDeal(dealId: string, advertiserId: string): { success: boolean; paidAmount?: number; error?: string } {
+  completeDeal(
+    dealId: string,
+    advertiserId: string
+  ): { success: boolean; paidAmount?: number; error?: string } {
     const deal = this.deals.get(dealId);
-    if (!deal || deal.advertiserId !== advertiserId) return { success: false, error: "Deal not found" };
-    if (deal.status !== "delivered") return { success: false, error: "Deliverable not submitted" };
+    if (!deal || deal.advertiserId !== advertiserId)
+      return { success: false, error: "Deal not found" };
+    if (deal.status !== "delivered")
+      return { success: false, error: "Deliverable not submitted" };
     const amount = deal.agreedAmount || deal.proposedAmount;
     let bonus = 0;
     if (deal.performanceBonus && deal.impressionsDelivered) {
@@ -503,22 +727,33 @@ class SponsorshipEngine {
     return { success: true, paidAmount: totalPayout };
   }
 
-  matchCreatorsToAdvertiser(advertiserId: string, industry: string, minFollowers: number, categories: string[]): number[] {
+  matchCreatorsToAdvertiser(
+    advertiserId: string,
+    industry: string,
+    minFollowers: number,
+    categories: string[]
+  ): number[] {
     // Returns creator IDs that match the advertiser's criteria
     // In production this queries the creator warehouse
     return [];
   }
 
   getCreatorDeals(creatorId: number): SponsorshipDeal[] {
-    return Array.from(this.deals.values()).filter(d => d.creatorId === creatorId);
+    return Array.from(this.deals.values()).filter(
+      d => d.creatorId === creatorId
+    );
   }
 
   getAdvertiserDeals(advertiserId: string): SponsorshipDeal[] {
-    return Array.from(this.deals.values()).filter(d => d.advertiserId === advertiserId);
+    return Array.from(this.deals.values()).filter(
+      d => d.advertiserId === advertiserId
+    );
   }
 
   getActiveDeals(): SponsorshipDeal[] {
-    return Array.from(this.deals.values()).filter(d => ["accepted", "in_progress", "delivered"].includes(d.status));
+    return Array.from(this.deals.values()).filter(d =>
+      ["accepted", "in_progress", "delivered"].includes(d.status)
+    );
   }
 }
 
@@ -605,14 +840,20 @@ class CampaignManager {
 
   rejectCreative(creativeId: string, reason: string): void {
     const creative = this.creatives.get(creativeId);
-    if (creative) { creative.isApproved = false; creative.rejectionReason = reason; }
+    if (creative) {
+      creative.isApproved = false;
+      creative.rejectionReason = reason;
+    }
   }
 
   activateCampaign(campaignId: string): { success: boolean; error?: string } {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign) return { success: false, error: "Campaign not found" };
-    const approvedCreatives = campaign.creativeIds.filter(id => this.creatives.get(id)?.isApproved);
-    if (approvedCreatives.length === 0) return { success: false, error: "No approved creatives" };
+    const approvedCreatives = campaign.creativeIds.filter(
+      id => this.creatives.get(id)?.isApproved
+    );
+    if (approvedCreatives.length === 0)
+      return { success: false, error: "No approved creatives" };
     campaign.status = "active";
     return { success: true };
   }
@@ -622,20 +863,33 @@ class CampaignManager {
     if (campaign) campaign.status = "paused";
   }
 
-  updateCampaignStats(campaignId: string, impressions: number, clicks: number, spend: number): void {
+  updateCampaignStats(
+    campaignId: string,
+    impressions: number,
+    clicks: number,
+    spend: number
+  ): void {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign) return;
     campaign.impressions += impressions;
     campaign.clicks += clicks;
     campaign.spent += spend;
-    campaign.ctr = campaign.impressions > 0 ? (campaign.clicks / campaign.impressions) * 100 : 0;
-    campaign.cpm = campaign.impressions > 0 ? (campaign.spent / campaign.impressions) * 1000 : 0;
+    campaign.ctr =
+      campaign.impressions > 0
+        ? (campaign.clicks / campaign.impressions) * 100
+        : 0;
+    campaign.cpm =
+      campaign.impressions > 0
+        ? (campaign.spent / campaign.impressions) * 1000
+        : 0;
     campaign.cpc = campaign.clicks > 0 ? campaign.spent / campaign.clicks : 0;
     if (campaign.spent >= campaign.budget) campaign.status = "completed";
   }
 
   getActiveCampaigns(): AdCampaign[] {
-    return Array.from(this.campaigns.values()).filter(c => c.status === "active");
+    return Array.from(this.campaigns.values()).filter(
+      c => c.status === "active"
+    );
   }
 
   getCampaign(campaignId: string): AdCampaign | undefined {
@@ -643,17 +897,26 @@ class CampaignManager {
   }
 
   getAdvertiserCampaigns(advertiserId: string): AdCampaign[] {
-    return Array.from(this.campaigns.values()).filter(c => c.advertiserId === advertiserId);
+    return Array.from(this.campaigns.values()).filter(
+      c => c.advertiserId === advertiserId
+    );
   }
 
   getCreative(creativeId: string): AdCreative | undefined {
     return this.creatives.get(creativeId);
   }
 
-  getPendingReviewItems(): { campaigns: AdCampaign[]; creatives: AdCreative[] } {
+  getPendingReviewItems(): {
+    campaigns: AdCampaign[];
+    creatives: AdCreative[];
+  } {
     return {
-      campaigns: Array.from(this.campaigns.values()).filter(c => c.status === "pending_review"),
-      creatives: Array.from(this.creatives.values()).filter(c => !c.isApproved && !c.rejectionReason),
+      campaigns: Array.from(this.campaigns.values()).filter(
+        c => c.status === "pending_review"
+      ),
+      creatives: Array.from(this.creatives.values()).filter(
+        c => !c.isApproved && !c.rejectionReason
+      ),
     };
   }
 }
@@ -661,19 +924,44 @@ class CampaignManager {
 // ─── AD FRAUD DETECTOR ────────────────────────────────────────────────────────
 
 class AdFraudDetector {
-  private suspiciousPatterns: { userId: number; pattern: string; count: number; lastSeen: Date }[] = [];
+  private suspiciousPatterns: {
+    userId: number;
+    pattern: string;
+    count: number;
+    lastSeen: Date;
+  }[] = [];
 
-  detectClickFraud(impressions: AdImpression[], userId: number): { isFraud: boolean; confidence: number; reason?: string } {
+  detectClickFraud(
+    impressions: AdImpression[],
+    userId: number
+  ): { isFraud: boolean; confidence: number; reason?: string } {
     const userImpressions = impressions.filter(i => i.userId === userId);
-    const clickRate = userImpressions.filter(i => i.wasClicked).length / (userImpressions.length || 1);
+    const clickRate =
+      userImpressions.filter(i => i.wasClicked).length /
+      (userImpressions.length || 1);
     if (clickRate > 0.5 && userImpressions.length > 10) {
-      fraudWarehouse.recordSignal(userId, "fake_engagement", "high", { clickRate, impressionCount: userImpressions.length });
-      return { isFraud: true, confidence: 0.85, reason: "Abnormally high click rate" };
+      fraudWarehouse.recordSignal(userId, "fake_engagement", "high", {
+        clickRate,
+        impressionCount: userImpressions.length,
+      });
+      return {
+        isFraud: true,
+        confidence: 0.85,
+        reason: "Abnormally high click rate",
+      };
     }
-    const recentImpressions = userImpressions.filter(i => Date.now() - i.timestamp.getTime() < 60000);
+    const recentImpressions = userImpressions.filter(
+      i => Date.now() - i.timestamp.getTime() < 60000
+    );
     if (recentImpressions.length > 20) {
-      fraudWarehouse.recordSignal(userId, "bot_behavior", "critical", { impressionsPerMinute: recentImpressions.length });
-      return { isFraud: true, confidence: 0.95, reason: "Bot-like impression velocity" };
+      fraudWarehouse.recordSignal(userId, "bot_behavior", "critical", {
+        impressionsPerMinute: recentImpressions.length,
+      });
+      return {
+        isFraud: true,
+        confidence: 0.95,
+        reason: "Bot-like impression velocity",
+      };
     }
     return { isFraud: false, confidence: 0 };
   }

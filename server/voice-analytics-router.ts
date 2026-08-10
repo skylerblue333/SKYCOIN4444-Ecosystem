@@ -3,9 +3,14 @@
  * Complete analytics and reporting system
  */
 
-import { publicProcedure, protectedProcedure, adminProcedure, router } from './_core/trpc';
-import { z } from 'zod';
-import { voiceAnalyticsSystem } from './voice-analytics';
+import {
+  publicProcedure,
+  protectedProcedure,
+  adminProcedure,
+  router,
+} from "./_core/trpc";
+import { z } from "zod";
+import { voiceAnalyticsSystem } from "./voice-analytics";
 
 export const voiceAnalyticsRouter = router({
   /**
@@ -19,15 +24,15 @@ export const voiceAnalyticsRouter = router({
         success: z.boolean(),
         responseTime: z.number(),
         confidence: z.number(),
-        device: z.string().default('web'),
-        language: z.string().default('en'),
+        device: z.string().default("web"),
+        language: z.string().default("en"),
         error: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       voiceAnalyticsSystem.trackEvent({
         timestamp: Date.now(),
-        userId: String(ctx.user?.id || 'anonymous'),
+        userId: String(ctx.user?.id || "anonymous"),
         commandId: input.commandId,
         commandName: input.commandName,
         success: input.success,
@@ -108,7 +113,9 @@ export const voiceAnalyticsRouter = router({
     .query(async ({ input }) => {
       return {
         commandId: input.commandId,
-        successRate: voiceAnalyticsSystem.getCommandSuccessRate(input.commandId),
+        successRate: voiceAnalyticsSystem.getCommandSuccessRate(
+          input.commandId
+        ),
       };
     }),
 
@@ -118,7 +125,9 @@ export const voiceAnalyticsRouter = router({
   getUserSuccessRate: protectedProcedure.query(async ({ ctx }) => {
     return {
       userId: ctx.user!.id,
-      successRate: voiceAnalyticsSystem.getUserSuccessRate(String(ctx.user!.id)),
+      successRate: voiceAnalyticsSystem.getUserSuccessRate(
+        String(ctx.user!.id)
+      ),
     };
   }),
 
@@ -130,7 +139,9 @@ export const voiceAnalyticsRouter = router({
     .query(async ({ input }) => {
       return {
         commandId: input.commandId,
-        averageResponseTime: voiceAnalyticsSystem.getAverageResponseTime(input.commandId),
+        averageResponseTime: voiceAnalyticsSystem.getAverageResponseTime(
+          input.commandId
+        ),
       };
     }),
 
@@ -138,9 +149,17 @@ export const voiceAnalyticsRouter = router({
    * Get time series data
    */
   getTimeSeriesData: publicProcedure
-    .input(z.object({ commandId: z.string().optional(), timeWindow: z.number().default(3600000) }))
+    .input(
+      z.object({
+        commandId: z.string().optional(),
+        timeWindow: z.number().default(3600000),
+      })
+    )
     .query(async ({ input }) => {
-      return voiceAnalyticsSystem.getTimeSeriesData(input.commandId, input.timeWindow);
+      return voiceAnalyticsSystem.getTimeSeriesData(
+        input.commandId,
+        input.timeWindow
+      );
     }),
 
   /**

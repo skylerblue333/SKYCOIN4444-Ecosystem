@@ -9,15 +9,17 @@ export interface FeedbackEntry {
   userId: string;
   rating: number;
   comment: string;
-  category: 'feature_quality' | 'user_experience' | 'performance' | 'other';
+  category: "feature_quality" | "user_experience" | "performance" | "other";
   timestamp: Date;
-  sentiment?: 'positive' | 'neutral' | 'negative';
+  sentiment?: "positive" | "neutral" | "negative";
 }
 
 export class FeedbackCollector {
   private feedbackStore: Map<string, FeedbackEntry[]> = new Map();
 
-  async collectFeedback(entry: Omit<FeedbackEntry, 'id' | 'timestamp'>): Promise<FeedbackEntry> {
+  async collectFeedback(
+    entry: Omit<FeedbackEntry, "id" | "timestamp">
+  ): Promise<FeedbackEntry> {
     const feedback: FeedbackEntry = {
       ...entry,
       id: `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -34,26 +36,49 @@ export class FeedbackCollector {
     return feedback;
   }
 
-  async getFeedbackForFeature(featureId: string, periodDays: number = 30): Promise<FeedbackEntry[]> {
+  async getFeedbackForFeature(
+    featureId: string,
+    periodDays: number = 30
+  ): Promise<FeedbackEntry[]> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - periodDays);
 
     return (this.feedbackStore.get(featureId) || []).filter(
-      (f) => f.timestamp >= cutoffDate
+      f => f.timestamp >= cutoffDate
     );
   }
 
-  async analyzeSentiment(text: string): Promise<'positive' | 'neutral' | 'negative'> {
-    const positiveWords = ['great', 'excellent', 'love', 'amazing', 'perfect', 'awesome'];
-    const negativeWords = ['bad', 'terrible', 'hate', 'awful', 'broken', 'useless'];
+  async analyzeSentiment(
+    text: string
+  ): Promise<"positive" | "neutral" | "negative"> {
+    const positiveWords = [
+      "great",
+      "excellent",
+      "love",
+      "amazing",
+      "perfect",
+      "awesome",
+    ];
+    const negativeWords = [
+      "bad",
+      "terrible",
+      "hate",
+      "awful",
+      "broken",
+      "useless",
+    ];
 
     const lowerText = text.toLowerCase();
-    const positiveCount = positiveWords.filter(w => lowerText.includes(w)).length;
-    const negativeCount = negativeWords.filter(w => lowerText.includes(w)).length;
+    const positiveCount = positiveWords.filter(w =>
+      lowerText.includes(w)
+    ).length;
+    const negativeCount = negativeWords.filter(w =>
+      lowerText.includes(w)
+    ).length;
 
-    if (positiveCount > negativeCount) return 'positive';
-    if (negativeCount > positiveCount) return 'negative';
-    return 'neutral';
+    if (positiveCount > negativeCount) return "positive";
+    if (negativeCount > positiveCount) return "negative";
+    return "neutral";
   }
 
   async getAverageSentiment(featureId: string): Promise<number> {
@@ -61,8 +86,8 @@ export class FeedbackCollector {
     if (feedback.length === 0) return 0;
 
     const sum = feedback.reduce((acc, f) => {
-      if (f.sentiment === 'positive') return acc + 1;
-      if (f.sentiment === 'negative') return acc - 1;
+      if (f.sentiment === "positive") return acc + 1;
+      if (f.sentiment === "negative") return acc - 1;
       return acc;
     }, 0);
 
@@ -71,16 +96,17 @@ export class FeedbackCollector {
 
   async getTrends(featureId: string, periodDays: number = 30): Promise<any> {
     const feedback = await this.getFeedbackForFeature(featureId, periodDays);
-    
+
     return {
       totalFeedback: feedback.length,
-      averageRating: feedback.length > 0 
-        ? feedback.reduce((sum, f) => sum + f.rating, 0) / feedback.length 
-        : 0,
+      averageRating:
+        feedback.length > 0
+          ? feedback.reduce((sum, f) => sum + f.rating, 0) / feedback.length
+          : 0,
       sentimentBreakdown: {
-        positive: feedback.filter(f => f.sentiment === 'positive').length,
-        neutral: feedback.filter(f => f.sentiment === 'neutral').length,
-        negative: feedback.filter(f => f.sentiment === 'negative').length,
+        positive: feedback.filter(f => f.sentiment === "positive").length,
+        neutral: feedback.filter(f => f.sentiment === "neutral").length,
+        negative: feedback.filter(f => f.sentiment === "negative").length,
       },
       topCategories: this.getTopCategories(feedback),
     };

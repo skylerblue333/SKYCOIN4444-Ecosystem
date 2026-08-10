@@ -1,4 +1,4 @@
-import { notifyOwner } from './_core/notification';
+import { notifyOwner } from "./_core/notification";
 
 /**
  * Base App Swap Engine - Handles all coin-to-ETH swaps
@@ -23,31 +23,49 @@ interface SwapTransaction {
   outputAmount: number;
   fromAddress: string;
   toAddress: string;
-  status: 'pending' | 'confirmed' | 'failed';
+  status: "pending" | "confirmed" | "failed";
   txHash?: string;
   createdAt: number;
   completedAt?: number;
 }
 
 class BaseSwapEngine {
-  private baseApiUrl = 'https://api.base.org/v1';
+  private baseApiUrl = "https://api.base.org/v1";
   private swapHistory: SwapTransaction[] = [];
-  private supportedCoins = ['BTC', 'ETH', 'SOL', 'DOGE', 'TRUMP', 'USDC', 'USDT'];
-  private priceCache: Map<string, { price: number; timestamp: number }> = new Map();
+  private supportedCoins = [
+    "BTC",
+    "ETH",
+    "SOL",
+    "DOGE",
+    "TRUMP",
+    "USDC",
+    "USDT",
+  ];
+  private priceCache: Map<string, { price: number; timestamp: number }> =
+    new Map();
 
   constructor() {
-    console.log('[BaseSwap] Swap engine initialized');
+    console.log("[BaseSwap] Swap engine initialized");
     this.startPriceUpdates();
   }
 
   /**
    * Get swap quote
    */
-  async getSwapQuote(inputCoin: string, outputCoin: string, inputAmount: number): Promise<SwapQuote> {
+  async getSwapQuote(
+    inputCoin: string,
+    outputCoin: string,
+    inputAmount: number
+  ): Promise<SwapQuote> {
     try {
       // Validate coins
-      if (!this.supportedCoins.includes(inputCoin) || !this.supportedCoins.includes(outputCoin)) {
-        throw new Error(`Unsupported coin. Supported: ${this.supportedCoins.join(', ')}`);
+      if (
+        !this.supportedCoins.includes(inputCoin) ||
+        !this.supportedCoins.includes(outputCoin)
+      ) {
+        throw new Error(
+          `Unsupported coin. Supported: ${this.supportedCoins.join(", ")}`
+        );
       }
 
       // Get current prices
@@ -76,11 +94,13 @@ class BaseSwapEngine {
         estimatedTime: 15, // 15 seconds average
       };
 
-      console.log(`[BaseSwap] Quote: ${inputAmount} ${inputCoin} → ${finalOutputAmount.toFixed(6)} ${outputCoin}`);
+      console.log(
+        `[BaseSwap] Quote: ${inputAmount} ${inputCoin} → ${finalOutputAmount.toFixed(6)} ${outputCoin}`
+      );
 
       return quote;
     } catch (error) {
-      console.error('[BaseSwap] Quote error:', error);
+      console.error("[BaseSwap] Quote error:", error);
       throw error;
     }
   }
@@ -109,31 +129,33 @@ class BaseSwapEngine {
         outputAmount: quote.outputAmount,
         fromAddress,
         toAddress,
-        status: 'pending',
+        status: "pending",
         createdAt: Date.now(),
       };
 
       this.swapHistory.push(transaction);
 
-      console.log(`[BaseSwap] Swap initiated: ${inputAmount} ${inputCoin} → ${quote.outputAmount.toFixed(6)} ${outputCoin}`);
+      console.log(
+        `[BaseSwap] Swap initiated: ${inputAmount} ${inputCoin} → ${quote.outputAmount.toFixed(6)} ${outputCoin}`
+      );
 
       // Simulate swap execution (in production, this would interact with Base app API)
       setTimeout(async () => {
-        transaction.status = 'confirmed';
+        transaction.status = "confirmed";
         transaction.txHash = `0x${Math.random().toString(16).substring(2)}`;
         transaction.completedAt = Date.now();
 
         console.log(`[BaseSwap] Swap confirmed: ${transaction.txHash}`);
 
         await notifyOwner({
-          title: '✅ Swap Completed',
+          title: "✅ Swap Completed",
           content: `Swapped ${inputAmount} ${inputCoin} to ${quote.outputAmount.toFixed(6)} ${outputCoin}. TX: ${transaction.txHash}`,
         });
       }, quote.estimatedTime * 1000);
 
       return transaction;
     } catch (error) {
-      console.error('[BaseSwap] Swap execution failed:', error);
+      console.error("[BaseSwap] Swap execution failed:", error);
       throw error;
     }
   }
@@ -150,20 +172,28 @@ class BaseSwapEngine {
       const swaps: SwapTransaction[] = [];
 
       for (const [coin, amount] of Object.entries(minedCoins)) {
-        if (coin === 'ETH' || amount === 0) continue; // Skip ETH and zero amounts
+        if (coin === "ETH" || amount === 0) continue; // Skip ETH and zero amounts
 
-        const swap = await this.executeSwap(coin, 'ETH', amount, fromAddress, toWalletAddress);
+        const swap = await this.executeSwap(
+          coin,
+          "ETH",
+          amount,
+          fromAddress,
+          toWalletAddress
+        );
         swaps.push(swap);
 
         // Wait a bit between swaps to avoid rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
-      console.log(`[BaseSwap] Deposited ${swaps.length} swaps to ${toWalletAddress}`);
+      console.log(
+        `[BaseSwap] Deposited ${swaps.length} swaps to ${toWalletAddress}`
+      );
 
       return swaps;
     } catch (error) {
-      console.error('[BaseSwap] Deposit failed:', error);
+      console.error("[BaseSwap] Deposit failed:", error);
       throw error;
     }
   }
@@ -182,7 +212,9 @@ class BaseSwapEngine {
     // Fetch from CoinGecko API
     try {
       const coinId = this.getCoinGeckoId(coin);
-      const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`
+      );
       const data = await response.json();
       const price = data[coinId]?.usd || 0;
 
@@ -202,13 +234,13 @@ class BaseSwapEngine {
    */
   private getCoinGeckoId(coin: string): string {
     const mapping: { [key: string]: string } = {
-      BTC: 'bitcoin',
-      ETH: 'ethereum',
-      SOL: 'solana',
-      DOGE: 'dogecoin',
-      TRUMP: 'trump',
-      USDC: 'usd-coin',
-      USDT: 'tether',
+      BTC: "bitcoin",
+      ETH: "ethereum",
+      SOL: "solana",
+      DOGE: "dogecoin",
+      TRUMP: "trump",
+      USDC: "usd-coin",
+      USDT: "tether",
     };
     return mapping[coin] || coin.toLowerCase();
   }
@@ -239,18 +271,29 @@ class BaseSwapEngine {
    * Get swap statistics
    */
   getSwapStats() {
-    const confirmedSwaps = this.swapHistory.filter((s) => s.status === 'confirmed');
-    const totalInputValue = confirmedSwaps.reduce((sum, s) => sum + s.inputAmount, 0);
-    const totalOutputValue = confirmedSwaps.reduce((sum, s) => sum + s.outputAmount, 0);
+    const confirmedSwaps = this.swapHistory.filter(
+      s => s.status === "confirmed"
+    );
+    const totalInputValue = confirmedSwaps.reduce(
+      (sum, s) => sum + s.inputAmount,
+      0
+    );
+    const totalOutputValue = confirmedSwaps.reduce(
+      (sum, s) => sum + s.outputAmount,
+      0
+    );
 
     return {
       totalSwaps: this.swapHistory.length,
       confirmedSwaps: confirmedSwaps.length,
-      pendingSwaps: this.swapHistory.filter((s) => s.status === 'pending').length,
-      failedSwaps: this.swapHistory.filter((s) => s.status === 'failed').length,
+      pendingSwaps: this.swapHistory.filter(s => s.status === "pending").length,
+      failedSwaps: this.swapHistory.filter(s => s.status === "failed").length,
       totalInputValue,
       totalOutputValue,
-      averageSlippage: totalInputValue > 0 ? ((totalInputValue - totalOutputValue) / totalInputValue) * 100 : 0,
+      averageSlippage:
+        totalInputValue > 0
+          ? ((totalInputValue - totalOutputValue) / totalInputValue) * 100
+          : 0,
     };
   }
 

@@ -1,6 +1,6 @@
 /**
  * Notification Service — Real notification delivery for platform events.
- * 
+ *
  * Uses the built-in notifyOwner() for owner alerts, and stores user notifications
  * in the database for in-app notification center.
  */
@@ -16,7 +16,17 @@ import { eq, desc, and } from "drizzle-orm";
 
 export interface CreateNotificationParams {
   userId: number;
-  type: "follow" | "like" | "comment" | "mention" | "repost" | "donation" | "achievement" | "stream_live" | "tournament" | "system";
+  type:
+    | "follow"
+    | "like"
+    | "comment"
+    | "mention"
+    | "repost"
+    | "donation"
+    | "achievement"
+    | "stream_live"
+    | "tournament"
+    | "system";
   title: string;
   message: string;
   actorId?: number;
@@ -71,14 +81,22 @@ export async function getUserNotifications(userId: number, limit = 50) {
 /**
  * Mark a notification as read.
  */
-export async function markNotificationReadInDB(notificationId: number, userId: number) {
+export async function markNotificationReadInDB(
+  notificationId: number,
+  userId: number
+) {
   try {
     const db = await getDb();
     if (!db) return false;
     await db
       .update(notifications)
       .set({ isRead: true })
-      .where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)));
+      .where(
+        and(
+          eq(notifications.id, notificationId),
+          eq(notifications.userId, userId)
+        )
+      );
     return true;
   } catch (err) {
     console.error("[Notifications] Failed to mark as read:", err);
@@ -96,7 +114,9 @@ export async function getUnreadCount(userId: number): Promise<number> {
     const result = await db
       .select()
       .from(notifications)
-      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+      .where(
+        and(eq(notifications.userId, userId), eq(notifications.isRead, false))
+      );
     return result.length;
   } catch (err) {
     return 0;
@@ -110,7 +130,11 @@ export async function getUnreadCount(userId: number): Promise<number> {
 /**
  * Notify when a user receives a tip/donation.
  */
-export async function notifyTipReceived(recipientId: number, senderId: number, amount: number) {
+export async function notifyTipReceived(
+  recipientId: number,
+  senderId: number,
+  amount: number
+) {
   await createUserNotification({
     userId: recipientId,
     type: "donation",
@@ -123,7 +147,11 @@ export async function notifyTipReceived(recipientId: number, senderId: number, a
 /**
  * Notify when a user gets a new follower.
  */
-export async function notifyNewFollower(userId: number, followerId: number, followerName: string) {
+export async function notifyNewFollower(
+  userId: number,
+  followerId: number,
+  followerName: string
+) {
   await createUserNotification({
     userId,
     type: "follow",
@@ -136,7 +164,12 @@ export async function notifyNewFollower(userId: number, followerId: number, foll
 /**
  * Notify when content is liked.
  */
-export async function notifyLike(userId: number, actorId: number, actorName: string, postId: number) {
+export async function notifyLike(
+  userId: number,
+  actorId: number,
+  actorName: string,
+  postId: number
+) {
   await createUserNotification({
     userId,
     type: "like",
@@ -151,7 +184,10 @@ export async function notifyLike(userId: number, actorId: number, actorName: str
 /**
  * Notify when an achievement is unlocked.
  */
-export async function notifyAchievementUnlocked(userId: number, achievementName: string) {
+export async function notifyAchievementUnlocked(
+  userId: number,
+  achievementName: string
+) {
   await createUserNotification({
     userId,
     type: "achievement",
@@ -163,7 +199,11 @@ export async function notifyAchievementUnlocked(userId: number, achievementName:
 /**
  * Notify when a stream goes live.
  */
-export async function notifyStreamLive(userId: number, streamerName: string, streamId: number) {
+export async function notifyStreamLive(
+  userId: number,
+  streamerName: string,
+  streamId: number
+) {
   await createUserNotification({
     userId,
     type: "stream_live",
@@ -181,7 +221,11 @@ export async function alertOwner(title: string, content: string) {
   return notifyOwner({ title, content });
 }
 
-export async function notifyComment(userId: number, actorId: number, postId: number) {
+export async function notifyComment(
+  userId: number,
+  actorId: number,
+  postId: number
+) {
   return createUserNotification({
     userId,
     type: "comment" as any,
@@ -193,7 +237,11 @@ export async function notifyComment(userId: number, actorId: number, postId: num
   });
 }
 
-export async function notifyNewSubscriber(creatorId: number, subscriberId: number, tier: string) {
+export async function notifyNewSubscriber(
+  creatorId: number,
+  subscriberId: number,
+  tier: string
+) {
   return createUserNotification({
     userId: creatorId,
     type: "donation" as any,
@@ -203,7 +251,11 @@ export async function notifyNewSubscriber(creatorId: number, subscriberId: numbe
   });
 }
 
-export async function notifyStreamDonation(streamerId: number, donorId: number, amount: number) {
+export async function notifyStreamDonation(
+  streamerId: number,
+  donorId: number,
+  amount: number
+) {
   return createUserNotification({
     userId: streamerId,
     type: "donation",

@@ -4,7 +4,12 @@
  * the live investor dashboard.
  */
 
-import { router, publicProcedure, protectedProcedure, adminProcedure } from "./_core/trpc";
+import {
+  router,
+  publicProcedure,
+  protectedProcedure,
+  adminProcedure,
+} from "./_core/trpc";
 import { z } from "zod";
 import {
   runAgentCycle,
@@ -48,7 +53,8 @@ export const aiMarketRouter = router({
       rewardApy: parseFloat(stats.rewardApy),
       lastAgentCycleAt: stats.lastAgentCycleAt,
       lastRarityUpdateAt: stats.lastRarityUpdateAt,
-      percentRaised: (parseFloat(stats.totalRaisedUsd) / parseFloat(stats.hardCapUsd)) * 100,
+      percentRaised:
+        (parseFloat(stats.totalRaisedUsd) / parseFloat(stats.hardCapUsd)) * 100,
     };
   }),
 
@@ -59,14 +65,18 @@ export const aiMarketRouter = router({
 
   // ── Recent Market Signals (public) ───────────────────────────────────────
   getSignals: publicProcedure
-    .input(z.object({ limit: z.number().min(1).max(50).default(20) }).optional())
+    .input(
+      z.object({ limit: z.number().min(1).max(50).default(20) }).optional()
+    )
     .query(async ({ input }) => {
       return getRecentSignals(input?.limit ?? 20);
     }),
 
   // ── Agent Activity Log (public) ───────────────────────────────────────────
   getActivity: publicProcedure
-    .input(z.object({ limit: z.number().min(1).max(50).default(30) }).optional())
+    .input(
+      z.object({ limit: z.number().min(1).max(50).default(30) }).optional()
+    )
     .query(async ({ input }) => {
       return getAgentActivity(input?.limit ?? 30);
     }),
@@ -106,25 +116,34 @@ export const aiMarketRouter = router({
 
   // ── Update ICO stats (admin — for manual adjustments) ────────────────────
   updateIcoStats: adminProcedure
-    .input(z.object({
-      totalRaisedUsd: z.number().optional(),
-      totalInvestors: z.number().optional(),
-      tokenPriceUsd: z.number().optional(),
-      currentRound: z.string().optional(),
-      roundBonus: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        totalRaisedUsd: z.number().optional(),
+        totalInvestors: z.number().optional(),
+        tokenPriceUsd: z.number().optional(),
+        currentRound: z.string().optional(),
+        roundBonus: z.number().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
       const updates: Record<string, unknown> = {};
-      if (input.totalRaisedUsd !== undefined) updates.total_raised_usd = input.totalRaisedUsd.toFixed(2);
-      if (input.totalInvestors !== undefined) updates.total_investors = input.totalInvestors;
-      if (input.tokenPriceUsd !== undefined) updates.token_price_usd = input.tokenPriceUsd.toFixed(6);
-      if (input.currentRound !== undefined) updates.current_round = input.currentRound;
-      if (input.roundBonus !== undefined) updates.round_bonus = input.roundBonus;
+      if (input.totalRaisedUsd !== undefined)
+        updates.total_raised_usd = input.totalRaisedUsd.toFixed(2);
+      if (input.totalInvestors !== undefined)
+        updates.total_investors = input.totalInvestors;
+      if (input.tokenPriceUsd !== undefined)
+        updates.token_price_usd = input.tokenPriceUsd.toFixed(6);
+      if (input.currentRound !== undefined)
+        updates.current_round = input.currentRound;
+      if (input.roundBonus !== undefined)
+        updates.round_bonus = input.roundBonus;
 
       if (Object.keys(updates).length > 0) {
         await db.execute(
           sql`UPDATE ico_investor_stats SET ${sql.raw(
-            Object.entries(updates).map(([k, v]) => `\`${k}\` = ${JSON.stringify(v)}`).join(", ")
+            Object.entries(updates)
+              .map(([k, v]) => `\`${k}\` = ${JSON.stringify(v)}`)
+              .join(", ")
           )} WHERE id = 1`
         );
       }

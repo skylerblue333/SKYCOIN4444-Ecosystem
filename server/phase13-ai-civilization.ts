@@ -5,7 +5,15 @@
 
 // ─── HOPE MULTI-AGENT NETWORK ─────────────────────────────────────────────────
 
-export type AgentType = "moderation" | "creator" | "treasury" | "governance" | "growth" | "support" | "fraud" | "community";
+export type AgentType =
+  | "moderation"
+  | "creator"
+  | "treasury"
+  | "governance"
+  | "growth"
+  | "support"
+  | "fraud"
+  | "community";
 
 export interface HOPEAgent {
   id: string;
@@ -52,14 +60,86 @@ let _coordCounter = 0;
 
 // Initialize the 8 core HOPE agents
 const coreAgents: Omit<HOPEAgent, "id">[] = [
-  { type: "moderation", name: "HOPE-Mod", status: "active", tasksCompleted: 15420, tasksQueued: 3, successRate: 0.987, lastActive: new Date(), config: { threshold: 0.85, autoAction: true } },
-  { type: "creator", name: "HOPE-Creator", status: "active", tasksCompleted: 8930, tasksQueued: 1, successRate: 0.972, lastActive: new Date(), config: { insightDepth: "deep", planningHorizon: 30 } },
-  { type: "treasury", name: "HOPE-Treasury", status: "active", tasksCompleted: 4210, tasksQueued: 0, successRate: 0.995, lastActive: new Date(), config: { rebalanceThreshold: 0.05, yieldOptimization: true } },
-  { type: "governance", name: "HOPE-Gov", status: "active", tasksCompleted: 1850, tasksQueued: 2, successRate: 0.961, lastActive: new Date(), config: { quorumThreshold: 0.15, votingPeriod: 7 } },
-  { type: "growth", name: "HOPE-Growth", status: "active", tasksCompleted: 12300, tasksQueued: 5, successRate: 0.943, lastActive: new Date(), config: { targetGrowthRate: 0.15, retentionFocus: true } },
-  { type: "support", name: "HOPE-Support", status: "active", tasksCompleted: 28500, tasksQueued: 12, successRate: 0.934, lastActive: new Date(), config: { autoResolveThreshold: 0.90, escalationDelay: 300 } },
-  { type: "fraud", name: "HOPE-Fraud", status: "active", tasksCompleted: 6720, tasksQueued: 0, successRate: 0.991, lastActive: new Date(), config: { sensitivityLevel: "high", autoBlock: true } },
-  { type: "community", name: "HOPE-Community", status: "active", tasksCompleted: 9840, tasksQueued: 4, successRate: 0.956, lastActive: new Date(), config: { engagementBoost: true, conflictResolution: "auto" } },
+  {
+    type: "moderation",
+    name: "HOPE-Mod",
+    status: "active",
+    tasksCompleted: 15420,
+    tasksQueued: 3,
+    successRate: 0.987,
+    lastActive: new Date(),
+    config: { threshold: 0.85, autoAction: true },
+  },
+  {
+    type: "creator",
+    name: "HOPE-Creator",
+    status: "active",
+    tasksCompleted: 8930,
+    tasksQueued: 1,
+    successRate: 0.972,
+    lastActive: new Date(),
+    config: { insightDepth: "deep", planningHorizon: 30 },
+  },
+  {
+    type: "treasury",
+    name: "HOPE-Treasury",
+    status: "active",
+    tasksCompleted: 4210,
+    tasksQueued: 0,
+    successRate: 0.995,
+    lastActive: new Date(),
+    config: { rebalanceThreshold: 0.05, yieldOptimization: true },
+  },
+  {
+    type: "governance",
+    name: "HOPE-Gov",
+    status: "active",
+    tasksCompleted: 1850,
+    tasksQueued: 2,
+    successRate: 0.961,
+    lastActive: new Date(),
+    config: { quorumThreshold: 0.15, votingPeriod: 7 },
+  },
+  {
+    type: "growth",
+    name: "HOPE-Growth",
+    status: "active",
+    tasksCompleted: 12300,
+    tasksQueued: 5,
+    successRate: 0.943,
+    lastActive: new Date(),
+    config: { targetGrowthRate: 0.15, retentionFocus: true },
+  },
+  {
+    type: "support",
+    name: "HOPE-Support",
+    status: "active",
+    tasksCompleted: 28500,
+    tasksQueued: 12,
+    successRate: 0.934,
+    lastActive: new Date(),
+    config: { autoResolveThreshold: 0.9, escalationDelay: 300 },
+  },
+  {
+    type: "fraud",
+    name: "HOPE-Fraud",
+    status: "active",
+    tasksCompleted: 6720,
+    tasksQueued: 0,
+    successRate: 0.991,
+    lastActive: new Date(),
+    config: { sensitivityLevel: "high", autoBlock: true },
+  },
+  {
+    type: "community",
+    name: "HOPE-Community",
+    status: "active",
+    tasksCompleted: 9840,
+    tasksQueued: 4,
+    successRate: 0.956,
+    lastActive: new Date(),
+    config: { engagementBoost: true, conflictResolution: "auto" },
+  },
 ];
 
 for (const agent of coreAgents) {
@@ -80,22 +160,46 @@ export const hopeMultiAgentNetwork = {
     return Array.from(_hopeAgents.values());
   },
 
-  createAgent(type: AgentType, name: string, config: Record<string, unknown> = {}): HOPEAgent {
+  createAgent(
+    type: AgentType,
+    name: string,
+    config: Record<string, unknown> = {}
+  ): HOPEAgent {
     const id = `agent_${type}_${++_agentCounter}`;
     const agent: HOPEAgent = {
-      id, type, name, status: "idle", tasksCompleted: 0, tasksQueued: 0, successRate: 1.0, lastActive: new Date(), config,
+      id,
+      type,
+      name,
+      status: "idle",
+      tasksCompleted: 0,
+      tasksQueued: 0,
+      successRate: 1.0,
+      lastActive: new Date(),
+      config,
     };
     _hopeAgents.set(id, agent);
     return agent;
   },
 
-  dispatchTask(agentType: AgentType, taskType: string, payload: Record<string, unknown>, priority: AgentTask["priority"] = "normal"): AgentTask {
+  dispatchTask(
+    agentType: AgentType,
+    taskType: string,
+    payload: Record<string, unknown>,
+    priority: AgentTask["priority"] = "normal"
+  ): AgentTask {
     const agent = this.getAgentByType(agentType);
     if (!agent) throw new Error(`No agent of type: ${agentType}`);
 
     const id = `task_${Date.now()}_${++_taskCounter}`;
     const task: AgentTask = {
-      id, agentId: agent.id, agentType, taskType, payload, priority, status: "queued", createdAt: new Date(),
+      id,
+      agentId: agent.id,
+      agentType,
+      taskType,
+      payload,
+      priority,
+      status: "queued",
+      createdAt: new Date(),
     };
     _agentTasks.set(id, task);
     agent.tasksQueued++;
@@ -123,32 +227,54 @@ export const hopeMultiAgentNetwork = {
     return _agentTasks.get(taskId) || null;
   },
 
-  getAgentTasks(agentType: AgentType, status?: AgentTask["status"]): AgentTask[] {
+  getAgentTasks(
+    agentType: AgentType,
+    status?: AgentTask["status"]
+  ): AgentTask[] {
     return Array.from(_agentTasks.values()).filter(
       t => t.agentType === agentType && (!status || t.status === status)
     );
   },
 
-  coordinateAgents(primaryAgentId: string, supportingAgentIds: string[], objective: string): AgentCoordination {
+  coordinateAgents(
+    primaryAgentId: string,
+    supportingAgentIds: string[],
+    objective: string
+  ): AgentCoordination {
     const id = `coord_${Date.now()}_${++_coordCounter}`;
     const coordination: AgentCoordination = {
-      id, primaryAgentId, supportingAgentIds, objective, status: "active", createdAt: new Date(),
+      id,
+      primaryAgentId,
+      supportingAgentIds,
+      objective,
+      status: "active",
+      createdAt: new Date(),
     };
     _agentCoordinations.set(id, coordination);
     setTimeout(() => {
       const c = _agentCoordinations.get(id);
-      if (c) { c.status = "completed"; c.outcome = "objective_achieved"; }
+      if (c) {
+        c.status = "completed";
+        c.outcome = "objective_achieved";
+      }
     }, 50);
     return coordination;
   },
 
-  getNetworkStatus(): { totalAgents: number; activeAgents: number; totalTasksCompleted: number; avgSuccessRate: number; queuedTasks: number } {
+  getNetworkStatus(): {
+    totalAgents: number;
+    activeAgents: number;
+    totalTasksCompleted: number;
+    avgSuccessRate: number;
+    queuedTasks: number;
+  } {
     const agents = Array.from(_hopeAgents.values());
     return {
       totalAgents: agents.length,
       activeAgents: agents.filter(a => a.status === "active").length,
       totalTasksCompleted: agents.reduce((s, a) => s + a.tasksCompleted, 0),
-      avgSuccessRate: agents.reduce((s, a) => s + a.successRate, 0) / agents.length,
+      avgSuccessRate:
+        agents.reduce((s, a) => s + a.successRate, 0) / agents.length,
       queuedTasks: agents.reduce((s, a) => s + a.tasksQueued, 0),
     };
   },
@@ -185,16 +311,35 @@ export interface IncidentResponse {
 export interface CreatorPlan {
   creatorId: number;
   horizon: number;
-  contentCalendar: { week: number; contentType: string; topic: string; estimatedReach: number }[];
-  growthTargets: { metric: string; current: number; target: number; timeline: number }[];
-  monetizationPlan: { stream: string; currentRevenue: number; projectedRevenue: number }[];
+  contentCalendar: {
+    week: number;
+    contentType: string;
+    topic: string;
+    estimatedReach: number;
+  }[];
+  growthTargets: {
+    metric: string;
+    current: number;
+    target: number;
+    timeline: number;
+  }[];
+  monetizationPlan: {
+    stream: string;
+    currentRevenue: number;
+    projectedRevenue: number;
+  }[];
   generatedAt: Date;
 }
 
 export interface GrowthPlan {
   targetSegment: string;
   currentMetrics: Record<string, number>;
-  strategies: { name: string; expectedImpact: number; effort: string; timeline: number }[];
+  strategies: {
+    name: string;
+    expectedImpact: number;
+    effort: string;
+    timeline: number;
+  }[];
   projectedGrowth: number;
   generatedAt: Date;
 }
@@ -207,14 +352,29 @@ let _ticketCounter = 0;
 let _incidentCounter = 0;
 
 export const autonomousOperations = {
-  routeSupportTicket(userId: number, category: string, subject: string, description: string): SupportTicket {
+  routeSupportTicket(
+    userId: number,
+    category: string,
+    subject: string,
+    description: string
+  ): SupportTicket {
     const id = `ticket_${Date.now()}_${++_ticketCounter}`;
     const priority: SupportTicket["priority"] =
-      category === "security" || category === "payment" ? "urgent" :
-      category === "account" ? "high" : "normal";
+      category === "security" || category === "payment"
+        ? "urgent"
+        : category === "account"
+          ? "high"
+          : "normal";
 
     const ticket: SupportTicket = {
-      id, userId, category, subject, description, priority, status: "ai_processing", createdAt: new Date(),
+      id,
+      userId,
+      category,
+      subject,
+      description,
+      priority,
+      status: "ai_processing",
+      createdAt: new Date(),
     };
     _supportTickets.set(id, ticket);
 
@@ -241,10 +401,17 @@ export const autonomousOperations = {
   },
 
   getUserTickets(userId: number): SupportTicket[] {
-    return Array.from(_supportTickets.values()).filter(t => t.userId === userId);
+    return Array.from(_supportTickets.values()).filter(
+      t => t.userId === userId
+    );
   },
 
-  respondToIncident(type: string, severity: IncidentResponse["severity"], description: string, affectedSystems: string[]): IncidentResponse {
+  respondToIncident(
+    type: string,
+    severity: IncidentResponse["severity"],
+    description: string,
+    affectedSystems: string[]
+  ): IncidentResponse {
     const id = `incident_${Date.now()}_${++_incidentCounter}`;
     const aiActions = [
       `Detected ${type} incident`,
@@ -254,12 +421,21 @@ export const autonomousOperations = {
       "Applying automated mitigations",
     ];
     const incident: IncidentResponse = {
-      id, type, severity, description, affectedSystems, aiActions, status: "responding", detectedAt: new Date(),
+      id,
+      type,
+      severity,
+      description,
+      affectedSystems,
+      aiActions,
+      status: "responding",
+      detectedAt: new Date(),
     };
     _incidentResponses.set(id, incident);
     setTimeout(() => {
       const i = _incidentResponses.get(id);
-      if (i) { i.status = "mitigated"; }
+      if (i) {
+        i.status = "mitigated";
+      }
     }, 50);
     return incident;
   },
@@ -270,7 +446,14 @@ export const autonomousOperations = {
 
   generateCreatorPlan(creatorId: number, horizon: number): CreatorPlan {
     const contentTypes = ["video", "reel", "story", "live", "post", "podcast"];
-    const topics = ["tutorial", "behind_scenes", "product_review", "community_qa", "collaboration", "trending"];
+    const topics = [
+      "tutorial",
+      "behind_scenes",
+      "product_review",
+      "community_qa",
+      "collaboration",
+      "trending",
+    ];
     const plan: CreatorPlan = {
       creatorId,
       horizon,
@@ -281,12 +464,31 @@ export const autonomousOperations = {
         estimatedReach: 5000 + i * 500 + Math.floor(Math.random() * 2000),
       })),
       growthTargets: [
-        { metric: "followers", current: 10000, target: 15000, timeline: horizon },
-        { metric: "engagement_rate", current: 0.045, target: 0.065, timeline: horizon },
-        { metric: "monthly_revenue", current: 2500, target: 4000, timeline: horizon },
+        {
+          metric: "followers",
+          current: 10000,
+          target: 15000,
+          timeline: horizon,
+        },
+        {
+          metric: "engagement_rate",
+          current: 0.045,
+          target: 0.065,
+          timeline: horizon,
+        },
+        {
+          metric: "monthly_revenue",
+          current: 2500,
+          target: 4000,
+          timeline: horizon,
+        },
       ],
       monetizationPlan: [
-        { stream: "subscriptions", currentRevenue: 1200, projectedRevenue: 2000 },
+        {
+          stream: "subscriptions",
+          currentRevenue: 1200,
+          projectedRevenue: 2000,
+        },
         { stream: "sponsorships", currentRevenue: 800, projectedRevenue: 1500 },
         { stream: "tips", currentRevenue: 500, projectedRevenue: 500 },
       ],
@@ -300,16 +502,44 @@ export const autonomousOperations = {
     return _creatorPlans.get(creatorId) || null;
   },
 
-  generateGrowthPlan(segment: string, currentMetrics: Record<string, number>): GrowthPlan {
+  generateGrowthPlan(
+    segment: string,
+    currentMetrics: Record<string, number>
+  ): GrowthPlan {
     const plan: GrowthPlan = {
       targetSegment: segment,
       currentMetrics,
       strategies: [
-        { name: "content_velocity_increase", expectedImpact: 0.25, effort: "medium", timeline: 30 },
-        { name: "cross_platform_syndication", expectedImpact: 0.18, effort: "low", timeline: 14 },
-        { name: "community_engagement_boost", expectedImpact: 0.22, effort: "medium", timeline: 21 },
-        { name: "influencer_collaboration", expectedImpact: 0.35, effort: "high", timeline: 45 },
-        { name: "seo_optimization", expectedImpact: 0.15, effort: "low", timeline: 60 },
+        {
+          name: "content_velocity_increase",
+          expectedImpact: 0.25,
+          effort: "medium",
+          timeline: 30,
+        },
+        {
+          name: "cross_platform_syndication",
+          expectedImpact: 0.18,
+          effort: "low",
+          timeline: 14,
+        },
+        {
+          name: "community_engagement_boost",
+          expectedImpact: 0.22,
+          effort: "medium",
+          timeline: 21,
+        },
+        {
+          name: "influencer_collaboration",
+          expectedImpact: 0.35,
+          effort: "high",
+          timeline: 45,
+        },
+        {
+          name: "seo_optimization",
+          expectedImpact: 0.15,
+          effort: "low",
+          timeline: 60,
+        },
       ],
       projectedGrowth: 0.35,
       generatedAt: new Date(),
@@ -318,7 +548,15 @@ export const autonomousOperations = {
     return plan;
   },
 
-  orchestrateEvent(eventId: string, eventType: string): { eventId: string; orchestrationPlan: string[]; estimatedAttendees: number; aiActions: string[] } {
+  orchestrateEvent(
+    eventId: string,
+    eventType: string
+  ): {
+    eventId: string;
+    orchestrationPlan: string[];
+    estimatedAttendees: number;
+    aiActions: string[];
+  } {
     return {
       eventId,
       orchestrationPlan: [
@@ -331,7 +569,13 @@ export const autonomousOperations = {
         "Post-event: Send follow-up to attendees",
       ],
       estimatedAttendees: 5000 + Math.floor(Math.random() * 10000),
-      aiActions: ["audience_targeting", "notification_scheduling", "infrastructure_scaling", "moderation", "analytics"],
+      aiActions: [
+        "audience_targeting",
+        "notification_scheduling",
+        "infrastructure_scaling",
+        "moderation",
+        "analytics",
+      ],
     };
   },
 };
@@ -398,20 +642,33 @@ export const intelligenceMemory = {
   getCreatorMemory(creatorId: number): CreatorMemory {
     if (!_creatorMemories.has(creatorId)) {
       _creatorMemories.set(creatorId, {
-        creatorId, contentPreferences: [], audienceInsights: [], topPerformingTopics: [],
-        revenuePatterns: [], growthHistory: [], collaborationHistory: [], lastUpdated: new Date(),
+        creatorId,
+        contentPreferences: [],
+        audienceInsights: [],
+        topPerformingTopics: [],
+        revenuePatterns: [],
+        growthHistory: [],
+        collaborationHistory: [],
+        lastUpdated: new Date(),
       });
     }
     return _creatorMemories.get(creatorId)!;
   },
 
-  updateCreatorMemory(creatorId: number, updates: Partial<Omit<CreatorMemory, "creatorId">>): CreatorMemory {
+  updateCreatorMemory(
+    creatorId: number,
+    updates: Partial<Omit<CreatorMemory, "creatorId">>
+  ): CreatorMemory {
     const memory = this.getCreatorMemory(creatorId);
     Object.assign(memory, updates, { lastUpdated: new Date() });
     return memory;
   },
 
-  recordCreatorContent(creatorId: number, topic: string, performance: number): CreatorMemory {
+  recordCreatorContent(
+    creatorId: number,
+    topic: string,
+    performance: number
+  ): CreatorMemory {
     const memory = this.getCreatorMemory(creatorId);
     if (performance > 0.7 && !memory.topPerformingTopics.includes(topic)) {
       memory.topPerformingTopics.push(topic);
@@ -423,18 +680,31 @@ export const intelligenceMemory = {
   getUserPreferenceMemory(userId: number): UserPreferenceMemory {
     if (!_userPreferenceMemories.has(userId)) {
       _userPreferenceMemories.set(userId, {
-        userId, contentTypes: [], preferredCreators: [], topicInterests: [],
-        viewingPatterns: [], purchaseHistory: [], lastUpdated: new Date(),
+        userId,
+        contentTypes: [],
+        preferredCreators: [],
+        topicInterests: [],
+        viewingPatterns: [],
+        purchaseHistory: [],
+        lastUpdated: new Date(),
       });
     }
     return _userPreferenceMemories.get(userId)!;
   },
 
-  recordUserInteraction(userId: number, contentType: string, creatorId: number, topic: string): UserPreferenceMemory {
+  recordUserInteraction(
+    userId: number,
+    contentType: string,
+    creatorId: number,
+    topic: string
+  ): UserPreferenceMemory {
     const memory = this.getUserPreferenceMemory(userId);
-    if (!memory.contentTypes.includes(contentType)) memory.contentTypes.push(contentType);
-    if (!memory.preferredCreators.includes(creatorId)) memory.preferredCreators.push(creatorId);
-    if (!memory.topicInterests.includes(topic)) memory.topicInterests.push(topic);
+    if (!memory.contentTypes.includes(contentType))
+      memory.contentTypes.push(contentType);
+    if (!memory.preferredCreators.includes(creatorId))
+      memory.preferredCreators.push(creatorId);
+    if (!memory.topicInterests.includes(topic))
+      memory.topicInterests.push(topic);
     memory.lastUpdated = new Date();
     return memory;
   },
@@ -442,14 +712,24 @@ export const intelligenceMemory = {
   getTrustMemory(userId: number): TrustMemory {
     if (!_trustMemories.has(userId)) {
       _trustMemories.set(userId, {
-        userId, trustScore: 0.5, positiveEvents: [], negativeEvents: [],
-        verifications: [], trustHistory: [], lastUpdated: new Date(),
+        userId,
+        trustScore: 0.5,
+        positiveEvents: [],
+        negativeEvents: [],
+        verifications: [],
+        trustHistory: [],
+        lastUpdated: new Date(),
       });
     }
     return _trustMemories.get(userId)!;
   },
 
-  recordTrustEvent(userId: number, eventType: "positive" | "negative", category: string, impact: number): TrustMemory {
+  recordTrustEvent(
+    userId: number,
+    eventType: "positive" | "negative",
+    category: string,
+    impact: number
+  ): TrustMemory {
     const memory = this.getTrustMemory(userId);
     if (eventType === "positive") {
       const existing = memory.positiveEvents.find(e => e.type === category);
@@ -470,43 +750,81 @@ export const intelligenceMemory = {
   getFraudMemory(userId: number): FraudMemory {
     if (!_fraudMemories.has(userId)) {
       _fraudMemories.set(userId, {
-        userId, riskScore: 0, flaggedBehaviors: [], associatedIPs: [],
-        associatedDevices: [], fraudHistory: [], lastUpdated: new Date(),
+        userId,
+        riskScore: 0,
+        flaggedBehaviors: [],
+        associatedIPs: [],
+        associatedDevices: [],
+        fraudHistory: [],
+        lastUpdated: new Date(),
       });
     }
     return _fraudMemories.get(userId)!;
   },
 
-  recordFraudSignal(userId: number, behaviorType: string, ip: string, device: string): FraudMemory {
+  recordFraudSignal(
+    userId: number,
+    behaviorType: string,
+    ip: string,
+    device: string
+  ): FraudMemory {
     const memory = this.getFraudMemory(userId);
     const existing = memory.flaggedBehaviors.find(b => b.type === behaviorType);
     if (existing) existing.count++;
-    else memory.flaggedBehaviors.push({ type: behaviorType, count: 1, lastSeen: new Date() });
+    else
+      memory.flaggedBehaviors.push({
+        type: behaviorType,
+        count: 1,
+        lastSeen: new Date(),
+      });
     if (!memory.associatedIPs.includes(ip)) memory.associatedIPs.push(ip);
-    if (!memory.associatedDevices.includes(device)) memory.associatedDevices.push(device);
-    memory.riskScore = Math.min(1, memory.flaggedBehaviors.reduce((s, b) => s + b.count * 0.05, 0));
+    if (!memory.associatedDevices.includes(device))
+      memory.associatedDevices.push(device);
+    memory.riskScore = Math.min(
+      1,
+      memory.flaggedBehaviors.reduce((s, b) => s + b.count * 0.05, 0)
+    );
     memory.lastUpdated = new Date();
     return memory;
   },
 
-  getEconomicMemory(entityId: string, entityType: EconomicMemory["entityType"]): EconomicMemory {
+  getEconomicMemory(
+    entityId: string,
+    entityType: EconomicMemory["entityType"]
+  ): EconomicMemory {
     const key = `${entityType}_${entityId}`;
     if (!_economicMemories.has(key)) {
       _economicMemories.set(key, {
-        entityId, entityType, revenueHistory: [], transactionPatterns: [], anomalies: [], lastUpdated: new Date(),
+        entityId,
+        entityType,
+        revenueHistory: [],
+        transactionPatterns: [],
+        anomalies: [],
+        lastUpdated: new Date(),
       });
     }
     return _economicMemories.get(key)!;
   },
 
-  recordEconomicEvent(entityId: string, entityType: EconomicMemory["entityType"], period: string, amount: number): EconomicMemory {
+  recordEconomicEvent(
+    entityId: string,
+    entityType: EconomicMemory["entityType"],
+    period: string,
+    amount: number
+  ): EconomicMemory {
     const memory = this.getEconomicMemory(entityId, entityType);
     memory.revenueHistory.push({ period, amount });
     memory.lastUpdated = new Date();
     return memory;
   },
 
-  getMemoryStats(): { totalCreatorMemories: number; totalUserMemories: number; totalTrustMemories: number; totalFraudMemories: number; totalEconomicMemories: number } {
+  getMemoryStats(): {
+    totalCreatorMemories: number;
+    totalUserMemories: number;
+    totalTrustMemories: number;
+    totalFraudMemories: number;
+    totalEconomicMemories: number;
+  } {
     return {
       totalCreatorMemories: _creatorMemories.size,
       totalUserMemories: _userPreferenceMemories.size,
@@ -519,40 +837,85 @@ export const intelligenceMemory = {
 
 // ─── PHASE 13 WRAPPER FIXES ───────────────────────────────────────────────────
 // Fix routeSupportTicket: add assignedAgent field
-const _origRouteTicket = autonomousOperations.routeSupportTicket.bind(autonomousOperations);
-(autonomousOperations as any).routeSupportTicket = (userId: number, category: string, subject: string, description: string) => {
+const _origRouteTicket =
+  autonomousOperations.routeSupportTicket.bind(autonomousOperations);
+(autonomousOperations as any).routeSupportTicket = (
+  userId: number,
+  category: string,
+  subject: string,
+  description: string
+) => {
   const t = _origRouteTicket(userId, category, subject, description);
   return { ...t, assignedAgent: t.assignedTo || `ai_agent_${category}` };
 };
 
 // Fix respondToIncident: add actions field, fix severity mapping
-const _origRespondToIncident = autonomousOperations.respondToIncident.bind(autonomousOperations);
-(autonomousOperations as any).respondToIncident = (type: string, severity: string, description: string, affectedSystems: string[]) => {
-  const sevMap: Record<string, "p1"|"p2"|"p3"|"p4"> = { critical: "p1", high: "p2", medium: "p3", low: "p4" };
-  const r = _origRespondToIncident(type, sevMap[severity] || severity as any, description, affectedSystems);
-  return { ...r, severity, actions: r.aiActions || [`investigate_${type}`, `alert_team`, `apply_fix`] };
+const _origRespondToIncident =
+  autonomousOperations.respondToIncident.bind(autonomousOperations);
+(autonomousOperations as any).respondToIncident = (
+  type: string,
+  severity: string,
+  description: string,
+  affectedSystems: string[]
+) => {
+  const sevMap: Record<string, "p1" | "p2" | "p3" | "p4"> = {
+    critical: "p1",
+    high: "p2",
+    medium: "p3",
+    low: "p4",
+  };
+  const r = _origRespondToIncident(
+    type,
+    sevMap[severity] || (severity as any),
+    description,
+    affectedSystems
+  );
+  return {
+    ...r,
+    severity,
+    actions: r.aiActions || [`investigate_${type}`, `alert_team`, `apply_fix`],
+  };
 };
 
 // Fix generateCreatorPlan: add goals and actions fields
-const _origGenCreatorPlan = autonomousOperations.generateCreatorPlan.bind(autonomousOperations);
-(autonomousOperations as any).generateCreatorPlan = (creatorId: number, horizon: number) => {
+const _origGenCreatorPlan =
+  autonomousOperations.generateCreatorPlan.bind(autonomousOperations);
+(autonomousOperations as any).generateCreatorPlan = (
+  creatorId: number,
+  horizon: number
+) => {
   const r = _origGenCreatorPlan(creatorId, horizon);
   return {
     ...r,
-    goals: r.growthTargets?.map((t: any) => ({ metric: t.metric, target: t.target, timeline: t.timeline })) || [{ metric: "followers", target: 15000, timeline: horizon }],
-    actions: r.contentCalendar?.slice(0, 5).map((c: any) => `Week ${c.week}: ${c.contentType} on ${c.topic}`) || ["Create content", "Engage audience", "Optimize posting time"],
+    goals: r.growthTargets?.map((t: any) => ({
+      metric: t.metric,
+      target: t.target,
+      timeline: t.timeline,
+    })) || [{ metric: "followers", target: 15000, timeline: horizon }],
+    actions: r.contentCalendar
+      ?.slice(0, 5)
+      .map((c: any) => `Week ${c.week}: ${c.contentType} on ${c.topic}`) || [
+      "Create content",
+      "Engage audience",
+      "Optimize posting time",
+    ],
   };
 };
 
 // Fix generateGrowthPlan: add segment field (alias for targetSegment)
-const _origGenGrowthPlan = autonomousOperations.generateGrowthPlan.bind(autonomousOperations);
-(autonomousOperations as any).generateGrowthPlan = (segment: string, currentMetrics: Record<string, number>) => {
+const _origGenGrowthPlan =
+  autonomousOperations.generateGrowthPlan.bind(autonomousOperations);
+(autonomousOperations as any).generateGrowthPlan = (
+  segment: string,
+  currentMetrics: Record<string, number>
+) => {
   const r = _origGenGrowthPlan(segment, currentMetrics);
   return { ...r, segment: r.targetSegment || segment };
 };
 
 // Fix getCreatorMemory: add topTopics and audienceProfile
-const _origGetCreatorMemory = intelligenceMemory.getCreatorMemory.bind(intelligenceMemory);
+const _origGetCreatorMemory =
+  intelligenceMemory.getCreatorMemory.bind(intelligenceMemory);
 (intelligenceMemory as any).getCreatorMemory = (creatorId: number) => {
   const m = _origGetCreatorMemory(creatorId);
   return {
@@ -563,8 +926,13 @@ const _origGetCreatorMemory = intelligenceMemory.getCreatorMemory.bind(intellige
 };
 
 // Fix recordCreatorContent: ensure topTopics is updated
-const _origRecordCreatorContent = intelligenceMemory.recordCreatorContent.bind(intelligenceMemory);
-(intelligenceMemory as any).recordCreatorContent = (creatorId: number, topic: string, performance: number) => {
+const _origRecordCreatorContent =
+  intelligenceMemory.recordCreatorContent.bind(intelligenceMemory);
+(intelligenceMemory as any).recordCreatorContent = (
+  creatorId: number,
+  topic: string,
+  performance: number
+) => {
   const m = _origRecordCreatorContent(creatorId, topic, performance);
   return {
     ...m,
@@ -574,7 +942,8 @@ const _origRecordCreatorContent = intelligenceMemory.recordCreatorContent.bind(i
 };
 
 // Fix getUserPreferenceMemory: add preferredTopics field
-const _origGetUserPref = intelligenceMemory.getUserPreferenceMemory.bind(intelligenceMemory);
+const _origGetUserPref =
+  intelligenceMemory.getUserPreferenceMemory.bind(intelligenceMemory);
 (intelligenceMemory as any).getUserPreferenceMemory = (userId: number) => {
   const m = _origGetUserPref(userId);
   return {
@@ -585,8 +954,14 @@ const _origGetUserPref = intelligenceMemory.getUserPreferenceMemory.bind(intelli
 };
 
 // Fix recordUserInteraction: ensure preferredTopics is updated
-const _origRecordUserInteraction = intelligenceMemory.recordUserInteraction.bind(intelligenceMemory);
-(intelligenceMemory as any).recordUserInteraction = (userId: number, contentType: string, creatorId: number, topic: string) => {
+const _origRecordUserInteraction =
+  intelligenceMemory.recordUserInteraction.bind(intelligenceMemory);
+(intelligenceMemory as any).recordUserInteraction = (
+  userId: number,
+  contentType: string,
+  creatorId: number,
+  topic: string
+) => {
   const m = _origRecordUserInteraction(userId, contentType, creatorId, topic);
   return {
     ...m,
@@ -596,42 +971,80 @@ const _origRecordUserInteraction = intelligenceMemory.recordUserInteraction.bind
 };
 
 // Fix getTrustMemory: positiveEvents should be a number, not array
-const _origGetTrustMemory = intelligenceMemory.getTrustMemory.bind(intelligenceMemory);
+const _origGetTrustMemory =
+  intelligenceMemory.getTrustMemory.bind(intelligenceMemory);
 (intelligenceMemory as any).getTrustMemory = (userId: number) => {
   const m = _origGetTrustMemory(userId);
-  const positiveCount = Array.isArray(m.positiveEvents) ? m.positiveEvents.reduce((s: number, e: any) => s + (e.count || 0), 0) : (m.positiveEvents as any) || 0;
-  const negativeCount = Array.isArray(m.negativeEvents) ? m.negativeEvents.reduce((s: number, e: any) => s + (e.count || 0), 0) : (m.negativeEvents as any) || 0;
+  const positiveCount = Array.isArray(m.positiveEvents)
+    ? m.positiveEvents.reduce((s: number, e: any) => s + (e.count || 0), 0)
+    : (m.positiveEvents as any) || 0;
+  const negativeCount = Array.isArray(m.negativeEvents)
+    ? m.negativeEvents.reduce((s: number, e: any) => s + (e.count || 0), 0)
+    : (m.negativeEvents as any) || 0;
   return { ...m, positiveEvents: positiveCount, negativeEvents: negativeCount };
 };
 
 // Fix recordTrustEvent: ensure positiveEvents is a number
-const _origRecordTrustEvent = intelligenceMemory.recordTrustEvent.bind(intelligenceMemory);
-(intelligenceMemory as any).recordTrustEvent = (userId: number, eventType: "positive" | "negative", category: string, impact: number) => {
+const _origRecordTrustEvent =
+  intelligenceMemory.recordTrustEvent.bind(intelligenceMemory);
+(intelligenceMemory as any).recordTrustEvent = (
+  userId: number,
+  eventType: "positive" | "negative",
+  category: string,
+  impact: number
+) => {
   const m = _origRecordTrustEvent(userId, eventType, category, impact);
-  const positiveCount = Array.isArray(m.positiveEvents) ? m.positiveEvents.reduce((s: number, e: any) => s + (e.count || 0), 0) : (m.positiveEvents as any) || 0;
-  const negativeCount = Array.isArray(m.negativeEvents) ? m.negativeEvents.reduce((s: number, e: any) => s + (e.count || 0), 0) : (m.negativeEvents as any) || 0;
-  return { ...m, positiveEvents: Math.max(positiveCount, eventType === "positive" ? 1 : 0), negativeEvents: negativeCount };
+  const positiveCount = Array.isArray(m.positiveEvents)
+    ? m.positiveEvents.reduce((s: number, e: any) => s + (e.count || 0), 0)
+    : (m.positiveEvents as any) || 0;
+  const negativeCount = Array.isArray(m.negativeEvents)
+    ? m.negativeEvents.reduce((s: number, e: any) => s + (e.count || 0), 0)
+    : (m.negativeEvents as any) || 0;
+  return {
+    ...m,
+    positiveEvents: Math.max(positiveCount, eventType === "positive" ? 1 : 0),
+    negativeEvents: negativeCount,
+  };
 };
 
 // ─── PHASE 13B ADDITIONAL FIXES ───────────────────────────────────────────────
 // Fix updateCreatorMemory: persist arbitrary fields including bestPostingTime
-const _origUpdateCreatorMemory = intelligenceMemory.updateCreatorMemory.bind(intelligenceMemory);
-(intelligenceMemory as any).updateCreatorMemory = (creatorId: number, updates: Partial<any>) => {
+const _origUpdateCreatorMemory =
+  intelligenceMemory.updateCreatorMemory.bind(intelligenceMemory);
+(intelligenceMemory as any).updateCreatorMemory = (
+  creatorId: number,
+  updates: Partial<any>
+) => {
   const m = _origUpdateCreatorMemory(creatorId, updates);
   // Merge extra fields not in the interface
   const stored = _creatorMemories.get(creatorId);
   if (stored) Object.assign(stored, updates);
-  return { ...m, ...updates, topTopics: m.topPerformingTopics || [], audienceProfile: m.audienceInsights || [] };
+  return {
+    ...m,
+    ...updates,
+    topTopics: m.topPerformingTopics || [],
+    audienceProfile: m.audienceInsights || [],
+  };
 };
 
 // Fix recordTrustEvent: the original calls .find on positiveEvents which is now a number after our wrapper
 // We need to intercept BEFORE the original runs and restore array form temporarily
-const _rawRecordTrustEvent = (userId: number, eventType: "positive" | "negative", category: string, impact: number) => {
+const _rawRecordTrustEvent = (
+  userId: number,
+  eventType: "positive" | "negative",
+  category: string,
+  impact: number
+) => {
   // Work directly on the raw memory object
   if (!_trustMemories.has(userId)) {
     _trustMemories.set(userId, {
-      userId, trustScore: 50, positiveEvents: [] as any, negativeEvents: [] as any,
-      verifications: [], trustHistory: [], lastUpdated: new Date(),
+      userId,
+      trustScore: 50,
+      positiveEvents: [] as any,
+      negativeEvents: [] as any,
+      verifications: [],
+      trustHistory: [],
+      lastUpdated: new Date(),
     });
   }
   const mem = _trustMemories.get(userId)!;
@@ -641,17 +1054,27 @@ const _rawRecordTrustEvent = (userId: number, eventType: "positive" | "negative"
   if (eventType === "positive") {
     const arr = mem.positiveEvents as any as { type: string; count: number }[];
     const existing = arr.find(e => e.type === category);
-    if (existing) existing.count++; else arr.push({ type: category, count: 1 });
+    if (existing) existing.count++;
+    else arr.push({ type: category, count: 1 });
     mem.trustScore = Math.min(100, mem.trustScore + impact);
   } else {
     const arr = mem.negativeEvents as any as { type: string; count: number }[];
     const existing = arr.find(e => e.type === category);
-    if (existing) existing.count++; else arr.push({ type: category, count: 1 });
+    if (existing) existing.count++;
+    else arr.push({ type: category, count: 1 });
     mem.trustScore = Math.max(0, mem.trustScore - impact);
   }
   mem.lastUpdated = new Date();
-  const positiveCount = (mem.positiveEvents as any as { count: number }[]).reduce((s, e) => s + e.count, 0);
-  const negativeCount = (mem.negativeEvents as any as { count: number }[]).reduce((s, e) => s + e.count, 0);
-  return { ...mem, positiveEvents: positiveCount, negativeEvents: negativeCount };
+  const positiveCount = (
+    mem.positiveEvents as any as { count: number }[]
+  ).reduce((s, e) => s + e.count, 0);
+  const negativeCount = (
+    mem.negativeEvents as any as { count: number }[]
+  ).reduce((s, e) => s + e.count, 0);
+  return {
+    ...mem,
+    positiveEvents: positiveCount,
+    negativeEvents: negativeCount,
+  };
 };
 (intelligenceMemory as any).recordTrustEvent = _rawRecordTrustEvent;

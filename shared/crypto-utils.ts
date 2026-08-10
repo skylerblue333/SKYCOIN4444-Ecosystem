@@ -79,7 +79,10 @@ export function calculateSaleReturn(
 /**
  * Calculate market cap
  */
-export function calculateMarketCap(price: number, circulatingSupply: number): number {
+export function calculateMarketCap(
+  price: number,
+  circulatingSupply: number
+): number {
   return price * circulatingSupply;
 }
 
@@ -119,9 +122,12 @@ export function calculateStakingRewards(
   totalValue: number;
   effectiveApy: number;
 } {
-  const periodsPerYear = compoundingFrequency === "daily" ? 365
-    : compoundingFrequency === "weekly" ? 52
-    : 12;
+  const periodsPerYear =
+    compoundingFrequency === "daily"
+      ? 365
+      : compoundingFrequency === "weekly"
+        ? 52
+        : 12;
 
   const ratePerPeriod = apy / 100 / periodsPerYear;
   const periods = (daysStaked / 365) * periodsPerYear;
@@ -203,8 +209,11 @@ export function calculateOptimalStaking(
     );
 
     const risk: "low" | "medium" | "high" =
-      pool.lockPeriodDays <= 30 ? "low" :
-      pool.lockPeriodDays <= 90 ? "medium" : "high";
+      pool.lockPeriodDays <= 30
+        ? "low"
+        : pool.lockPeriodDays <= 90
+          ? "medium"
+          : "high";
 
     allocations.push({
       poolId: pool.id,
@@ -293,14 +302,20 @@ export function calculateVestedAmount(
       const monthsElapsed = Math.floor((now - cliffEnd) / (30 * 86400000));
       const totalMonths = Math.ceil((vestingEnd - cliffEnd) / (30 * 86400000));
       vestedAmount = (schedule.totalAmount / totalMonths) * monthsElapsed;
-      nextVestingDate = new Date(cliffEnd + (monthsElapsed + 1) * 30 * 86400000);
+      nextVestingDate = new Date(
+        cliffEnd + (monthsElapsed + 1) * 30 * 86400000
+      );
       break;
     }
     case "quarterly": {
       const quartersElapsed = Math.floor((now - cliffEnd) / (90 * 86400000));
-      const totalQuarters = Math.ceil((vestingEnd - cliffEnd) / (90 * 86400000));
+      const totalQuarters = Math.ceil(
+        (vestingEnd - cliffEnd) / (90 * 86400000)
+      );
       vestedAmount = (schedule.totalAmount / totalQuarters) * quartersElapsed;
-      nextVestingDate = new Date(cliffEnd + (quartersElapsed + 1) * 90 * 86400000);
+      nextVestingDate = new Date(
+        cliffEnd + (quartersElapsed + 1) * 90 * 86400000
+      );
       break;
     }
   }
@@ -368,9 +383,7 @@ const FEE_STRUCTURES: Record<string, FeeStructure> = {
     percentageFee: 0.5,
     minFee: 1.0,
     maxFee: 200,
-    discountTiers: [
-      { minVolume: 50000, discount: 25 },
-    ],
+    discountTiers: [{ minVolume: 50000, discount: 25 }],
   },
   subscription: {
     baseFee: 0,
@@ -400,16 +413,24 @@ export function calculateFee(
 } {
   const structure = FEE_STRUCTURES[type];
   if (!structure) {
-    return { fee: 0, netAmount: amount, feePercentage: 0, discount: 0, tier: "unknown" };
+    return {
+      fee: 0,
+      netAmount: amount,
+      feePercentage: 0,
+      discount: 0,
+      tier: "unknown",
+    };
   }
 
   // Calculate base fee
-  let fee = structure.baseFee + (amount * structure.percentageFee / 100);
+  let fee = structure.baseFee + (amount * structure.percentageFee) / 100;
 
   // Apply tier discount
   let discount = 0;
   let tier = "standard";
-  for (const t of structure.discountTiers.sort((a, b) => b.minVolume - a.minVolume)) {
+  for (const t of structure.discountTiers.sort(
+    (a, b) => b.minVolume - a.minVolume
+  )) {
     if (userVolume30d >= t.minVolume) {
       discount = t.discount;
       tier = `volume_${t.minVolume}`;
@@ -474,7 +495,8 @@ export function calculateSwapOutput(
   const inputAfterFee = inputAmount - feeAmount;
 
   // Constant product formula: (x + dx) * (y - dy) = x * y
-  const outputAmount = (outputReserve * inputAfterFee) / (inputReserve + inputAfterFee);
+  const outputAmount =
+    (outputReserve * inputAfterFee) / (inputReserve + inputAfterFee);
 
   // Price impact
   const spotPrice = outputReserve / inputReserve;
@@ -660,7 +682,8 @@ export function calculateBurnImpact(
   // Theoretical price increase (assuming constant market cap)
   const marketCap = currentPrice * currentSupply;
   const newTheoreticalPrice = marketCap / newSupply;
-  const theoreticalPriceIncrease = ((newTheoreticalPrice - currentPrice) / currentPrice) * 100;
+  const theoreticalPriceIncrease =
+    ((newTheoreticalPrice - currentPrice) / currentPrice) * 100;
 
   return {
     newSupply,

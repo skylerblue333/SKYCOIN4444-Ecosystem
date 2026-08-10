@@ -110,20 +110,31 @@ export class LRUCache<T = unknown> {
     if (this.cache.has(key)) this.cache.delete(key);
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      if (firstKey) { this.cache.delete(firstKey); this.evictions++; }
+      if (firstKey) {
+        this.cache.delete(firstKey);
+        this.evictions++;
+      }
     }
     this.cache.set(key, {
-      key, value, ttl: ttlMs,
-      createdAt: Date.now(), hits: 0,
+      key,
+      value,
+      ttl: ttlMs,
+      createdAt: Date.now(),
+      hits: 0,
       size: JSON.stringify(value).length,
     });
   }
 
   get(key: string): T | null {
     const entry = this.cache.get(key);
-    if (!entry) { this.misses++; return null; }
+    if (!entry) {
+      this.misses++;
+      return null;
+    }
     if (Date.now() - entry.createdAt > entry.ttl) {
-      this.cache.delete(key); this.misses++; return null;
+      this.cache.delete(key);
+      this.misses++;
+      return null;
     }
     entry.hits++;
     this.cache.delete(key);
@@ -132,20 +143,30 @@ export class LRUCache<T = unknown> {
     return entry.value;
   }
 
-  delete(key: string): boolean { return this.cache.delete(key); }
+  delete(key: string): boolean {
+    return this.cache.delete(key);
+  }
 
-  clear(): void { this.cache.clear(); }
+  clear(): void {
+    this.cache.clear();
+  }
 
   has(key: string): boolean {
     const entry = this.cache.get(key);
     if (!entry) return false;
-    if (Date.now() - entry.createdAt > entry.ttl) { this.cache.delete(key); return false; }
+    if (Date.now() - entry.createdAt > entry.ttl) {
+      this.cache.delete(key);
+      return false;
+    }
     return true;
   }
 
   getStats(): CacheStats {
     const total = this.hits + this.misses;
-    const memoryUsedBytes = Array.from(this.cache.values()).reduce((sum, e) => sum + e.size, 0);
+    const memoryUsedBytes = Array.from(this.cache.values()).reduce(
+      (sum, e) => sum + e.size,
+      0
+    );
     return {
       totalKeys: this.cache.size,
       hitRate: total > 0 ? this.hits / total : 0,
@@ -157,14 +178,21 @@ export class LRUCache<T = unknown> {
     };
   }
 
-  keys(): string[] { return Array.from(this.cache.keys()); }
-  size(): number { return this.cache.size; }
+  keys(): string[] {
+    return Array.from(this.cache.keys());
+  }
+  size(): number {
+    return this.cache.size;
+  }
 
   evictExpired(): number {
     let count = 0;
     const now = Date.now();
     for (const [key, entry] of this.cache.entries()) {
-      if (now - entry.createdAt > entry.ttl) { this.cache.delete(key); count++; }
+      if (now - entry.createdAt > entry.ttl) {
+        this.cache.delete(key);
+        count++;
+      }
     }
     return count;
   }
@@ -211,12 +239,28 @@ export class MetricsEngine {
     return result;
   }
 
-  getHistogramStats(name: string): { p50: number; p95: number; p99: number; mean: number; min: number; max: number } {
+  getHistogramStats(name: string): {
+    p50: number;
+    p95: number;
+    p99: number;
+    mean: number;
+    min: number;
+    max: number;
+  } {
     const values = (this.histograms.get(name) || []).sort((a, b) => a - b);
-    if (values.length === 0) return { p50: 0, p95: 0, p99: 0, mean: 0, min: 0, max: 0 };
-    const p = (pct: number) => values[Math.floor(values.length * pct / 100)] || 0;
+    if (values.length === 0)
+      return { p50: 0, p95: 0, p99: 0, mean: 0, min: 0, max: 0 };
+    const p = (pct: number) =>
+      values[Math.floor((values.length * pct) / 100)] || 0;
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    return { p50: p(50), p95: p(95), p99: p(99), mean, min: values[0], max: values[values.length - 1] };
+    return {
+      p50: p(50),
+      p95: p(95),
+      p99: p(99),
+      mean,
+      min: values[0],
+      max: values[values.length - 1],
+    };
   }
 
   getDashboard(): Record<string, unknown> {
@@ -242,9 +286,19 @@ export class MetricsEngine {
 
 export class ProfilerEngine {
   private profiles: PerformanceProfile[] = [];
-  private activeProfiles = new Map<string, { startTime: number; memoryBefore: number; metadata: Record<string, unknown> }>();
+  private activeProfiles = new Map<
+    string,
+    {
+      startTime: number;
+      memoryBefore: number;
+      metadata: Record<string, unknown>;
+    }
+  >();
 
-  startProfile(operationName: string, metadata: Record<string, unknown> = {}): string {
+  startProfile(
+    operationName: string,
+    metadata: Record<string, unknown> = {}
+  ): string {
     const id = `${operationName}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     this.activeProfiles.set(id, {
       startTime: Date.now(),
@@ -273,7 +327,11 @@ export class ProfilerEngine {
     return profile;
   }
 
-  async profile<T>(operationName: string, fn: () => Promise<T>, metadata?: Record<string, unknown>): Promise<{ result: T; profile: PerformanceProfile }> {
+  async profile<T>(
+    operationName: string,
+    fn: () => Promise<T>,
+    metadata?: Record<string, unknown>
+  ): Promise<{ result: T; profile: PerformanceProfile }> {
     const id = this.startProfile(operationName, metadata);
     const result = await fn();
     const profile = this.endProfile(id)!;
@@ -281,7 +339,9 @@ export class ProfilerEngine {
   }
 
   getSlowOperations(thresholdMs = 1000): PerformanceProfile[] {
-    return this.profiles.filter(p => p.durationMs >= thresholdMs).sort((a, b) => b.durationMs - a.durationMs);
+    return this.profiles
+      .filter(p => p.durationMs >= thresholdMs)
+      .sort((a, b) => b.durationMs - a.durationMs);
   }
 
   getAverageDuration(operationName: string): number {
@@ -290,7 +350,13 @@ export class ProfilerEngine {
     return ops.reduce((sum, p) => sum + p.durationMs, 0) / ops.length;
   }
 
-  getSummary(): Array<{ operation: string; count: number; avgMs: number; maxMs: number; p95Ms: number }> {
+  getSummary(): Array<{
+    operation: string;
+    count: number;
+    avgMs: number;
+    maxMs: number;
+    p95Ms: number;
+  }> {
     const grouped = new Map<string, number[]>();
     for (const p of this.profiles) {
       const arr = grouped.get(p.operationName) || [];
@@ -316,11 +382,46 @@ export class ProfilerEngine {
 
 export class LoadBalancerEngine {
   private nodes: LoadBalancerNode[] = [
-    { id: "node-1", host: "10.0.0.1", port: 3000, weight: 1, activeConnections: 0, totalRequests: 0, errorRate: 0.001, avgResponseMs: 45, healthy: true, lastHealthCheck: Date.now() },
-    { id: "node-2", host: "10.0.0.2", port: 3000, weight: 1, activeConnections: 0, totalRequests: 0, errorRate: 0.002, avgResponseMs: 52, healthy: true, lastHealthCheck: Date.now() },
-    { id: "node-3", host: "10.0.0.3", port: 3000, weight: 2, activeConnections: 0, totalRequests: 0, errorRate: 0.0005, avgResponseMs: 38, healthy: true, lastHealthCheck: Date.now() },
+    {
+      id: "node-1",
+      host: "10.0.0.1",
+      port: 3000,
+      weight: 1,
+      activeConnections: 0,
+      totalRequests: 0,
+      errorRate: 0.001,
+      avgResponseMs: 45,
+      healthy: true,
+      lastHealthCheck: Date.now(),
+    },
+    {
+      id: "node-2",
+      host: "10.0.0.2",
+      port: 3000,
+      weight: 1,
+      activeConnections: 0,
+      totalRequests: 0,
+      errorRate: 0.002,
+      avgResponseMs: 52,
+      healthy: true,
+      lastHealthCheck: Date.now(),
+    },
+    {
+      id: "node-3",
+      host: "10.0.0.3",
+      port: 3000,
+      weight: 2,
+      activeConnections: 0,
+      totalRequests: 0,
+      errorRate: 0.0005,
+      avgResponseMs: 38,
+      healthy: true,
+      lastHealthCheck: Date.now(),
+    },
   ];
-  private algorithm: "round-robin" | "least-connections" | "weighted" | "ip-hash" = "least-connections";
+  private algorithm:
+    "round-robin" | "least-connections" | "weighted" | "ip-hash" =
+    "least-connections";
   private rrIndex = 0;
 
   getNextNode(clientIp?: string): LoadBalancerNode | null {
@@ -331,16 +432,24 @@ export class LoadBalancerEngine {
       case "round-robin":
         return healthy[this.rrIndex++ % healthy.length];
       case "least-connections":
-        return healthy.reduce((min, n) => n.activeConnections < min.activeConnections ? n : min, healthy[0]);
+        return healthy.reduce(
+          (min, n) => (n.activeConnections < min.activeConnections ? n : min),
+          healthy[0]
+        );
       case "weighted": {
         const totalWeight = healthy.reduce((sum, n) => sum + n.weight, 0);
         let rand = Math.random() * totalWeight;
-        for (const node of healthy) { rand -= node.weight; if (rand <= 0) return node; }
+        for (const node of healthy) {
+          rand -= node.weight;
+          if (rand <= 0) return node;
+        }
         return healthy[0];
       }
       case "ip-hash": {
         if (!clientIp) return healthy[0];
-        const hash = clientIp.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+        const hash = clientIp
+          .split("")
+          .reduce((acc, c) => acc + c.charCodeAt(0), 0);
         return healthy[hash % healthy.length];
       }
       default:
@@ -352,7 +461,7 @@ export class LoadBalancerEngine {
     const node = this.nodes.find(n => n.id === nodeId);
     if (!node) return;
     node.totalRequests++;
-    node.avgResponseMs = (node.avgResponseMs * 0.9) + (responseMs * 0.1);
+    node.avgResponseMs = node.avgResponseMs * 0.9 + responseMs * 0.1;
     if (!success) node.errorRate = Math.min(1, node.errorRate + 0.001);
     else node.errorRate = Math.max(0, node.errorRate - 0.0001);
   }
@@ -364,9 +473,13 @@ export class LoadBalancerEngine {
     }
   }
 
-  getNodes(): LoadBalancerNode[] { return this.nodes; }
+  getNodes(): LoadBalancerNode[] {
+    return this.nodes;
+  }
 
-  addNode(node: Omit<LoadBalancerNode, "totalRequests" | "lastHealthCheck">): void {
+  addNode(
+    node: Omit<LoadBalancerNode, "totalRequests" | "lastHealthCheck">
+  ): void {
     this.nodes.push({ ...node, totalRequests: 0, lastHealthCheck: Date.now() });
   }
 
@@ -374,15 +487,32 @@ export class LoadBalancerEngine {
     this.nodes = this.nodes.filter(n => n.id !== nodeId);
   }
 
-  setAlgorithm(algo: typeof this.algorithm): void { this.algorithm = algo; }
+  setAlgorithm(algo: typeof this.algorithm): void {
+    this.algorithm = algo;
+  }
 
-  getStats(): { totalNodes: number; healthyNodes: number; totalRequests: number; avgResponseMs: number } {
+  getStats(): {
+    totalNodes: number;
+    healthyNodes: number;
+    totalRequests: number;
+    avgResponseMs: number;
+  } {
     const healthy = this.nodes.filter(n => n.healthy);
-    const totalRequests = this.nodes.reduce((sum, n) => sum + n.totalRequests, 0);
-    const avgResponseMs = this.nodes.length > 0
-      ? this.nodes.reduce((sum, n) => sum + n.avgResponseMs, 0) / this.nodes.length
-      : 0;
-    return { totalNodes: this.nodes.length, healthyNodes: healthy.length, totalRequests, avgResponseMs };
+    const totalRequests = this.nodes.reduce(
+      (sum, n) => sum + n.totalRequests,
+      0
+    );
+    const avgResponseMs =
+      this.nodes.length > 0
+        ? this.nodes.reduce((sum, n) => sum + n.avgResponseMs, 0) /
+          this.nodes.length
+        : 0;
+    return {
+      totalNodes: this.nodes.length,
+      healthyNodes: healthy.length,
+      totalRequests,
+      avgResponseMs,
+    };
   }
 }
 
@@ -396,8 +526,13 @@ export class CircuitBreakerEngine {
   private getBreaker(name: string, threshold = 5): CircuitBreakerState {
     if (!this.breakers.has(name)) {
       this.breakers.set(name, {
-        name, state: "closed", failureCount: 0, successCount: 0,
-        lastFailureTime: 0, nextRetryTime: 0, threshold,
+        name,
+        state: "closed",
+        failureCount: 0,
+        successCount: 0,
+        lastFailureTime: 0,
+        nextRetryTime: 0,
+        threshold,
       });
     }
     return this.breakers.get(name)!;
@@ -429,14 +564,18 @@ export class CircuitBreakerEngine {
     const breaker = this.getBreaker(name);
     breaker.failureCount++;
     breaker.lastFailureTime = Date.now();
-    if (breaker.state === "half-open" || breaker.failureCount >= breaker.threshold) {
+    if (
+      breaker.state === "half-open" ||
+      breaker.failureCount >= breaker.threshold
+    ) {
       breaker.state = "open";
       breaker.nextRetryTime = Date.now() + 30000;
     }
   }
 
   async execute<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    if (!this.canExecute(name)) throw new Error(`Circuit breaker OPEN for: ${name}`);
+    if (!this.canExecute(name))
+      throw new Error(`Circuit breaker OPEN for: ${name}`);
     try {
       const result = await fn();
       this.recordSuccess(name);
@@ -447,9 +586,15 @@ export class CircuitBreakerEngine {
     }
   }
 
-  getState(name: string): CircuitBreakerState { return this.getBreaker(name); }
-  getAllStates(): CircuitBreakerState[] { return Array.from(this.breakers.values()); }
-  reset(name: string): void { this.breakers.delete(name); }
+  getState(name: string): CircuitBreakerState {
+    return this.getBreaker(name);
+  }
+  getAllStates(): CircuitBreakerState[] {
+    return Array.from(this.breakers.values());
+  }
+  reset(name: string): void {
+    this.breakers.delete(name);
+  }
 }
 
 // ============================================================
@@ -459,7 +604,11 @@ export class CircuitBreakerEngine {
 export class RateLimiterEngine {
   private rules = new Map<string, RateLimitRule>();
 
-  check(key: string, limit: number, windowMs: number): { allowed: boolean; remaining: number; resetAt: number } {
+  check(
+    key: string,
+    limit: number,
+    windowMs: number
+  ): { allowed: boolean; remaining: number; resetAt: number } {
     const now = Date.now();
     let rule = this.rules.get(key);
 
@@ -473,11 +622,19 @@ export class RateLimiterEngine {
     }
 
     rule.current++;
-    return { allowed: true, remaining: rule.limit - rule.current, resetAt: rule.resetAt };
+    return {
+      allowed: true,
+      remaining: rule.limit - rule.current,
+      resetAt: rule.resetAt,
+    };
   }
 
-  reset(key: string): void { this.rules.delete(key); }
-  getRules(): RateLimitRule[] { return Array.from(this.rules.values()); }
+  reset(key: string): void {
+    this.rules.delete(key);
+  }
+  getRules(): RateLimitRule[] {
+    return Array.from(this.rules.values());
+  }
 }
 
 // ============================================================
@@ -493,7 +650,12 @@ export class CDNEngine {
       { pattern: "/api/prices/*", ttl: 30000, compress: false },
       { pattern: "/api/user/*", ttl: 0, compress: false },
     ],
-    edgeLocations: ["us-east-1", "eu-west-1", "ap-southeast-1", "ap-northeast-1"],
+    edgeLocations: [
+      "us-east-1",
+      "eu-west-1",
+      "ap-southeast-1",
+      "ap-northeast-1",
+    ],
     purgeEndpoint: "/cdn/purge",
   };
 
@@ -509,7 +671,9 @@ export class CDNEngine {
     return 60000; // default 1 minute
   }
 
-  get(path: string): string | null { return this.cache.get(path); }
+  get(path: string): string | null {
+    return this.cache.get(path);
+  }
 
   set(path: string, content: string): void {
     const ttl = this.getCacheTTL(path);
@@ -517,13 +681,19 @@ export class CDNEngine {
   }
 
   purge(pattern: string): number {
-    const keys = this.cache.keys().filter(k => new RegExp(pattern.replace("*", ".*")).test(k));
+    const keys = this.cache
+      .keys()
+      .filter(k => new RegExp(pattern.replace("*", ".*")).test(k));
     keys.forEach(k => this.cache.delete(k));
     return keys.length;
   }
 
-  getStats(): CacheStats { return this.cache.getStats(); }
-  getEdgeLocations(): string[] { return this.config.edgeLocations; }
+  getStats(): CacheStats {
+    return this.cache.getStats();
+  }
+  getEdgeLocations(): string[] {
+    return this.config.edgeLocations;
+  }
 }
 
 // ============================================================
@@ -531,22 +701,50 @@ export class CDNEngine {
 // ============================================================
 
 export class PerformanceAdvisor {
-  async analyzeBottlenecks(profiles: PerformanceProfile[], metrics: MetricPoint[]): Promise<{ bottlenecks: string[]; recommendations: string[]; estimatedImprovement: string }> {
-    const slowOps = profiles.filter(p => p.durationMs > 500).map(p => `${p.operationName}: ${p.durationMs}ms`).slice(0, 5);
+  async analyzeBottlenecks(
+    profiles: PerformanceProfile[],
+    metrics: MetricPoint[]
+  ): Promise<{
+    bottlenecks: string[];
+    recommendations: string[];
+    estimatedImprovement: string;
+  }> {
+    const slowOps = profiles
+      .filter(p => p.durationMs > 500)
+      .map(p => `${p.operationName}: ${p.durationMs}ms`)
+      .slice(0, 5);
     const prompt = `Analyze these performance bottlenecks: ${slowOps.join(", ")}. Provide 3 specific recommendations to improve performance. Return JSON: {"bottlenecks":[],"recommendations":[],"estimatedImprovement":"string"}`;
     try {
-      const resp = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+      const resp = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
       const content = String(resp.choices[0]?.message?.content || "");
       if (content) return JSON.parse(content);
-    } catch { /* fall through */ }
-    return { bottlenecks: slowOps, recommendations: ["Add database indexes", "Enable query caching", "Use connection pooling"], estimatedImprovement: "30-50% latency reduction" };
+    } catch {
+      /* fall through */
+    }
+    return {
+      bottlenecks: slowOps,
+      recommendations: [
+        "Add database indexes",
+        "Enable query caching",
+        "Use connection pooling",
+      ],
+      estimatedImprovement: "30-50% latency reduction",
+    };
   }
 
-  async generateOptimizationReport(stats: Record<string, unknown>): Promise<string> {
+  async generateOptimizationReport(
+    stats: Record<string, unknown>
+  ): Promise<string> {
     const prompt = `Generate a brief performance optimization report for a Web3 social platform with these stats: ${JSON.stringify(stats)}. Focus on actionable improvements.`;
     try {
-      const resp = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
-      return String(resp.choices[0]?.message?.content || "") || "Report unavailable";
+      const resp = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
+      return (
+        String(resp.choices[0]?.message?.content || "") || "Report unavailable"
+      );
     } catch {
       return "Performance optimization report temporarily unavailable";
     }
@@ -578,7 +776,11 @@ export class PrismPerformanceEngine {
     this.advisor = new PerformanceAdvisor();
   }
 
-  getSystemHealth(): { status: "healthy" | "degraded" | "critical"; score: number; details: Record<string, unknown> } {
+  getSystemHealth(): {
+    status: "healthy" | "degraded" | "critical";
+    score: number;
+    details: Record<string, unknown>;
+  } {
     const lbStats = this.loadBalancer.getStats();
     const cacheStats = this.cache.getStats();
     const cbStates = this.circuitBreaker.getAllStates();
@@ -593,7 +795,11 @@ export class PrismPerformanceEngine {
     return {
       status: score >= 80 ? "healthy" : score >= 60 ? "degraded" : "critical",
       score,
-      details: { loadBalancer: lbStats, cache: cacheStats, openCircuitBreakers: openBreakers },
+      details: {
+        loadBalancer: lbStats,
+        cache: cacheStats,
+        openCircuitBreakers: openBreakers,
+      },
     };
   }
 }

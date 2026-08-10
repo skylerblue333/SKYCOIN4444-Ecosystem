@@ -20,14 +20,19 @@ import {
 
 describe("Phase 7A: Developer Platform — API Keys", () => {
   it("creates an API key", () => {
-    const key = developerPlatform.createAPIKey(1, "app_1", "My Key", ["read:posts", "write:posts"]);
+    const key = developerPlatform.createAPIKey(1, "app_1", "My Key", [
+      "read:posts",
+      "write:posts",
+    ]);
     expect(key).toHaveProperty("id");
     expect(key).toHaveProperty("key");
     expect(key.scopes).toContain("read:posts");
   });
 
   it("validates an API key", () => {
-    const key = developerPlatform.createAPIKey(1, "app_1", "Validation Key", ["read:users"]);
+    const key = developerPlatform.createAPIKey(1, "app_1", "Validation Key", [
+      "read:users",
+    ]);
     const result = developerPlatform.validateAPIKey(key.key);
     expect(result).toHaveProperty("valid", true);
     expect(result).toHaveProperty("scopes");
@@ -39,7 +44,9 @@ describe("Phase 7A: Developer Platform — API Keys", () => {
   });
 
   it("revokes an API key", () => {
-    const key = developerPlatform.createAPIKey(2, "app_2", "Revoke Me", ["read:posts"]);
+    const key = developerPlatform.createAPIKey(2, "app_2", "Revoke Me", [
+      "read:posts",
+    ]);
     developerPlatform.revokeAPIKey(key.id);
     const result = developerPlatform.validateAPIKey(key.key);
     expect(result.valid).toBe(false);
@@ -52,7 +59,9 @@ describe("Phase 7A: Developer Platform — API Keys", () => {
   });
 
   it("tracks API key usage", () => {
-    const key = developerPlatform.createAPIKey(4, "app_4", "Usage Key", ["read:posts"]);
+    const key = developerPlatform.createAPIKey(4, "app_4", "Usage Key", [
+      "read:posts",
+    ]);
     developerPlatform.trackUsage(key.id, "/api/posts", 200);
     const stats = developerPlatform.getKeyStats(key.id);
     expect(stats.totalRequests).toBeGreaterThan(0);
@@ -61,7 +70,13 @@ describe("Phase 7A: Developer Platform — API Keys", () => {
 
 describe("Phase 7A: Developer Platform — OAuth Apps", () => {
   it("registers an OAuth app", () => {
-    const app = developerPlatform.registerOAuthApp(1, "My App", "A cool app", ["https://myapp.com/callback"], ["read:posts"]);
+    const app = developerPlatform.registerOAuthApp(
+      1,
+      "My App",
+      "A cool app",
+      ["https://myapp.com/callback"],
+      ["read:posts"]
+    );
     expect(app).toHaveProperty("clientId");
     expect(app).toHaveProperty("clientSecret");
     expect(app.name).toBe("My App");
@@ -74,7 +89,13 @@ describe("Phase 7A: Developer Platform — OAuth Apps", () => {
   });
 
   it("gets developer apps", () => {
-    developerPlatform.registerOAuthApp(2, "App Two", "Another app", ["https://app2.com/cb"], ["read:users"]);
+    developerPlatform.registerOAuthApp(
+      2,
+      "App Two",
+      "Another app",
+      ["https://app2.com/cb"],
+      ["read:users"]
+    );
     const apps = developerPlatform.getDeveloperApps(2);
     expect(apps.length).toBeGreaterThan(0);
   });
@@ -123,7 +144,11 @@ describe("Phase 7A: Plugin System", () => {
       currency: "USD",
     });
     const install = pluginSystem.installPlugin(plugin.id, 100);
-    expect(install).toMatchObject({ pluginId: plugin.id, userId: 100, status: "active" });
+    expect(install).toMatchObject({
+      pluginId: plugin.id,
+      userId: 100,
+      status: "active",
+    });
   });
 
   it("uninstalls a plugin", () => {
@@ -243,7 +268,10 @@ describe("Phase 7C: Brand Economy", () => {
       deliverables: ["1 video review", "3 story mentions"],
       duration: 30,
     });
-    expect(listing).toMatchObject({ title: "Tech Review Partnership", budget: 5000 });
+    expect(listing).toMatchObject({
+      title: "Tech Review Partnership",
+      budget: 5000,
+    });
   });
 
   it("applies for a sponsorship", () => {
@@ -257,7 +285,11 @@ describe("Phase 7C: Brand Economy", () => {
       deliverables: ["5 posts"],
       duration: 14,
     });
-    const application = brandEconomy.applyForSponsorship(listing.id, 1, "I love fashion!");
+    const application = brandEconomy.applyForSponsorship(
+      listing.id,
+      1,
+      "I love fashion!"
+    );
     expect(application).toMatchObject({ listingId: listing.id, creatorId: 1 });
   });
 
@@ -310,10 +342,18 @@ describe("Phase 7D: Education Expansion", () => {
       level: "beginner",
       price: 49.99,
       currency: "USD",
-      modules: [{ title: "Intro", lessons: [{ title: "What is Web3?", type: "video", duration: 10 }] }],
+      modules: [
+        {
+          title: "Intro",
+          lessons: [{ title: "What is Web3?", type: "video", duration: 10 }],
+        },
+      ],
       certificateNFT: true,
     });
-    expect(course).toMatchObject({ title: "Web3 Fundamentals", level: "beginner" });
+    expect(course).toMatchObject({
+      title: "Web3 Fundamentals",
+      level: "beginner",
+    });
   });
 
   it("enrolls a user in a course", () => {
@@ -328,7 +368,11 @@ describe("Phase 7D: Education Expansion", () => {
       certificateNFT: false,
     });
     const enrollment = educationExpansion.enrollInCourse(5001, course.id);
-    expect(enrollment).toMatchObject({ userId: 5001, courseId: course.id, status: "active" });
+    expect(enrollment).toMatchObject({
+      userId: 5001,
+      courseId: course.id,
+      status: "active",
+    });
   });
 
   it("completes a lesson", () => {
@@ -339,11 +383,27 @@ describe("Phase 7D: Education Expansion", () => {
       level: "beginner",
       price: 29.99,
       currency: "USD",
-      modules: [{ title: "Module 1", lessons: [{ id: "lesson_1", title: "Intro to NFTs", type: "video", duration: 15 }] }],
+      modules: [
+        {
+          title: "Module 1",
+          lessons: [
+            {
+              id: "lesson_1",
+              title: "Intro to NFTs",
+              type: "video",
+              duration: 15,
+            },
+          ],
+        },
+      ],
       certificateNFT: true,
     });
     educationExpansion.enrollInCourse(5002, course.id);
-    const progress = educationExpansion.completeLesson(5002, course.id, "lesson_1");
+    const progress = educationExpansion.completeLesson(
+      5002,
+      course.id,
+      "lesson_1"
+    );
     expect(progress).toHaveProperty("lessonsCompleted");
     expect(progress.lessonsCompleted).toBeGreaterThan(0);
   });
@@ -400,7 +460,10 @@ describe("Phase 7G: Governance Expansion", () => {
       startAt: new Date(),
       endAt: new Date(Date.now() + 7 * 86400000),
     });
-    expect(proposal).toMatchObject({ title: "Increase staking rewards", scope: "platform" });
+    expect(proposal).toMatchObject({
+      title: "Increase staking rewards",
+      scope: "platform",
+    });
   });
 
   it("casts a vote", () => {
@@ -415,7 +478,11 @@ describe("Phase 7G: Governance Expansion", () => {
       endAt: new Date(Date.now() + 3 * 86400000),
     });
     const vote = governanceExpansion.castVote(proposal.id, 1, "yes", 100);
-    expect(vote).toMatchObject({ proposalId: proposal.id, voterId: 1, vote: "yes" });
+    expect(vote).toMatchObject({
+      proposalId: proposal.id,
+      voterId: 1,
+      vote: "yes",
+    });
   });
 
   it("prevents double voting", () => {
@@ -430,7 +497,9 @@ describe("Phase 7G: Governance Expansion", () => {
       endAt: new Date(Date.now() + 5 * 86400000),
     });
     governanceExpansion.castVote(proposal.id, 10, "yes", 50);
-    expect(() => governanceExpansion.castVote(proposal.id, 10, "no", 50)).toThrow();
+    expect(() =>
+      governanceExpansion.castVote(proposal.id, 10, "no", 50)
+    ).toThrow();
   });
 
   it("gets active proposals", () => {
@@ -478,19 +547,39 @@ describe("Phase 7G: Governance Expansion", () => {
 // ─── Phase 7H: Identity Expansion ────────────────────────────────────────────
 describe("Phase 7H: Identity Expansion", () => {
   it("creates a portable identity profile", () => {
-    const profile = identityExpansion.createProfile(30001, "CryptoCreator", "Building the future of Web3");
-    expect(profile).toMatchObject({ userId: 30001, displayName: "CryptoCreator" });
+    const profile = identityExpansion.createProfile(
+      30001,
+      "CryptoCreator",
+      "Building the future of Web3"
+    );
+    expect(profile).toMatchObject({
+      userId: 30001,
+      displayName: "CryptoCreator",
+    });
   });
 
   it("links a social account", () => {
-    identityExpansion.createProfile(30002, "SocialUser", "Active on all platforms");
+    identityExpansion.createProfile(
+      30002,
+      "SocialUser",
+      "Active on all platforms"
+    );
     const link = identityExpansion.linkAccount(30002, "twitter", "@socialuser");
-    expect(link).toMatchObject({ userId: 30002, platform: "twitter", handle: "@socialuser" });
+    expect(link).toMatchObject({
+      userId: 30002,
+      platform: "twitter",
+      handle: "@socialuser",
+    });
   });
 
   it("links a wallet", () => {
     identityExpansion.createProfile(30003, "WalletUser", "Multi-chain user");
-    const wallet = identityExpansion.linkWallet(30003, "0xABCDEF1234567890", "ethereum", true);
+    const wallet = identityExpansion.linkWallet(
+      30003,
+      "0xABCDEF1234567890",
+      "ethereum",
+      true
+    );
     expect(wallet).toMatchObject({ userId: 30003, chain: "ethereum" });
   });
 
@@ -514,7 +603,11 @@ describe("Phase 7H: Identity Expansion", () => {
   it("verifies identity claim", () => {
     identityExpansion.createProfile(30006, "VerifiedUser", "Verified creator");
     identityExpansion.linkAccount(30006, "twitter", "@verifieduser");
-    const claim = identityExpansion.verifyClaim(30006, "twitter", "@verifieduser");
+    const claim = identityExpansion.verifyClaim(
+      30006,
+      "twitter",
+      "@verifieduser"
+    );
     expect(claim).toHaveProperty("verified");
   });
 });
@@ -530,7 +623,10 @@ describe("Phase 7I: Scalable Infrastructure", () => {
       ssoProvider: "okta",
       customDomain: "megacorp.shadowchat.com",
     });
-    expect(account).toMatchObject({ companyName: "MegaCorp", plan: "enterprise" });
+    expect(account).toMatchObject({
+      companyName: "MegaCorp",
+      plan: "enterprise",
+    });
   });
 
   it("adds a team member", () => {
@@ -542,8 +638,16 @@ describe("Phase 7I: Scalable Infrastructure", () => {
       ssoProvider: "google",
       customDomain: "startupco.shadowchat.com",
     });
-    const member = enterpriseInfrastructure.addTeamMember(account.id, 1001, "admin");
-    expect(member).toMatchObject({ accountId: account.id, userId: 1001, role: "admin" });
+    const member = enterpriseInfrastructure.addTeamMember(
+      account.id,
+      1001,
+      "admin"
+    );
+    expect(member).toMatchObject({
+      accountId: account.id,
+      userId: 1001,
+      role: "admin",
+    });
   });
 
   it("gets enterprise analytics", () => {
@@ -577,14 +681,18 @@ import {
 
 describe("Phase 8C: AI Orchestration", () => {
   it("submits an AI request", () => {
-    const req = aiOrchestration.submitRequest(1, "content_creation", { topic: "blockchain" });
+    const req = aiOrchestration.submitRequest(1, "content_creation", {
+      topic: "blockchain",
+    });
     expect(req).toHaveProperty("id");
     expect(req).toHaveProperty("status");
     expect(req.copilotType).toBe("content_creation");
   });
 
   it("processes an AI request", () => {
-    const req = aiOrchestration.submitRequest(2, "moderation", { content: "test content" });
+    const req = aiOrchestration.submitRequest(2, "moderation", {
+      content: "test content",
+    });
     const result = aiOrchestration.processRequest(req.id);
     expect(result).toHaveProperty("requestId");
     expect(result).toHaveProperty("result");
@@ -604,7 +712,12 @@ describe("Phase 8C: AI Orchestration", () => {
   });
 
   it("handles high-priority requests", () => {
-    const req = aiOrchestration.submitRequest(4, "fraud_detection", { transaction: "tx_123" }, "critical");
+    const req = aiOrchestration.submitRequest(
+      4,
+      "fraud_detection",
+      { transaction: "tx_123" },
+      "critical"
+    );
     expect(req.priority).toBe("critical");
   });
 });
@@ -635,13 +748,19 @@ describe("Phase 8D: Universal Search", () => {
   });
 
   it("indexes a document", () => {
-    universalSearch.indexDocument("post", "post_999", { content: "Test post about NFTs", authorId: 1 });
+    universalSearch.indexDocument("post", "post_999", {
+      content: "Test post about NFTs",
+      authorId: 1,
+    });
     const results = universalSearch.search("NFTs", { types: ["post"] });
     expect(results.total).toBeGreaterThanOrEqual(0);
   });
 
   it("removes a document from index", () => {
-    universalSearch.indexDocument("user", "user_888", { username: "testuser888", bio: "Test user" });
+    universalSearch.indexDocument("user", "user_888", {
+      username: "testuser888",
+      bio: "Test user",
+    });
     universalSearch.removeDocument("user", "user_888");
     const stats = universalSearch.getIndexStats();
     expect(stats).toHaveProperty("totalDocuments");
@@ -658,20 +777,40 @@ describe("Phase 8E: Universal Messaging", () => {
   });
 
   it("creates a group conversation", () => {
-    const conv = universalMessaging.createConversation([2001, 2002, 2003], "group", "Study Group");
+    const conv = universalMessaging.createConversation(
+      [2001, 2002, 2003],
+      "group",
+      "Study Group"
+    );
     expect(conv.type).toBe("group");
     expect(conv.name).toBe("Study Group");
   });
 
   it("sends a text message", () => {
     const conv = universalMessaging.createConversation([3001, 3002], "direct");
-    const msg = universalMessaging.sendMessage(conv.id, 3001, "text", "Hello there!");
-    expect(msg).toMatchObject({ conversationId: conv.id, senderId: 3001, type: "text", content: "Hello there!" });
+    const msg = universalMessaging.sendMessage(
+      conv.id,
+      3001,
+      "text",
+      "Hello there!"
+    );
+    expect(msg).toMatchObject({
+      conversationId: conv.id,
+      senderId: 3001,
+      type: "text",
+      content: "Hello there!",
+    });
   });
 
   it("sends a media message", () => {
     const conv = universalMessaging.createConversation([4001, 4002], "direct");
-    const msg = universalMessaging.sendMessage(conv.id, 4001, "image", "Check this out!", "https://example.com/image.jpg");
+    const msg = universalMessaging.sendMessage(
+      conv.id,
+      4001,
+      "image",
+      "Check this out!",
+      "https://example.com/image.jpg"
+    );
     expect(msg.type).toBe("image");
     expect(msg.mediaUrl).toBe("https://example.com/image.jpg");
   });
@@ -705,7 +844,12 @@ describe("Phase 8E: Universal Messaging", () => {
   });
 
   it("creates an encrypted conversation", () => {
-    const conv = universalMessaging.createConversation([9001, 9002], "direct", undefined, true);
+    const conv = universalMessaging.createConversation(
+      [9001, 9002],
+      "direct",
+      undefined,
+      true
+    );
     expect(conv.encrypted).toBe(true);
   });
 });
@@ -724,7 +868,10 @@ describe("Phase 8F: Universal Events", () => {
       isGated: false,
       tags: ["web3", "blockchain"],
     });
-    expect(event).toMatchObject({ title: "Web3 Summit", category: "conference" });
+    expect(event).toMatchObject({
+      title: "Web3 Summit",
+      category: "conference",
+    });
   });
 
   it("registers a user for an event", () => {
@@ -740,7 +887,11 @@ describe("Phase 8F: Universal Events", () => {
       tags: ["defi"],
     });
     const registration = universalEvents.register(event.id, 10001);
-    expect(registration).toMatchObject({ eventId: event.id, userId: 10001, status: "registered" });
+    expect(registration).toMatchObject({
+      eventId: event.id,
+      userId: 10001,
+      status: "registered",
+    });
   });
 
   it("gets upcoming events", () => {
@@ -785,7 +936,10 @@ describe("Phase 8G: App Ecosystem", () => {
       monetized: true,
       revenueShare: 30,
     });
-    expect(app).toMatchObject({ name: "Creator Dashboard", category: "analytics" });
+    expect(app).toMatchObject({
+      name: "Creator Dashboard",
+      category: "analytics",
+    });
   });
 
   it("gets marketplace apps", () => {
@@ -811,7 +965,11 @@ describe("Phase 8G: App Ecosystem", () => {
       revenueShare: 0,
     });
     const install = appEcosystem.installApp(app.id, 20001);
-    expect(install).toMatchObject({ appId: app.id, userId: 20001, status: "active" });
+    expect(install).toMatchObject({
+      appId: app.id,
+      userId: 20001,
+      status: "active",
+    });
   });
 
   it("gets user apps", () => {
@@ -937,22 +1095,38 @@ import {
 
 describe("Phase 9A: Reliability Engine", () => {
   it("records an incident", () => {
-    const incident = reliabilityEngine.recordIncident("Database connection timeout", "high", ["database", "api"]);
+    const incident = reliabilityEngine.recordIncident(
+      "Database connection timeout",
+      "high",
+      ["database", "api"]
+    );
     expect(incident).toHaveProperty("id");
     expect(incident).toHaveProperty("severity", "high");
     expect(incident.status).toBe("open");
   });
 
   it("updates incident status", () => {
-    const incident = reliabilityEngine.recordIncident("API latency spike", "medium", ["api"]);
-    reliabilityEngine.updateIncident(incident.id, { status: "investigating", assignedTo: "on-call-team" });
+    const incident = reliabilityEngine.recordIncident(
+      "API latency spike",
+      "medium",
+      ["api"]
+    );
+    reliabilityEngine.updateIncident(incident.id, {
+      status: "investigating",
+      assignedTo: "on-call-team",
+    });
     const updated = reliabilityEngine.getIncident(incident.id);
     expect(updated?.status).toBe("investigating");
   });
 
   it("resolves an incident", () => {
-    const incident = reliabilityEngine.recordIncident("Minor UI bug", "low", ["frontend"]);
-    reliabilityEngine.resolveIncident(incident.id, "Fixed in deployment v2.1.5");
+    const incident = reliabilityEngine.recordIncident("Minor UI bug", "low", [
+      "frontend",
+    ]);
+    reliabilityEngine.resolveIncident(
+      incident.id,
+      "Fixed in deployment v2.1.5"
+    );
     const resolved = reliabilityEngine.getIncident(incident.id);
     expect(resolved?.status).toBe("resolved");
   });
@@ -981,13 +1155,17 @@ describe("Phase 9A: Reliability Engine", () => {
 // ─── Phase 9B: Observability Engine ──────────────────────────────────────────
 describe("Phase 9B: Observability Engine", () => {
   it("records a metric", () => {
-    observabilityEngine.recordMetric("api.response_time", 125, "ms", { endpoint: "/api/posts" });
+    observabilityEngine.recordMetric("api.response_time", 125, "ms", {
+      endpoint: "/api/posts",
+    });
     const metrics = observabilityEngine.getMetrics("api.response_time", 60);
     expect(metrics.length).toBeGreaterThan(0);
   });
 
   it("starts and ends a trace", () => {
-    const trace = observabilityEngine.startTrace("api.request", { endpoint: "/api/users" });
+    const trace = observabilityEngine.startTrace("api.request", {
+      endpoint: "/api/users",
+    });
     expect(trace).toHaveProperty("traceId");
     expect(trace).toHaveProperty("spanId");
     observabilityEngine.endTrace(trace.traceId, trace.spanId, "success");
@@ -996,15 +1174,29 @@ describe("Phase 9B: Observability Engine", () => {
   });
 
   it("logs at different levels", () => {
-    observabilityEngine.log("info", "api", "Request processed", { requestId: "req_1" });
-    observabilityEngine.log("error", "database", "Connection failed", { error: "timeout" });
+    observabilityEngine.log("info", "api", "Request processed", {
+      requestId: "req_1",
+    });
+    observabilityEngine.log("error", "database", "Connection failed", {
+      error: "timeout",
+    });
     const logs = observabilityEngine.getLogs("error", "database", 10);
     expect(logs.some(l => l.level === "error")).toBe(true);
   });
 
   it("creates an alert rule", () => {
-    const rule = observabilityEngine.createAlertRule("High Error Rate", "api.error_rate", ">", 5, "critical", ["ops-team@example.com"]);
-    expect(rule).toMatchObject({ name: "High Error Rate", metric: "api.error_rate" });
+    const rule = observabilityEngine.createAlertRule(
+      "High Error Rate",
+      "api.error_rate",
+      ">",
+      5,
+      "critical",
+      ["ops-team@example.com"]
+    );
+    expect(rule).toMatchObject({
+      name: "High Error Rate",
+      metric: "api.error_rate",
+    });
   });
 
   it("gets dashboard metrics", () => {
@@ -1052,7 +1244,10 @@ describe("Phase 9C: Performance Engine", () => {
 // ─── Phase 9D: Security Hardening ────────────────────────────────────────────
 describe("Phase 9D: Security Hardening", () => {
   it("runs a dependency security scan", () => {
-    const result = securityHardening.runSecurityScan("package.json", "dependency");
+    const result = securityHardening.runSecurityScan(
+      "package.json",
+      "dependency"
+    );
     expect(result).toHaveProperty("scanId");
     expect(result).toHaveProperty("vulnerabilities");
     expect(result).toHaveProperty("riskLevel");
@@ -1072,7 +1267,9 @@ describe("Phase 9D: Security Hardening", () => {
   });
 
   it("validates password strength — strong", () => {
-    const result = securityHardening.validatePasswordStrength("Tr0ub4dor&3#Correct");
+    const result = securityHardening.validatePasswordStrength(
+      "Tr0ub4dor&3#Correct"
+    );
     expect(result.strong).toBe(true);
     expect(result.score).toBeGreaterThanOrEqual(80);
   });
@@ -1109,7 +1306,10 @@ describe("Phase 9E: Data Integrity", () => {
 
   it("detects data corruption", () => {
     dataIntegrity.createSnapshot("transactions", { count: 1000000 });
-    const result = dataIntegrity.validateIntegrity("transactions", "nonexistent_snapshot");
+    const result = dataIntegrity.validateIntegrity(
+      "transactions",
+      "nonexistent_snapshot"
+    );
     expect(result.valid).toBe(false);
   });
 
@@ -1148,7 +1348,12 @@ describe("Phase 9F: Financial Finalization", () => {
   });
 
   it("processes a payout", () => {
-    const result = financialFinalization.processPayout(2, 500, "USD", "bank_transfer");
+    const result = financialFinalization.processPayout(
+      2,
+      500,
+      "USD",
+      "bank_transfer"
+    );
     expect(result).toHaveProperty("success");
     expect(result).toHaveProperty("payoutId");
     expect(result).toHaveProperty("amount", 500);
@@ -1192,7 +1397,12 @@ describe("Phase 9G: AI Reliability", () => {
   });
 
   it("logs AI decision for audit", () => {
-    aiReliability.logDecision("content_moderation_v2", "post_123", { safe: false, confidence: 0.95 }, "auto_removed");
+    aiReliability.logDecision(
+      "content_moderation_v2",
+      "post_123",
+      { safe: false, confidence: 0.95 },
+      "auto_removed"
+    );
     const log = aiReliability.getDecisionLog("content_moderation_v2", 10);
     expect(log.length).toBeGreaterThan(0);
   });
@@ -1233,7 +1443,12 @@ describe("Phase 9H: Scalability Engine", () => {
   });
 
   it("gets scaling history", () => {
-    scalabilityEngine.evaluateScaling("cdn", { cpuPercent: 60, memoryPercent: 50, requestRate: 2000, queueDepth: 0 });
+    scalabilityEngine.evaluateScaling("cdn", {
+      cpuPercent: 60,
+      memoryPercent: 50,
+      requestRate: 2000,
+      queueDepth: 0,
+    });
     const history = scalabilityEngine.getScalingHistory();
     expect(Array.isArray(history)).toBe(true);
   });
@@ -1283,7 +1498,10 @@ describe("Phase 9I: Compliance Engine", () => {
   });
 
   it("logs a compliance event", () => {
-    complianceEngine.logComplianceEvent("data_export", 40003, { format: "json", size: "2MB" });
+    complianceEngine.logComplianceEvent("data_export", 40003, {
+      format: "json",
+      size: "2MB",
+    });
     const log = complianceEngine.getComplianceLog(40003);
     expect(log.some(e => e.event === "data_export")).toBe(true);
   });
@@ -1298,20 +1516,32 @@ describe("Phase 9I: Compliance Engine", () => {
 // ─── Phase 7E: Financial Expansion ───────────────────────────────────────────
 describe("Phase 7E: Financial Expansion", () => {
   it("creates a savings account", () => {
-    const account = financialExpansion.createSavingsAccount(50001, "USD", "standard");
+    const account = financialExpansion.createSavingsAccount(
+      50001,
+      "USD",
+      "standard"
+    );
     expect(account).toMatchObject({ userId: 50001, currency: "USD" });
     expect(account.balance).toBe(0);
   });
 
   it("deposits to savings account", () => {
-    const account = financialExpansion.createSavingsAccount(50002, "USD", "premium");
+    const account = financialExpansion.createSavingsAccount(
+      50002,
+      "USD",
+      "premium"
+    );
     financialExpansion.deposit(account.id, 1000);
     const updated = financialExpansion.getAccount(account.id);
     expect(updated?.balance).toBe(1000);
   });
 
   it("withdraws from savings account", () => {
-    const account = financialExpansion.createSavingsAccount(50003, "USD", "standard");
+    const account = financialExpansion.createSavingsAccount(
+      50003,
+      "USD",
+      "standard"
+    );
     financialExpansion.deposit(account.id, 500);
     financialExpansion.withdraw(account.id, 200);
     const updated = financialExpansion.getAccount(account.id);
@@ -1319,13 +1549,21 @@ describe("Phase 7E: Financial Expansion", () => {
   });
 
   it("rejects withdrawal exceeding balance", () => {
-    const account = financialExpansion.createSavingsAccount(50004, "USD", "standard");
+    const account = financialExpansion.createSavingsAccount(
+      50004,
+      "USD",
+      "standard"
+    );
     financialExpansion.deposit(account.id, 100);
     expect(() => financialExpansion.withdraw(account.id, 500)).toThrow();
   });
 
   it("calculates interest", () => {
-    const account = financialExpansion.createSavingsAccount(50005, "USD", "premium");
+    const account = financialExpansion.createSavingsAccount(
+      50005,
+      "USD",
+      "premium"
+    );
     financialExpansion.deposit(account.id, 10000);
     const interest = financialExpansion.calculateInterest(account.id, 30);
     expect(interest).toBeGreaterThan(0);
@@ -1335,25 +1573,53 @@ describe("Phase 7E: Financial Expansion", () => {
 // ─── Phase 7F: Partnership Infrastructure ────────────────────────────────────
 describe("Phase 7F: Partnership Infrastructure", () => {
   it("creates a partnership", () => {
-    const partnership = partnershipInfrastructure.createPartnership(1, "partner_1", "integration", "API Integration", "Integrate our services");
-    expect(partnership).toMatchObject({ initiatorId: 1, partnerId: "partner_1", type: "integration" });
+    const partnership = partnershipInfrastructure.createPartnership(
+      1,
+      "partner_1",
+      "integration",
+      "API Integration",
+      "Integrate our services"
+    );
+    expect(partnership).toMatchObject({
+      initiatorId: 1,
+      partnerId: "partner_1",
+      type: "integration",
+    });
   });
 
   it("accepts a partnership", () => {
-    const partnership = partnershipInfrastructure.createPartnership(2, "partner_2", "revenue_share", "Revenue Share Deal", "50/50 split");
+    const partnership = partnershipInfrastructure.createPartnership(
+      2,
+      "partner_2",
+      "revenue_share",
+      "Revenue Share Deal",
+      "50/50 split"
+    );
     partnershipInfrastructure.acceptPartnership(partnership.id);
     const updated = partnershipInfrastructure.getPartnership(partnership.id);
     expect(updated?.status).toBe("active");
   });
 
   it("gets partnerships for a user", () => {
-    partnershipInfrastructure.createPartnership(3, "partner_3", "co_marketing", "Co-Marketing", "Joint campaign");
+    partnershipInfrastructure.createPartnership(
+      3,
+      "partner_3",
+      "co_marketing",
+      "Co-Marketing",
+      "Joint campaign"
+    );
     const partnerships = partnershipInfrastructure.getPartnerships(3);
     expect(partnerships.length).toBeGreaterThan(0);
   });
 
   it("records partnership revenue", () => {
-    const partnership = partnershipInfrastructure.createPartnership(4, "partner_4", "revenue_share", "Revenue Deal", "30/70 split");
+    const partnership = partnershipInfrastructure.createPartnership(
+      4,
+      "partner_4",
+      "revenue_share",
+      "Revenue Deal",
+      "30/70 split"
+    );
     partnershipInfrastructure.acceptPartnership(partnership.id);
     partnershipInfrastructure.recordRevenue(partnership.id, 1000, "USD");
     const stats = partnershipInfrastructure.getPartnershipStats(partnership.id);

@@ -21,7 +21,11 @@ import { eventBus } from "./event-bus.js";
 import { economyEngine, type TokenSymbol } from "./economy-engine.js";
 import { governanceEngineV2 } from "./governance-engine-v2.js";
 import { memoryGraphEngine } from "./memory-graph-engine.js";
-import { tokenMarketState, tokenEmissionCaps, userBehaviorSignals } from "../drizzle/schema.js";
+import {
+  tokenMarketState,
+  tokenEmissionCaps,
+  userBehaviorSignals,
+} from "../drizzle/schema.js";
 import { eq, gte, sql, count } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm.js";
 
@@ -94,7 +98,10 @@ export class EmergentEconomyEngine {
 
   constructor() {
     // Monitor for emergent patterns every 2 minutes
-    this.monitorTimer = setInterval(() => void this.detectEmergentPatterns(), 2 * 60 * 1000);
+    this.monitorTimer = setInterval(
+      () => void this.detectEmergentPatterns(),
+      2 * 60 * 1000
+    );
     this.registerEventListeners();
   }
 
@@ -107,13 +114,16 @@ export class EmergentEconomyEngine {
     });
 
     // When inflation warning fires → create emergent sink
-    eventBus.subscribe("INFLATION_WARNING", (event) => {
+    eventBus.subscribe("INFLATION_WARNING", event => {
       const payload = event.payload as { token: string };
-      void this.createEmergentSink(payload.token as TokenSymbol, "inflation_response");
+      void this.createEmergentSink(
+        payload.token as TokenSymbol,
+        "inflation_response"
+      );
     });
 
     // When governance proposal passes → update digital nation laws
-    eventBus.subscribe("EXECUTION_TRIGGERED", (event) => {
+    eventBus.subscribe("EXECUTION_TRIGGERED", event => {
       const payload = event.payload as { proposalId: string; title: string };
       this.enactLaw(payload.title);
     });
@@ -139,25 +149,35 @@ export class EmergentEconomyEngine {
       .where(gte(userBehaviorSignals.recordedAt, since))
       .groupBy(userBehaviorSignals.signalType);
 
-    const signalMap = new Map(signalCounts.map((s) => [s.signalType, Number(s.total)]));
+    const signalMap = new Map(
+      signalCounts.map(s => [s.signalType, Number(s.total)])
+    );
 
     // Pattern: Creator + Gamer interaction → XP inflation risk
-    const creatorActivity = (signalMap.get("create_content") ?? 0) + (signalMap.get("creator_content_published") ?? 0);
-    const gamerActivity = (signalMap.get("play_game") ?? 0) + (signalMap.get("complete_quest") ?? 0);
+    const creatorActivity =
+      (signalMap.get("create_content") ?? 0) +
+      (signalMap.get("creator_content_published") ?? 0);
+    const gamerActivity =
+      (signalMap.get("play_game") ?? 0) +
+      (signalMap.get("complete_quest") ?? 0);
 
     if (creatorActivity > 5 && gamerActivity > 10) {
-      const emergenceStrength = Math.min(1, (creatorActivity + gamerActivity) / 50);
+      const emergenceStrength = Math.min(
+        1,
+        (creatorActivity + gamerActivity) / 50
+      );
       const pattern: EmergentPattern = {
         pattern: "Creator-Gamer Synergy",
         involvedTokens: ["XP", "CREATOR"],
         involvedArchetypes: ["creator", "gamer"],
         emergenceStrength,
         economicImpact: "inflationary",
-        suggestedResponse: "Create XP sink mechanic: burn 10 XP per premium content unlock",
+        suggestedResponse:
+          "Create XP sink mechanic: burn 10 XP per premium content unlock",
         detectedAt: new Date(),
       };
 
-      if (!this.detectedPatterns.find((p) => p.pattern === pattern.pattern)) {
+      if (!this.detectedPatterns.find(p => p.pattern === pattern.pattern)) {
         this.detectedPatterns.push(pattern);
         eventBus.publish("EMERGENT_SINK_CREATED", {
           pattern: pattern.pattern,
@@ -167,7 +187,10 @@ export class EmergentEconomyEngine {
 
         // Auto-create sink if emergence is strong
         if (emergenceStrength > 0.5) {
-          await this.createEmergentSink("XP" as TokenSymbol, "creator_gamer_synergy");
+          await this.createEmergentSink(
+            "XP" as TokenSymbol,
+            "creator_gamer_synergy"
+          );
         }
       }
     }
@@ -183,11 +206,12 @@ export class EmergentEconomyEngine {
         involvedArchetypes: ["investor", "builder"],
         emergenceStrength: Math.min(1, stakingActivity / 20),
         economicImpact: "deflationary",
-        suggestedResponse: "Introduce staking rewards boost to maintain liquidity balance",
+        suggestedResponse:
+          "Introduce staking rewards boost to maintain liquidity balance",
         detectedAt: new Date(),
       };
 
-      if (!this.detectedPatterns.find((p) => p.pattern === pattern.pattern)) {
+      if (!this.detectedPatterns.find(p => p.pattern === pattern.pattern)) {
         this.detectedPatterns.push(pattern);
         eventBus.publish("DIGITAL_NATION_EVENT", {
           type: "emergent_pattern",
@@ -205,11 +229,14 @@ export class EmergentEconomyEngine {
     const snapshot = memoryGraphEngine.getSnapshot();
     if (snapshot.nodeCount > 50 && snapshot.topPatterns.length > 0) {
       // Strong pattern detected — propose governance vote
-      const strongPattern = snapshot.topPatterns.find((p) => p.confidence > 0.7);
+      const strongPattern = snapshot.topPatterns.find(p => p.confidence > 0.7);
       if (strongPattern) {
         await governanceEngineV2.proposeAutonomously(
           "EMERGENT_PATTERN_DETECTED",
-          { pattern: strongPattern.pattern, confidence: strongPattern.confidence },
+          {
+            pattern: strongPattern.pattern,
+            confidence: strongPattern.confidence,
+          },
           1
         );
         this.digitalNationState.aiLawsProposed += 1;
@@ -220,7 +247,10 @@ export class EmergentEconomyEngine {
   /**
    * Create a dynamic sink mechanic in response to emergent patterns.
    */
-  async createEmergentSink(token: TokenSymbol, trigger: string): Promise<EmergentSink> {
+  async createEmergentSink(
+    token: TokenSymbol,
+    trigger: string
+  ): Promise<EmergentSink> {
     const sinkId = `sink-${token}-${Date.now()}`;
     const sink: EmergentSink = {
       id: sinkId,
@@ -235,7 +265,8 @@ export class EmergentEconomyEngine {
     };
 
     this.activeSinks.set(sinkId, sink);
-    this.digitalNationState.economicPolicy.sinkMechanicsActive = this.activeSinks.size;
+    this.digitalNationState.economicPolicy.sinkMechanicsActive =
+      this.activeSinks.size;
 
     eventBus.publish("EMERGENT_SINK_CREATED", {
       sinkId,
@@ -286,7 +317,7 @@ Current Economic Policy:
 - Active Sink Mechanics: ${currentPolicy.sinkMechanicsActive}
 
 Recent Emergent Patterns:
-${patterns.map((p) => `- ${p.pattern}: ${p.economicImpact} impact (strength: ${p.emergenceStrength.toFixed(2)})`).join("\n")}
+${patterns.map(p => `- ${p.pattern}: ${p.economicImpact} impact (strength: ${p.emergenceStrength.toFixed(2)})`).join("\n")}
 
 Recommend economic policy adjustments. Respond in JSON:
 {
@@ -296,9 +327,14 @@ Recommend economic policy adjustments. Respond in JSON:
 }`;
 
     try {
-      const response = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+      const response = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
       const rawContent = response.choices[0].message.content ?? "{}";
-      const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
+      const content =
+        typeof rawContent === "string"
+          ? rawContent
+          : JSON.stringify(rawContent);
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]) as {
@@ -310,17 +346,35 @@ Recommend economic policy adjustments. Respond in JSON:
         // Apply adjustments within safe bounds
         if (parsed.policyAdjustments) {
           const adj = parsed.policyAdjustments;
-          if (adj.inflationTarget && adj.inflationTarget >= 1 && adj.inflationTarget <= 20) {
-            this.digitalNationState.economicPolicy.inflationTarget = adj.inflationTarget;
+          if (
+            adj.inflationTarget &&
+            adj.inflationTarget >= 1 &&
+            adj.inflationTarget <= 20
+          ) {
+            this.digitalNationState.economicPolicy.inflationTarget =
+              adj.inflationTarget;
           }
-          if (adj.stakingRate && adj.stakingRate >= 1 && adj.stakingRate <= 30) {
-            this.digitalNationState.economicPolicy.stakingRate = adj.stakingRate;
+          if (
+            adj.stakingRate &&
+            adj.stakingRate >= 1 &&
+            adj.stakingRate <= 30
+          ) {
+            this.digitalNationState.economicPolicy.stakingRate =
+              adj.stakingRate;
           }
-          if (adj.creatorRewardMultiplier && adj.creatorRewardMultiplier >= 0.5 && adj.creatorRewardMultiplier <= 3) {
-            this.digitalNationState.economicPolicy.creatorRewardMultiplier = adj.creatorRewardMultiplier;
+          if (
+            adj.creatorRewardMultiplier &&
+            adj.creatorRewardMultiplier >= 0.5 &&
+            adj.creatorRewardMultiplier <= 3
+          ) {
+            this.digitalNationState.economicPolicy.creatorRewardMultiplier =
+              adj.creatorRewardMultiplier;
           }
           this.digitalNationState.lastPolicyAdjustment = new Date();
-          eventBus.publish("RULE_ADJUSTED", { adjustments: adj, reasoning: parsed.reasoning });
+          eventBus.publish("RULE_ADJUSTED", {
+            adjustments: adj,
+            reasoning: parsed.reasoning,
+          });
         }
 
         return parsed;
@@ -336,7 +390,8 @@ Recommend economic policy adjustments. Respond in JSON:
         "Consider introducing GOLD token utility in premium content unlocks",
       ],
       policyAdjustments: {},
-      reasoning: "No significant anomalies detected. Maintaining current policy.",
+      reasoning:
+        "No significant anomalies detected. Maintaining current policy.",
     };
   }
 

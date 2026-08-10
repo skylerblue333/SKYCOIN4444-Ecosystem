@@ -52,9 +52,9 @@ export interface PayoutResult {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-export const PLATFORM_FEE_PERCENT = 0.20; // 20% platform fee on creator earnings
-export const ADMIN_FEE_PERCENT = 0.44;    // 44% on DHgate orders
-export const MIN_PAYOUT_AMOUNT = 50;      // $50 minimum payout
+export const PLATFORM_FEE_PERCENT = 0.2; // 20% platform fee on creator earnings
+export const ADMIN_FEE_PERCENT = 0.44; // 44% on DHgate orders
+export const MIN_PAYOUT_AMOUNT = 50; // $50 minimum payout
 export const AGE_GATE_SESSION_HOURS = 24;
 
 export const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
@@ -72,16 +72,29 @@ export const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
     name: "Supporter",
     price: 9.99,
     interval: "monthly",
-    perks: ["All Fan perks", "Premium content access", "Early access", "Supporter badge", "10% PPV discount"],
+    perks: [
+      "All Fan perks",
+      "Premium content access",
+      "Early access",
+      "Supporter badge",
+      "10% PPV discount",
+    ],
     contentAccess: "premium",
-    maxPPVDiscount: 0.10,
+    maxPPVDiscount: 0.1,
   },
   {
     id: "vip",
     name: "VIP",
     price: 24.99,
     interval: "monthly",
-    perks: ["All Supporter perks", "All content access", "Priority DMs", "Custom requests", "25% PPV discount", "VIP badge"],
+    perks: [
+      "All Supporter perks",
+      "All content access",
+      "Priority DMs",
+      "Custom requests",
+      "25% PPV discount",
+      "VIP badge",
+    ],
     contentAccess: "all",
     maxPPVDiscount: 0.25,
   },
@@ -101,9 +114,10 @@ export async function verifyAge(
     const now = new Date();
     const age = now.getFullYear() - birthDate.getFullYear();
     const monthDiff = now.getMonth() - birthDate.getMonth();
-    const actualAge = monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())
-      ? age - 1
-      : age;
+    const actualAge =
+      monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())
+        ? age - 1
+        : age;
     verified = actualAge >= 18;
   } else if (method === "id_upload" && data.idUrl) {
     // In production: call ID verification API (Stripe Identity, Jumio, etc.)
@@ -178,19 +192,17 @@ export async function createSubscription(
   tierId: string,
   stripeSubscriptionId?: string
 ): Promise<{ success: boolean; subscriptionId: number }> {
-  const tier = SUBSCRIPTION_TIERS.find((t) => t.id === tierId);
+  const tier = SUBSCRIPTION_TIERS.find(t => t.id === tierId);
   if (!tier) throw new Error("Invalid subscription tier");
 
-  const [result] = await db
-    .insert(creatorSubscriptions)
-    .values({
-      subscriberId,
-      creatorId,
-      tier: tierId as "supporter" | "premium" | "vip",
-      price: tier.price.toString(),
-      status: "active",
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    });
+  const [result] = await db.insert(creatorSubscriptions).values({
+    subscriberId,
+    creatorId,
+    tier: tierId as "supporter" | "premium" | "vip",
+    price: tier.price.toString(),
+    status: "active",
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  });
 
   // Notify owner of new subscription
   await notifyOwner({
@@ -249,7 +261,7 @@ export async function getCreatorEarnings(creatorId: number): Promise<{
 
   const totalEarnings = Number(earningsData?.total ?? 0);
   const subscriptionRevenue = totalEarnings * 0.65;
-  const ppvRevenue = totalEarnings * 0.20;
+  const ppvRevenue = totalEarnings * 0.2;
   const tipRevenue = totalEarnings * 0.15;
   const platformFee = totalEarnings * PLATFORM_FEE_PERCENT;
   const netEarnings = totalEarnings - platformFee;
@@ -274,7 +286,8 @@ export async function requestPayout(req: PayoutRequest): Promise<PayoutResult> {
     throw new Error(`Minimum payout amount is $${MIN_PAYOUT_AMOUNT}`);
   }
 
-  const feePercent = req.method === "crypto" ? 0.01 : req.method === "bank" ? 0.025 : 0.02;
+  const feePercent =
+    req.method === "crypto" ? 0.01 : req.method === "bank" ? 0.025 : 0.02;
   const fee = req.amount * feePercent;
   const netAmount = req.amount - fee;
 
@@ -286,7 +299,12 @@ export async function requestPayout(req: PayoutRequest): Promise<PayoutResult> {
     content: `Creator ${req.creatorId} requested $${req.amount.toFixed(2)} payout via ${req.method}. Net: $${netAmount.toFixed(2)} (fee: $${fee.toFixed(2)})`,
   });
 
-  const arrivalDays = req.method === "crypto" ? "1-2 hours" : req.method === "bank" ? "3-5 business days" : "1-2 business days";
+  const arrivalDays =
+    req.method === "crypto"
+      ? "1-2 hours"
+      : req.method === "bank"
+        ? "3-5 business days"
+        : "1-2 business days";
 
   return {
     success: true,

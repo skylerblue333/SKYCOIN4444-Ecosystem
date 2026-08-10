@@ -64,7 +64,9 @@ interface EventBus {
 const EventContext = createContext<EventBus | null>(null);
 
 export function EventProvider({ children }: { children: ReactNode }) {
-  const listenersRef = useRef<Map<AppEventType | "*", Set<EventHandler>>>(new Map());
+  const listenersRef = useRef<Map<AppEventType | "*", Set<EventHandler>>>(
+    new Map()
+  );
   const historyRef = useRef<AppEvent[]>([]);
 
   const emit = <T,>(type: AppEventType, payload: T, source?: string) => {
@@ -82,17 +84,28 @@ export function EventProvider({ children }: { children: ReactNode }) {
     // Notify type-specific listeners
     const typeListeners = listenersRef.current.get(type);
     typeListeners?.forEach(handler => {
-      try { handler(event as AppEvent); } catch (e) { console.error("[EventBus] handler error:", e); }
+      try {
+        handler(event as AppEvent);
+      } catch (e) {
+        console.error("[EventBus] handler error:", e);
+      }
     });
 
     // Notify wildcard listeners
     const allListeners = listenersRef.current.get("*");
     allListeners?.forEach(handler => {
-      try { handler(event as AppEvent); } catch (e) { console.error("[EventBus] wildcard handler error:", e); }
+      try {
+        handler(event as AppEvent);
+      } catch (e) {
+        console.error("[EventBus] wildcard handler error:", e);
+      }
     });
   };
 
-  const subscribe = <T,>(type: AppEventType, handler: EventHandler<T>): (() => void) => {
+  const subscribe = <T,>(
+    type: AppEventType,
+    handler: EventHandler<T>
+  ): (() => void) => {
     if (!listenersRef.current.has(type)) {
       listenersRef.current.set(type, new Set());
     }
@@ -121,11 +134,7 @@ export function EventProvider({ children }: { children: ReactNode }) {
 
   const bus: EventBus = { emit, subscribe, subscribeAll, getHistory };
 
-  return (
-    <EventContext.Provider value={bus}>
-      {children}
-    </EventContext.Provider>
-  );
+  return <EventContext.Provider value={bus}>{children}</EventContext.Provider>;
 }
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────

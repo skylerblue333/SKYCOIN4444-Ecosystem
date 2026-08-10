@@ -71,12 +71,22 @@ export interface SystemHealthSnapshot {
 // AI can ONLY act in these domains. Security and compliance are ALWAYS human-controlled.
 
 const ALLOWED_DOMAINS: AutonomousAction["domain"][] = [
-  "economy", "governance", "ui", "rewards", "analytics"
+  "economy",
+  "governance",
+  "ui",
+  "rewards",
+  "analytics",
 ];
 
 const FORBIDDEN_ACTIONS = [
-  "delete_user", "ban_user", "override_security", "disable_rate_limit",
-  "expose_private_key", "bypass_auth", "grant_admin", "drain_treasury"
+  "delete_user",
+  "ban_user",
+  "override_security",
+  "disable_rate_limit",
+  "expose_private_key",
+  "bypass_auth",
+  "grant_admin",
+  "drain_treasury",
 ];
 
 // ─── Free Will Engine ─────────────────────────────────────────────────────────
@@ -99,60 +109,81 @@ export class FreeWillEngine {
       {
         id: "goal-stabilize-economy",
         name: "Stabilize Token Economy",
-        description: "Keep all 7 tokens within healthy emission ranges and demand indices above 0.8",
+        description:
+          "Keep all 7 tokens within healthy emission ranges and demand indices above 0.8",
         priority: "critical",
         status: "active",
         metric: "avg_demand_index",
         targetValue: 0.9,
         currentValue: 0,
         progress: 0,
-        actions: ["apply_sink_pressure", "adjust_rewards", "propose_governance"],
+        actions: [
+          "apply_sink_pressure",
+          "adjust_rewards",
+          "propose_governance",
+        ],
         lastEvaluatedAt: new Date(),
       },
       {
         id: "goal-increase-retention",
         name: "Increase User Retention",
-        description: "Maintain 7-day retention above 40% through personalized AI recommendations",
+        description:
+          "Maintain 7-day retention above 40% through personalized AI recommendations",
         priority: "high",
         status: "active",
         metric: "retention_7d",
         targetValue: 40,
         currentValue: 0,
         progress: 0,
-        actions: ["trigger_recommendations", "boost_rewards", "activate_quests"],
+        actions: [
+          "trigger_recommendations",
+          "boost_rewards",
+          "activate_quests",
+        ],
         lastEvaluatedAt: new Date(),
       },
       {
         id: "goal-reduce-fraud",
         name: "Reduce Fraud Risk",
-        description: "Keep fraud signal rate below 5 per hour and quarantine high-risk accounts",
+        description:
+          "Keep fraud signal rate below 5 per hour and quarantine high-risk accounts",
         priority: "critical",
         status: "active",
         metric: "fraud_signals_per_hour",
         targetValue: 5,
         currentValue: 0,
         progress: 0,
-        actions: ["flag_suspicious_users", "tighten_rate_limits", "alert_security"],
+        actions: [
+          "flag_suspicious_users",
+          "tighten_rate_limits",
+          "alert_security",
+        ],
         lastEvaluatedAt: new Date(),
       },
       {
         id: "goal-improve-creator-activity",
         name: "Improve Creator Activity",
-        description: "Increase creator content publishing by 20% through targeted CREATOR token incentives",
+        description:
+          "Increase creator content publishing by 20% through targeted CREATOR token incentives",
         priority: "medium",
         status: "active",
         metric: "creator_activity_score",
         targetValue: 80,
         currentValue: 0,
         progress: 0,
-        actions: ["boost_creator_rewards", "suggest_content_ideas", "feature_creators"],
+        actions: [
+          "boost_creator_rewards",
+          "suggest_content_ideas",
+          "feature_creators",
+        ],
         lastEvaluatedAt: new Date(),
       },
       // Smart upgrade: Additional goals beyond the original 4
       {
         id: "goal-digital-nation-stability",
         name: "Digital Nation Stability",
-        description: "Maintain self-regulating governance with AI-proposed laws and economic policy tools",
+        description:
+          "Maintain self-regulating governance with AI-proposed laws and economic policy tools",
         priority: "high",
         status: "active",
         metric: "governance_participation_rate",
@@ -165,14 +196,19 @@ export class FreeWillEngine {
       {
         id: "goal-emergent-economy",
         name: "Emergent Economy Health",
-        description: "Allow new token utility to emerge from user interactions; create dynamic sinks when XP inflation detected",
+        description:
+          "Allow new token utility to emerge from user interactions; create dynamic sinks when XP inflation detected",
         priority: "medium",
         status: "active",
         metric: "xp_inflation_rate",
         targetValue: 10,
         currentValue: 0,
         progress: 0,
-        actions: ["create_sink_mechanics", "adjust_xp_rewards", "introduce_utility"],
+        actions: [
+          "create_sink_mechanics",
+          "adjust_xp_rewards",
+          "introduce_utility",
+        ],
         lastEvaluatedAt: new Date(),
       },
     ];
@@ -220,16 +256,26 @@ export class FreeWillEngine {
   private registerEventTriggers(): void {
     // Economy triggers
     eventBus.subscribe("LOW_LIQUIDITY_DETECTED", (event: PlatformEvent) => {
-      void this.handleLowLiquidity(event.payload as { token: string; liquidityScore: number });
+      void this.handleLowLiquidity(
+        event.payload as { token: string; liquidityScore: number }
+      );
     });
 
     eventBus.subscribe("INFLATION_WARNING", (event: PlatformEvent) => {
-      void this.handleInflationWarning(event.payload as { token: string; emissionPct?: number; inflationRate?: number });
+      void this.handleInflationWarning(
+        event.payload as {
+          token: string;
+          emissionPct?: number;
+          inflationRate?: number;
+        }
+      );
     });
 
     // Security triggers
     eventBus.subscribe("FRAUD_SPIKE_DETECTED", (event: PlatformEvent) => {
-      void this.handleFraudSpike(event.payload as { count: number; window: string });
+      void this.handleFraudSpike(
+        event.payload as { count: number; window: string }
+      );
     });
 
     // Retention triggers
@@ -239,7 +285,9 @@ export class FreeWillEngine {
 
     // Governance triggers
     eventBus.subscribe("EXECUTION_TRIGGERED", (event: PlatformEvent) => {
-      void this.handleGovernanceExecution(event.payload as { proposalId: string; title: string });
+      void this.handleGovernanceExecution(
+        event.payload as { proposalId: string; title: string }
+      );
     });
 
     // Emergent economy triggers
@@ -258,10 +306,16 @@ export class FreeWillEngine {
 
   // ─── Autonomous Action Handlers ───────────────────────────────────────────
 
-  private async handleLowLiquidity(payload: { token: string; liquidityScore: number }): Promise<void> {
+  private async handleLowLiquidity(payload: {
+    token: string;
+    liquidityScore: number;
+  }): Promise<void> {
     if (!this.isSafeToAct("economy")) return;
 
-    await economyEngine.applySinkPressure(payload.token as Parameters<typeof economyEngine.applySinkPressure>[0], -1);
+    await economyEngine.applySinkPressure(
+      payload.token as Parameters<typeof economyEngine.applySinkPressure>[0],
+      -1
+    );
 
     await this.logAutonomousAction({
       goalId: "goal-stabilize-economy",
@@ -286,10 +340,17 @@ export class FreeWillEngine {
     }
   }
 
-  private async handleInflationWarning(payload: { token: string; emissionPct?: number; inflationRate?: number }): Promise<void> {
+  private async handleInflationWarning(payload: {
+    token: string;
+    emissionPct?: number;
+    inflationRate?: number;
+  }): Promise<void> {
     if (!this.isSafeToAct("economy")) return;
 
-    await economyEngine.applySinkPressure(payload.token as Parameters<typeof economyEngine.applySinkPressure>[0], 2);
+    await economyEngine.applySinkPressure(
+      payload.token as Parameters<typeof economyEngine.applySinkPressure>[0],
+      2
+    );
 
     await this.logAutonomousAction({
       goalId: "goal-stabilize-economy",
@@ -308,14 +369,20 @@ export class FreeWillEngine {
     });
   }
 
-  private async handleFraudSpike(payload: { count: number; window: string }): Promise<void> {
+  private async handleFraudSpike(payload: {
+    count: number;
+    window: string;
+  }): Promise<void> {
     if (!this.isSafeToAct("economy")) return;
 
     // Update fraud goal
     const goal = this.goals.get("goal-reduce-fraud");
     if (goal) {
       goal.currentValue = payload.count;
-      goal.progress = Math.max(0, 100 - (payload.count / goal.targetValue) * 100);
+      goal.progress = Math.max(
+        0,
+        100 - (payload.count / goal.targetValue) * 100
+      );
     }
 
     await this.logAutonomousAction({
@@ -335,7 +402,9 @@ export class FreeWillEngine {
     });
   }
 
-  private async handleRetentionDrop(payload: { activeUsers7d: number }): Promise<void> {
+  private async handleRetentionDrop(payload: {
+    activeUsers7d: number;
+  }): Promise<void> {
     if (!this.isSafeToAct("rewards")) return;
 
     const goal = this.goals.get("goal-increase-retention");
@@ -361,7 +430,10 @@ export class FreeWillEngine {
     });
   }
 
-  private async handleGovernanceExecution(payload: { proposalId: string; title: string }): Promise<void> {
+  private async handleGovernanceExecution(payload: {
+    proposalId: string;
+    title: string;
+  }): Promise<void> {
     await this.logAutonomousAction({
       goalId: "goal-digital-nation-stability",
       trigger: "EXECUTION_TRIGGERED",
@@ -393,7 +465,10 @@ export class FreeWillEngine {
       await this.selfOptimize();
 
       // 4. Fire AI insights via LLM if system is in warning/critical state
-      if (economyReport.overallHealth !== "HEALTHY" || securityHealth.fraudSpike) {
+      if (
+        economyReport.overallHealth !== "HEALTHY" ||
+        securityHealth.fraudSpike
+      ) {
         await this.generateAutonomousInsight(economyReport, securityHealth);
       }
 
@@ -403,13 +478,19 @@ export class FreeWillEngine {
         if (goal.progress >= 100) {
           goal.status = "achieved";
           goal.achievedAt = new Date();
-          eventBus.publish("AI_GOAL_ACHIEVED", { goalId: goal.id, goalName: goal.name });
+          eventBus.publish("AI_GOAL_ACHIEVED", {
+            goalId: goal.id,
+            goalName: goal.name,
+          });
           // Reset for continuous monitoring
-          setTimeout(() => {
-            goal.status = "active";
-            goal.progress = 0;
-            goal.achievedAt = undefined;
-          }, 5 * 60 * 1000);
+          setTimeout(
+            () => {
+              goal.status = "active";
+              goal.progress = 0;
+              goal.achievedAt = undefined;
+            },
+            5 * 60 * 1000
+          );
         }
       }
     } catch {
@@ -419,17 +500,27 @@ export class FreeWillEngine {
 
   private updateGoalMetrics(
     economyReport: Awaited<ReturnType<typeof economyEngine.getHealthReport>>,
-    securityHealth: Awaited<ReturnType<typeof securityEngine.getSecurityHealth>>,
-    retentionHealth: Awaited<ReturnType<typeof behaviorEngine.checkRetentionHealth>>
+    securityHealth: Awaited<
+      ReturnType<typeof securityEngine.getSecurityHealth>
+    >,
+    retentionHealth: Awaited<
+      ReturnType<typeof behaviorEngine.checkRetentionHealth>
+    >
   ): void {
     // Economy goal
     const econGoal = this.goals.get("goal-stabilize-economy");
     if (econGoal) {
-      const avgDemand = economyReport.tokens.length > 0
-        ? economyReport.tokens.reduce((acc, t) => acc + t.liquidityScore, 0) / economyReport.tokens.length / 100
-        : 0.5;
+      const avgDemand =
+        economyReport.tokens.length > 0
+          ? economyReport.tokens.reduce((acc, t) => acc + t.liquidityScore, 0) /
+            economyReport.tokens.length /
+            100
+          : 0.5;
       econGoal.currentValue = avgDemand;
-      econGoal.progress = Math.min(100, (avgDemand / econGoal.targetValue) * 100);
+      econGoal.progress = Math.min(
+        100,
+        (avgDemand / econGoal.targetValue) * 100
+      );
     }
 
     // Fraud goal
@@ -438,14 +529,20 @@ export class FreeWillEngine {
       const fraudPerHour = securityHealth.totalFraudSignals24h / 24;
       fraudGoal.currentValue = fraudPerHour;
       // Lower is better for fraud
-      fraudGoal.progress = Math.min(100, Math.max(0, 100 - (fraudPerHour / fraudGoal.targetValue) * 100));
+      fraudGoal.progress = Math.min(
+        100,
+        Math.max(0, 100 - (fraudPerHour / fraudGoal.targetValue) * 100)
+      );
     }
 
     // Retention goal
     const retGoal = this.goals.get("goal-increase-retention");
     if (retGoal) {
       retGoal.currentValue = retentionHealth.activeUsers7d;
-      retGoal.progress = Math.min(100, (retentionHealth.activeUsers7d / 50) * 100);
+      retGoal.progress = Math.min(
+        100,
+        (retentionHealth.activeUsers7d / 50) * 100
+      );
     }
   }
 
@@ -455,7 +552,9 @@ export class FreeWillEngine {
    */
   private async selfOptimize(): Promise<void> {
     const recentActions = this.actionLog.slice(-20);
-    const successRate = recentActions.filter((a) => a.result === "success").length / Math.max(1, recentActions.length);
+    const successRate =
+      recentActions.filter(a => a.result === "success").length /
+      Math.max(1, recentActions.length);
 
     // Adjust optimization rules based on success rate
     if (successRate > 0.8) {
@@ -490,16 +589,24 @@ Economy Health: ${economyReport.overallHealth}
 Economy Alerts: ${economyReport.alerts.join("; ")}
 Fraud Spike: ${securityHealth.fraudSpike}
 Fraud Signals 24h: ${securityHealth.totalFraudSignals24h}
-Active Goals: ${Array.from(this.goals.values()).filter((g) => g.status === "active").length}
-Recent Actions: ${this.actionLog.slice(-3).map((a) => a.action).join(", ")}
+Active Goals: ${Array.from(this.goals.values()).filter(g => g.status === "active").length}
+Recent Actions: ${this.actionLog
+      .slice(-3)
+      .map(a => a.action)
+      .join(", ")}
 
 What is the single most important autonomous action HOPE AI should take right now?
 Respond in JSON: { "action": "action_name", "reasoning": "why", "domain": "economy|governance|rewards|analytics", "urgency": "low|medium|high|critical" }`;
 
     try {
-      const response = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+      const response = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
       const rawContent = response.choices[0].message.content ?? "{}";
-      const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
+      const content =
+        typeof rawContent === "string"
+          ? rawContent
+          : JSON.stringify(rawContent);
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]) as {
@@ -546,26 +653,41 @@ Respond in JSON: { "action": "action_name", "reasoning": "why", "domain": "econo
   }
 
   getSystemSnapshot(): SystemHealthSnapshot {
-    const activeGoals = Array.from(this.goals.values()).filter((g) => g.status === "active").length;
+    const activeGoals = Array.from(this.goals.values()).filter(
+      g => g.status === "active"
+    ).length;
     const lastAction = this.actionLog[this.actionLog.length - 1];
     const criticalGoals = Array.from(this.goals.values()).filter(
-      (g) => g.priority === "critical" && g.progress < 50
+      g => g.priority === "critical" && g.progress < 50
     ).length;
 
     return {
-      economyHealth: criticalGoals > 1 ? "CRITICAL" : criticalGoals > 0 ? "WARNING" : "HEALTHY",
+      economyHealth:
+        criticalGoals > 1
+          ? "CRITICAL"
+          : criticalGoals > 0
+            ? "WARNING"
+            : "HEALTHY",
       securityHealth: { fraudSpike: false, totalFraudSignals24h: 0 },
       retentionHealth: { healthy: true, activeUsers7d: 0 },
       activeGoals,
       lastAutonomousAction: lastAction?.action ?? "none",
-      digitalNationStatus: criticalGoals > 1 ? "emergency" : criticalGoals > 0 ? "adjusting" : "stable",
+      digitalNationStatus:
+        criticalGoals > 1
+          ? "emergency"
+          : criticalGoals > 0
+            ? "adjusting"
+            : "stable",
       timestamp: Date.now(),
     };
   }
 
   addGoal(goal: Omit<AIGoal, "lastEvaluatedAt">): void {
     this.goals.set(goal.id, { ...goal, lastEvaluatedAt: new Date() });
-    eventBus.publish("AI_GOAL_ACTIVATED", { goalId: goal.id, goalName: goal.name });
+    eventBus.publish("AI_GOAL_ACTIVATED", {
+      goalId: goal.id,
+      goalName: goal.name,
+    });
   }
 
   // ─── Private Helpers ──────────────────────────────────────────────────────

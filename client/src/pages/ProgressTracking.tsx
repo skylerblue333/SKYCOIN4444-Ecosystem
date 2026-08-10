@@ -5,7 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Target, Award, Flame, BookOpen, Volume2, PenTool } from "lucide-react";
+import {
+  TrendingUp,
+  Target,
+  Award,
+  Flame,
+  BookOpen,
+  Volume2,
+  PenTool,
+} from "lucide-react";
 
 interface LanguageProgress {
   language: string;
@@ -176,10 +184,14 @@ const DAILY_STATS: DailyStats[] = [
 ];
 
 export function ProgressTracking() {
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageProgress>(MOCK_LANGUAGES[0]);
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageProgress>(
+    MOCK_LANGUAGES[0]
+  );
   const [viewMode, setViewMode] = useState<"overview" | "detailed">("overview");
 
-  const { data: stats } = trpc.languageExchange.getStats.useQuery(undefined, { retry: 1 });
+  const { data: stats } = trpc.languageExchange.getStats.useQuery(undefined, {
+    retry: 1,
+  });
 
   const getLevelColor = (level: string) => {
     if (level.startsWith("A")) return "text-green-400";
@@ -203,7 +215,8 @@ export function ProgressTracking() {
             Progress Tracking
           </h1>
           <p className="text-gray-400">
-            Monitor your language learning journey and celebrate your achievements
+            Monitor your language learning journey and celebrate your
+            achievements
           </p>
         </div>
 
@@ -213,19 +226,27 @@ export function ProgressTracking() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-gray-400 text-sm">Total Sessions</p>
-                <p className="text-3xl font-bold text-purple-400">{stats.totalSessions}</p>
+                <p className="text-3xl font-bold text-purple-400">
+                  {stats.totalSessions}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Total Hours</p>
-                <p className="text-3xl font-bold text-blue-400">{stats.totalHours}</p>
+                <p className="text-3xl font-bold text-blue-400">
+                  {stats.totalHours}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Languages Learning</p>
-                <p className="text-3xl font-bold text-green-400">{stats.languagesLearning}</p>
+                <p className="text-3xl font-bold text-green-400">
+                  {stats.languagesLearning}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Average Rating</p>
-                <p className="text-3xl font-bold text-orange-400">{stats.averageRating.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-orange-400">
+                  {stats.averageRating.toFixed(2)}
+                </p>
               </div>
             </div>
           </Card>
@@ -244,7 +265,7 @@ export function ProgressTracking() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Language List */}
               <div className="space-y-3">
-                {MOCK_LANGUAGES.map((lang) => (
+                {MOCK_LANGUAGES.map(lang => (
                   <Card
                     key={lang.language}
                     className={`p-4 cursor-pointer transition-all ${
@@ -256,12 +277,16 @@ export function ProgressTracking() {
                   >
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="font-bold text-white">{lang.language}</h3>
-                      <Badge className={`${getLevelBgColor(lang.level)} ${getLevelColor(lang.level)}`}>
+                      <Badge
+                        className={`${getLevelBgColor(lang.level)} ${getLevelColor(lang.level)}`}
+                      >
                         {lang.level}
                       </Badge>
                     </div>
                     <Progress value={lang.score} className="h-2" />
-                    <p className="text-gray-400 text-xs mt-2">{lang.score}% to next level</p>
+                    <p className="text-gray-400 text-xs mt-2">
+                      {lang.score}% to next level
+                    </p>
                   </Card>
                 ))}
               </div>
@@ -269,36 +294,55 @@ export function ProgressTracking() {
               {/* Detailed Progress */}
               <div className="lg:col-span-2">
                 <Card className="bg-slate-800/50 border-slate-700 p-6 mb-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">{selectedLanguage.language}</h2>
+                  <h2 className="text-2xl font-bold text-white mb-6">
+                    {selectedLanguage.language}
+                  </h2>
 
                   {/* Progress Bar */}
                   <div className="mb-8">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-400">Progress to {selectedLanguage.nextLevel}</span>
-                      <span className="text-purple-400 font-bold">{selectedLanguage.progressToNextLevel}%</span>
+                      <span className="text-gray-400">
+                        Progress to {selectedLanguage.nextLevel}
+                      </span>
+                      <span className="text-purple-400 font-bold">
+                        {selectedLanguage.progressToNextLevel}%
+                      </span>
                     </div>
-                    <Progress value={selectedLanguage.progressToNextLevel} className="h-3" />
+                    <Progress
+                      value={selectedLanguage.progressToNextLevel}
+                      className="h-3"
+                    />
                   </div>
 
                   {/* Stats Grid */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-900/50 rounded p-4">
-                      <p className="text-gray-400 text-sm mb-1">Words Learned</p>
-                      <p className="text-2xl font-bold text-blue-400">{selectedLanguage.wordsLearned}</p>
+                      <p className="text-gray-400 text-sm mb-1">
+                        Words Learned
+                      </p>
+                      <p className="text-2xl font-bold text-blue-400">
+                        {selectedLanguage.wordsLearned}
+                      </p>
                     </div>
                     <div className="bg-slate-900/50 rounded p-4">
                       <p className="text-gray-400 text-sm mb-1">Hours Spent</p>
-                      <p className="text-2xl font-bold text-green-400">{selectedLanguage.hoursSpent}</p>
+                      <p className="text-2xl font-bold text-green-400">
+                        {selectedLanguage.hoursSpent}
+                      </p>
                     </div>
                     <div className="bg-slate-900/50 rounded p-4">
                       <p className="text-gray-400 text-sm mb-1 flex items-center gap-2">
                         <Flame className="w-4 h-4" />
                         Current Streak
                       </p>
-                      <p className="text-2xl font-bold text-orange-400">{selectedLanguage.streakDays} days</p>
+                      <p className="text-2xl font-bold text-orange-400">
+                        {selectedLanguage.streakDays} days
+                      </p>
                     </div>
                     <div className="bg-slate-900/50 rounded p-4">
-                      <p className="text-gray-400 text-sm mb-1">Last Practice</p>
+                      <p className="text-gray-400 text-sm mb-1">
+                        Last Practice
+                      </p>
                       <p className="text-sm font-bold text-purple-400">
                         {selectedLanguage.lastPractice.toLocaleTimeString()}
                       </p>
@@ -324,7 +368,7 @@ export function ProgressTracking() {
           {/* Milestones Tab */}
           <TabsContent value="milestones" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {MILESTONES.map((milestone) => (
+              {MILESTONES.map(milestone => (
                 <Card
                   key={milestone.id}
                   className={`p-6 transition-all ${
@@ -337,12 +381,18 @@ export function ProgressTracking() {
                     <div className="flex items-start gap-3">
                       <span className="text-3xl">{milestone.icon}</span>
                       <div>
-                        <h3 className="font-bold text-white">{milestone.name}</h3>
-                        <p className="text-gray-400 text-sm">{milestone.description}</p>
+                        <h3 className="font-bold text-white">
+                          {milestone.name}
+                        </h3>
+                        <p className="text-gray-400 text-sm">
+                          {milestone.description}
+                        </p>
                       </div>
                     </div>
                     {milestone.completed && (
-                      <Badge className="bg-yellow-500/20 text-yellow-400">✓ Completed</Badge>
+                      <Badge className="bg-yellow-500/20 text-yellow-400">
+                        ✓ Completed
+                      </Badge>
                     )}
                   </div>
 
@@ -352,10 +402,16 @@ export function ProgressTracking() {
                         {milestone.current} / {milestone.target}
                       </span>
                       <span className="text-purple-400 font-bold">
-                        {Math.round((milestone.current / milestone.target) * 100)}%
+                        {Math.round(
+                          (milestone.current / milestone.target) * 100
+                        )}
+                        %
                       </span>
                     </div>
-                    <Progress value={(milestone.current / milestone.target) * 100} className="h-2" />
+                    <Progress
+                      value={(milestone.current / milestone.target) * 100}
+                      className="h-2"
+                    />
                   </div>
 
                   <div className="flex justify-between items-center">
@@ -380,7 +436,10 @@ export function ProgressTracking() {
           <TabsContent value="daily" className="space-y-4">
             <div className="space-y-3">
               {DAILY_STATS.map((day, idx) => (
-                <Card key={idx} className="bg-slate-800/50 border-slate-700 p-6">
+                <Card
+                  key={idx}
+                  className="bg-slate-800/50 border-slate-700 p-6"
+                >
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="font-bold text-white">{day.date}</h3>
                     <Badge className="bg-purple-500/20 text-purple-400">
@@ -393,21 +452,29 @@ export function ProgressTracking() {
                       <BookOpen className="w-5 h-5 text-blue-400" />
                       <div>
                         <p className="text-gray-400 text-xs">Words Learned</p>
-                        <p className="text-white font-bold">{day.wordsLearned}</p>
+                        <p className="text-white font-bold">
+                          {day.wordsLearned}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Volume2 className="w-5 h-5 text-green-400" />
                       <div>
-                        <p className="text-gray-400 text-xs">Minutes Practiced</p>
-                        <p className="text-white font-bold">{day.minutesPracticed}</p>
+                        <p className="text-gray-400 text-xs">
+                          Minutes Practiced
+                        </p>
+                        <p className="text-white font-bold">
+                          {day.minutesPracticed}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <PenTool className="w-5 h-5 text-orange-400" />
                       <div>
                         <p className="text-gray-400 text-xs">Sessions</p>
-                        <p className="text-white font-bold">{day.sessionsCompleted}</p>
+                        <p className="text-white font-bold">
+                          {day.sessionsCompleted}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -427,12 +494,17 @@ export function ProgressTracking() {
                 { name: "Vocabulary", level: 79, icon: "📚" },
                 { name: "Grammar", level: 76, icon: "📝" },
               ].map((skill, idx) => (
-                <Card key={idx} className="bg-slate-800/50 border-slate-700 p-6">
+                <Card
+                  key={idx}
+                  className="bg-slate-800/50 border-slate-700 p-6"
+                >
                   <div className="flex items-center gap-3 mb-4">
                     <span className="text-3xl">{skill.icon}</span>
                     <div>
                       <h3 className="font-bold text-white">{skill.name}</h3>
-                      <p className="text-purple-400 font-bold">{skill.level}%</p>
+                      <p className="text-purple-400 font-bold">
+                        {skill.level}%
+                      </p>
                     </div>
                   </div>
                   <Progress value={skill.level} className="h-2" />

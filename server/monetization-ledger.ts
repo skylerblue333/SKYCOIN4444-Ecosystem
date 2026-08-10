@@ -13,16 +13,69 @@
  */
 
 import crypto from "crypto";
-import { auditLogger, stripeAdapter, platformFeeEngine } from "./production-integrations";
+import {
+  auditLogger,
+  stripeAdapter,
+  platformFeeEngine,
+} from "./production-integrations";
 import { economyLayer, eventBus } from "./unified-system-loop";
 
 // ─── Subscription Tiers ───────────────────────────────────────────────────────
 export const SUBSCRIPTION_TIERS = {
-  free: { id: "free", name: "Free", priceCents: 0, features: ["basic_feed", "follow", "post", "comment"] },
-  basic: { id: "basic", name: "Basic", priceCents: 499, features: ["basic_feed", "follow", "post", "comment", "dm", "no_ads"] },
-  pro: { id: "pro", name: "Pro", priceCents: 999, features: ["basic_feed", "follow", "post", "comment", "dm", "no_ads", "analytics", "creator_tools", "priority_support"] },
-  elite: { id: "elite", name: "Elite", priceCents: 2999, features: ["all_pro", "ai_tools", "early_access", "badge", "boosted_reach", "dedicated_support"] },
-  creator: { id: "creator", name: "Creator", priceCents: 1999, features: ["all_pro", "monetization", "subscriptions", "tips", "premium_content", "creator_analytics"] },
+  free: {
+    id: "free",
+    name: "Free",
+    priceCents: 0,
+    features: ["basic_feed", "follow", "post", "comment"],
+  },
+  basic: {
+    id: "basic",
+    name: "Basic",
+    priceCents: 499,
+    features: ["basic_feed", "follow", "post", "comment", "dm", "no_ads"],
+  },
+  pro: {
+    id: "pro",
+    name: "Pro",
+    priceCents: 999,
+    features: [
+      "basic_feed",
+      "follow",
+      "post",
+      "comment",
+      "dm",
+      "no_ads",
+      "analytics",
+      "creator_tools",
+      "priority_support",
+    ],
+  },
+  elite: {
+    id: "elite",
+    name: "Elite",
+    priceCents: 2999,
+    features: [
+      "all_pro",
+      "ai_tools",
+      "early_access",
+      "badge",
+      "boosted_reach",
+      "dedicated_support",
+    ],
+  },
+  creator: {
+    id: "creator",
+    name: "Creator",
+    priceCents: 1999,
+    features: [
+      "all_pro",
+      "monetization",
+      "subscriptions",
+      "tips",
+      "premium_content",
+      "creator_analytics",
+    ],
+  },
 } as const;
 
 export type TierId = keyof typeof SUBSCRIPTION_TIERS;
@@ -31,7 +84,7 @@ export type TierId = keyof typeof SUBSCRIPTION_TIERS;
 interface SubscriptionRecord {
   id: string;
   subscriberId: number;
-  creatorId?: number;  // null = platform subscription
+  creatorId?: number; // null = platform subscription
   tierId: TierId;
   priceCents: number;
   currency: string;
@@ -84,7 +137,9 @@ export const subscriptionLedger = {
       stripeSubscriptionId: stripeResult.subscriptionId,
       currentPeriodStart: now,
       currentPeriodEnd: stripeResult.currentPeriodEnd,
-      trialEndsAt: params.trialDays ? new Date(now.getTime() + params.trialDays * 86400000) : undefined,
+      trialEndsAt: params.trialDays
+        ? new Date(now.getTime() + params.trialDays * 86400000)
+        : undefined,
       dunningAttempts: 0,
       nextPaymentAt: stripeResult.currentPeriodEnd,
       totalPaidCents: 0,
@@ -93,15 +148,37 @@ export const subscriptionLedger = {
     };
 
     _subscriptions.set(record.id, record);
-    if (!_userSubscriptions.has(params.subscriberId)) _userSubscriptions.set(params.subscriberId, new Set());
+    if (!_userSubscriptions.has(params.subscriberId))
+      _userSubscriptions.set(params.subscriberId, new Set());
     _userSubscriptions.get(params.subscriberId)!.add(record.id);
 
-    auditLogger.log({ service: "subscriptions", action: "create", actorId: params.subscriberId, resourceId: record.id, metadata: { tierId: params.tierId, priceCents: tier.priceCents }, success: true, durationMs: Date.now() - start });
-    eventBus.emit("subscription.created", params.subscriberId, { subscriptionId: record.id, tierId: params.tierId, creatorId: params.creatorId }, params.creatorId);
+    auditLogger.log({
+      service: "subscriptions",
+      action: "create",
+      actorId: params.subscriberId,
+      resourceId: record.id,
+      metadata: { tierId: params.tierId, priceCents: tier.priceCents },
+      success: true,
+      durationMs: Date.now() - start,
+    });
+    eventBus.emit(
+      "subscription.created",
+      params.subscriberId,
+      {
+        subscriptionId: record.id,
+        tierId: params.tierId,
+        creatorId: params.creatorId,
+      },
+      params.creatorId
+    );
     return record;
   },
 
-  recordPayment(subscriptionId: string, amountCents: number, stripeChargeId: string): void {
+  recordPayment(
+    subscriptionId: string,
+    amountCents: number,
+    stripeChargeId: string
+  ): void {
     const record = _subscriptions.get(subscriptionId);
     if (!record) return;
 
@@ -110,11 +187,13 @@ export const subscriptionLedger = {
     record.dunningAttempts = 0;
     record.status = "active";
     record.currentPeriodStart = record.currentPeriodEnd;
-    record.currentPeriodEnd = new Date(record.currentPeriodEnd.getTime() + 30 * 86400000);
+    record.currentPeriodEnd = new Date(
+      record.currentPeriodEnd.getTime() + 30 * 86400000
+    );
     record.nextPaymentAt = record.currentPeriodEnd;
 
     // Record in economy layer
-    const feePercent = platformFeeEngine.FEE_SCHEDULE["subscription"] ?? 0.10;
+    const feePercent = platformFeeEngine.FEE_SCHEDULE["subscription"] ?? 0.1;
     const feeCents = Math.round(amountCents * feePercent);
     economyLayer.recordTransaction({
       fromUserId: record.subscriberId,
@@ -130,7 +209,14 @@ export const subscriptionLedger = {
       metadata: { subscriptionId, tierId: record.tierId },
     });
 
-    auditLogger.log({ service: "subscriptions", action: "payment_recorded", resourceId: subscriptionId, metadata: { amountCents, stripeChargeId }, success: true, durationMs: 0 });
+    auditLogger.log({
+      service: "subscriptions",
+      action: "payment_recorded",
+      resourceId: subscriptionId,
+      metadata: { amountCents, stripeChargeId },
+      success: true,
+      durationMs: 0,
+    });
   },
 
   recordDunning(subscriptionId: string): { shouldCancel: boolean } {
@@ -141,7 +227,12 @@ export const subscriptionLedger = {
     if (record.dunningAttempts >= 3) {
       record.status = "canceled";
       record.canceledAt = new Date();
-      eventBus.emit("subscription.canceled", record.subscriberId, { subscriptionId, reason: "dunning_failure" }, record.creatorId);
+      eventBus.emit(
+        "subscription.canceled",
+        record.subscriberId,
+        { subscriptionId, reason: "dunning_failure" },
+        record.creatorId
+      );
       return { shouldCancel: true };
     }
     return { shouldCancel: false };
@@ -152,24 +243,45 @@ export const subscriptionLedger = {
     if (!record || record.status === "canceled") return false;
     record.status = "canceled";
     record.canceledAt = new Date();
-    eventBus.emit("subscription.canceled", record.subscriberId, { subscriptionId, reason }, record.creatorId);
-    auditLogger.log({ service: "subscriptions", action: "cancel", resourceId: subscriptionId, metadata: { reason }, success: true, durationMs: 0 });
+    eventBus.emit(
+      "subscription.canceled",
+      record.subscriberId,
+      { subscriptionId, reason },
+      record.creatorId
+    );
+    auditLogger.log({
+      service: "subscriptions",
+      action: "cancel",
+      resourceId: subscriptionId,
+      metadata: { reason },
+      success: true,
+      durationMs: 0,
+    });
     return true;
   },
 
   getUserSubscriptions(userId: number): SubscriptionRecord[] {
     const ids = _userSubscriptions.get(userId) ?? new Set();
-    return Array.from(ids).map(id => _subscriptions.get(id)!).filter(Boolean);
+    return Array.from(ids)
+      .map(id => _subscriptions.get(id)!)
+      .filter(Boolean);
   },
 
-  getActiveSubscription(userId: number, tierId?: TierId): SubscriptionRecord | null {
-    const subs = this.getUserSubscriptions(userId).filter(s => s.status === "active" || s.status === "trialing");
+  getActiveSubscription(
+    userId: number,
+    tierId?: TierId
+  ): SubscriptionRecord | null {
+    const subs = this.getUserSubscriptions(userId).filter(
+      s => s.status === "active" || s.status === "trialing"
+    );
     if (tierId) return subs.find(s => s.tierId === tierId) ?? null;
     return subs[0] ?? null;
   },
 
   hasFeature(userId: number, feature: string): boolean {
-    const activeSubs = this.getUserSubscriptions(userId).filter(s => s.status === "active" || s.status === "trialing");
+    const activeSubs = this.getUserSubscriptions(userId).filter(
+      s => s.status === "active" || s.status === "trialing"
+    );
     for (const sub of activeSubs) {
       const tier = SUBSCRIPTION_TIERS[sub.tierId];
       if ((tier.features as unknown as any[]).includes(feature)) return true;
@@ -189,8 +301,12 @@ export const subscriptionLedger = {
 
   getChurnRate(periodDays = 30): number {
     const cutoff = new Date(Date.now() - periodDays * 86400000);
-    const canceledInPeriod = Array.from(_subscriptions.values()).filter(s => s.canceledAt && s.canceledAt > cutoff).length;
-    const activeAtStart = Array.from(_subscriptions.values()).filter(s => s.createdAt < cutoff && s.status !== "canceled").length;
+    const canceledInPeriod = Array.from(_subscriptions.values()).filter(
+      s => s.canceledAt && s.canceledAt > cutoff
+    ).length;
+    const activeAtStart = Array.from(_subscriptions.values()).filter(
+      s => s.createdAt < cutoff && s.status !== "canceled"
+    ).length;
     return activeAtStart > 0 ? canceledInPeriod / activeAtStart : 0;
   },
 
@@ -205,9 +321,14 @@ export const subscriptionLedger = {
       mrrCents: this.getMRR(),
       arrCents: this.getARR(),
       churnRate30d: this.getChurnRate(30),
-      averageSubscriptionValueCents: active.length ? active.reduce((s, sub) => s + sub.priceCents, 0) / active.length : 0,
+      averageSubscriptionValueCents: active.length
+        ? active.reduce((s, sub) => s + sub.priceCents, 0) / active.length
+        : 0,
       tierBreakdown: Object.fromEntries(
-        Object.keys(SUBSCRIPTION_TIERS).map(tier => [tier, active.filter(s => s.tierId === tier as TierId).length])
+        Object.keys(SUBSCRIPTION_TIERS).map(tier => [
+          tier,
+          active.filter(s => s.tierId === (tier as TierId)).length,
+        ])
       ),
     };
   },
@@ -217,7 +338,15 @@ export const subscriptionLedger = {
 interface EarningsRecord {
   id: string;
   creatorId: number;
-  source: "subscription" | "tip" | "nft_sale" | "premium_content" | "ad_revenue" | "affiliate" | "bounty" | "stake_reward";
+  source:
+    | "subscription"
+    | "tip"
+    | "nft_sale"
+    | "premium_content"
+    | "ad_revenue"
+    | "affiliate"
+    | "bounty"
+    | "stake_reward";
   grossAmountCents: number;
   platformFeeCents: number;
   netAmountCents: number;
@@ -275,7 +404,8 @@ export const payoutLedger = {
     };
 
     _earnings.set(record.id, record);
-    if (!_creatorEarnings.has(params.creatorId)) _creatorEarnings.set(params.creatorId, new Set());
+    if (!_creatorEarnings.has(params.creatorId))
+      _creatorEarnings.set(params.creatorId, new Set());
     _creatorEarnings.get(params.creatorId)!.add(record.id);
 
     // Record platform fee
@@ -287,7 +417,19 @@ export const payoutLedger = {
       actorId: params.creatorId,
     });
 
-    auditLogger.log({ service: "payouts", action: "record_earning", actorId: params.creatorId, resourceId: record.id, metadata: { source: params.source, grossAmountCents: params.grossAmountCents, feeCents }, success: true, durationMs: 0 });
+    auditLogger.log({
+      service: "payouts",
+      action: "record_earning",
+      actorId: params.creatorId,
+      resourceId: record.id,
+      metadata: {
+        source: params.source,
+        grossAmountCents: params.grossAmountCents,
+        feeCents,
+      },
+      success: true,
+      durationMs: 0,
+    });
     return record;
   },
 
@@ -320,17 +462,29 @@ export const payoutLedger = {
       .reduce((s, e) => s + e.netAmountCents, 0);
   },
 
-  async requestPayout(creatorId: number, stripeAccountId: string): Promise<{ success: boolean; payoutId?: string; amountCents?: number; reason?: string }> {
+  async requestPayout(
+    creatorId: number,
+    stripeAccountId: string
+  ): Promise<{
+    success: boolean;
+    payoutId?: string;
+    amountCents?: number;
+    reason?: string;
+  }> {
     const start = Date.now();
     const available = this.getAvailableBalance(creatorId);
 
     if (available < this.MIN_PAYOUT_CENTS) {
-      return { success: false, reason: `Minimum payout is $${this.MIN_PAYOUT_CENTS / 100}. Available: $${available / 100}` };
+      return {
+        success: false,
+        reason: `Minimum payout is $${this.MIN_PAYOUT_CENTS / 100}. Available: $${available / 100}`,
+      };
     }
 
     // Collect available earning IDs
-    const earningIds = Array.from(_creatorEarnings.get(creatorId) ?? [])
-      .filter(id => _earnings.get(id)?.status === "available");
+    const earningIds = Array.from(_creatorEarnings.get(creatorId) ?? []).filter(
+      id => _earnings.get(id)?.status === "available"
+    );
 
     // Mark as in_payout
     for (const id of earningIds) {
@@ -361,10 +515,22 @@ export const payoutLedger = {
       // Mark earnings as paid
       for (const id of earningIds) {
         const e = _earnings.get(id);
-        if (e) { e.status = "paid"; e.paidAt = new Date(); e.payoutId = payout.id; }
+        if (e) {
+          e.status = "paid";
+          e.paidAt = new Date();
+          e.payoutId = payout.id;
+        }
       }
 
-      auditLogger.log({ service: "payouts", action: "request_payout", actorId: creatorId, resourceId: payout.id, metadata: { amountCents: available, earningCount: earningIds.length }, success: true, durationMs: Date.now() - start });
+      auditLogger.log({
+        service: "payouts",
+        action: "request_payout",
+        actorId: creatorId,
+        resourceId: payout.id,
+        metadata: { amountCents: available, earningCount: earningIds.length },
+        success: true,
+        durationMs: Date.now() - start,
+      });
       return { success: true, payoutId: payout.id, amountCents: available };
     } catch (err: any) {
       // Revert in_payout status
@@ -372,12 +538,23 @@ export const payoutLedger = {
         const e = _earnings.get(id);
         if (e) e.status = "available";
       }
-      auditLogger.log({ service: "payouts", action: "request_payout", actorId: creatorId, metadata: {}, success: false, errorMessage: err.message, durationMs: Date.now() - start });
+      auditLogger.log({
+        service: "payouts",
+        action: "request_payout",
+        actorId: creatorId,
+        metadata: {},
+        success: false,
+        errorMessage: err.message,
+        durationMs: Date.now() - start,
+      });
       return { success: false, reason: err.message };
     }
   },
 
-  getCreatorStatement(creatorId: number, since?: Date): {
+  getCreatorStatement(
+    creatorId: number,
+    since?: Date
+  ): {
     earnings: EarningsRecord[];
     payouts: PayoutRecord[];
     availableBalance: number;
@@ -387,8 +564,12 @@ export const payoutLedger = {
   } {
     const cutoff = since ?? new Date(0);
     const ids = _creatorEarnings.get(creatorId) ?? new Set();
-    const earnings = Array.from(ids).map(id => _earnings.get(id)!).filter(e => e && e.createdAt > cutoff);
-    const payouts = Array.from(_payouts.values()).filter(p => p.creatorId === creatorId && p.createdAt > cutoff);
+    const earnings = Array.from(ids)
+      .map(id => _earnings.get(id)!)
+      .filter(e => e && e.createdAt > cutoff);
+    const payouts = Array.from(_payouts.values()).filter(
+      p => p.creatorId === creatorId && p.createdAt > cutoff
+    );
 
     return {
       earnings,
@@ -396,7 +577,9 @@ export const payoutLedger = {
       availableBalance: this.getAvailableBalance(creatorId),
       pendingBalance: this.getPendingBalance(creatorId),
       totalEarned: earnings.reduce((s, e) => s + e.netAmountCents, 0),
-      totalPaid: payouts.filter(p => p.status === "completed").reduce((s, p) => s + p.amountCents, 0),
+      totalPaid: payouts
+        .filter(p => p.status === "completed")
+        .reduce((s, p) => s + p.amountCents, 0),
     };
   },
 
@@ -405,16 +588,29 @@ export const payoutLedger = {
     const payouts = Array.from(_payouts.values());
     return {
       totalEarningsRecords: earnings.length,
-      totalGrossEarnedCents: earnings.reduce((s, e) => s + e.grossAmountCents, 0),
+      totalGrossEarnedCents: earnings.reduce(
+        (s, e) => s + e.grossAmountCents,
+        0
+      ),
       totalNetEarnedCents: earnings.reduce((s, e) => s + e.netAmountCents, 0),
-      totalPlatformFeesCents: earnings.reduce((s, e) => s + e.platformFeeCents, 0),
+      totalPlatformFeesCents: earnings.reduce(
+        (s, e) => s + e.platformFeeCents,
+        0
+      ),
       totalPayoutsCount: payouts.length,
-      totalPaidOutCents: payouts.filter(p => p.status === "completed").reduce((s, p) => s + p.amountCents, 0),
-      pendingPayoutsCents: payouts.filter(p => p.status === "processing").reduce((s, p) => s + p.amountCents, 0),
-      earningsBySource: earnings.reduce((acc, e) => {
-        acc[e.source] = (acc[e.source] ?? 0) + e.netAmountCents;
-        return acc;
-      }, {} as Record<string, number>),
+      totalPaidOutCents: payouts
+        .filter(p => p.status === "completed")
+        .reduce((s, p) => s + p.amountCents, 0),
+      pendingPayoutsCents: payouts
+        .filter(p => p.status === "processing")
+        .reduce((s, p) => s + p.amountCents, 0),
+      earningsBySource: earnings.reduce(
+        (acc, e) => {
+          acc[e.source] = (acc[e.source] ?? 0) + e.netAmountCents;
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
     };
   },
 };
@@ -453,7 +649,7 @@ const _adCampaigns = new Map<string, AdCampaign>();
 const _adImpressions: AdImpression[] = [];
 
 export const adRevenueEngine = {
-  PLATFORM_CUT: 0.30, // 30% platform cut on ad revenue
+  PLATFORM_CUT: 0.3, // 30% platform cut on ad revenue
 
   createCampaign(params: {
     advertiserId: number;
@@ -477,7 +673,11 @@ export const adRevenueEngine = {
     return campaign;
   },
 
-  recordImpression(params: { adId: string; publisherId: number; contentId?: string }): AdImpression | null {
+  recordImpression(params: {
+    adId: string;
+    publisherId: number;
+    contentId?: string;
+  }): AdImpression | null {
     const campaign = _adCampaigns.get(params.adId);
     if (!campaign || campaign.status !== "active") return null;
 
@@ -536,12 +736,29 @@ export const adRevenueEngine = {
     if (campaign) campaign.conversionCount++;
   },
 
-  getCampaignMetrics(campaignId: string): { impressions: number; clicks: number; conversions: number; ctr: number; cvr: number; spentCents: number; roas: number } | null {
+  getCampaignMetrics(campaignId: string): {
+    impressions: number;
+    clicks: number;
+    conversions: number;
+    ctr: number;
+    cvr: number;
+    spentCents: number;
+    roas: number;
+  } | null {
     const campaign = _adCampaigns.get(campaignId);
     if (!campaign) return null;
-    const ctr = campaign.impressionCount > 0 ? campaign.clickCount / campaign.impressionCount : 0;
-    const cvr = campaign.clickCount > 0 ? campaign.conversionCount / campaign.clickCount : 0;
-    const roas = campaign.spentCents > 0 ? (campaign.conversionCount * 5000) / campaign.spentCents : 0; // assume $50 avg order
+    const ctr =
+      campaign.impressionCount > 0
+        ? campaign.clickCount / campaign.impressionCount
+        : 0;
+    const cvr =
+      campaign.clickCount > 0
+        ? campaign.conversionCount / campaign.clickCount
+        : 0;
+    const roas =
+      campaign.spentCents > 0
+        ? (campaign.conversionCount * 5000) / campaign.spentCents
+        : 0; // assume $50 avg order
     return {
       impressions: campaign.impressionCount,
       clicks: campaign.clickCount,
@@ -564,7 +781,10 @@ export const adRevenueEngine = {
       totalConversions: _adImpressions.filter(i => i.convertedToPayment).length,
       totalAdRevenueCents: totalRevenue,
       platformAdRevenueCents: Math.round(totalRevenue * this.PLATFORM_CUT),
-      averageCTR: _adImpressions.length > 0 ? _adImpressions.filter(i => i.clicked).length / _adImpressions.length : 0,
+      averageCTR:
+        _adImpressions.length > 0
+          ? _adImpressions.filter(i => i.clicked).length / _adImpressions.length
+          : 0,
     };
   },
 };
@@ -587,7 +807,12 @@ const _affiliateLinks = new Map<string, AffiliateLink>();
 export const affiliateEngine = {
   DEFAULT_COMMISSION_PERCENT: 0.15, // 15%
 
-  createLink(affiliateId: number, targetUrl: string, productId?: string, commissionPercent?: number): AffiliateLink {
+  createLink(
+    affiliateId: number,
+    targetUrl: string,
+    productId?: string,
+    commissionPercent?: number
+  ): AffiliateLink {
     const link: AffiliateLink = {
       id: `aff_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`,
       affiliateId,
@@ -610,7 +835,10 @@ export const affiliateEngine = {
     return true;
   },
 
-  recordConversion(linkId: string, salePriceCents: number): { commissionCents: number } {
+  recordConversion(
+    linkId: string,
+    salePriceCents: number
+  ): { commissionCents: number } {
     const link = _affiliateLinks.get(linkId);
     if (!link) return { commissionCents: 0 };
 
@@ -624,19 +852,38 @@ export const affiliateEngine = {
       grossAmountCents: commissionCents,
     });
 
-    auditLogger.log({ service: "affiliate", action: "conversion", actorId: link.affiliateId, resourceId: linkId, metadata: { salePriceCents, commissionCents }, success: true, durationMs: 0 });
+    auditLogger.log({
+      service: "affiliate",
+      action: "conversion",
+      actorId: link.affiliateId,
+      resourceId: linkId,
+      metadata: { salePriceCents, commissionCents },
+      success: true,
+      durationMs: 0,
+    });
     return { commissionCents };
   },
 
-  getAffiliateStats(affiliateId: number): { links: number; totalClicks: number; totalConversions: number; totalEarnedCents: number; conversionRate: number } {
-    const links = Array.from(_affiliateLinks.values()).filter(l => l.affiliateId === affiliateId);
+  getAffiliateStats(affiliateId: number): {
+    links: number;
+    totalClicks: number;
+    totalConversions: number;
+    totalEarnedCents: number;
+    conversionRate: number;
+  } {
+    const links = Array.from(_affiliateLinks.values()).filter(
+      l => l.affiliateId === affiliateId
+    );
     const totalClicks = links.reduce((s, l) => s + l.clicks, 0);
     const totalConversions = links.reduce((s, l) => s + l.conversions, 0);
     return {
       links: links.length,
       totalClicks,
       totalConversions,
-      totalEarnedCents: links.reduce((s, l) => s + l.totalCommissionEarnedCents, 0),
+      totalEarnedCents: links.reduce(
+        (s, l) => s + l.totalCommissionEarnedCents,
+        0
+      ),
       conversionRate: totalClicks > 0 ? totalConversions / totalClicks : 0,
     };
   },
@@ -647,7 +894,10 @@ export const affiliateEngine = {
       totalLinks: links.length,
       totalClicks: links.reduce((s, l) => s + l.clicks, 0),
       totalConversions: links.reduce((s, l) => s + l.conversions, 0),
-      totalCommissionPaidCents: links.reduce((s, l) => s + l.totalCommissionEarnedCents, 0),
+      totalCommissionPaidCents: links.reduce(
+        (s, l) => s + l.totalCommissionEarnedCents,
+        0
+      ),
     };
   },
 };
@@ -688,9 +938,11 @@ export const revenueIntelligence = {
   getLTVEstimate(userId: number): number {
     const subs = subscriptionLedger.getUserSubscriptions(userId);
     const totalPaid = subs.reduce((s, sub) => s + sub.totalPaidCents, 0);
-    const monthsActive = subs.length > 0
-      ? (Date.now() - Math.min(...subs.map(s => s.createdAt.getTime()))) / (30 * 86400000)
-      : 0;
+    const monthsActive =
+      subs.length > 0
+        ? (Date.now() - Math.min(...subs.map(s => s.createdAt.getTime()))) /
+          (30 * 86400000)
+        : 0;
     const monthlyValue = monthsActive > 0 ? totalPaid / monthsActive : 0;
     // Project 24 months forward
     return Math.round(totalPaid + monthlyValue * 24);
@@ -700,20 +952,52 @@ export const revenueIntelligence = {
 // ─── COMMANDMENT ALIASES ──────────────────────────────────────────────────────
 // Unified monetization ledger facade expected by the commandments test
 
-const _cmdRevTxns: Array<{ id: string; userId: number; amount: number; currency: string; revenueType: string; metadata: Record<string, unknown>; createdAt: Date }> = [];
-const _cmdPayouts: Array<{ id: string; creatorId: number; grossAmount: number; platformFee: number; netAmount: number; currency: string; status: string; createdAt: Date }> = [];
+const _cmdRevTxns: Array<{
+  id: string;
+  userId: number;
+  amount: number;
+  currency: string;
+  revenueType: string;
+  metadata: Record<string, unknown>;
+  createdAt: Date;
+}> = [];
+const _cmdPayouts: Array<{
+  id: string;
+  creatorId: number;
+  grossAmount: number;
+  platformFee: number;
+  netAmount: number;
+  currency: string;
+  status: string;
+  createdAt: Date;
+}> = [];
 
 export const monetizationLedger = {
-  recordRevenue(params: { userId: number; amount: number; currency: string; revenueType: string; metadata: Record<string, unknown> }): string {
+  recordRevenue(params: {
+    userId: number;
+    amount: number;
+    currency: string;
+    revenueType: string;
+    metadata: Record<string, unknown>;
+  }): string {
     const id = `rev_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     _cmdRevTxns.push({ id, ...params, createdAt: new Date() });
     return id;
   },
-  recordPayout(params: { creatorId: number; grossAmount: number; platformFee?: number; netAmount?: number; platformFeeRate?: number; currency?: string; payoutMethod?: string; period?: string }): string {
+  recordPayout(params: {
+    creatorId: number;
+    grossAmount: number;
+    platformFee?: number;
+    netAmount?: number;
+    platformFeeRate?: number;
+    currency?: string;
+    payoutMethod?: string;
+    period?: string;
+  }): string {
     const id = `payout_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const feeRate = params.platformFeeRate ?? 0.20;
-    const platformFee = params.platformFee ?? (params.grossAmount * feeRate);
-    const netAmount = params.netAmount ?? (params.grossAmount - platformFee);
+    const feeRate = params.platformFeeRate ?? 0.2;
+    const platformFee = params.platformFee ?? params.grossAmount * feeRate;
+    const netAmount = params.netAmount ?? params.grossAmount - platformFee;
     _cmdPayouts.push({
       id,
       creatorId: params.creatorId,
@@ -736,8 +1020,11 @@ export const monetizationLedger = {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     return _cmdRevTxns
-      .filter((t: {revenueType: string; createdAt: Date; amount: number}) => t.revenueType === "subscription" && t.createdAt >= monthStart)
-      .reduce((sum: number, t: {amount: number}) => sum + t.amount, 0);
+      .filter(
+        (t: { revenueType: string; createdAt: Date; amount: number }) =>
+          t.revenueType === "subscription" && t.createdAt >= monthStart
+      )
+      .reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
   },
   getARR(): number {
     return this.getMRR() * 12;

@@ -1,6 +1,6 @@
 /**
  * GraphQL API Layer for SKYCOIN4444
- * 
+ *
  * Provides GraphQL interface alongside tRPC for:
  * - Complex nested queries
  * - Flexible data fetching
@@ -8,7 +8,7 @@
  * - Federation support
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // GraphQL Schema Types
 export const GraphQLTypes = {
@@ -17,7 +17,7 @@ export const GraphQLTypes = {
     id: z.string(),
     userId: z.string(),
     content: z.string(),
-    sentiment: z.enum(['positive', 'neutral', 'negative']),
+    sentiment: z.enum(["positive", "neutral", "negative"]),
     category: z.string(),
     createdAt: z.number(),
     updatedAt: z.number(),
@@ -29,7 +29,7 @@ export const GraphQLTypes = {
     title: z.string(),
     description: z.string(),
     priority: z.number(),
-    status: z.enum(['backlog', 'planned', 'in_progress', 'completed']),
+    status: z.enum(["backlog", "planned", "in_progress", "completed"]),
     dueDate: z.number().optional(),
     resources: z.record(z.string(), z.number()).optional(),
   }),
@@ -38,9 +38,9 @@ export const GraphQLTypes = {
   Agent: z.object({
     id: z.string(),
     name: z.string(),
-    role: z.enum(['analyst', 'strategist', 'executor', 'validator']),
+    role: z.enum(["analyst", "strategist", "executor", "validator"]),
     expertise: z.array(z.string()),
-    status: z.enum(['active', 'inactive', 'thinking']),
+    status: z.enum(["active", "inactive", "thinking"]),
   }),
 
   // Competitor types
@@ -58,7 +58,7 @@ export const GraphQLTypes = {
     id: z.string(),
     name: z.string(),
     hypothesis: z.string(),
-    status: z.enum(['planning', 'running', 'completed', 'failed']),
+    status: z.enum(["planning", "running", "completed", "failed"]),
     controlGroup: z.number(),
     treatmentGroup: z.number(),
     lift: z.number().optional(),
@@ -79,8 +79,8 @@ export const GraphQLTypes = {
   Connector: z.object({
     id: z.string(),
     name: z.string(),
-    type: z.enum(['slack', 'jira', 'figma', 'asana', 'github']),
-    status: z.enum(['connected', 'disconnected', 'error']),
+    type: z.enum(["slack", "jira", "figma", "asana", "github"]),
+    status: z.enum(["connected", "disconnected", "error"]),
     lastSync: z.number(),
     syncCount: z.number(),
   }),
@@ -110,7 +110,7 @@ export const GraphQLTypes = {
     value: z.number(),
     unit: z.string(),
     timestamp: z.number(),
-    trend: z.enum(['up', 'down', 'stable']),
+    trend: z.enum(["up", "down", "stable"]),
   }),
 };
 
@@ -124,7 +124,7 @@ export const GraphQLQueries = {
   }),
 
   feedbackStats: z.object({
-    timeRange: z.enum(['1h', '24h', '7d', '30d']).optional(),
+    timeRange: z.enum(["1h", "24h", "7d", "30d"]).optional(),
   }),
 
   // Roadmap queries
@@ -206,7 +206,7 @@ export const GraphQLQueries = {
   // Analytics queries
   analyticsMetrics: z.object({
     engines: z.array(z.string()).optional(),
-    timeRange: z.enum(['1h', '24h', '7d', '30d']).optional(),
+    timeRange: z.enum(["1h", "24h", "7d", "30d"]).optional(),
   }),
 
   ecosystemHealth: z.object({
@@ -218,7 +218,7 @@ export const GraphQLQueries = {
 export const GraphQLMutations = {
   createFeedback: z.object({
     content: z.string(),
-    sentiment: z.enum(['positive', 'neutral', 'negative']),
+    sentiment: z.enum(["positive", "neutral", "negative"]),
     category: z.string(),
   }),
 
@@ -236,7 +236,7 @@ export const GraphQLMutations = {
 
   updateConnectorStatus: z.object({
     connectorId: z.string(),
-    status: z.enum(['connected', 'disconnected']),
+    status: z.enum(["connected", "disconnected"]),
   }),
 
   createPlaybook: z.object({

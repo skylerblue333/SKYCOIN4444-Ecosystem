@@ -89,10 +89,30 @@ describe("BIP-44 derivation path", () => {
 
 describe("Chain configuration", () => {
   const SUPPORTED_CHAINS = {
-    ethereum: { chainId: 1, name: "Ethereum", rpcUrl: "https://eth.llamarpc.com", nativeCurrency: "ETH" },
-    polygon: { chainId: 137, name: "Polygon", rpcUrl: "https://polygon.llamarpc.com", nativeCurrency: "MATIC" },
-    bsc: { chainId: 56, name: "BNB Smart Chain", rpcUrl: "https://bsc-dataseed.binance.org", nativeCurrency: "BNB" },
-    base: { chainId: 8453, name: "Base", rpcUrl: "https://mainnet.base.org", nativeCurrency: "ETH" },
+    ethereum: {
+      chainId: 1,
+      name: "Ethereum",
+      rpcUrl: "https://eth.llamarpc.com",
+      nativeCurrency: "ETH",
+    },
+    polygon: {
+      chainId: 137,
+      name: "Polygon",
+      rpcUrl: "https://polygon.llamarpc.com",
+      nativeCurrency: "MATIC",
+    },
+    bsc: {
+      chainId: 56,
+      name: "BNB Smart Chain",
+      rpcUrl: "https://bsc-dataseed.binance.org",
+      nativeCurrency: "BNB",
+    },
+    base: {
+      chainId: 8453,
+      name: "Base",
+      rpcUrl: "https://mainnet.base.org",
+      nativeCurrency: "ETH",
+    },
   } as const;
 
   it("has 4 supported chains", () => {
@@ -100,7 +120,7 @@ describe("Chain configuration", () => {
   });
 
   it("each chain has a unique chainId", () => {
-    const ids = Object.values(SUPPORTED_CHAINS).map((c) => c.chainId);
+    const ids = Object.values(SUPPORTED_CHAINS).map(c => c.chainId);
     const unique = new Set(ids);
     expect(unique.size).toBe(ids.length);
   });

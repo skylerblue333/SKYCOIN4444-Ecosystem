@@ -1,4 +1,4 @@
-import { invokeLLM } from './_core/llm';
+import { invokeLLM } from "./_core/llm";
 
 /**
  * Advanced Dating Matching Algorithm
@@ -65,9 +65,9 @@ export class DatingMatcher {
       userId: candidateProfile.id,
       score: Math.round(overallScore * 100),
       reasons: [
-        `${interestOverlap * 100 | 0}% interest overlap`,
-        `${ageCompatibility * 100 | 0}% age compatibility`,
-        `${locationScore * 100 | 0}% location match`,
+        `${(interestOverlap * 100) | 0}% interest overlap`,
+        `${(ageCompatibility * 100) | 0}% age compatibility`,
+        `${(locationScore * 100) | 0}% location match`,
         ...aiAnalysis.reasons,
       ],
       compatibility: {
@@ -91,39 +91,42 @@ export class DatingMatcher {
       const response = await invokeLLM({
         messages: [
           {
-            role: 'system',
+            role: "system",
             content: `You are a dating compatibility expert. Analyze two user profiles and provide a compatibility score (0-1) and key reasons. Return JSON: { "valueAlignment": 0-1, "reasons": ["reason1", "reason2"] }`,
           },
           {
-            role: 'user',
+            role: "user",
             content: `User 1: ${JSON.stringify(user1)}\n\nUser 2: ${JSON.stringify(user2)}\n\nProvide compatibility analysis as JSON.`,
           },
         ],
       });
 
       const contentRaw = response.choices[0]?.message?.content;
-      const content = typeof contentRaw === 'string' ? contentRaw : '{}';
+      const content = typeof contentRaw === "string" ? contentRaw : "{}";
       const analysis = JSON.parse(content);
       return {
         valueAlignment: analysis.valueAlignment || 0.5,
         reasons: analysis.reasons || [],
       };
     } catch (error) {
-      console.error('AI compatibility analysis failed:', error);
-      return { valueAlignment: 0.5, reasons: ['AI analysis unavailable'] };
+      console.error("AI compatibility analysis failed:", error);
+      return { valueAlignment: 0.5, reasons: ["AI analysis unavailable"] };
     }
   }
 
   /**
    * Calculate interest overlap percentage
    */
-  private calculateInterestOverlap(interests1: string[], interests2: string[]): number {
+  private calculateInterestOverlap(
+    interests1: string[],
+    interests2: string[]
+  ): number {
     if (interests1.length === 0 || interests2.length === 0) return 0.5;
 
-    const set1 = new Set(interests1.map((i) => i.toLowerCase()));
-    const set2 = new Set(interests2.map((i) => i.toLowerCase()));
+    const set1 = new Set(interests1.map(i => i.toLowerCase()));
+    const set2 = new Set(interests2.map(i => i.toLowerCase()));
 
-    const intersection = new Set([...set1].filter((x) => set2.has(x)));
+    const intersection = new Set([...set1].filter(x => set2.has(x)));
     const union = new Set([...set1, ...set2]);
 
     return intersection.size / union.size;
@@ -178,14 +181,21 @@ export class DatingMatcher {
       const distance = Math.random() * 50;
 
       // Check preference constraints
-      if (candidate.age < preferences.minAge || candidate.age > preferences.maxAge) {
+      if (
+        candidate.age < preferences.minAge ||
+        candidate.age > preferences.maxAge
+      ) {
         continue;
       }
       if (distance > preferences.maxDistance) {
         continue;
       }
 
-      const score = await this.calculateMatchScore(userProfile, candidate, distance);
+      const score = await this.calculateMatchScore(
+        userProfile,
+        candidate,
+        distance
+      );
       scores.push(score);
     }
 

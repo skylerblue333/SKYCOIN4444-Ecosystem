@@ -19,13 +19,19 @@ const PULSE_COLORS = {
   critical: "bg-red-500",
 };
 
-function PulsingDot({ status }: { status: "healthy" | "warning" | "critical" }) {
+function PulsingDot({
+  status,
+}: {
+  status: "healthy" | "warning" | "critical";
+}) {
   return (
     <span className="relative flex h-3 w-3">
       <span
         className={`animate-ping absolute inline-flex h-full w-full rounded-full ${PULSE_COLORS[status]} opacity-75`}
       />
-      <span className={`relative inline-flex rounded-full h-3 w-3 ${PULSE_COLORS[status]}`} />
+      <span
+        className={`relative inline-flex rounded-full h-3 w-3 ${PULSE_COLORS[status]}`}
+      />
     </span>
   );
 }
@@ -45,11 +51,17 @@ function MetricPanel({
 }) {
   const trendIcon = trend === "up" ? "▲" : trend === "down" ? "▼" : "●";
   const trendColor =
-    trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-yellow-400";
+    trend === "up"
+      ? "text-emerald-400"
+      : trend === "down"
+        ? "text-red-400"
+        : "text-yellow-400";
   return (
     <div className="bg-black/40 border border-yellow-500/20 rounded-lg p-4 flex flex-col gap-1">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-yellow-500/60 uppercase tracking-widest">{label}</span>
+        <span className="text-xs text-yellow-500/60 uppercase tracking-widest">
+          {label}
+        </span>
         {status && <PulsingDot status={status} />}
       </div>
       <div className="text-2xl font-bold text-white font-mono">{value}</div>
@@ -69,25 +81,38 @@ export default function SituationRoom() {
 
   // Auto-refresh every 30s
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    const id = setInterval(() => setTick(t => t + 1), 30_000);
     return () => clearInterval(id);
   }, []);
 
-  const { data: orchestratorState } = trpc.orchestrator.status.useQuery(undefined, {
-    refetchInterval: 30_000,
-  });
-  const { data: econHealth } = trpc.enterprise.economy.healthReport.useQuery(undefined, {
-    refetchInterval: 30_000,
-  });
-  const { data: govHealth } = trpc.enterprise.governanceV2.health.useQuery(undefined, {
-    refetchInterval: 30_000,
-  });
-  const { data: secRisk } = trpc.enterprise.security.myRiskScore.useQuery(undefined, {
-    refetchInterval: 30_000,
-  });
-  const { data: freeWillSnap } = trpc.enterprise.freeWill.systemSnapshot.useQuery(undefined, {
-    refetchInterval: 30_000,
-  });
+  const { data: orchestratorState } = trpc.orchestrator.status.useQuery(
+    undefined,
+    {
+      refetchInterval: 30_000,
+    }
+  );
+  const { data: econHealth } = trpc.enterprise.economy.healthReport.useQuery(
+    undefined,
+    {
+      refetchInterval: 30_000,
+    }
+  );
+  const { data: govHealth } = trpc.enterprise.governanceV2.health.useQuery(
+    undefined,
+    {
+      refetchInterval: 30_000,
+    }
+  );
+  const { data: secRisk } = trpc.enterprise.security.myRiskScore.useQuery(
+    undefined,
+    {
+      refetchInterval: 30_000,
+    }
+  );
+  const { data: freeWillSnap } =
+    trpc.enterprise.freeWill.systemSnapshot.useQuery(undefined, {
+      refetchInterval: 30_000,
+    });
 
   const platformScore = orchestratorState?.platformScore ?? 0;
   const economyHealth = econHealth?.overallHealth ?? "UNKNOWN";
@@ -98,8 +123,16 @@ export default function SituationRoom() {
         : "Stable"
       : "Loading";
   const riskScore = secRisk?.riskScore ?? 0;
-  const threatLevel = riskScore > 70 ? "critical" : riskScore > 40 ? "high" : riskScore > 20 ? "medium" : "low";
-  const dau = (freeWillSnap as unknown as Record<string, unknown>)?.activeGoals ?? 0;
+  const threatLevel =
+    riskScore > 70
+      ? "critical"
+      : riskScore > 40
+        ? "high"
+        : riskScore > 20
+          ? "medium"
+          : "low";
+  const dau =
+    (freeWillSnap as unknown as Record<string, unknown>)?.activeGoals ?? 0;
   const agentActivity = orchestratorState?.recommendations?.length ?? 0;
 
   const now = new Date();
@@ -148,16 +181,21 @@ export default function SituationRoom() {
                 <span className="text-3xl text-yellow-500">/100</span>
               </div>
               <div className="mt-2 text-sm text-white/50">
-                Real-time composite of economy, governance, security, and citizen activity
+                Real-time composite of economy, governance, security, and
+                citizen activity
               </div>
             </div>
             <div className="hidden md:grid grid-cols-2 gap-4 text-right">
               <div>
-                <div className="text-3xl font-bold text-emerald-400">{dau as number}</div>
+                <div className="text-3xl font-bold text-emerald-400">
+                  {dau as number}
+                </div>
                 <div className="text-xs text-white/40">Active Citizens</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-yellow-400">{agentActivity}</div>
+                <div className="text-3xl font-bold text-yellow-400">
+                  {agentActivity}
+                </div>
                 <div className="text-xs text-white/40">AI Recommendations</div>
               </div>
               <div>
@@ -187,7 +225,13 @@ export default function SituationRoom() {
             label="Economy Status"
             value={economyHealth.toUpperCase()}
             sub="Token velocity + emission health"
-            status={economyHealth === "HEALTHY" ? "healthy" : economyHealth === "CRITICAL" ? "critical" : "warning"} 
+            status={
+              economyHealth === "HEALTHY"
+                ? "healthy"
+                : economyHealth === "CRITICAL"
+                  ? "critical"
+                  : "warning"
+            }
             trend="stable"
           />
           <MetricPanel
@@ -208,7 +252,13 @@ export default function SituationRoom() {
             label="Security Threat"
             value={threatLevel.toUpperCase()}
             sub="Real-time risk assessment"
-            status={threatLevel === "low" ? "healthy" : threatLevel === "medium" ? "warning" : "critical"}
+            status={
+              threatLevel === "low"
+                ? "healthy"
+                : threatLevel === "medium"
+                  ? "warning"
+                  : "critical"
+            }
             trend="stable"
           />
           <MetricPanel
@@ -222,7 +272,13 @@ export default function SituationRoom() {
             label="Platform Score"
             value={`${platformScore.toFixed(1)}`}
             sub="Composite intelligence index"
-            status={platformScore > 70 ? "healthy" : platformScore > 40 ? "warning" : "critical"}
+            status={
+              platformScore > 70
+                ? "healthy"
+                : platformScore > 40
+                  ? "warning"
+                  : "critical"
+            }
             trend="up"
           />
         </div>
@@ -238,7 +294,8 @@ export default function SituationRoom() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {orchestratorState?.recommendations && orchestratorState.recommendations.length > 0 ? (
+              {orchestratorState?.recommendations &&
+              orchestratorState.recommendations.length > 0 ? (
                 orchestratorState.recommendations.slice(0, 6).map((rec, i) => (
                   <div
                     key={i}
@@ -249,15 +306,21 @@ export default function SituationRoom() {
                     </div>
                     <div>
                       <div className="text-sm text-white font-medium">
-                        {typeof rec === "object" && rec !== null && "title" in rec
+                        {typeof rec === "object" &&
+                        rec !== null &&
+                        "title" in rec
                           ? String((rec as Record<string, unknown>).title)
                           : String(rec)}
                       </div>
-                      {typeof rec === "object" && rec !== null && "description" in rec && (
-                        <div className="text-xs text-white/40 mt-0.5">
-                          {String((rec as Record<string, unknown>).description)}
-                        </div>
-                      )}
+                      {typeof rec === "object" &&
+                        rec !== null &&
+                        "description" in rec && (
+                          <div className="text-xs text-white/40 mt-0.5">
+                            {String(
+                              (rec as Record<string, unknown>).description
+                            )}
+                          </div>
+                        )}
                     </div>
                   </div>
                 ))
@@ -265,7 +328,9 @@ export default function SituationRoom() {
                 <div className="text-center py-8 text-white/30">
                   <div className="text-4xl mb-2">🧠</div>
                   <div className="text-sm">Orchestrator initializing...</div>
-                  <div className="text-xs mt-1">Intelligence feed will populate after first cycle</div>
+                  <div className="text-xs mt-1">
+                    Intelligence feed will populate after first cycle
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -284,13 +349,16 @@ export default function SituationRoom() {
               {econHealth && (
                 <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-emerald-400 text-xs font-bold uppercase">ECONOMY</span>
+                    <span className="text-emerald-400 text-xs font-bold uppercase">
+                      ECONOMY
+                    </span>
                     <Badge className="bg-emerald-500/20 text-emerald-400 text-xs border-0">
                       {econHealth.overallHealth}
                     </Badge>
                   </div>
                   <div className="text-sm text-white/70">
-                    Overall health: {econHealth.overallHealth} — Emission health nominal
+                    Overall health: {econHealth.overallHealth} — Emission health
+                    nominal
                   </div>
                 </div>
               )}
@@ -305,7 +373,9 @@ export default function SituationRoom() {
                 <div className="flex items-center gap-2 mb-1">
                   <span
                     className={`text-xs font-bold uppercase ${
-                      threatLevel === "low" ? "text-emerald-400" : "text-orange-400"
+                      threatLevel === "low"
+                        ? "text-emerald-400"
+                        : "text-orange-400"
                     }`}
                   >
                     SECURITY
@@ -327,24 +397,32 @@ export default function SituationRoom() {
               {/* Governance signal */}
               <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-blue-400 text-xs font-bold uppercase">GOVERNANCE</span>
+                  <span className="text-blue-400 text-xs font-bold uppercase">
+                    GOVERNANCE
+                  </span>
                   <Badge className="bg-blue-500/20 text-blue-400 text-xs border-0">
                     {govHealth?.activeProposals ?? 0} ACTIVE
                   </Badge>
                 </div>
                 <div className="text-sm text-white/70">
-                  Avg participation: {govHealth?.avgParticipation?.toFixed(1) ?? "0"}% — Nation
+                  Avg participation:{" "}
+                  {govHealth?.avgParticipation?.toFixed(1) ?? "0"}% — Nation
                   stable
                 </div>
               </div>
               {/* Opportunity */}
               <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-yellow-400 text-xs font-bold uppercase">OPPORTUNITY</span>
-                  <Badge className="bg-yellow-500/20 text-yellow-400 text-xs border-0">HIGH</Badge>
+                  <span className="text-yellow-400 text-xs font-bold uppercase">
+                    OPPORTUNITY
+                  </span>
+                  <Badge className="bg-yellow-500/20 text-yellow-400 text-xs border-0">
+                    HIGH
+                  </Badge>
                 </div>
                 <div className="text-sm text-white/70">
-                  AI agents identified {agentActivity} growth opportunities this cycle
+                  AI agents identified {agentActivity} growth opportunities this
+                  cycle
                 </div>
               </div>
             </CardContent>
@@ -356,35 +434,35 @@ export default function SituationRoom() {
           <Button
             variant="outline"
             className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10"
-            onClick={() => window.location.href = "/life-command"}
+            onClick={() => (window.location.href = "/life-command")}
           >
             ⚡ Life Command
           </Button>
           <Button
             variant="outline"
             className="border-blue-500/40 text-blue-400 hover:bg-blue-500/10"
-            onClick={() => window.location.href = "/destiny-engine"}
+            onClick={() => (window.location.href = "/destiny-engine")}
           >
             🔮 Destiny Engine
           </Button>
           <Button
             variant="outline"
             className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10"
-            onClick={() => window.location.href = "/sky444-central-bank"}
+            onClick={() => (window.location.href = "/sky444-central-bank")}
           >
             🏦 Central Bank
           </Button>
           <Button
             variant="outline"
             className="border-purple-500/40 text-purple-400 hover:bg-purple-500/10"
-            onClick={() => window.location.href = "/nation-map"}
+            onClick={() => (window.location.href = "/nation-map")}
           >
             🌍 Nation Map
           </Button>
           <Button
             variant="outline"
             className="border-pink-500/40 text-pink-400 hover:bg-pink-500/10"
-            onClick={() => window.location.href = "/civilization-simulator"}
+            onClick={() => (window.location.href = "/civilization-simulator")}
           >
             🏛️ Civilization Sim
           </Button>

@@ -13,18 +13,24 @@
 import type { Request, Response, NextFunction } from "express";
 
 // ── In-memory cache (replace with Redis in production) ───────────────────────
-const idempotencyCache = new Map<string, { status: number; body: unknown; timestamp: number }>();
+const idempotencyCache = new Map<
+  string,
+  { status: number; body: unknown; timestamp: number }
+>();
 
 // Clean up expired keys every 5 minutes
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of idempotencyCache.entries()) {
-    if (now - value.timestamp > CACHE_TTL_MS) {
-      idempotencyCache.delete(key);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, value] of idempotencyCache.entries()) {
+      if (now - value.timestamp > CACHE_TTL_MS) {
+        idempotencyCache.delete(key);
+      }
     }
-  }
-}, 5 * 60 * 1000);
+  },
+  5 * 60 * 1000
+);
 
 /**
  * Idempotency middleware — enforces exactly-once processing.
@@ -95,10 +101,7 @@ export function idempotencyMiddleware(
  */
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
-export function rateLimitMiddleware(
-  maxRequests = 100,
-  windowMs = 60 * 1000
-) {
+export function rateLimitMiddleware(maxRequests = 100, windowMs = 60 * 1000) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
     const now = Date.now();
@@ -110,7 +113,10 @@ export function rateLimitMiddleware(
       rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
       res.setHeader("X-RateLimit-Limit", maxRequests);
       res.setHeader("X-RateLimit-Remaining", maxRequests - 1);
-      res.setHeader("X-RateLimit-Reset", new Date(now + windowMs).toISOString());
+      res.setHeader(
+        "X-RateLimit-Reset",
+        new Date(now + windowMs).toISOString()
+      );
       next();
       return;
     }
@@ -118,7 +124,10 @@ export function rateLimitMiddleware(
     if (current.count >= maxRequests) {
       res.setHeader("X-RateLimit-Limit", maxRequests);
       res.setHeader("X-RateLimit-Remaining", 0);
-      res.setHeader("X-RateLimit-Reset", new Date(current.resetAt).toISOString());
+      res.setHeader(
+        "X-RateLimit-Reset",
+        new Date(current.resetAt).toISOString()
+      );
       res.setHeader("Retry-After", Math.ceil((current.resetAt - now) / 1000));
       res.status(429).json({
         error: "Too Many Requests",

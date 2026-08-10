@@ -48,7 +48,11 @@ export function cacheGet<T>(key: string): T | null {
   return entry.value;
 }
 
-export function cacheSet<T>(key: string, value: T, ttlMs = DEFAULT_TTL_MS): void {
+export function cacheSet<T>(
+  key: string,
+  value: T,
+  ttlMs = DEFAULT_TTL_MS
+): void {
   if (cache.size >= MAX_CACHE_SIZE) {
     evictExpired();
     if (cache.size >= MAX_CACHE_SIZE) evictOldest();
@@ -117,7 +121,10 @@ export function getSlowQueryLog(): QueryStats[] {
 }
 
 // ── Timed Query Wrapper (no cache, just timing) ────────────────────────────
-export async function timedQuery<T>(key: string, fn: () => Promise<T>): Promise<T> {
+export async function timedQuery<T>(
+  key: string,
+  fn: () => Promise<T>
+): Promise<T> {
   const start = Date.now();
   const result = await fn();
   logQuery(key, Date.now() - start, false);
@@ -133,13 +140,15 @@ export const CacheKeys = {
   userFollowing: (userId: string) => `following:${userId}`,
   postLikes: (postId: string) => `likes:post:${postId}`,
   communityList: () => `communities:list`,
-  communityPosts: (communityId: string, page: number) => `community:${communityId}:posts:${page}`,
+  communityPosts: (communityId: string, page: number) =>
+    `community:${communityId}:posts:${page}`,
   leaderboard: (type: string) => `leaderboard:${type}`,
   tokenPrices: () => `prices:tokens`,
   stakingPools: () => `staking:pools`,
   nftList: (userId: string) => `nfts:${userId}`,
   charityList: () => `charity:campaigns`,
-  marketplaceProducts: (category: string, page: number) => `marketplace:${category}:${page}`,
+  marketplaceProducts: (category: string, page: number) =>
+    `marketplace:${category}:${page}`,
   dhgateProducts: (category: string) => `dhgate:${category}`,
   platformStats: () => `platform:stats`,
   aiRecommendations: (userId: string) => `ai:recs:${userId}`,

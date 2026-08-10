@@ -94,13 +94,21 @@ export const Validators = {
    * Validate slug format
    */
   isValidSlug(slug: string): boolean {
-    return /^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) && slug.length >= 2 && slug.length <= 100;
+    return (
+      /^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) &&
+      slug.length >= 2 &&
+      slug.length <= 100
+    );
   },
 
   /**
    * Validate content length with unicode awareness
    */
-  isValidContent(content: string, minLength: number = 1, maxLength: number = 5000): boolean {
+  isValidContent(
+    content: string,
+    minLength: number = 1,
+    maxLength: number = 5000
+  ): boolean {
     const length = Array.from(content).length; // Unicode-aware length
     return length >= minLength && length <= maxLength;
   },
@@ -108,19 +116,30 @@ export const Validators = {
   /**
    * Validate file upload
    */
-  isValidFileUpload(file: { size: number; type: string }, options?: {
-    maxSize?: number;
-    allowedTypes?: string[];
-  }): { valid: boolean; reason?: string } {
+  isValidFileUpload(
+    file: { size: number; type: string },
+    options?: {
+      maxSize?: number;
+      allowedTypes?: string[];
+    }
+  ): { valid: boolean; reason?: string } {
     const maxSize = options?.maxSize || 10 * 1024 * 1024; // 10MB default
     const allowedTypes = options?.allowedTypes || [
-      "image/jpeg", "image/png", "image/gif", "image/webp",
-      "video/mp4", "video/webm",
-      "audio/mpeg", "audio/wav",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "video/mp4",
+      "video/webm",
+      "audio/mpeg",
+      "audio/wav",
     ];
 
     if (file.size > maxSize) {
-      return { valid: false, reason: `File too large. Max: ${formatFileSize(maxSize)}` };
+      return {
+        valid: false,
+        reason: `File too large. Max: ${formatFileSize(maxSize)}`,
+      };
     }
     if (!allowedTypes.includes(file.type)) {
       return { valid: false, reason: `File type not allowed: ${file.type}` };
@@ -131,7 +150,10 @@ export const Validators = {
   /**
    * Validate pagination params
    */
-  isValidPagination(page: number, limit: number): { valid: boolean; reason?: string } {
+  isValidPagination(
+    page: number,
+    limit: number
+  ): { valid: boolean; reason?: string } {
     if (!Number.isInteger(page) || page < 1) {
       return { valid: false, reason: "Page must be a positive integer" };
     }
@@ -145,7 +167,10 @@ export const Validators = {
    * Validate date range
    */
   isValidDateRange(start: Date, end: Date): boolean {
-    return start < end && end.getTime() - start.getTime() <= 365 * 24 * 60 * 60 * 1000;
+    return (
+      start < end &&
+      end.getTime() - start.getTime() <= 365 * 24 * 60 * 60 * 1000
+    );
   },
 };
 
@@ -173,7 +198,10 @@ export function formatCompact(num: number): string {
 /**
  * Format a token amount with proper decimals
  */
-export function formatTokenAmount(amount: number | string, decimals: number = 2): string {
+export function formatTokenAmount(
+  amount: number | string,
+  decimals: number = 2
+): string {
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
   if (num >= 1e6) return `${(num / 1e6).toFixed(decimals)}M`;
   if (num >= 1e3) return `${(num / 1e3).toFixed(decimals)}K`;
@@ -196,7 +224,8 @@ export function formatFileSize(bytes: number): string {
 export function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  if (ms < 3600000) return `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`;
+  if (ms < 3600000)
+    return `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`;
   const hours = Math.floor(ms / 3600000);
   const minutes = Math.floor((ms % 3600000) / 60000);
   return `${hours}h ${minutes}m`;
@@ -228,7 +257,9 @@ export function formatRelativeTime(date: Date | number): string {
     if (absDiff >= ms) {
       const value = Math.floor(absDiff / ms);
       const plural = value > 1 ? "s" : "";
-      return isPast ? `${value} ${unit}${plural} ago` : `in ${value} ${unit}${plural}`;
+      return isPast
+        ? `${value} ${unit}${plural} ago`
+        : `in ${value} ${unit}${plural}`;
     }
   }
 
@@ -245,7 +276,10 @@ export function formatPercentage(value: number, decimals: number = 1): string {
 /**
  * Format currency amount
  */
-export function formatCurrency(amount: number, currency: string = "SKY444"): string {
+export function formatCurrency(
+  amount: number,
+  currency: string = "SKY444"
+): string {
   if (currency === "USD") {
     return `$${amount.toFixed(2)}`;
   }
@@ -300,7 +334,8 @@ export function randomHex(length: number = 32): string {
  * Generate a random alphanumeric string
  */
 export function randomAlphanumeric(length: number = 16): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
   for (let i = 0; i < length; i++) {
     result += chars[Math.floor(Math.random() * chars.length)];
@@ -312,7 +347,7 @@ export function randomAlphanumeric(length: number = 16): string {
  * Generate a UUID v4
  */
 export function generateUUID(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
     const r = (Math.random() * 16) | 0;
     const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
@@ -326,7 +361,7 @@ export function simpleHash(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash |= 0; // Convert to 32-bit integer
   }
   return Math.abs(hash);
@@ -396,53 +431,88 @@ export type Permission =
 
 const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   user: [
-    "read:posts", "write:posts",
+    "read:posts",
+    "write:posts",
     "read:users",
-    "read:communities", "write:communities",
-    "read:marketplace", "write:marketplace",
+    "read:communities",
+    "write:communities",
+    "read:marketplace",
+    "write:marketplace",
     "read:streams",
     "create:guilds",
   ],
   creator: [
-    "read:posts", "write:posts", "delete:posts",
+    "read:posts",
+    "write:posts",
+    "delete:posts",
     "read:users",
-    "read:communities", "write:communities",
-    "read:marketplace", "write:marketplace",
-    "read:streams", "write:streams",
+    "read:communities",
+    "write:communities",
+    "read:marketplace",
+    "write:marketplace",
+    "read:streams",
+    "write:streams",
     "read:analytics",
     "create:guilds",
-    "create:subscriptions", "manage:subscriptions",
+    "create:subscriptions",
+    "manage:subscriptions",
     "create:tournaments",
     "access:creator_dashboard",
   ],
   moderator: [
-    "read:posts", "write:posts", "delete:posts",
-    "read:users", "write:users",
-    "read:communities", "write:communities", "manage:communities",
-    "read:marketplace", "write:marketplace", "manage:marketplace",
-    "read:streams", "write:streams", "manage:streams",
+    "read:posts",
+    "write:posts",
+    "delete:posts",
+    "read:users",
+    "write:users",
+    "read:communities",
+    "write:communities",
+    "manage:communities",
+    "read:marketplace",
+    "write:marketplace",
+    "manage:marketplace",
+    "read:streams",
+    "write:streams",
+    "manage:streams",
     "read:analytics",
     "manage:moderation",
-    "create:guilds", "manage:guilds",
-    "create:tournaments", "manage:tournaments",
+    "create:guilds",
+    "manage:guilds",
+    "create:tournaments",
+    "manage:tournaments",
     "access:creator_dashboard",
     "access:mod_tools",
   ],
   admin: [
-    "read:posts", "write:posts", "delete:posts",
-    "read:users", "write:users", "delete:users",
-    "read:communities", "write:communities", "delete:communities", "manage:communities",
-    "read:marketplace", "write:marketplace", "manage:marketplace",
-    "read:streams", "write:streams", "manage:streams",
-    "read:analytics", "write:analytics",
+    "read:posts",
+    "write:posts",
+    "delete:posts",
+    "read:users",
+    "write:users",
+    "delete:users",
+    "read:communities",
+    "write:communities",
+    "delete:communities",
+    "manage:communities",
+    "read:marketplace",
+    "write:marketplace",
+    "manage:marketplace",
+    "read:streams",
+    "write:streams",
+    "manage:streams",
+    "read:analytics",
+    "write:analytics",
     "manage:moderation",
     "manage:users",
     "manage:platform",
     "manage:payouts",
     "manage:tokens",
-    "create:guilds", "manage:guilds",
-    "create:tournaments", "manage:tournaments",
-    "create:subscriptions", "manage:subscriptions",
+    "create:guilds",
+    "manage:guilds",
+    "create:tournaments",
+    "manage:tournaments",
+    "create:subscriptions",
+    "manage:subscriptions",
     "access:admin",
     "access:creator_dashboard",
     "access:mod_tools",
@@ -573,7 +643,10 @@ export function toISODate(date: Date): string {
 /**
  * Group array items by a key
  */
-export function groupBy<T>(items: T[], keyFn: (item: T) => string): Record<string, T[]> {
+export function groupBy<T>(
+  items: T[],
+  keyFn: (item: T) => string
+): Record<string, T[]> {
   const result: Record<string, T[]> = {};
   for (const item of items) {
     const key = keyFn(item);
@@ -586,7 +659,10 @@ export function groupBy<T>(items: T[], keyFn: (item: T) => string): Record<strin
 /**
  * Remove duplicates from array by key
  */
-export function uniqueBy<T>(items: T[], keyFn: (item: T) => string | number): T[] {
+export function uniqueBy<T>(
+  items: T[],
+  keyFn: (item: T) => string | number
+): T[] {
   const seen = new Set<string | number>();
   return items.filter(item => {
     const key = keyFn(item);
@@ -638,14 +714,21 @@ export function omit<T extends Record<string, unknown>, K extends keyof T>(
 /**
  * Deep merge two objects
  */
-export function deepMerge<T extends Record<string, unknown>>(target: T, source: Partial<T>): T {
+export function deepMerge<T extends Record<string, unknown>>(
+  target: T,
+  source: Partial<T>
+): T {
   const result = { ...target };
   for (const key of Object.keys(source) as Array<keyof T>) {
     const sourceVal = source[key];
     const targetVal = result[key];
     if (
-      sourceVal && typeof sourceVal === "object" && !Array.isArray(sourceVal) &&
-      targetVal && typeof targetVal === "object" && !Array.isArray(targetVal)
+      sourceVal &&
+      typeof sourceVal === "object" &&
+      !Array.isArray(sourceVal) &&
+      targetVal &&
+      typeof targetVal === "object" &&
+      !Array.isArray(targetVal)
     ) {
       result[key] = deepMerge(
         targetVal as Record<string, unknown>,
@@ -721,7 +804,10 @@ export async function retry<T>(
 /**
  * Calculate staking APY based on lock period
  */
-export function calculateStakingAPY(baserate: number, lockDays: number): number {
+export function calculateStakingAPY(
+  baserate: number,
+  lockDays: number
+): number {
   // Longer lock = higher APY (up to 3x multiplier at 365 days)
   const multiplier = 1 + (lockDays / 365) * 2;
   return baserate * multiplier;
@@ -736,7 +822,8 @@ export function calculateVestingSchedule(params: {
   vestingMonths: number;
   startDate: Date;
 }): Array<{ date: Date; amount: number; cumulative: number }> {
-  const schedule: Array<{ date: Date; amount: number; cumulative: number }> = [];
+  const schedule: Array<{ date: Date; amount: number; cumulative: number }> =
+    [];
   const monthlyAmount = params.totalAmount / params.vestingMonths;
   let cumulative = 0;
 
@@ -744,9 +831,10 @@ export function calculateVestingSchedule(params: {
     const date = new Date(params.startDate);
     date.setMonth(date.getMonth() + params.cliffMonths + month);
 
-    const amount = month === params.vestingMonths - 1
-      ? params.totalAmount - cumulative // Last month gets remainder
-      : monthlyAmount;
+    const amount =
+      month === params.vestingMonths - 1
+        ? params.totalAmount - cumulative // Last month gets remainder
+        : monthlyAmount;
 
     cumulative += amount;
     schedule.push({ date, amount, cumulative });
@@ -764,7 +852,8 @@ export function calculateBurnRate(params: {
   period: "daily" | "weekly" | "monthly";
 }): { burnAmount: number; annualizedBurn: number } {
   const burnAmount = params.transactionVolume * (params.burnPercentage / 100);
-  const multiplier = params.period === "daily" ? 365 : params.period === "weekly" ? 52 : 12;
+  const multiplier =
+    params.period === "daily" ? 365 : params.period === "weekly" ? 52 : 12;
   return {
     burnAmount,
     annualizedBurn: burnAmount * multiplier,
@@ -778,14 +867,20 @@ export function calculatePoolShare(params: {
   userLiquidity: number;
   totalPoolLiquidity: number;
   poolFees24h: number;
-}): { sharePercentage: number; estimatedDailyFees: number; estimatedAPR: number } {
-  const sharePercentage = params.totalPoolLiquidity > 0
-    ? params.userLiquidity / params.totalPoolLiquidity
-    : 0;
+}): {
+  sharePercentage: number;
+  estimatedDailyFees: number;
+  estimatedAPR: number;
+} {
+  const sharePercentage =
+    params.totalPoolLiquidity > 0
+      ? params.userLiquidity / params.totalPoolLiquidity
+      : 0;
   const estimatedDailyFees = params.poolFees24h * sharePercentage;
-  const estimatedAPR = params.userLiquidity > 0
-    ? (estimatedDailyFees * 365) / params.userLiquidity
-    : 0;
+  const estimatedAPR =
+    params.userLiquidity > 0
+      ? (estimatedDailyFees * 365) / params.userLiquidity
+      : 0;
 
   return { sharePercentage, estimatedDailyFees, estimatedAPR };
 }
@@ -822,7 +917,10 @@ export function extractUrls(content: string): string[] {
 /**
  * Calculate reading time in minutes
  */
-export function calculateReadingTime(content: string, wordsPerMinute: number = 200): number {
+export function calculateReadingTime(
+  content: string,
+  wordsPerMinute: number = 200
+): number {
   const wordCount = content.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
@@ -830,7 +928,10 @@ export function calculateReadingTime(content: string, wordsPerMinute: number = 2
 /**
  * Generate excerpt from content
  */
-export function generateExcerpt(content: string, maxLength: number = 160): string {
+export function generateExcerpt(
+  content: string,
+  maxLength: number = 160
+): string {
   // Strip markdown-like formatting
   const plain = content
     .replace(/[#*_~`]/g, "")
@@ -843,7 +944,10 @@ export function generateExcerpt(content: string, maxLength: number = 160): strin
   // Cut at word boundary
   const truncated = plain.slice(0, maxLength);
   const lastSpace = truncated.lastIndexOf(" ");
-  return (lastSpace > maxLength * 0.7 ? truncated.slice(0, lastSpace) : truncated) + "...";
+  return (
+    (lastSpace > maxLength * 0.7 ? truncated.slice(0, lastSpace) : truncated) +
+    "..."
+  );
 }
 
 /**

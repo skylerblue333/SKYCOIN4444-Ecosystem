@@ -20,20 +20,54 @@
 // TYPES & INTERFACES
 // ═══════════════════════════════════════════════════════════════
 
-export type TicketStatus = "open" | "in_progress" | "waiting_user" | "resolved" | "closed" | "escalated";
+export type TicketStatus =
+  "open" | "in_progress" | "waiting_user" | "resolved" | "closed" | "escalated";
 export type TicketPriority = "low" | "medium" | "high" | "critical" | "urgent";
-export type TicketCategory = "account" | "billing" | "content" | "technical" | "safety" | "legal" | "creator" | "crypto" | "marketplace" | "other";
-export type PayoutStatus = "pending" | "processing" | "completed" | "failed" | "cancelled" | "on_hold";
-export type PayoutMethod = "bank_transfer" | "paypal" | "crypto_wallet" | "stripe" | "check";
-export type IncidentSeverity = "p0_critical" | "p1_major" | "p2_moderate" | "p3_minor";
-export type IncidentStatus = "investigating" | "identified" | "monitoring" | "resolved";
-export type AuditAction = 
-  | "user.login" | "user.logout" | "user.register" | "user.delete" | "user.ban"
-  | "post.create" | "post.delete" | "post.edit" | "post.report"
-  | "payment.initiate" | "payment.complete" | "payment.refund" | "payment.fail"
-  | "admin.action" | "moderation.action" | "content.remove" | "content.restore"
-  | "role.assign" | "role.revoke" | "settings.change" | "api.access"
-  | "data.export" | "data.delete" | "legal.hold" | "compliance.action";
+export type TicketCategory =
+  | "account"
+  | "billing"
+  | "content"
+  | "technical"
+  | "safety"
+  | "legal"
+  | "creator"
+  | "crypto"
+  | "marketplace"
+  | "other";
+export type PayoutStatus =
+  "pending" | "processing" | "completed" | "failed" | "cancelled" | "on_hold";
+export type PayoutMethod =
+  "bank_transfer" | "paypal" | "crypto_wallet" | "stripe" | "check";
+export type IncidentSeverity =
+  "p0_critical" | "p1_major" | "p2_moderate" | "p3_minor";
+export type IncidentStatus =
+  "investigating" | "identified" | "monitoring" | "resolved";
+export type AuditAction =
+  | "user.login"
+  | "user.logout"
+  | "user.register"
+  | "user.delete"
+  | "user.ban"
+  | "post.create"
+  | "post.delete"
+  | "post.edit"
+  | "post.report"
+  | "payment.initiate"
+  | "payment.complete"
+  | "payment.refund"
+  | "payment.fail"
+  | "admin.action"
+  | "moderation.action"
+  | "content.remove"
+  | "content.restore"
+  | "role.assign"
+  | "role.revoke"
+  | "settings.change"
+  | "api.access"
+  | "data.export"
+  | "data.delete"
+  | "legal.hold"
+  | "compliance.action";
 
 export interface SupportTicket {
   id: string;
@@ -163,7 +197,13 @@ export interface IncidentUpdate {
 export interface ComplianceRecord {
   id: string;
   userId: number;
-  type: "gdpr_request" | "ccpa_request" | "data_export" | "data_deletion" | "consent_update" | "legal_hold";
+  type:
+    | "gdpr_request"
+    | "ccpa_request"
+    | "data_export"
+    | "data_deletion"
+    | "consent_update"
+    | "legal_hold";
   status: "pending" | "processing" | "completed" | "denied";
   requestedAt: Date;
   completedAt?: Date;
@@ -176,7 +216,8 @@ export interface PartnerAccount {
   id: string;
   userId: number;
   companyName: string;
-  partnerType: "affiliate" | "integration" | "reseller" | "enterprise" | "creator_agency";
+  partnerType:
+    "affiliate" | "integration" | "reseller" | "enterprise" | "creator_agency";
   status: "pending" | "active" | "suspended" | "terminated";
   apiKey: string;
   apiCallsThisMonth: number;
@@ -216,7 +257,9 @@ export class SupportTicketService {
     metadata?: Record<string, unknown>;
   }): Promise<SupportTicket> {
     const ticketId = `TKT-${String(++this.ticketCounter).padStart(6, "0")}`;
-    const priority = params.priority || this.autoPrioritize(params.category, params.description);
+    const priority =
+      params.priority ||
+      this.autoPrioritize(params.category, params.description);
     const slaHours = this.SLA_HOURS[priority];
 
     const ticket: SupportTicket = {
@@ -229,15 +272,17 @@ export class SupportTicketService {
       description: params.description,
       attachments: params.attachments || [],
       tags: [],
-      messages: [{
-        id: `msg_${Date.now()}`,
-        authorId: params.userId,
-        isStaff: false,
-        content: params.description,
-        attachments: params.attachments || [],
-        isInternal: false,
-        createdAt: new Date(),
-      }],
+      messages: [
+        {
+          id: `msg_${Date.now()}`,
+          authorId: params.userId,
+          isStaff: false,
+          content: params.description,
+          attachments: params.attachments || [],
+          isInternal: false,
+          createdAt: new Date(),
+        },
+      ],
       internalNotes: [],
       slaDeadline: new Date(Date.now() + slaHours * 3600000),
       relatedTicketIds: [],
@@ -250,13 +295,16 @@ export class SupportTicketService {
     return ticket;
   }
 
-  async replyToTicket(ticketId: string, params: {
-    authorId: number;
-    isStaff: boolean;
-    content: string;
-    attachments?: string[];
-    isInternal?: boolean;
-  }): Promise<TicketMessage | null> {
+  async replyToTicket(
+    ticketId: string,
+    params: {
+      authorId: number;
+      isStaff: boolean;
+      content: string;
+      attachments?: string[];
+      isInternal?: boolean;
+    }
+  ): Promise<TicketMessage | null> {
     const ticket = this.tickets.get(ticketId);
     if (!ticket) return null;
 
@@ -283,7 +331,11 @@ export class SupportTicketService {
     return message;
   }
 
-  async updateTicketStatus(ticketId: string, status: TicketStatus, agentId: number): Promise<boolean> {
+  async updateTicketStatus(
+    ticketId: string,
+    status: TicketStatus,
+    agentId: number
+  ): Promise<boolean> {
     const ticket = this.tickets.get(ticketId);
     if (!ticket) return false;
 
@@ -304,24 +356,37 @@ export class SupportTicketService {
     return true;
   }
 
-  async getTicketQueue(params: {
-    status?: TicketStatus;
-    priority?: TicketPriority;
-    category?: TicketCategory;
-    assignedTo?: number;
-    limit?: number;
-  } = {}): Promise<SupportTicket[]> {
+  async getTicketQueue(
+    params: {
+      status?: TicketStatus;
+      priority?: TicketPriority;
+      category?: TicketCategory;
+      assignedTo?: number;
+      limit?: number;
+    } = {}
+  ): Promise<SupportTicket[]> {
     let tickets = Array.from(this.tickets.values());
 
-    if (params.status) tickets = tickets.filter(t => t.status === params.status);
-    if (params.priority) tickets = tickets.filter(t => t.priority === params.priority);
-    if (params.category) tickets = tickets.filter(t => t.category === params.category);
-    if (params.assignedTo !== undefined) tickets = tickets.filter(t => t.assignedTo === params.assignedTo);
+    if (params.status)
+      tickets = tickets.filter(t => t.status === params.status);
+    if (params.priority)
+      tickets = tickets.filter(t => t.priority === params.priority);
+    if (params.category)
+      tickets = tickets.filter(t => t.category === params.category);
+    if (params.assignedTo !== undefined)
+      tickets = tickets.filter(t => t.assignedTo === params.assignedTo);
 
     // Sort by priority then SLA deadline
-    const priorityOrder: Record<TicketPriority, number> = { urgent: 0, critical: 1, high: 2, medium: 3, low: 4 };
+    const priorityOrder: Record<TicketPriority, number> = {
+      urgent: 0,
+      critical: 1,
+      high: 2,
+      medium: 3,
+      low: 4,
+    };
     tickets.sort((a, b) => {
-      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+      const priorityDiff =
+        priorityOrder[a.priority] - priorityOrder[b.priority];
       if (priorityDiff !== 0) return priorityDiff;
       return a.slaDeadline.getTime() - b.slaDeadline.getTime();
     });
@@ -346,38 +411,66 @@ export class SupportTicketService {
     const tickets = Array.from(this.tickets.values());
     const now = new Date();
 
-    const byStatus = tickets.reduce((acc, t) => {
-      acc[t.status] = (acc[t.status] || 0) + 1;
-      return acc;
-    }, {} as Record<TicketStatus, number>);
+    const byStatus = tickets.reduce(
+      (acc, t) => {
+        acc[t.status] = (acc[t.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<TicketStatus, number>
+    );
 
-    const byPriority = tickets.reduce((acc, t) => {
-      acc[t.priority] = (acc[t.priority] || 0) + 1;
-      return acc;
-    }, {} as Record<TicketPriority, number>);
+    const byPriority = tickets.reduce(
+      (acc, t) => {
+        acc[t.priority] = (acc[t.priority] || 0) + 1;
+        return acc;
+      },
+      {} as Record<TicketPriority, number>
+    );
 
     const resolved = tickets.filter(t => t.resolvedAt);
-    const avgResolutionHours = resolved.length > 0
-      ? resolved.reduce((sum, t) => sum + (t.resolvedAt!.getTime() - t.createdAt.getTime()) / 3600000, 0) / resolved.length
-      : 0;
+    const avgResolutionHours =
+      resolved.length > 0
+        ? resolved.reduce(
+            (sum, t) =>
+              sum + (t.resolvedAt!.getTime() - t.createdAt.getTime()) / 3600000,
+            0
+          ) / resolved.length
+        : 0;
 
-    const slaBreaches = tickets.filter(t =>
-      t.status !== "resolved" && t.status !== "closed" && t.slaDeadline < now
+    const slaBreaches = tickets.filter(
+      t =>
+        t.status !== "resolved" && t.status !== "closed" && t.slaDeadline < now
     ).length;
 
     const rated = tickets.filter(t => t.satisfactionRating);
-    const avgSatisfactionRating = rated.length > 0
-      ? rated.reduce((sum, t) => sum + (t.satisfactionRating || 0), 0) / rated.length
-      : 0;
+    const avgSatisfactionRating =
+      rated.length > 0
+        ? rated.reduce((sum, t) => sum + (t.satisfactionRating || 0), 0) /
+          rated.length
+        : 0;
 
-    return { total: tickets.length, byStatus, byPriority, avgResolutionHours, slaBreaches, avgSatisfactionRating };
+    return {
+      total: tickets.length,
+      byStatus,
+      byPriority,
+      avgResolutionHours,
+      slaBreaches,
+      avgSatisfactionRating,
+    };
   }
 
-  private autoPrioritize(category: TicketCategory, description: string): TicketPriority {
+  private autoPrioritize(
+    category: TicketCategory,
+    description: string
+  ): TicketPriority {
     if (category === "safety") return "urgent";
     if (category === "legal") return "critical";
     if (category === "billing" || category === "crypto") return "high";
-    if (description.toLowerCase().includes("urgent") || description.toLowerCase().includes("critical")) return "high";
+    if (
+      description.toLowerCase().includes("urgent") ||
+      description.toLowerCase().includes("critical")
+    )
+      return "high";
     if (category === "technical") return "medium";
     return "low";
   }
@@ -446,10 +539,14 @@ export class AuditLogService {
   }): Promise<{ entries: AuditLogEntry[]; total: number }> {
     let entries = this.logs;
 
-    if (params.actorId !== undefined) entries = entries.filter(e => e.actorId === params.actorId);
-    if (params.action) entries = entries.filter(e => e.action === params.action);
-    if (params.targetId) entries = entries.filter(e => e.targetId === params.targetId);
-    if (params.severity) entries = entries.filter(e => e.severity === params.severity);
+    if (params.actorId !== undefined)
+      entries = entries.filter(e => e.actorId === params.actorId);
+    if (params.action)
+      entries = entries.filter(e => e.action === params.action);
+    if (params.targetId)
+      entries = entries.filter(e => e.targetId === params.targetId);
+    if (params.severity)
+      entries = entries.filter(e => e.severity === params.severity);
     if (params.from) entries = entries.filter(e => e.timestamp >= params.from!);
     if (params.to) entries = entries.filter(e => e.timestamp <= params.to!);
 
@@ -478,12 +575,31 @@ export class AuditLogService {
       .reverse();
   }
 
-  async exportLogs(params: { from: Date; to: Date; format: "json" | "csv" }): Promise<string> {
-    const { entries } = await this.query({ from: params.from, to: params.to, limit: 100000 });
+  async exportLogs(params: {
+    from: Date;
+    to: Date;
+    format: "json" | "csv";
+  }): Promise<string> {
+    const { entries } = await this.query({
+      from: params.from,
+      to: params.to,
+      limit: 100000,
+    });
 
     if (params.format === "csv") {
-      const headers = ["id", "action", "actorId", "actorType", "targetId", "severity", "isSuccessful", "timestamp"];
-      const rows = entries.map(e => headers.map(h => JSON.stringify((e as any)[h] ?? "")).join(","));
+      const headers = [
+        "id",
+        "action",
+        "actorId",
+        "actorType",
+        "targetId",
+        "severity",
+        "isSuccessful",
+        "timestamp",
+      ];
+      const rows = entries.map(e =>
+        headers.map(h => JSON.stringify((e as any)[h] ?? "")).join(",")
+      );
       return [headers.join(","), ...rows].join("\n");
     }
 
@@ -504,7 +620,11 @@ export class CreatorPayoutService {
   readonly PLATFORM_FEE_PERCENT = 20;
   readonly TAX_WITHHOLDING_PERCENT = 0; // US creators handle their own taxes
 
-  async addEarnings(creatorId: number, amount: number, source: "subscriptions" | "tips" | "gifts" | "premiumContent" | "affiliates"): Promise<void> {
+  async addEarnings(
+    creatorId: number,
+    amount: number,
+    source: "subscriptions" | "tips" | "gifts" | "premiumContent" | "affiliates"
+  ): Promise<void> {
     const current = this.pendingBalances.get(creatorId) || 0;
     this.pendingBalances.set(creatorId, current + amount);
   }
@@ -590,11 +710,17 @@ export class CreatorPayoutService {
   }> {
     const payouts = Array.from(this.payouts.values());
     const completed = payouts.filter(p => p.status === "completed");
-    const totalPaidOut = completed.reduce((sum, p) => sum + p.breakdown.netAmount, 0);
+    const totalPaidOut = completed.reduce(
+      (sum, p) => sum + p.breakdown.netAmount,
+      0
+    );
 
     const earnerMap = new Map<number, number>();
     for (const payout of completed) {
-      earnerMap.set(payout.creatorId, (earnerMap.get(payout.creatorId) || 0) + payout.breakdown.netAmount);
+      earnerMap.set(
+        payout.creatorId,
+        (earnerMap.get(payout.creatorId) || 0) + payout.breakdown.netAmount
+      );
     }
 
     const topEarners = Array.from(earnerMap.entries())
@@ -606,7 +732,8 @@ export class CreatorPayoutService {
       totalPaidOut,
       pendingPayouts: payouts.filter(p => p.status === "pending").length,
       failedPayouts: payouts.filter(p => p.status === "failed").length,
-      avgPayoutAmount: completed.length > 0 ? totalPaidOut / completed.length : 0,
+      avgPayoutAmount:
+        completed.length > 0 ? totalPaidOut / completed.length : 0,
       topEarners,
     };
   }
@@ -631,7 +758,10 @@ export class TaxReportingService {
     const report: TaxReport = {
       userId: params.userId,
       taxYear: params.taxYear,
-      reportType: params.totalIncome > 20000 || params.transactionCount > 200 ? "1099-K" : "summary",
+      reportType:
+        params.totalIncome > 20000 || params.transactionCount > 200
+          ? "1099-K"
+          : "summary",
       totalIncome: params.totalIncome,
       platformFees: params.platformFees,
       netIncome: params.totalIncome - params.platformFees,
@@ -652,12 +782,31 @@ export class TaxReportingService {
       .sort((a, b) => b.taxYear - a.taxYear);
   }
 
-  async calculateVAT(amount: number, country: string): Promise<{ vatRate: number; vatAmount: number; totalWithVAT: number }> {
+  async calculateVAT(
+    amount: number,
+    country: string
+  ): Promise<{ vatRate: number; vatAmount: number; totalWithVAT: number }> {
     const vatRates: Record<string, number> = {
-      DE: 0.19, FR: 0.20, GB: 0.20, IT: 0.22, ES: 0.21,
-      NL: 0.21, BE: 0.21, SE: 0.25, DK: 0.25, FI: 0.24,
-      AT: 0.20, PL: 0.23, PT: 0.23, CZ: 0.21, HU: 0.27,
-      US: 0, CA: 0.05, AU: 0.10, JP: 0.10, SG: 0.09,
+      DE: 0.19,
+      FR: 0.2,
+      GB: 0.2,
+      IT: 0.22,
+      ES: 0.21,
+      NL: 0.21,
+      BE: 0.21,
+      SE: 0.25,
+      DK: 0.25,
+      FI: 0.24,
+      AT: 0.2,
+      PL: 0.23,
+      PT: 0.23,
+      CZ: 0.21,
+      HU: 0.27,
+      US: 0,
+      CA: 0.05,
+      AU: 0.1,
+      JP: 0.1,
+      SG: 0.09,
     };
 
     const vatRate = vatRates[country.toUpperCase()] || 0;
@@ -707,14 +856,16 @@ export class IncidentResponseService {
       affectedSystems: params.affectedSystems,
       affectedUserCount: params.affectedUserCount,
       startTime: new Date(),
-      updates: [{
-        id: `upd_${Date.now()}`,
-        status: "investigating",
-        message: `Incident created: ${params.description}`,
-        authorId: params.createdBy,
-        isPublic: true,
-        timestamp: new Date(),
-      }],
+      updates: [
+        {
+          id: `upd_${Date.now()}`,
+          status: "investigating",
+          message: `Incident created: ${params.description}`,
+          authorId: params.createdBy,
+          isPublic: true,
+          timestamp: new Date(),
+        },
+      ],
       createdBy: params.createdBy,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -724,14 +875,17 @@ export class IncidentResponseService {
     return incident;
   }
 
-  async updateIncident(incidentId: string, params: {
-    status: IncidentStatus;
-    message: string;
-    authorId: number;
-    isPublic?: boolean;
-    rootCause?: string;
-    resolution?: string;
-  }): Promise<PlatformIncident | null> {
+  async updateIncident(
+    incidentId: string,
+    params: {
+      status: IncidentStatus;
+      message: string;
+      authorId: number;
+      isPublic?: boolean;
+      rootCause?: string;
+      resolution?: string;
+    }
+  ): Promise<PlatformIncident | null> {
     const incident = this.incidents.get(incidentId);
     if (!incident) return null;
 
@@ -751,7 +905,9 @@ export class IncidentResponseService {
 
     if (params.status === "resolved") {
       incident.endTime = new Date();
-      incident.duration = Math.round((incident.endTime.getTime() - incident.startTime.getTime()) / 60000);
+      incident.duration = Math.round(
+        (incident.endTime.getTime() - incident.startTime.getTime()) / 60000
+      );
     }
 
     return incident;
@@ -761,7 +917,12 @@ export class IncidentResponseService {
     return Array.from(this.incidents.values())
       .filter(i => i.status !== "resolved")
       .sort((a, b) => {
-        const severityOrder: Record<IncidentSeverity, number> = { p0_critical: 0, p1_major: 1, p2_moderate: 2, p3_minor: 3 };
+        const severityOrder: Record<IncidentSeverity, number> = {
+          p0_critical: 0,
+          p1_major: 1,
+          p2_moderate: 2,
+          p3_minor: 3,
+        };
         return severityOrder[a.severity] - severityOrder[b.severity];
       });
   }
@@ -774,9 +935,13 @@ export class IncidentResponseService {
 
   async getMTTR(): Promise<number> {
     // Mean Time To Resolve in minutes
-    const resolved = Array.from(this.incidents.values()).filter(i => i.duration);
+    const resolved = Array.from(this.incidents.values()).filter(
+      i => i.duration
+    );
     if (resolved.length === 0) return 0;
-    return resolved.reduce((sum, i) => sum + (i.duration || 0), 0) / resolved.length;
+    return (
+      resolved.reduce((sum, i) => sum + (i.duration || 0), 0) / resolved.length
+    );
   }
 }
 
@@ -788,7 +953,10 @@ export class ComplianceService {
   private records: Map<string, ComplianceRecord> = new Map();
   private recordCounter = 0;
 
-  async submitGDPRRequest(userId: number, type: "data_export" | "data_deletion" | "consent_update"): Promise<ComplianceRecord> {
+  async submitGDPRRequest(
+    userId: number,
+    type: "data_export" | "data_deletion" | "consent_update"
+  ): Promise<ComplianceRecord> {
     const recordId = `COMP-${String(++this.recordCounter).padStart(7, "0")}`;
     const record: ComplianceRecord = {
       id: recordId,
@@ -796,14 +964,20 @@ export class ComplianceService {
       type: `gdpr_request`,
       status: "pending",
       requestedAt: new Date(),
-      details: { requestType: type, gdprArticle: type === "data_export" ? "Article 20" : "Article 17" },
+      details: {
+        requestType: type,
+        gdprArticle: type === "data_export" ? "Article 20" : "Article 17",
+      },
     };
 
     this.records.set(recordId, record);
     return record;
   }
 
-  async submitCCPARequest(userId: number, type: "opt_out" | "data_deletion" | "data_access"): Promise<ComplianceRecord> {
+  async submitCCPARequest(
+    userId: number,
+    type: "opt_out" | "data_deletion" | "data_access"
+  ): Promise<ComplianceRecord> {
     const recordId = `COMP-${String(++this.recordCounter).padStart(7, "0")}`;
     const record: ComplianceRecord = {
       id: recordId,
@@ -818,7 +992,11 @@ export class ComplianceService {
     return record;
   }
 
-  async processRequest(recordId: string, handledBy: number, notes?: string): Promise<boolean> {
+  async processRequest(
+    recordId: string,
+    handledBy: number,
+    notes?: string
+  ): Promise<boolean> {
     const record = this.records.get(recordId);
     if (!record) return false;
 
@@ -853,12 +1031,21 @@ export class ComplianceService {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const pending = records.filter(r => r.status === "pending");
-    const completed = records.filter(r => r.status === "completed" && r.completedAt && r.completedAt >= monthStart);
+    const completed = records.filter(
+      r =>
+        r.status === "completed" && r.completedAt && r.completedAt >= monthStart
+    );
 
     const resolved = records.filter(r => r.completedAt);
-    const avgResolutionDays = resolved.length > 0
-      ? resolved.reduce((sum, r) => sum + (r.completedAt!.getTime() - r.requestedAt.getTime()) / 86400000, 0) / resolved.length
-      : 0;
+    const avgResolutionDays =
+      resolved.length > 0
+        ? resolved.reduce(
+            (sum, r) =>
+              sum +
+              (r.completedAt!.getTime() - r.requestedAt.getTime()) / 86400000,
+            0
+          ) / resolved.length
+        : 0;
 
     return {
       pendingGDPR: pending.filter(r => r.type === "gdpr_request").length,
@@ -907,7 +1094,9 @@ export class PartnerService {
   }
 
   async validateAPIKey(apiKey: string): Promise<PartnerAccount | null> {
-    const partner = Array.from(this.partners.values()).find(p => p.apiKey === apiKey && p.status === "active");
+    const partner = Array.from(this.partners.values()).find(
+      p => p.apiKey === apiKey && p.status === "active"
+    );
     if (!partner) return null;
 
     if (partner.apiCallsThisMonth >= partner.apiCallLimit) return null; // Rate limited
@@ -917,7 +1106,9 @@ export class PartnerService {
   }
 
   async getActivePartners(): Promise<PartnerAccount[]> {
-    return Array.from(this.partners.values()).filter(p => p.status === "active");
+    return Array.from(this.partners.values()).filter(
+      p => p.status === "active"
+    );
   }
 
   async approvePartner(partnerId: string): Promise<boolean> {
@@ -928,8 +1119,15 @@ export class PartnerService {
   }
 
   private generateAPIKey(): string {
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    return "sk_live_" + Array.from({ length: 48 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const chars =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    return (
+      "sk_live_" +
+      Array.from(
+        { length: 48 },
+        () => chars[Math.floor(Math.random() * chars.length)]
+      ).join("")
+    );
   }
 }
 
@@ -938,18 +1136,39 @@ export class PartnerService {
 // ═══════════════════════════════════════════════════════════════
 
 export class PlatformHealthService {
-  private healthChecks: Map<string, { status: "healthy" | "degraded" | "down"; lastCheck: Date; latencyMs: number }> = new Map();
+  private healthChecks: Map<
+    string,
+    {
+      status: "healthy" | "degraded" | "down";
+      lastCheck: Date;
+      latencyMs: number;
+    }
+  > = new Map();
 
-  async recordHealthCheck(service: string, status: "healthy" | "degraded" | "down", latencyMs: number): Promise<void> {
-    this.healthChecks.set(service, { status, lastCheck: new Date(), latencyMs });
+  async recordHealthCheck(
+    service: string,
+    status: "healthy" | "degraded" | "down",
+    latencyMs: number
+  ): Promise<void> {
+    this.healthChecks.set(service, {
+      status,
+      lastCheck: new Date(),
+      latencyMs,
+    });
   }
 
   async getSystemHealth(): Promise<{
     overall: "healthy" | "degraded" | "down";
-    services: Record<string, { status: string; latencyMs: number; lastCheck: Date }>;
+    services: Record<
+      string,
+      { status: string; latencyMs: number; lastCheck: Date }
+    >;
     uptimePercent: number;
   }> {
-    const services: Record<string, { status: string; latencyMs: number; lastCheck: Date }> = {};
+    const services: Record<
+      string,
+      { status: string; latencyMs: number; lastCheck: Date }
+    > = {};
     let hasDown = false;
     let hasDegraded = false;
 
@@ -961,7 +1180,11 @@ export class PlatformHealthService {
 
     const overall = hasDown ? "down" : hasDegraded ? "degraded" : "healthy";
 
-    return { overall, services, uptimePercent: hasDown ? 0 : hasDegraded ? 95 : 99.9 };
+    return {
+      overall,
+      services,
+      uptimePercent: hasDown ? 0 : hasDegraded ? 95 : 99.9,
+    };
   }
 }
 

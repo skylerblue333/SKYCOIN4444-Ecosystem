@@ -43,7 +43,9 @@ function startStream(stream: Stream): Stream {
 
 function endStream(stream: Stream): Stream {
   const endedAt = new Date();
-  const duration = Math.floor((endedAt.getTime() - stream.startedAt.getTime()) / 1000);
+  const duration = Math.floor(
+    (endedAt.getTime() - stream.startedAt.getTime()) / 1000
+  );
   return { ...stream, status: "ended", endedAt, duration };
 }
 
@@ -57,13 +59,21 @@ function updateViewerCount(stream: Stream, count: number): Stream {
 
 function getStreamDuration(stream: Stream): number {
   if (stream.duration !== undefined) return stream.duration;
-  if (!stream.endedAt) return Math.floor((Date.now() - stream.startedAt.getTime()) / 1000);
-  return Math.floor((stream.endedAt.getTime() - stream.startedAt.getTime()) / 1000);
+  if (!stream.endedAt)
+    return Math.floor((Date.now() - stream.startedAt.getTime()) / 1000);
+  return Math.floor(
+    (stream.endedAt.getTime() - stream.startedAt.getTime()) / 1000
+  );
 }
 
-function filterStreamsByCategory(streams: Stream[], category: string): Stream[] {
+function filterStreamsByCategory(
+  streams: Stream[],
+  category: string
+): Stream[] {
   if (category === "All") return streams;
-  return streams.filter(s => s.category.toLowerCase() === category.toLowerCase());
+  return streams.filter(
+    s => s.category.toLowerCase() === category.toLowerCase()
+  );
 }
 
 function sortStreamsByViewers(streams: Stream[]): Stream[] {
@@ -139,11 +149,39 @@ describe("Streaming Engine — Stream Lifecycle", () => {
 
 describe("Streaming Engine — VOD Archive", () => {
   const streams: Stream[] = [
-    createStream({ id: 1, status: "live", category: "Gaming", viewerCount: 500 }),
-    createStream({ id: 2, status: "ended", category: "Gaming", viewerCount: 200, duration: 3600 }),
-    createStream({ id: 3, status: "ended", category: "Crypto", viewerCount: 800, duration: 7200 }),
-    createStream({ id: 4, status: "ended", category: "Education", viewerCount: 150, duration: 1800 }),
-    createStream({ id: 5, status: "scheduled", category: "Gaming", viewerCount: 0 }),
+    createStream({
+      id: 1,
+      status: "live",
+      category: "Gaming",
+      viewerCount: 500,
+    }),
+    createStream({
+      id: 2,
+      status: "ended",
+      category: "Gaming",
+      viewerCount: 200,
+      duration: 3600,
+    }),
+    createStream({
+      id: 3,
+      status: "ended",
+      category: "Crypto",
+      viewerCount: 800,
+      duration: 7200,
+    }),
+    createStream({
+      id: 4,
+      status: "ended",
+      category: "Education",
+      viewerCount: 150,
+      duration: 1800,
+    }),
+    createStream({
+      id: 5,
+      status: "scheduled",
+      category: "Gaming",
+      viewerCount: 0,
+    }),
   ];
 
   it("filters live streams only", () => {
@@ -202,7 +240,11 @@ const TIER_PRICES: Record<SubscriptionTier, number> = {
   vip: 2999,
 };
 
-function createSubscription(subscriberId: number, creatorId: number, tier: SubscriptionTier): Subscription {
+function createSubscription(
+  subscriberId: number,
+  creatorId: number,
+  tier: SubscriptionTier
+): Subscription {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
   return {
@@ -225,7 +267,10 @@ function isSubscriptionActive(sub: Subscription): boolean {
   return sub.active && sub.expiresAt > new Date();
 }
 
-function upgradeSubscription(sub: Subscription, newTier: SubscriptionTier): Subscription {
+function upgradeSubscription(
+  sub: Subscription,
+  newTier: SubscriptionTier
+): Subscription {
   return { ...sub, tier: newTier, amount: TIER_PRICES[newTier] };
 }
 
@@ -313,7 +358,12 @@ interface Escrow {
   timeoutAt: Date;
 }
 
-function createEscrow(buyerId: number, sellerId: number, amount: number, timeoutHours = 72): Escrow {
+function createEscrow(
+  buyerId: number,
+  sellerId: number,
+  amount: number,
+  timeoutHours = 72
+): Escrow {
   const now = new Date();
   return {
     id: Date.now(),
@@ -328,22 +378,26 @@ function createEscrow(buyerId: number, sellerId: number, amount: number, timeout
 }
 
 function fundEscrow(escrow: Escrow): Escrow {
-  if (escrow.status !== "pending") throw new Error("Can only fund pending escrow");
+  if (escrow.status !== "pending")
+    throw new Error("Can only fund pending escrow");
   return { ...escrow, status: "funded" };
 }
 
 function releaseEscrow(escrow: Escrow): Escrow {
-  if (escrow.status !== "funded") throw new Error("Can only release funded escrow");
+  if (escrow.status !== "funded")
+    throw new Error("Can only release funded escrow");
   return { ...escrow, status: "released" };
 }
 
 function disputeEscrow(escrow: Escrow): Escrow {
-  if (!["funded", "pending"].includes(escrow.status)) throw new Error("Cannot dispute in current state");
+  if (!["funded", "pending"].includes(escrow.status))
+    throw new Error("Cannot dispute in current state");
   return { ...escrow, status: "disputed" };
 }
 
 function refundEscrow(escrow: Escrow): Escrow {
-  if (!["funded", "disputed"].includes(escrow.status)) throw new Error("Cannot refund in current state");
+  if (!["funded", "disputed"].includes(escrow.status))
+    throw new Error("Cannot refund in current state");
   return { ...escrow, status: "refunded" };
 }
 
@@ -380,7 +434,9 @@ describe("Payment Engine — Escrow", () => {
   });
 
   it("cannot release pending escrow", () => {
-    expect(() => releaseEscrow(escrow)).toThrow("Can only release funded escrow");
+    expect(() => releaseEscrow(escrow)).toThrow(
+      "Can only release funded escrow"
+    );
   });
 
   it("disputes funded escrow", () => {
@@ -405,7 +461,9 @@ describe("Payment Engine — Escrow", () => {
   it("cannot refund released escrow", () => {
     const funded = fundEscrow(escrow);
     const released = releaseEscrow(funded);
-    expect(() => refundEscrow(released)).toThrow("Cannot refund in current state");
+    expect(() => refundEscrow(released)).toThrow(
+      "Cannot refund in current state"
+    );
   });
 
   it("escrow with 72-hour timeout is not expired immediately", () => {
@@ -418,7 +476,8 @@ describe("Payment Engine — Escrow", () => {
   });
 
   it("default timeout is 72 hours", () => {
-    const diffHours = (escrow.timeoutAt.getTime() - escrow.createdAt.getTime()) / 3600_000;
+    const diffHours =
+      (escrow.timeoutAt.getTime() - escrow.createdAt.getTime()) / 3600_000;
     expect(diffHours).toBeCloseTo(72, 0);
   });
 });
@@ -447,7 +506,11 @@ function calculatePayoutFee(amount: number, method: string): number {
   return Math.round(amount * rate);
 }
 
-function createPayout(userId: number, amount: number, method: Payout["method"]): Payout {
+function createPayout(
+  userId: number,
+  amount: number,
+  method: Payout["method"]
+): Payout {
   const fee = calculatePayoutFee(amount, method);
   return {
     id: Date.now(),
@@ -466,7 +529,8 @@ function getNetPayout(payout: Payout): number {
 }
 
 function processPayout(payout: Payout): Payout {
-  if (payout.status !== "pending") throw new Error("Can only process pending payouts");
+  if (payout.status !== "pending")
+    throw new Error("Can only process pending payouts");
   return { ...payout, status: "processing" };
 }
 
@@ -488,8 +552,12 @@ describe("Payment Engine — Payouts", () => {
 
   it("crypto wallet has lowest fee", () => {
     const amount = 10000;
-    expect(calculatePayoutFee(amount, "crypto_wallet")).toBeLessThan(calculatePayoutFee(amount, "bank_transfer"));
-    expect(calculatePayoutFee(amount, "crypto_wallet")).toBeLessThan(calculatePayoutFee(amount, "paypal"));
+    expect(calculatePayoutFee(amount, "crypto_wallet")).toBeLessThan(
+      calculatePayoutFee(amount, "bank_transfer")
+    );
+    expect(calculatePayoutFee(amount, "crypto_wallet")).toBeLessThan(
+      calculatePayoutFee(amount, "paypal")
+    );
   });
 
   it("creates payout with correct fee", () => {
@@ -512,11 +580,17 @@ describe("Payment Engine — Payouts", () => {
   it("cannot process non-pending payout", () => {
     const payout = createPayout(1, 5000, "paypal");
     const processing = processPayout(payout);
-    expect(() => processPayout(processing)).toThrow("Can only process pending payouts");
+    expect(() => processPayout(processing)).toThrow(
+      "Can only process pending payouts"
+    );
   });
 
   it("net payout is always less than gross for paid methods", () => {
-    const methods: Payout["method"][] = ["bank_transfer", "crypto_wallet", "paypal"];
+    const methods: Payout["method"][] = [
+      "bank_transfer",
+      "crypto_wallet",
+      "paypal",
+    ];
     for (const method of methods) {
       const payout = createPayout(1, 10000, method);
       expect(getNetPayout(payout)).toBeLessThan(payout.amount);

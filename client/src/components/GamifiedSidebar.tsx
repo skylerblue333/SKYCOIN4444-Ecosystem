@@ -4,7 +4,18 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Flame, Zap, Star, Trophy, Gift, Target, ChevronRight, Coins, Crown, Shield } from "lucide-react";
+import {
+  Flame,
+  Zap,
+  Star,
+  Trophy,
+  Gift,
+  Target,
+  ChevronRight,
+  Coins,
+  Crown,
+  Shield,
+} from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { triggerAchievement, SAMPLE_ACHIEVEMENTS } from "./AchievementToast";
@@ -18,7 +29,9 @@ function XPBar({ xp, level }: { xp: number; level: number }) {
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">Level {level}</span>
-        <span className="text-amber-400 font-bold">{xp.toLocaleString()} XP</span>
+        <span className="text-amber-400 font-bold">
+          {xp.toLocaleString()} XP
+        </span>
         <span className="text-muted-foreground">Level {level + 1}</span>
       </div>
       <div className="h-2 bg-white/5 rounded-full overflow-hidden">
@@ -29,30 +42,41 @@ function XPBar({ xp, level }: { xp: number; level: number }) {
           <div className="absolute inset-0 bg-white/30 animate-shimmer rounded-full" />
         </div>
       </div>
-      <div className="text-center text-xs text-muted-foreground">{pct}% to next level</div>
+      <div className="text-center text-xs text-muted-foreground">
+        {pct}% to next level
+      </div>
     </div>
   );
 }
 
 function StreakBadge({ streak }: { streak: number }) {
-  const color = streak >= 30 ? "text-amber-400" : streak >= 14 ? "text-orange-400" : streak >= 7 ? "text-yellow-400" : "text-muted-foreground";
+  const color =
+    streak >= 30
+      ? "text-amber-400"
+      : streak >= 14
+        ? "text-orange-400"
+        : streak >= 7
+          ? "text-yellow-400"
+          : "text-muted-foreground";
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10">
       <Flame className={`w-5 h-5 ${color}`} />
       <div>
         <div className={`text-sm font-bold ${color}`}>{streak} Day Streak</div>
-        <div className="text-xs text-muted-foreground">{streak >= 7 ? "🔥 On fire!" : "Keep it up!"}</div>
+        <div className="text-xs text-muted-foreground">
+          {streak >= 7 ? "🔥 On fire!" : "Keep it up!"}
+        </div>
       </div>
     </div>
   );
 }
 
 const DAILY_QUESTS = [
-  { id: "post",     label: "Post something",     xp: 50,  icon: "✍️",  done: false },
-  { id: "like",     label: "Like 5 posts",        xp: 25,  icon: "❤️",  done: false },
-  { id: "login",    label: "Daily login",         xp: 25,  icon: "✅",  done: true  },
-  { id: "comment",  label: "Leave a comment",     xp: 30,  icon: "💬",  done: false },
-  { id: "spin",     label: "Spin the wheel",      xp: 10,  icon: "🎡",  done: false },
+  { id: "post", label: "Post something", xp: 50, icon: "✍️", done: false },
+  { id: "like", label: "Like 5 posts", xp: 25, icon: "❤️", done: false },
+  { id: "login", label: "Daily login", xp: 25, icon: "✅", done: true },
+  { id: "comment", label: "Leave a comment", xp: 30, icon: "💬", done: false },
+  { id: "spin", label: "Spin the wheel", xp: 10, icon: "🎡", done: false },
 ];
 
 export function GamifiedSidebar() {
@@ -68,7 +92,9 @@ export function GamifiedSidebar() {
   const recordLogin = trpc.gamification.recordLogin.useMutation({
     onSuccess: (data: any) => {
       if (data.xpAwarded > 0 && data.streak && data.streak >= 7) {
-        triggerAchievement(SAMPLE_ACHIEVEMENTS.find(a => a.id === "7_day_streak")!);
+        triggerAchievement(
+          SAMPLE_ACHIEVEMENTS.find(a => a.id === "7_day_streak")!
+        );
       }
     },
   });
@@ -83,8 +109,12 @@ export function GamifiedSidebar() {
   const streak = (gameState as any)?.streak?.currentStreak ?? 0;
   const hasSpun = (gameState as any)?.hasSpunToday ?? false;
 
-  const completedQuests = DAILY_QUESTS.filter(q => q.done || (q.id === "spin" && hasSpun)).length;
-  const totalQuestXP = DAILY_QUESTS.filter(q => !q.done && !(q.id === "spin" && hasSpun)).reduce((s, q) => s + q.xp, 0);
+  const completedQuests = DAILY_QUESTS.filter(
+    q => q.done || (q.id === "spin" && hasSpun)
+  ).length;
+  const totalQuestXP = DAILY_QUESTS.filter(
+    q => !q.done && !(q.id === "spin" && hasSpun)
+  ).reduce((s, q) => s + q.xp, 0);
 
   if (!user) return null;
 
@@ -98,7 +128,9 @@ export function GamifiedSidebar() {
           </div>
           <div>
             <div className="text-sm font-bold text-white">Your Progress</div>
-            <div className="text-xs text-muted-foreground">Level {level} Explorer</div>
+            <div className="text-xs text-muted-foreground">
+              Level {level} Explorer
+            </div>
           </div>
         </div>
         <XPBar xp={xp} level={level} />
@@ -112,14 +144,18 @@ export function GamifiedSidebar() {
             <Target className="w-4 h-4 text-cyan-400" />
             <span className="text-sm font-bold text-white">Daily Quests</span>
           </div>
-          <span className="text-xs text-cyan-400 font-medium">{completedQuests}/{DAILY_QUESTS.length}</span>
+          <span className="text-xs text-cyan-400 font-medium">
+            {completedQuests}/{DAILY_QUESTS.length}
+          </span>
         </div>
 
         {/* Progress bar */}
         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
-            style={{ width: `${(completedQuests / DAILY_QUESTS.length) * 100}%` }}
+            style={{
+              width: `${(completedQuests / DAILY_QUESTS.length) * 100}%`,
+            }}
           />
         </div>
 
@@ -137,10 +173,14 @@ export function GamifiedSidebar() {
                 }}
               >
                 <span className="text-base">{quest.icon}</span>
-                <span className={`flex-1 text-xs ${done ? "line-through text-muted-foreground" : "text-white"}`}>
+                <span
+                  className={`flex-1 text-xs ${done ? "line-through text-muted-foreground" : "text-white"}`}
+                >
                   {quest.label}
                 </span>
-                <span className={`text-xs font-bold ${done ? "text-muted-foreground" : "text-amber-400"}`}>
+                <span
+                  className={`text-xs font-bold ${done ? "text-muted-foreground" : "text-amber-400"}`}
+                >
                   +{quest.xp} XP
                 </span>
                 {done && <span className="text-green-400 text-xs">✓</span>}
@@ -151,7 +191,8 @@ export function GamifiedSidebar() {
 
         {totalQuestXP > 0 && (
           <div className="text-xs text-center text-muted-foreground">
-            Complete all quests for <span className="text-amber-400 font-bold">+{totalQuestXP} XP</span>
+            Complete all quests for{" "}
+            <span className="text-amber-400 font-bold">+{totalQuestXP} XP</span>
           </div>
         )}
       </div>
@@ -167,8 +208,12 @@ export function GamifiedSidebar() {
               🎡
             </div>
             <div className="flex-1">
-              <div className="text-sm font-bold text-amber-300">Daily Spin Available!</div>
-              <div className="text-xs text-muted-foreground">Win XP, SKY444, or badges</div>
+              <div className="text-sm font-bold text-amber-300">
+                Daily Spin Available!
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Win XP, SKY444, or badges
+              </div>
             </div>
             <ChevronRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -185,7 +230,9 @@ export function GamifiedSidebar() {
             <Crown className="w-5 h-5 text-purple-400" />
           </div>
           <div className="flex-1">
-            <div className="text-sm font-bold text-purple-300">Battle Pass S1</div>
+            <div className="text-sm font-bold text-purple-300">
+              Battle Pass S1
+            </div>
             <div className="text-xs text-muted-foreground">
               Tier {(gameState as any)?.battlePass?.currentTier ?? 0}/50
             </div>
@@ -196,7 +243,9 @@ export function GamifiedSidebar() {
         <div className="mt-2 h-1 bg-white/5 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-400"
-            style={{ width: `${(((gameState as any)?.battlePass?.currentTier ?? 0) / 50) * 100}%` }}
+            style={{
+              width: `${(((gameState as any)?.battlePass?.currentTier ?? 0) / 50) * 100}%`,
+            }}
           />
         </div>
       </div>
@@ -204,15 +253,30 @@ export function GamifiedSidebar() {
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-2">
         {[
-          { label: "Badges",   value: (gameState as any)?.badges?.length ?? 0, icon: Trophy,  color: "text-amber-400" },
-          { label: "Streak",   value: streak,                          icon: Flame,   color: "text-orange-400" },
-          { label: "Level",    value: level,                           icon: Zap,     color: "text-cyan-400"   },
+          {
+            label: "Badges",
+            value: (gameState as any)?.badges?.length ?? 0,
+            icon: Trophy,
+            color: "text-amber-400",
+          },
+          {
+            label: "Streak",
+            value: streak,
+            icon: Flame,
+            color: "text-orange-400",
+          },
+          { label: "Level", value: level, icon: Zap, color: "text-cyan-400" },
         ].map(stat => {
           const Icon = stat.icon;
           return (
-            <div key={stat.label} className="rounded-lg border border-white/10 bg-white/3 p-2 text-center">
+            <div
+              key={stat.label}
+              className="rounded-lg border border-white/10 bg-white/3 p-2 text-center"
+            >
               <Icon className={`w-4 h-4 ${stat.color} mx-auto mb-1`} />
-              <div className={`text-sm font-bold ${stat.color}`}>{stat.value}</div>
+              <div className={`text-sm font-bold ${stat.color}`}>
+                {stat.value}
+              </div>
               <div className="text-xs text-muted-foreground">{stat.label}</div>
             </div>
           );

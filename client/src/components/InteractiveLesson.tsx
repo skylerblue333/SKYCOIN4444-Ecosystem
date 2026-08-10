@@ -28,7 +28,10 @@ interface InteractiveLessonProps {
   onComplete: (score: number) => void;
 }
 
-export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps) {
+export function InteractiveLesson({
+  lesson,
+  onComplete,
+}: InteractiveLessonProps) {
   const [stage, setStage] = useState<"reading" | "quiz" | "results">("reading");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
@@ -81,8 +84,10 @@ export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps
         {/* Reading Material */}
         <Card className="bg-[#0e0a1a]/90 border border-white/5">
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-white mb-4">{lesson.title}</h2>
-            
+            <h2 className="text-2xl font-bold text-white mb-4">
+              {lesson.title}
+            </h2>
+
             <div className="prose prose-invert max-w-none mb-6">
               <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">
                 {lesson.reading}
@@ -97,7 +102,10 @@ export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps
               </h3>
               <ul className="space-y-2">
                 {lesson.keyPoints.map((point, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-slate-300 text-sm">
+                  <li
+                    key={idx}
+                    className="flex items-start gap-2 text-slate-300 text-sm"
+                  >
                     <span className="text-cyan-400 font-bold mt-0.5">•</span>
                     <span>{point}</span>
                   </li>
@@ -112,14 +120,18 @@ export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps
                   <Zap className="w-4 h-4" />
                   SKY4 Reward
                 </div>
-                <p className="text-2xl font-bold text-yellow-300">+{lesson.skyReward}</p>
+                <p className="text-2xl font-bold text-yellow-300">
+                  +{lesson.skyReward}
+                </p>
               </div>
               <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
                 <div className="flex items-center gap-2 text-purple-400 font-semibold mb-1">
                   <Award className="w-4 h-4" />
                   XP Reward
                 </div>
-                <p className="text-2xl font-bold text-purple-300">+{lesson.xpReward}</p>
+                <p className="text-2xl font-bold text-purple-300">
+                  +{lesson.xpReward}
+                </p>
               </div>
             </div>
 
@@ -157,7 +169,9 @@ export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps
         {/* Question Card */}
         <Card className="bg-[#0e0a1a]/90 border border-white/5">
           <CardContent className="p-6">
-            <h3 className="text-xl font-bold text-white mb-6">{question.question}</h3>
+            <h3 className="text-xl font-bold text-white mb-6">
+              {question.question}
+            </h3>
 
             {/* Options */}
             <div className="space-y-3 mb-6">
@@ -194,7 +208,9 @@ export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps
               disabled={selectedAnswer === null}
               className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white font-semibold py-3 disabled:opacity-50"
             >
-              {currentQuestion === lesson.quiz.length - 1 ? "Submit Quiz" : "Next Question"}
+              {currentQuestion === lesson.quiz.length - 1
+                ? "Submit Quiz"
+                : "Next Question"}
             </Button>
           </CardContent>
         </Card>
@@ -233,8 +249,12 @@ export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps
               <p className="text-slate-400 text-sm mb-2">Your Score</p>
               <p className="text-5xl font-bold text-cyan-400">{score}%</p>
               <p className="text-slate-400 text-sm mt-2">
-                {answers.filter((ans, idx) => ans === lesson.quiz[idx].correctAnswer).length} of{" "}
-                {lesson.quiz.length} correct
+                {
+                  answers.filter(
+                    (ans, idx) => ans === lesson.quiz[idx].correctAnswer
+                  ).length
+                }{" "}
+                of {lesson.quiz.length} correct
               </p>
             </div>
 
@@ -242,12 +262,20 @@ export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps
             {passed && (
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                  <div className="text-yellow-400 font-semibold text-sm mb-1">SKY4 Earned</div>
-                  <p className="text-2xl font-bold text-yellow-300">+{lesson.skyReward}</p>
+                  <div className="text-yellow-400 font-semibold text-sm mb-1">
+                    SKY4 Earned
+                  </div>
+                  <p className="text-2xl font-bold text-yellow-300">
+                    +{lesson.skyReward}
+                  </p>
                 </div>
                 <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
-                  <div className="text-purple-400 font-semibold text-sm mb-1">XP Earned</div>
-                  <p className="text-2xl font-bold text-purple-300">+{lesson.xpReward}</p>
+                  <div className="text-purple-400 font-semibold text-sm mb-1">
+                    XP Earned
+                  </div>
+                  <p className="text-2xl font-bold text-purple-300">
+                    +{lesson.xpReward}
+                  </p>
                 </div>
               </div>
             )}
@@ -259,7 +287,10 @@ export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps
                 {lesson.quiz.map((q, idx) => {
                   const isCorrect = answers[idx] === q.correctAnswer;
                   return (
-                    <div key={idx} className="pb-4 border-b border-slate-700 last:border-0">
+                    <div
+                      key={idx}
+                      className="pb-4 border-b border-slate-700 last:border-0"
+                    >
                       <div className="flex items-start gap-2 mb-2">
                         {isCorrect ? (
                           <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
@@ -267,16 +298,30 @@ export function InteractiveLesson({ lesson, onComplete }: InteractiveLessonProps
                           <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                         )}
                         <div>
-                          <p className="text-white font-semibold text-sm">{q.question}</p>
+                          <p className="text-white font-semibold text-sm">
+                            {q.question}
+                          </p>
                           <p className="text-slate-400 text-xs mt-1">
-                            Your answer: <span className={isCorrect ? "text-green-400" : "text-red-400"}>{q.options[answers[idx]]}</span>
+                            Your answer:{" "}
+                            <span
+                              className={
+                                isCorrect ? "text-green-400" : "text-red-400"
+                              }
+                            >
+                              {q.options[answers[idx]]}
+                            </span>
                           </p>
                           {!isCorrect && (
                             <p className="text-slate-400 text-xs mt-1">
-                              Correct: <span className="text-green-400">{q.options[q.correctAnswer]}</span>
+                              Correct:{" "}
+                              <span className="text-green-400">
+                                {q.options[q.correctAnswer]}
+                              </span>
                             </p>
                           )}
-                          <p className="text-slate-500 text-xs mt-2 italic">{q.explanation}</p>
+                          <p className="text-slate-500 text-xs mt-2 italic">
+                            {q.explanation}
+                          </p>
                         </div>
                       </div>
                     </div>

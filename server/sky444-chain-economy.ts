@@ -53,7 +53,8 @@ export interface StakingPosition {
 
 export interface TreasuryTransaction {
   id: string;
-  type: "deposit" | "withdrawal" | "burn" | "reward" | "lp_fee" | "launchpad_fee";
+  type:
+    "deposit" | "withdrawal" | "burn" | "reward" | "lp_fee" | "launchpad_fee";
   amount: bigint;
   fromAddress: string;
   toAddress: string;
@@ -100,7 +101,13 @@ export interface DAOProposal {
   description: string;
   proposer: number;
   proposerAddress: string;
-  type: "parameter_change" | "treasury_spend" | "contract_upgrade" | "emission_change" | "new_pool" | "token_burn";
+  type:
+    | "parameter_change"
+    | "treasury_spend"
+    | "contract_upgrade"
+    | "emission_change"
+    | "new_pool"
+    | "token_burn";
   parameters: Record<string, unknown>;
   votesFor: bigint;
   votesAgainst: bigint;
@@ -245,15 +252,31 @@ class SKY444TokenService {
     const oldPrice = this.state.price;
     this.state.price = newPrice;
     this.state.priceChange24h = ((newPrice - oldPrice) / oldPrice) * 100;
-    this.state.marketCap = Number(this.state.circulatingSupply / BigInt("1000000000000000000")) * newPrice;
+    this.state.marketCap =
+      Number(this.state.circulatingSupply / BigInt("1000000000000000000")) *
+      newPrice;
   }
 
-  burn(amount: bigint): { success: boolean; newBurnedSupply: bigint; deflationRate: number } {
-    if (amount <= 0n) return { success: false, newBurnedSupply: this.state.burnedSupply, deflationRate: 0 };
+  burn(amount: bigint): {
+    success: boolean;
+    newBurnedSupply: bigint;
+    deflationRate: number;
+  } {
+    if (amount <= 0n)
+      return {
+        success: false,
+        newBurnedSupply: this.state.burnedSupply,
+        deflationRate: 0,
+      };
     this.state.burnedSupply += amount;
     this.state.circulatingSupply -= amount;
-    const deflationRate = Number(amount * 10000n / this.state.totalSupply) / 100;
-    return { success: true, newBurnedSupply: this.state.burnedSupply, deflationRate };
+    const deflationRate =
+      Number((amount * 10000n) / this.state.totalSupply) / 100;
+    return {
+      success: true,
+      newBurnedSupply: this.state.burnedSupply,
+      deflationRate,
+    };
   }
 
   getSupplyMetrics() {
@@ -263,8 +286,12 @@ class SKY444TokenService {
       burned: this.state.burnedSupply.toString(),
       staked: this.state.stakedSupply.toString(),
       treasury: this.state.treasuryBalance.toString(),
-      burnedPercent: Number(this.state.burnedSupply * 100n / this.state.totalSupply),
-      stakedPercent: Number(this.state.stakedSupply * 100n / this.state.circulatingSupply),
+      burnedPercent: Number(
+        (this.state.burnedSupply * 100n) / this.state.totalSupply
+      ),
+      stakedPercent: Number(
+        (this.state.stakedSupply * 100n) / this.state.circulatingSupply
+      ),
     };
   }
 }
@@ -297,7 +324,9 @@ class StakingContractService {
   ): StakingPosition {
     const id = `stake_${userId}_${Date.now()}`;
     const now = new Date();
-    const unlockTime = new Date(now.getTime() + this.LOCK_DAYS[lockTier] * 86400000);
+    const unlockTime = new Date(
+      now.getTime() + this.LOCK_DAYS[lockTier] * 86400000
+    );
     const position: StakingPosition = {
       id,
       userId,
@@ -330,10 +359,16 @@ class StakingContractService {
     const elapsed = Date.now() - position.startTime.getTime();
     const elapsedYears = elapsed / (365 * 24 * 60 * 60 * 1000);
     const rewardRate = BigInt(Math.floor(position.apy * 100)) / 10000n;
-    return position.amount * rewardRate * BigInt(Math.floor(elapsedYears * 1e6)) / BigInt(1e6);
+    return (
+      (position.amount * rewardRate * BigInt(Math.floor(elapsedYears * 1e6))) /
+      BigInt(1e6)
+    );
   }
 
-  claimRewards(positionId: string): { claimed: bigint; newPendingRewards: bigint } {
+  claimRewards(positionId: string): {
+    claimed: bigint;
+    newPendingRewards: bigint;
+  } {
     const position = this.positions.get(positionId);
     if (!position) return { claimed: 0n, newPendingRewards: 0n };
     const rewards = this.calculateRewards(positionId);
@@ -342,15 +377,23 @@ class StakingContractService {
     return { claimed: rewards, newPendingRewards: 0n };
   }
 
-  unstake(positionId: string, userId: number): { success: boolean; amount: bigint; penalty: bigint; error?: string } {
+  unstake(
+    positionId: string,
+    userId: number
+  ): { success: boolean; amount: bigint; penalty: bigint; error?: string } {
     const position = this.positions.get(positionId);
     if (!position || position.userId !== userId) {
-      return { success: false, amount: 0n, penalty: 0n, error: "Position not found" };
+      return {
+        success: false,
+        amount: 0n,
+        penalty: 0n,
+        error: "Position not found",
+      };
     }
     const now = new Date();
     let penalty = 0n;
     if (position.lockTier !== "flexible" && now < position.unlockTime) {
-      penalty = position.amount * 10n / 100n; // 10% early withdrawal penalty
+      penalty = (position.amount * 10n) / 100n; // 10% early withdrawal penalty
     }
     position.status = "withdrawn";
     return { success: true, amount: position.amount - penalty, penalty };
@@ -362,12 +405,18 @@ class StakingContractService {
     averageAPY: number;
     totalRewardsPaid: bigint;
   } {
-    const positions = Array.from(this.positions.values()).filter(p => p.status === "active");
+    const positions = Array.from(this.positions.values()).filter(
+      p => p.status === "active"
+    );
     const totalStaked = positions.reduce((sum, p) => sum + p.amount, 0n);
-    const avgAPY = positions.length > 0
-      ? positions.reduce((sum, p) => sum + p.apy, 0) / positions.length
-      : 0;
-    const totalRewardsPaid = Array.from(this.positions.values()).reduce((sum, p) => sum + p.totalEarned, 0n);
+    const avgAPY =
+      positions.length > 0
+        ? positions.reduce((sum, p) => sum + p.apy, 0) / positions.length
+        : 0;
+    const totalRewardsPaid = Array.from(this.positions.values()).reduce(
+      (sum, p) => sum + p.totalEarned,
+      0n
+    );
     return {
       totalStakers: new Set(positions.map(p => p.userId)).size,
       totalStaked,
@@ -385,7 +434,11 @@ class TreasuryContractService {
   private readonly REQUIRED_APPROVALS = 3;
   private readonly MULTISIG_ADMINS = [1, 2, 3, 4, 5]; // admin user IDs
 
-  getBalance(): { balance: bigint; balanceFormatted: string; usdValue: number } {
+  getBalance(): {
+    balance: bigint;
+    balanceFormatted: string;
+    usdValue: number;
+  } {
     return {
       balance: this.balance,
       balanceFormatted: (Number(this.balance) / 1e18).toFixed(2),
@@ -416,7 +469,10 @@ class TreasuryContractService {
     return tx;
   }
 
-  approveTransaction(txId: string, adminId: number): { success: boolean; executed: boolean; tx: TreasuryTransaction } {
+  approveTransaction(
+    txId: string,
+    adminId: number
+  ): { success: boolean; executed: boolean; tx: TreasuryTransaction } {
     const tx = this.transactions.find(t => t.id === txId);
     if (!tx || tx.status !== "pending") {
       return { success: false, executed: false, tx: tx! };
@@ -472,7 +528,12 @@ class TreasuryContractService {
 // ─── BURN CONTRACT SERVICE ────────────────────────────────────────────────────
 
 class BurnContractService {
-  private burnEvents: { amount: bigint; reason: string; txHash: string; timestamp: Date }[] = [];
+  private burnEvents: {
+    amount: bigint;
+    reason: string;
+    txHash: string;
+    timestamp: Date;
+  }[] = [];
   private totalBurned: bigint = BigInt("44444444000000000000000000");
   private readonly BURN_TRIGGERS = {
     transaction_fee: 0.001, // 0.1% of each transaction
@@ -481,31 +542,39 @@ class BurnContractService {
     ad_revenue: 0.003, // 0.3% of ad revenue
   };
 
-  executeBurn(amount: bigint, reason: string): { txHash: string; totalBurned: bigint; deflationRate: number } {
+  executeBurn(
+    amount: bigint,
+    reason: string
+  ): { txHash: string; totalBurned: bigint; deflationRate: number } {
     const txHash = `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
     this.totalBurned += amount;
     this.burnEvents.push({ amount, reason, txHash, timestamp: new Date() });
     const totalSupply = BigInt("4444444444000000000000000000");
-    const deflationRate = Number(amount * 10000n / totalSupply) / 100;
+    const deflationRate = Number((amount * 10000n) / totalSupply) / 100;
     return { txHash, totalBurned: this.totalBurned, deflationRate };
   }
 
-  calculateAutoBurn(revenueType: keyof typeof this.BURN_TRIGGERS, revenueAmount: number): bigint {
+  calculateAutoBurn(
+    revenueType: keyof typeof this.BURN_TRIGGERS,
+    revenueAmount: number
+  ): bigint {
     const burnRate = this.BURN_TRIGGERS[revenueType];
-    const burnAmountTokens = revenueAmount * burnRate / 0.0444; // convert USD to tokens
+    const burnAmountTokens = (revenueAmount * burnRate) / 0.0444; // convert USD to tokens
     return BigInt(Math.floor(burnAmountTokens * 1e18));
   }
 
   getBurnStats() {
-    const last30Days = this.burnEvents.filter(e =>
-      e.timestamp > new Date(Date.now() - 30 * 86400000)
+    const last30Days = this.burnEvents.filter(
+      e => e.timestamp > new Date(Date.now() - 30 * 86400000)
     );
     return {
       totalBurned: this.totalBurned,
       totalBurnedFormatted: (Number(this.totalBurned) / 1e18).toFixed(2),
       burnEvents: this.burnEvents.length,
       last30DaysBurned: last30Days.reduce((sum, e) => sum + e.amount, 0n),
-      burnRate: Number(this.totalBurned * 100n / BigInt("4444444444000000000000000000")),
+      burnRate: Number(
+        (this.totalBurned * 100n) / BigInt("4444444444000000000000000000")
+      ),
       recentBurns: this.burnEvents.slice(-10).reverse(),
     };
   }
@@ -599,7 +668,10 @@ class FarmingContractService {
     return position;
   }
 
-  harvest(userId: number, poolId: string): { harvested: bigint; nextHarvestAt: Date } {
+  harvest(
+    userId: number,
+    poolId: string
+  ): { harvested: bigint; nextHarvestAt: Date } {
     const positionId = `farm_${userId}_${poolId}`;
     const position = this.userPositions.get(positionId);
     if (!position) return { harvested: 0n, nextHarvestAt: new Date() };
@@ -608,17 +680,27 @@ class FarmingContractService {
     const elapsed = Date.now() - position.lastHarvestAt.getTime();
     const elapsedHours = elapsed / 3600000;
     if (elapsedHours < pool.harvestInterval) {
-      const nextHarvestAt = new Date(position.lastHarvestAt.getTime() + pool.harvestInterval * 3600000);
+      const nextHarvestAt = new Date(
+        position.lastHarvestAt.getTime() + pool.harvestInterval * 3600000
+      );
       return { harvested: 0n, nextHarvestAt };
     }
-    const rewards = position.lpTokenAmount * BigInt(Math.floor(pool.apy * 100)) / 10000n / 365n;
+    const rewards =
+      (position.lpTokenAmount * BigInt(Math.floor(pool.apy * 100))) /
+      10000n /
+      365n;
     position.totalHarvested += rewards;
     position.lastHarvestAt = new Date();
-    return { harvested: rewards, nextHarvestAt: new Date(Date.now() + pool.harvestInterval * 3600000) };
+    return {
+      harvested: rewards,
+      nextHarvestAt: new Date(Date.now() + pool.harvestInterval * 3600000),
+    };
   }
 
   getUserPositions(userId: number): FarmingPosition[] {
-    return Array.from(this.userPositions.values()).filter(p => p.userId === userId);
+    return Array.from(this.userPositions.values()).filter(
+      p => p.userId === userId
+    );
   }
 
   getFarmingStats() {
@@ -628,7 +710,9 @@ class FarmingContractService {
       activePools: this.pools.filter(p => p.isActive).length,
       totalTVL,
       totalStaked,
-      totalFarmers: new Set(Array.from(this.userPositions.values()).map(p => p.userId)).size,
+      totalFarmers: new Set(
+        Array.from(this.userPositions.values()).map(p => p.userId)
+      ).size,
     };
   }
 }
@@ -651,7 +735,9 @@ class DAOVotingService {
     parameters: Record<string, unknown>
   ): DAOProposal {
     const now = new Date();
-    const endTime = new Date(now.getTime() + this.VOTING_PERIOD_DAYS * 86400000);
+    const endTime = new Date(
+      now.getTime() + this.VOTING_PERIOD_DAYS * 86400000
+    );
     const proposal: DAOProposal = {
       id: `dao_${Date.now()}`,
       title,
@@ -689,11 +775,15 @@ class DAOVotingService {
       proposal.status = "rejected";
       return { success: false, proposal };
     }
-    const existingVote = this.votes.find(v => v.proposalId === proposalId && v.voterId === voterId);
+    const existingVote = this.votes.find(
+      v => v.proposalId === proposalId && v.voterId === voterId
+    );
     if (existingVote) {
       // Remove old vote
-      if (existingVote.vote === "for") proposal.votesFor -= existingVote.votingPower;
-      else if (existingVote.vote === "against") proposal.votesAgainst -= existingVote.votingPower;
+      if (existingVote.vote === "for")
+        proposal.votesFor -= existingVote.votingPower;
+      else if (existingVote.vote === "against")
+        proposal.votesAgainst -= existingVote.votingPower;
       else proposal.votesAbstain -= existingVote.votingPower;
       existingVote.vote = vote;
       existingVote.votingPower = votingPower;
@@ -718,7 +808,8 @@ class DAOVotingService {
   finalizeProposal(proposalId: string): DAOProposal {
     const proposal = this.proposals.find(p => p.id === proposalId);
     if (!proposal) throw new Error("Proposal not found");
-    const totalVotes = proposal.votesFor + proposal.votesAgainst + proposal.votesAbstain;
+    const totalVotes =
+      proposal.votesFor + proposal.votesAgainst + proposal.votesAbstain;
     if (totalVotes < proposal.quorumRequired) {
       proposal.status = "rejected";
       return proposal;
@@ -754,7 +845,8 @@ class DAOVotingService {
       rejectedProposals: rejected,
       totalVoters,
       totalVotesCast: this.votes.length,
-      passRate: this.proposals.length > 0 ? (passed / (passed + rejected)) * 100 : 0,
+      passRate:
+        this.proposals.length > 0 ? (passed / (passed + rejected)) * 100 : 0,
     };
   }
 }
@@ -814,7 +906,8 @@ class EmissionsEngine {
     if (!schedule) return 0n;
     const blocksPerYear = 2628000n;
     const blocksInEpoch = BigInt(schedule.endBlock - schedule.startBlock);
-    const daysInEpoch = blocksInEpoch * 86400n / (12n * blocksPerYear / 365n);
+    const daysInEpoch =
+      (blocksInEpoch * 86400n) / ((12n * blocksPerYear) / 365n);
     return daysInEpoch > 0n ? schedule.totalEmission / daysInEpoch : 0n;
   }
 
@@ -825,11 +918,11 @@ class EmissionsEngine {
     return {
       epoch: epochNumber,
       dailyEmission: daily,
-      staking: daily * BigInt(schedule.stakingAllocation) / 100n,
-      farming: daily * BigInt(schedule.farmingAllocation) / 100n,
-      treasury: daily * BigInt(schedule.treasuryAllocation) / 100n,
-      team: daily * BigInt(schedule.teamAllocation) / 100n,
-      burnAmount: daily * BigInt(schedule.burnRate) / 100n,
+      staking: (daily * BigInt(schedule.stakingAllocation)) / 100n,
+      farming: (daily * BigInt(schedule.farmingAllocation)) / 100n,
+      treasury: (daily * BigInt(schedule.treasuryAllocation)) / 100n,
+      team: (daily * BigInt(schedule.teamAllocation)) / 100n,
+      burnAmount: (daily * BigInt(schedule.burnRate)) / 100n,
     };
   }
 }
@@ -881,7 +974,7 @@ class VestingEngine {
     const elapsed = now - cliffEnd;
     const vestingPeriod = vestingEnd - cliffEnd;
     const vestedFraction = BigInt(Math.floor((elapsed / vestingPeriod) * 1e6));
-    const totalVested = schedule.totalAmount * vestedFraction / BigInt(1e6);
+    const totalVested = (schedule.totalAmount * vestedFraction) / BigInt(1e6);
     return totalVested - schedule.releasedAmount;
   }
 
@@ -896,22 +989,31 @@ class VestingEngine {
     };
   }
 
-  revokeSchedule(scheduleId: string, adminId: number): { success: boolean; returnedAmount: bigint } {
+  revokeSchedule(
+    scheduleId: string,
+    adminId: number
+  ): { success: boolean; returnedAmount: bigint } {
     const schedule = this.schedules.get(scheduleId);
-    if (!schedule || !schedule.revocable) return { success: false, returnedAmount: 0n };
+    if (!schedule || !schedule.revocable)
+      return { success: false, returnedAmount: 0n };
     const returnedAmount = schedule.totalAmount - schedule.releasedAmount;
     schedule.revokedAt = new Date();
     return { success: true, returnedAmount };
   }
 
   getUserSchedules(userId: number): VestingSchedule[] {
-    return Array.from(this.schedules.values()).filter(s => s.beneficiary === userId);
+    return Array.from(this.schedules.values()).filter(
+      s => s.beneficiary === userId
+    );
   }
 
   getVestingStats() {
     const all = Array.from(this.schedules.values());
     const totalVested = all.reduce((sum, s) => sum + s.releasedAmount, 0n);
-    const totalLocked = all.reduce((sum, s) => sum + (s.totalAmount - s.releasedAmount), 0n);
+    const totalLocked = all.reduce(
+      (sum, s) => sum + (s.totalAmount - s.releasedAmount),
+      0n
+    );
     return {
       totalSchedules: all.length,
       totalVested,
@@ -925,11 +1027,17 @@ class VestingEngine {
 
 class LaunchpadService {
   private projects: LaunchpadProject[] = [];
-  private allocations = new Map<string, { userId: number; amount: number; txHash: string; timestamp: Date }[]>();
+  private allocations = new Map<
+    string,
+    { userId: number; amount: number; txHash: string; timestamp: Date }[]
+  >();
 
   createProject(
     createdBy: number,
-    data: Omit<LaunchpadProject, "id" | "totalParticipants" | "raisedAmount" | "status" | "createdBy">
+    data: Omit<
+      LaunchpadProject,
+      "id" | "totalParticipants" | "raisedAmount" | "status" | "createdBy"
+    >
   ): LaunchpadProject {
     const project: LaunchpadProject = {
       ...data,
@@ -944,18 +1052,52 @@ class LaunchpadService {
     return project;
   }
 
-  participate(userId: number, projectId: string, amount: number): {
+  participate(
+    userId: number,
+    projectId: string,
+    amount: number
+  ): {
     success: boolean;
     allocation: number;
     txHash: string;
     error?: string;
   } {
     const project = this.projects.find(p => p.id === projectId);
-    if (!project) return { success: false, allocation: 0, txHash: "", error: "Project not found" };
-    if (project.status !== "active") return { success: false, allocation: 0, txHash: "", error: "Project not active" };
-    if (amount < project.minContribution) return { success: false, allocation: 0, txHash: "", error: "Below minimum contribution" };
-    if (amount > project.maxContribution) return { success: false, allocation: 0, txHash: "", error: "Above maximum contribution" };
-    if (project.raisedAmount + amount > project.hardCap) return { success: false, allocation: 0, txHash: "", error: "Hard cap reached" };
+    if (!project)
+      return {
+        success: false,
+        allocation: 0,
+        txHash: "",
+        error: "Project not found",
+      };
+    if (project.status !== "active")
+      return {
+        success: false,
+        allocation: 0,
+        txHash: "",
+        error: "Project not active",
+      };
+    if (amount < project.minContribution)
+      return {
+        success: false,
+        allocation: 0,
+        txHash: "",
+        error: "Below minimum contribution",
+      };
+    if (amount > project.maxContribution)
+      return {
+        success: false,
+        allocation: 0,
+        txHash: "",
+        error: "Above maximum contribution",
+      };
+    if (project.raisedAmount + amount > project.hardCap)
+      return {
+        success: false,
+        allocation: 0,
+        txHash: "",
+        error: "Hard cap reached",
+      };
     const txHash = `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
     const allocations = this.allocations.get(projectId) || [];
     allocations.push({ userId, amount, txHash, timestamp: new Date() });
@@ -974,7 +1116,9 @@ class LaunchpadService {
     return this.projects;
   }
 
-  getUserAllocations(userId: number): { project: LaunchpadProject; amount: number; tokens: number }[] {
+  getUserAllocations(
+    userId: number
+  ): { project: LaunchpadProject; amount: number; tokens: number }[] {
     const result = [];
     for (const project of this.projects) {
       const allocations = this.allocations.get(project.id) || [];
@@ -999,7 +1143,10 @@ class LaunchpadService {
       activeProjects: this.projects.filter(p => p.status === "active").length,
       completedProjects: completed.length,
       totalRaised,
-      totalParticipants: this.projects.reduce((sum, p) => sum + p.totalParticipants, 0),
+      totalParticipants: this.projects.reduce(
+        (sum, p) => sum + p.totalParticipants,
+        0
+      ),
     };
   }
 }
@@ -1038,13 +1185,26 @@ class LPStakingService {
     },
   ];
 
-  private positions = new Map<string, { userId: number; poolId: string; lpAmount: bigint; depositedAt: Date; pendingRewards: bigint }>();
+  private positions = new Map<
+    string,
+    {
+      userId: number;
+      poolId: string;
+      lpAmount: bigint;
+      depositedAt: Date;
+      pendingRewards: bigint;
+    }
+  >();
 
   getPools(): LPStakingPool[] {
     return this.pools.filter(p => p.isActive);
   }
 
-  stakeLPTokens(userId: number, poolId: string, lpAmount: bigint): { success: boolean; positionId: string } {
+  stakeLPTokens(
+    userId: number,
+    poolId: string,
+    lpAmount: bigint
+  ): { success: boolean; positionId: string } {
     const pool = this.pools.find(p => p.id === poolId);
     if (!pool || !pool.isActive) return { success: false, positionId: "" };
     const positionId = `lp_pos_${userId}_${poolId}`;
@@ -1052,7 +1212,13 @@ class LPStakingService {
     if (existing) {
       existing.lpAmount += lpAmount;
     } else {
-      this.positions.set(positionId, { userId, poolId, lpAmount, depositedAt: new Date(), pendingRewards: 0n });
+      this.positions.set(positionId, {
+        userId,
+        poolId,
+        lpAmount,
+        depositedAt: new Date(),
+        pendingRewards: 0n,
+      });
     }
     pool.totalLPStaked += lpAmount;
     return { success: true, positionId };
@@ -1066,8 +1232,18 @@ class LPStakingService {
     if (!pool) return 0n;
     const elapsed = Date.now() - position.depositedAt.getTime();
     const elapsedDays = elapsed / 86400000;
-    const poolShare = pool.totalLPStaked > 0n ? Number(position.lpAmount * 10000n / pool.totalLPStaked) / 10000 : 0;
-    const rewards = BigInt(Math.floor(Number(pool.rewardPerDay) * elapsedDays * poolShare * pool.boostMultiplier));
+    const poolShare =
+      pool.totalLPStaked > 0n
+        ? Number((position.lpAmount * 10000n) / pool.totalLPStaked) / 10000
+        : 0;
+    const rewards = BigInt(
+      Math.floor(
+        Number(pool.rewardPerDay) *
+          elapsedDays *
+          poolShare *
+          pool.boostMultiplier
+      )
+    );
     position.pendingRewards = 0n;
     return rewards;
   }
@@ -1077,7 +1253,9 @@ class LPStakingService {
     return {
       activePools: this.pools.filter(p => p.isActive).length,
       totalTVL,
-      totalLPStakers: new Set(Array.from(this.positions.values()).map(p => p.userId)).size,
+      totalLPStakers: new Set(
+        Array.from(this.positions.values()).map(p => p.userId)
+      ).size,
     };
   }
 }
@@ -1085,7 +1263,8 @@ class LPStakingService {
 // ─── TOKEN ANALYTICS SERVICE ──────────────────────────────────────────────────
 
 class TokenAnalyticsService {
-  private priceHistory: { timestamp: Date; price: number; volume: number }[] = [];
+  private priceHistory: { timestamp: Date; price: number; volume: number }[] =
+    [];
 
   async getFullAnalytics(): Promise<TokenAnalytics> {
     return {
@@ -1109,7 +1288,7 @@ class TokenAnalyticsService {
       liquidityUSD: 7600000,
       fearGreedIndex: 62,
       supportLevels: [0.038, 0.034, 0.029],
-      resistanceLevels: [0.052, 0.065, 0.080],
+      resistanceLevels: [0.052, 0.065, 0.08],
       rsi: 58.4,
       macd: { value: 0.0012, signal: 0.0008, histogram: 0.0004 },
     };
@@ -1117,26 +1296,38 @@ class TokenAnalyticsService {
 
   async getAIAnalysis(tokenData: TokenAnalytics): Promise<string> {
     try {
-      const _prompt = `Analyze this token: price $${tokenData.price}, 24h change ${tokenData.priceChange24h}%, ` +
+      const _prompt =
+        `Analyze this token: price $${tokenData.price}, 24h change ${tokenData.priceChange24h}%, ` +
         `market cap $${tokenData.marketCap}, staking ratio ${tokenData.stakingRatio}%, ` +
         `RSI ${tokenData.rsi}, fear/greed ${tokenData.fearGreedIndex}. ` +
         `Provide a 3-sentence market analysis.`;
-      return ((await invokeLLM({ messages: [{ role: "user" as const, content: _prompt }] }))?.choices[0]?.message?.content as string) || "";
+      return (
+        ((
+          await invokeLLM({
+            messages: [{ role: "user" as const, content: _prompt }],
+          })
+        )?.choices[0]?.message?.content as string) || ""
+      );
     } catch {
-      return `SKY444 is trading at $${tokenData.price} with ${tokenData.priceChange24h > 0 ? "positive" : "negative"} momentum. ` +
+      return (
+        `SKY444 is trading at $${tokenData.price} with ${tokenData.priceChange24h > 0 ? "positive" : "negative"} momentum. ` +
         `The ${tokenData.stakingRatio}% staking ratio indicates strong holder conviction. ` +
-        `RSI of ${tokenData.rsi} suggests the token is in ${tokenData.rsi > 70 ? "overbought" : tokenData.rsi < 30 ? "oversold" : "neutral"} territory.`;
+        `RSI of ${tokenData.rsi} suggests the token is in ${tokenData.rsi > 70 ? "overbought" : tokenData.rsi < 30 ? "oversold" : "neutral"} territory.`
+      );
     }
   }
 
   recordPrice(price: number, volume: number): void {
     this.priceHistory.push({ timestamp: new Date(), price, volume });
-    if (this.priceHistory.length > 8760) { // keep 1 year of hourly data
+    if (this.priceHistory.length > 8760) {
+      // keep 1 year of hourly data
       this.priceHistory.shift();
     }
   }
 
-  getPriceHistory(days = 30): { timestamp: Date; price: number; volume: number }[] {
+  getPriceHistory(
+    days = 30
+  ): { timestamp: Date; price: number; volume: number }[] {
     const cutoff = new Date(Date.now() - days * 86400000);
     return this.priceHistory.filter(p => p.timestamp > cutoff);
   }
@@ -1145,10 +1336,23 @@ class TokenAnalyticsService {
 // ─── REWARD ENGINE ────────────────────────────────────────────────────────────
 
 class RewardEngine {
-  private pendingRewards = new Map<number, { amount: bigint; reason: string; expiresAt: Date }[]>();
-  private claimedRewards: { userId: number; amount: bigint; reason: string; claimedAt: Date }[] = [];
+  private pendingRewards = new Map<
+    number,
+    { amount: bigint; reason: string; expiresAt: Date }[]
+  >();
+  private claimedRewards: {
+    userId: number;
+    amount: bigint;
+    reason: string;
+    claimedAt: Date;
+  }[] = [];
 
-  addReward(userId: number, amount: bigint, reason: string, expiresInDays = 30): void {
+  addReward(
+    userId: number,
+    amount: bigint,
+    reason: string,
+    expiresInDays = 30
+  ): void {
     const rewards = this.pendingRewards.get(userId) || [];
     rewards.push({
       amount,
@@ -1158,9 +1362,14 @@ class RewardEngine {
     this.pendingRewards.set(userId, rewards);
   }
 
-  getPendingRewards(userId: number): { total: bigint; breakdown: { amount: bigint; reason: string; expiresAt: Date }[] } {
+  getPendingRewards(userId: number): {
+    total: bigint;
+    breakdown: { amount: bigint; reason: string; expiresAt: Date }[];
+  } {
     const now = new Date();
-    const rewards = (this.pendingRewards.get(userId) || []).filter(r => r.expiresAt > now);
+    const rewards = (this.pendingRewards.get(userId) || []).filter(
+      r => r.expiresAt > now
+    );
     const total = rewards.reduce((sum, r) => sum + r.amount, 0n);
     return { total, breakdown: rewards };
   }
@@ -1169,7 +1378,12 @@ class RewardEngine {
     const { total, breakdown } = this.getPendingRewards(userId);
     this.pendingRewards.set(userId, []);
     for (const reward of breakdown) {
-      this.claimedRewards.push({ userId, amount: reward.amount, reason: reward.reason, claimedAt: new Date() });
+      this.claimedRewards.push({
+        userId,
+        amount: reward.amount,
+        reason: reward.reason,
+        claimedAt: new Date(),
+      });
     }
     return total;
   }
@@ -1192,7 +1406,10 @@ class RewardEngine {
   }
 
   getRewardStats() {
-    const totalDistributed = this.claimedRewards.reduce((sum, r) => sum + r.amount, 0n);
+    const totalDistributed = this.claimedRewards.reduce(
+      (sum, r) => sum + r.amount,
+      0n
+    );
     const totalPending = Array.from(this.pendingRewards.values())
       .flat()
       .reduce((sum, r) => sum + r.amount, 0n);

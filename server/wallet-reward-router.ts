@@ -1,6 +1,6 @@
-import { db } from './db';
-import { storagePut } from './storage';
-import { notifyOwner } from './_core/notification';
+import { db } from "./db";
+import { storagePut } from "./storage";
+import { notifyOwner } from "./_core/notification";
 
 interface WalletConfig {
   userId: string;
@@ -9,7 +9,7 @@ interface WalletConfig {
   autoConvertToETH: boolean;
   autoWithdraw: boolean;
   withdrawalThreshold: number; // USD amount
-  withdrawalFrequency: 'daily' | 'weekly' | 'monthly';
+  withdrawalFrequency: "daily" | "weekly" | "monthly";
 }
 
 interface RewardTransaction {
@@ -20,7 +20,7 @@ interface RewardTransaction {
   usdValue: number;
   sourcePool: string;
   destinationWallet: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   txHash?: string;
   timestamp: number;
   convertedToETH?: boolean;
@@ -46,17 +46,19 @@ export class WalletRewardRouter {
   async configureWallet(config: WalletConfig): Promise<void> {
     // Validate Ethereum address
     if (!this.isValidEthereumAddress(config.primaryWallet)) {
-      throw new Error('Invalid Ethereum address');
+      throw new Error("Invalid Ethereum address");
     }
 
     this.walletConfigs.set(config.userId, config);
     this.rewardHistory.set(config.userId, []);
 
-    console.log(`[Wallet] Configured wallet for user ${config.userId}: ${config.primaryWallet}`);
+    console.log(
+      `[Wallet] Configured wallet for user ${config.userId}: ${config.primaryWallet}`
+    );
 
     // Notify owner
     await notifyOwner({
-      title: 'Wallet Configuration Updated',
+      title: "Wallet Configuration Updated",
       content: `User ${config.userId} configured wallet: ${config.primaryWallet}. Auto-convert: ${config.autoConvertToETH}, Auto-withdraw: ${config.autoWithdraw}`,
     });
   }
@@ -91,7 +93,7 @@ export class WalletRewardRouter {
       usdValue,
       sourcePool,
       destinationWallet: config.primaryWallet,
-      status: 'pending',
+      status: "pending",
       timestamp: Date.now(),
     };
 
@@ -100,7 +102,9 @@ export class WalletRewardRouter {
     history.push(transaction);
     this.rewardHistory.set(userId, history);
 
-    console.log(`[Wallet] Reward recorded: ${amount} ${coin} ($${usdValue.toFixed(2)}) from ${sourcePool}`);
+    console.log(
+      `[Wallet] Reward recorded: ${amount} ${coin} ($${usdValue.toFixed(2)}) from ${sourcePool}`
+    );
 
     return transaction;
   }
@@ -113,7 +117,7 @@ export class WalletRewardRouter {
       try {
         await this.processRewards();
       } catch (error) {
-        console.error('[Wallet] Reward processing error:', error);
+        console.error("[Wallet] Reward processing error:", error);
       }
     }, 60000); // Process every minute
   }
@@ -124,7 +128,7 @@ export class WalletRewardRouter {
   private async processRewards(): Promise<void> {
     for (const [userId, config] of this.walletConfigs) {
       const history = this.rewardHistory.get(userId) || [];
-      const pendingRewards = history.filter(r => r.status === 'pending');
+      const pendingRewards = history.filter(r => r.status === "pending");
 
       if (pendingRewards.length === 0) continue;
 
@@ -148,30 +152,40 @@ export class WalletRewardRouter {
     config: WalletConfig,
     rewards: RewardTransaction[]
   ): Promise<void> {
-    console.log(`[Wallet] Converting ${rewards.length} rewards to ETH for user ${userId}`);
+    console.log(
+      `[Wallet] Converting ${rewards.length} rewards to ETH for user ${userId}`
+    );
 
     for (const reward of rewards) {
       try {
         // Simulate conversion (in production, use Uniswap or similar)
-        const ethAmount = await this.getETHEquivalent(reward.coin, reward.amount);
+        const ethAmount = await this.getETHEquivalent(
+          reward.coin,
+          reward.amount
+        );
 
-        reward.status = 'processing';
+        reward.status = "processing";
         reward.convertedToETH = true;
 
         // Simulate blockchain transaction
         reward.txHash = `0x${Math.random().toString(16).substr(2)}${Math.random().toString(16).substr(2)}`;
-        reward.status = 'completed';
+        reward.status = "completed";
 
-        console.log(`[Wallet] Converted ${reward.amount} ${reward.coin} to ${ethAmount.toFixed(6)} ETH`);
+        console.log(
+          `[Wallet] Converted ${reward.amount} ${reward.coin} to ${ethAmount.toFixed(6)} ETH`
+        );
 
         // Notify owner
         await notifyOwner({
-          title: 'Reward Converted to ETH',
+          title: "Reward Converted to ETH",
           content: `${reward.amount} ${reward.coin} converted to ${ethAmount.toFixed(6)} ETH. TX: ${reward.txHash}`,
         });
       } catch (error) {
-        reward.status = 'failed';
-        console.error(`[Wallet] Conversion failed for reward ${reward.id}:`, error);
+        reward.status = "failed";
+        console.error(
+          `[Wallet] Conversion failed for reward ${reward.id}:`,
+          error
+        );
       }
     }
   }
@@ -190,7 +204,10 @@ export class WalletRewardRouter {
       // Calculate total ETH to send
       let totalETH = 0;
       for (const reward of rewards) {
-        const ethAmount = await this.getETHEquivalent(reward.coin, reward.amount);
+        const ethAmount = await this.getETHEquivalent(
+          reward.coin,
+          reward.amount
+        );
         totalETH += ethAmount;
       }
 
@@ -199,22 +216,24 @@ export class WalletRewardRouter {
 
       // Update all rewards as completed
       for (const reward of rewards) {
-        reward.status = 'completed';
+        reward.status = "completed";
         reward.txHash = withdrawalTxHash;
       }
 
-      console.log(`[Wallet] Withdrawal processed: ${totalETH.toFixed(6)} ETH to ${config.primaryWallet}`);
+      console.log(
+        `[Wallet] Withdrawal processed: ${totalETH.toFixed(6)} ETH to ${config.primaryWallet}`
+      );
       console.log(`[Wallet] Transaction hash: ${withdrawalTxHash}`);
 
       // Notify owner
       await notifyOwner({
-        title: 'Mining Rewards Withdrawn',
+        title: "Mining Rewards Withdrawn",
         content: `${totalETH.toFixed(6)} ETH withdrawn to ${config.primaryWallet}. TX: ${withdrawalTxHash}. Rewards: ${rewards.length}`,
       });
     } catch (error) {
-      console.error('[Wallet] Withdrawal failed:', error);
+      console.error("[Wallet] Withdrawal failed:", error);
       for (const reward of rewards) {
-        reward.status = 'failed';
+        reward.status = "failed";
       }
     }
   }
@@ -222,11 +241,14 @@ export class WalletRewardRouter {
   /**
    * Get ETH equivalent for coin amount
    */
-  private async getETHEquivalent(coin: string, amount: number): Promise<number> {
+  private async getETHEquivalent(
+    coin: string,
+    amount: number
+  ): Promise<number> {
     // Get current prices
     const prices: Record<string, number> = {
       BTC: 63800,
-      LTC: 89.50,
+      LTC: 89.5,
       DOGE: 0.072,
       ETC: 28.45,
     };
@@ -258,13 +280,16 @@ export class WalletRewardRouter {
   /**
    * Get total earnings for user
    */
-  getTotalEarnings(userId: string): { coins: Record<string, number>; usd: number } {
+  getTotalEarnings(userId: string): {
+    coins: Record<string, number>;
+    usd: number;
+  } {
     const history = this.rewardHistory.get(userId) || [];
     const coins: Record<string, number> = {};
     let totalUSD = 0;
 
     for (const reward of history) {
-      if (reward.status === 'completed') {
+      if (reward.status === "completed") {
         coins[reward.coin] = (coins[reward.coin] || 0) + reward.amount;
         totalUSD += reward.usdValue;
       }

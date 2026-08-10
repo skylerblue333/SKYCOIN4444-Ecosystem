@@ -17,15 +17,24 @@ const UpdatedLandingPage = () => {
               SKY444 Cryptocurrency Ecosystem
             </h1>
             <p className="mb-8 text-xl text-gray-300">
-              Robust platform with 858 pages, 1M+ LOC, and advanced AI capabilities
+              Robust platform with 858 pages, 1M+ LOC, and advanced AI
+              capabilities
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
-                <a href="https://github.com/skylerblue333/skycoin4444.git" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://github.com/skylerblue333/skycoin4444.git"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   View on GitHub
                 </a>
               </Button>
-              <Button size="lg" variant="outline" className="border-purple-600 text-purple-400">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-purple-600 text-purple-400"
+              >
                 Get Started
               </Button>
             </div>
@@ -39,11 +48,13 @@ const UpdatedLandingPage = () => {
           <h2 className="mb-12 text-center text-3xl font-bold text-white">
             Platform Facts & Specifications
           </h2>
-          
+
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {/* Card 1 */}
             <Card className="border-purple-600 bg-slate-800 p-6">
-              <h3 className="mb-2 text-lg font-semibold text-purple-400">Pages & Routes</h3>
+              <h3 className="mb-2 text-lg font-semibold text-purple-400">
+                Pages & Routes
+              </h3>
               <p className="text-2xl font-bold text-white">858 Pages</p>
               <p className="mt-2 text-sm text-gray-400">
                 ✓ Fully functional and routed
@@ -54,7 +65,9 @@ const UpdatedLandingPage = () => {
 
             {/* Card 2 */}
             <Card className="border-purple-600 bg-slate-800 p-6">
-              <h3 className="mb-2 text-lg font-semibold text-purple-400">Code Quality</h3>
+              <h3 className="mb-2 text-lg font-semibold text-purple-400">
+                Code Quality
+              </h3>
               <p className="text-2xl font-bold text-white">1.07M LOC</p>
               <p className="mt-2 text-sm text-gray-400">
                 ✓ TypeScript throughout
@@ -65,18 +78,20 @@ const UpdatedLandingPage = () => {
 
             {/* Card 3 */}
             <Card className="border-purple-600 bg-slate-800 p-6">
-              <h3 className="mb-2 text-lg font-semibold text-purple-400">Backend</h3>
+              <h3 className="mb-2 text-lg font-semibold text-purple-400">
+                Backend
+              </h3>
               <p className="text-2xl font-bold text-white">14 Routers</p>
-              <p className="mt-2 text-sm text-gray-400">
-                ✓ 80+ API procedures
-              </p>
+              <p className="mt-2 text-sm text-gray-400">✓ 80+ API procedures</p>
               <p className="text-sm text-gray-400">✓ tRPC type-safe</p>
               <p className="text-sm text-gray-400">✓ Real database</p>
             </Card>
 
             {/* Card 4 */}
             <Card className="border-purple-600 bg-slate-800 p-6">
-              <h3 className="mb-2 text-lg font-semibold text-purple-400">Cryptocurrency</h3>
+              <h3 className="mb-2 text-lg font-semibold text-purple-400">
+                Cryptocurrency
+              </h3>
               <p className="text-2xl font-bold text-white">Multi-Crypto</p>
               <p className="mt-2 text-sm text-gray-400">
                 ✓ BTC, ETH, SOL, DOGE, SKY444
@@ -87,7 +102,9 @@ const UpdatedLandingPage = () => {
 
             {/* Card 5 */}
             <Card className="border-purple-600 bg-slate-800 p-6">
-              <h3 className="mb-2 text-lg font-semibold text-purple-400">AI Features</h3>
+              <h3 className="mb-2 text-lg font-semibold text-purple-400">
+                AI Features
+              </h3>
               <p className="text-2xl font-bold text-white">Hope AI</p>
               <p className="mt-2 text-sm text-gray-400">
                 ✓ Advanced chat interface
@@ -98,7 +115,9 @@ const UpdatedLandingPage = () => {
 
             {/* Card 6 */}
             <Card className="border-purple-600 bg-slate-800 p-6">
-              <h3 className="mb-2 text-lg font-semibold text-purple-400">Market Value</h3>
+              <h3 className="mb-2 text-lg font-semibold text-purple-400">
+                Market Value
+              </h3>
               <p className="text-2xl font-bold text-white">$2M+</p>
               <p className="mt-2 text-sm text-gray-400">
                 ✓ Technical valuation
@@ -116,7 +135,7 @@ const UpdatedLandingPage = () => {
           <h2 className="mb-12 text-center text-3xl font-bold text-white">
             20 Major Categories
           </h2>
-          
+
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[
               "E-Commerce (85 pages)",
@@ -138,10 +157,15 @@ const UpdatedLandingPage = () => {
               "Travel (56 pages)",
               "Real Estate (52 pages)",
               "Entertainment (48 pages)",
-              "Utilities (156 pages)"
+              "Utilities (156 pages)",
             ].map((category, idx) => (
-              <div key={idx} className="rounded-lg border border-purple-600 bg-slate-800 p-4">
-                <p className="text-sm font-semibold text-purple-400">{category}</p>
+              <div
+                key={idx}
+                className="rounded-lg border border-purple-600 bg-slate-800 p-4"
+              >
+                <p className="text-sm font-semibold text-purple-400">
+                  {category}
+                </p>
               </div>
             ))}
           </div>
@@ -162,12 +186,20 @@ const UpdatedLandingPage = () => {
           </code>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
-              <a href="https://github.com/skylerblue333/skycoin4444" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://github.com/skylerblue333/skycoin4444"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 View Repository
               </a>
             </Button>
             <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
-              <a href="https://github.com/skylerblue333/skycoin4444/tree/main" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://github.com/skylerblue333/skycoin4444/tree/main"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 View Main Branch
               </a>
             </Button>
@@ -178,9 +210,7 @@ const UpdatedLandingPage = () => {
       {/* Footer */}
       <footer className="border-t border-purple-600 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl text-center text-gray-400">
-          <p>
-            SKY444 Cryptocurrency Ecosystem | Scalable-Grade Platform
-          </p>
+          <p>SKY444 Cryptocurrency Ecosystem | Scalable-Grade Platform</p>
           <p className="mt-2 text-sm">
             All statements verified and truthful | Production-ready code
           </p>

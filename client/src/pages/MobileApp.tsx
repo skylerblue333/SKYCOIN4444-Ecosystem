@@ -3,21 +3,68 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/PageHeader";
 import {
-  Smartphone, Download, Star, Shield, Zap, Bell, Wifi,
-  Camera, Mic, Fingerprint, QrCode, ChevronRight, Apple,
-  Play, Globe, CheckCircle2, ArrowRight, Sparkles
+  Smartphone,
+  Download,
+  Star,
+  Shield,
+  Zap,
+  Bell,
+  Wifi,
+  Camera,
+  Mic,
+  Fingerprint,
+  QrCode,
+  ChevronRight,
+  Apple,
+  Play,
+  Globe,
+  CheckCircle,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 
 const FEATURES = [
-  { icon: Bell, label: "Push Notifications", desc: "Real-time alerts for messages, trades, and rewards" },
-  { icon: Fingerprint, label: "Biometric Auth", desc: "Face ID and fingerprint unlock for instant secure access" },
-  { icon: Camera, label: "AR Camera", desc: "Scan QR codes, NFTs, and physical items with AI overlay" },
-  { icon: Mic, label: "Voice Commands", desc: "Hands-free navigation and AI assistant via voice" },
-  { icon: Wifi, label: "Offline Mode", desc: "Browse your portfolio and DMs without internet" },
-  { icon: Zap, label: "Instant Swap", desc: "One-tap token swaps with best-route optimization" },
-  { icon: Shield, label: "Hardware Wallet", desc: "Connect Ledger and Trezor via Bluetooth" },
-  { icon: QrCode, label: "Wallet Connect", desc: "Scan to connect any dApp instantly" },
+  {
+    icon: Bell,
+    label: "Push Notifications",
+    desc: "Real-time alerts for messages, trades, and rewards",
+  },
+  {
+    icon: Fingerprint,
+    label: "Biometric Auth",
+    desc: "Face ID and fingerprint unlock for instant secure access",
+  },
+  {
+    icon: Camera,
+    label: "AR Camera",
+    desc: "Scan QR codes, NFTs, and physical items with AI overlay",
+  },
+  {
+    icon: Mic,
+    label: "Voice Commands",
+    desc: "Hands-free navigation and AI assistant via voice",
+  },
+  {
+    icon: Wifi,
+    label: "Offline Mode",
+    desc: "Browse your portfolio and DMs without internet",
+  },
+  {
+    icon: Zap,
+    label: "Instant Swap",
+    desc: "One-tap token swaps with best-route optimization",
+  },
+  {
+    icon: Shield,
+    label: "Hardware Wallet",
+    desc: "Connect Ledger and Trezor via Bluetooth",
+  },
+  {
+    icon: QrCode,
+    label: "Wallet Connect",
+    desc: "Scan to connect any dApp instantly",
+  },
 ];
 
 const STATS = [
@@ -44,7 +91,9 @@ export default function MobileApp() {
   const [platform, setPlatform] = useState<"ios" | "android">("ios");
 
   const handleDownload = (p: "ios" | "android") => {
-    toast.info(`${p === "ios" ? "App Store" : "Google Play"} — launching soon! Join the waitlist below.`);
+    toast.info(
+      `${p === "ios" ? "App Store" : "Google Play"} — launching soon! Join the waitlist below.`
+    );
   };
 
   return (
@@ -55,20 +104,23 @@ export default function MobileApp() {
       />
 
       <div className="container py-8 max-w-5xl space-y-12">
-
         {/* Hero */}
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-pink-900/20 to-cyan-900/30 border border-white/10 p-8 md:p-12">
           <div className="absolute inset-0 dot-grid opacity-30" />
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1 text-center md:text-left">
               <Badge className="mb-4 bg-purple-500/20 text-purple-300 border-purple-500/30">
-                <Sparkles className="w-3 h-3 mr-1" /> Coming Soon — Join Waitlist
+                <Sparkles className="w-3 h-3 mr-1" /> Coming Soon — Join
+                Waitlist
               </Badge>
               <h1 className="text-4xl md:text-5xl font-black mb-4 text-gradient-psychedelic">
-                SKYCOIN4444<br />on Mobile
+                SKYCOIN4444
+                <br />
+                on Mobile
               </h1>
               <p className="text-white/60 text-lg mb-6 max-w-md">
-                Trade crypto, chat with AI, earn rewards, stream, and govern — all from your phone. The most powerful Web3 app ever built.
+                Trade crypto, chat with AI, earn rewards, stream, and govern —
+                all from your phone. The most powerful Web3 app ever built.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                 <Button
@@ -91,7 +143,11 @@ export default function MobileApp() {
                   variant="outline"
                   className="gap-2 border-white/20 text-white/70 hover:text-white"
                   size="lg"
-                  onClick={() => toast.info("PWA install: tap the share icon in your browser and select 'Add to Home Screen'")}
+                  onClick={() =>
+                    toast.info(
+                      "PWA install: tap the share icon in your browser and select 'Add to Home Screen'"
+                    )
+                  }
                 >
                   <Globe className="w-5 h-5" />
                   Install PWA
@@ -115,8 +171,12 @@ export default function MobileApp() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {STATS.map(s => (
             <div key={s.label} className="stat-card text-center">
-              <div className="text-3xl font-black text-gradient mb-1">{s.value}</div>
-              <div className="text-sm font-semibold text-white/80">{s.label}</div>
+              <div className="text-3xl font-black text-gradient mb-1">
+                {s.value}
+              </div>
+              <div className="text-sm font-semibold text-white/80">
+                {s.label}
+              </div>
               <div className="text-xs text-white/40 mt-1">{s.sub}</div>
             </div>
           ))}
@@ -124,15 +184,24 @@ export default function MobileApp() {
 
         {/* Features */}
         <div>
-          <h2 className="text-2xl font-bold text-white mb-6">Mobile-Exclusive Features</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">
+            Mobile-Exclusive Features
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {FEATURES.map(f => (
-              <div key={f.label} className="feature-card p-5 hover:border-purple-500/40 transition-all group">
+              <div
+                key={f.label}
+                className="feature-card p-5 hover:border-purple-500/40 transition-all group"
+              >
                 <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center mb-3 group-hover:bg-purple-500/30 transition-colors">
                   <f.icon className="w-5 h-5 text-purple-400" />
                 </div>
-                <div className="font-semibold text-sm text-white mb-1">{f.label}</div>
-                <div className="text-xs text-white/50 leading-relaxed">{f.desc}</div>
+                <div className="font-semibold text-sm text-white mb-1">
+                  {f.label}
+                </div>
+                <div className="text-xs text-white/50 leading-relaxed">
+                  {f.desc}
+                </div>
               </div>
             ))}
           </div>
@@ -148,17 +217,24 @@ export default function MobileApp() {
               <div className="text-center">Mobile App</div>
             </div>
             {COMPARISON.map((row, i) => (
-              <div key={row.feature} className={`grid grid-cols-3 px-4 py-3 text-sm ${i % 2 === 0 ? "bg-white/2" : ""} border-t border-white/5`}>
+              <div
+                key={row.feature}
+                className={`grid grid-cols-3 px-4 py-3 text-sm ${i % 2 === 0 ? "bg-white/2" : ""} border-t border-white/5`}
+              >
                 <div className="text-white/80">{row.feature}</div>
                 <div className="text-center">
-                  {row.web
-                    ? <CheckCircle2 className="w-4 h-4 text-green-400 mx-auto" />
-                    : <span className="text-white/20">—</span>}
+                  {row.web ? (
+                    <CheckCircle className="w-4 h-4 text-green-400 mx-auto" />
+                  ) : (
+                    <span className="text-white/20">—</span>
+                  )}
                 </div>
                 <div className="text-center">
-                  {row.mobile
-                    ? <CheckCircle2 className="w-4 h-4 text-purple-400 mx-auto" />
-                    : <span className="text-white/20">—</span>}
+                  {row.mobile ? (
+                    <CheckCircle className="w-4 h-4 text-purple-400 mx-auto" />
+                  ) : (
+                    <span className="text-white/20">—</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -167,55 +243,96 @@ export default function MobileApp() {
 
         {/* Platform toggle */}
         <div className="rounded-2xl border border-white/10 p-6">
-          <h2 className="text-xl font-bold text-white mb-4">System Requirements</h2>
+          <h2 className="text-xl font-bold text-white mb-4">
+            System Requirements
+          </h2>
           <div className="flex gap-2 mb-6">
             <Button
               size="sm"
               onClick={() => setPlatform("ios")}
-              className={platform === "ios" ? "bg-purple-600 text-white" : "bg-white/5 text-white/60 hover:bg-white/10"}
+              className={
+                platform === "ios"
+                  ? "bg-purple-600 text-white"
+                  : "bg-white/5 text-white/60 hover:bg-white/10"
+              }
             >
               <Apple className="w-4 h-4 mr-1" /> iOS
             </Button>
             <Button
               size="sm"
               onClick={() => setPlatform("android")}
-              className={platform === "android" ? "bg-green-600 text-white" : "bg-white/5 text-white/60 hover:bg-white/10"}
+              className={
+                platform === "android"
+                  ? "bg-green-600 text-white"
+                  : "bg-white/5 text-white/60 hover:bg-white/10"
+              }
             >
               <Play className="w-4 h-4 mr-1 fill-current" /> Android
             </Button>
           </div>
           {platform === "ios" ? (
             <div className="space-y-2 text-sm text-white/70">
-              <div className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-purple-400" /> iOS 16.0 or later</div>
-              <div className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-purple-400" /> iPhone 11 or newer (A13 Bionic+)</div>
-              <div className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-purple-400" /> 150 MB storage</div>
-              <div className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-purple-400" /> Face ID or Touch ID recommended</div>
+              <div className="flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 text-purple-400" /> iOS 16.0 or
+                later
+              </div>
+              <div className="flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 text-purple-400" /> iPhone 11
+                or newer (A13 Bionic+)
+              </div>
+              <div className="flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 text-purple-400" /> 150 MB
+                storage
+              </div>
+              <div className="flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 text-purple-400" /> Face ID or
+                Touch ID recommended
+              </div>
             </div>
           ) : (
             <div className="space-y-2 text-sm text-white/70">
-              <div className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-green-400" /> Android 10.0 or later</div>
-              <div className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-green-400" /> 4 GB RAM minimum</div>
-              <div className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-green-400" /> 200 MB storage</div>
-              <div className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-green-400" /> Biometric sensor recommended</div>
+              <div className="flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 text-green-400" /> Android 10.0
+                or later
+              </div>
+              <div className="flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 text-green-400" /> 4 GB RAM
+                minimum
+              </div>
+              <div className="flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 text-green-400" /> 200 MB
+                storage
+              </div>
+              <div className="flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 text-green-400" /> Biometric
+                sensor recommended
+              </div>
             </div>
           )}
         </div>
 
         {/* CTA */}
         <div className="rounded-3xl gradient-psychedelic p-8 text-center">
-          <h2 className="text-2xl font-black text-white mb-2">Be First in Line</h2>
-          <p className="text-white/80 mb-6">Join 50,000+ on the waitlist. Early access = 1,000 SKY444 bonus.</p>
+          <h2 className="text-2xl font-black text-white mb-2">
+            Be First in Line
+          </h2>
+          <p className="text-white/80 mb-6">
+            Join 50,000+ on the waitlist. Early access = 1,000 SKY444 bonus.
+          </p>
           <Button
             size="lg"
             className="bg-white text-purple-900 font-bold hover:bg-white/90 gap-2"
-            onClick={() => toast.success("You're on the waitlist! We'll notify you at launch.")}
+            onClick={() =>
+              toast.success(
+                "You're on the waitlist! We'll notify you at launch."
+              )
+            }
           >
             <Star className="w-5 h-5" />
             Join Waitlist — Free
             <ArrowRight className="w-5 h-5" />
           </Button>
         </div>
-
       </div>
     </div>
   );

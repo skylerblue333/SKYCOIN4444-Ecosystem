@@ -1,13 +1,19 @@
 // Mining Rewards Fix - Replace routeMiningRewards in secure-wallet.ts
 // This fixes the issue where mining rewards fail because the source wallet doesn't exist
 
-export async function routeMiningRewards(minerAddress: string, amount: number, token: string): Promise<Transaction> {
-  console.log(`[Wallet] Routing mining reward: ${amount} ${token} to admin wallet`);
+export async function routeMiningRewards(
+  minerAddress: string,
+  amount: number,
+  token: string
+): Promise<Transaction> {
+  console.log(
+    `[Wallet] Routing mining reward: ${amount} ${token} to admin wallet`
+  );
 
   // Get admin wallet address from environment
   const adminWallet = process.env.ADMIN_WALLET_ADDRESS;
   if (!adminWallet) {
-    throw new Error('ADMIN_WALLET_ADDRESS not configured');
+    throw new Error("ADMIN_WALLET_ADDRESS not configured");
   }
 
   // Create transaction record for mining reward
@@ -18,7 +24,7 @@ export async function routeMiningRewards(minerAddress: string, amount: number, t
     toWallet: adminWallet,
     amount,
     token,
-    status: 'confirmed',
+    status: "confirmed",
     timestamp: Date.now(),
   };
 
@@ -27,11 +33,16 @@ export async function routeMiningRewards(minerAddress: string, amount: number, t
   console.log(`[Wallet] Amount: ${amount} ${token} routed to ${adminWallet}`);
 
   // Log as mining reward in audit trail
-  await this.logAudit('MINING_REWARD', minerAddress, `Mining reward: ${amount} ${token} to ${adminWallet}`, 'system');
+  await this.logAudit(
+    "MINING_REWARD",
+    minerAddress,
+    `Mining reward: ${amount} ${token} to ${adminWallet}`,
+    "system"
+  );
 
   // Notify owner of successful reward routing
   await notifyOwner({
-    title: '✅ Mining Reward Routed Successfully',
+    title: "✅ Mining Reward Routed Successfully",
     content: `${amount} ${token} routed to admin wallet. Transaction ID: ${transaction.id}`,
   });
 

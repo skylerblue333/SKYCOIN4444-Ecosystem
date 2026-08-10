@@ -1,10 +1,10 @@
-import { WebSocketServer, WebSocket } from 'ws';
-import { Server } from 'http';
-import crypto from 'crypto';
+import { WebSocketServer, WebSocket } from "ws";
+import { Server } from "http";
+import crypto from "crypto";
 
 /**
  * Real-Time WebSocket Server
- * 
+ *
  * Features:
  * - Live market data streaming (token prices, volumes, trades)
  * - Real-time chat with end-to-end encryption
@@ -16,7 +16,7 @@ import crypto from 'crypto';
 
 interface WebSocketMessage {
   id: string;
-  type: 'market' | 'chat' | 'event' | 'subscribe' | 'unsubscribe';
+  type: "market" | "chat" | "event" | "subscribe" | "unsubscribe";
   channel: string;
   data: any;
   timestamp: number;
@@ -40,9 +40,11 @@ export class RealtimeWebSocketServer {
 
   constructor(httpServer: Server) {
     this.wss = new WebSocketServer({ server: httpServer });
-    this.signingKey = process.env.WEBSOCKET_SIGNING_KEY || crypto.randomBytes(32).toString('hex');
+    this.signingKey =
+      process.env.WEBSOCKET_SIGNING_KEY ||
+      crypto.randomBytes(32).toString("hex");
 
-    this.wss.on('connection', (ws: WebSocket) => this.handleConnection(ws));
+    this.wss.on("connection", (ws: WebSocket) => this.handleConnection(ws));
     this.startHeartbeat();
     this.startBroadcaster();
   }
@@ -54,7 +56,7 @@ export class RealtimeWebSocketServer {
     const clientId = crypto.randomUUID();
     const session: ClientSession = {
       id: clientId,
-      userId: '',
+      userId: "",
       channels: new Set(),
       lastHeartbeat: Date.now(),
       messageQueue: [],
@@ -62,29 +64,29 @@ export class RealtimeWebSocketServer {
 
     this.clients.set(clientId, session);
 
-    ws.on('message', (data: Buffer) => {
+    ws.on("message", (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString()) as WebSocketMessage;
         this.handleMessage(clientId, ws, message);
       } catch (error) {
-        console.error('[WebSocket] Message parse error:', error);
-        ws.send(JSON.stringify({ error: 'Invalid message format' }));
+        console.error("[WebSocket] Message parse error:", error);
+        ws.send(JSON.stringify({ error: "Invalid message format" }));
       }
     });
 
-    ws.on('close', () => {
+    ws.on("close", () => {
       this.clients.delete(clientId);
       console.log(`[WebSocket] Client ${clientId} disconnected`);
     });
 
-    ws.on('error', (error) => {
+    ws.on("error", error => {
       console.error(`[WebSocket] Client ${clientId} error:`, error);
     });
 
     // Send welcome message
     ws.send(
       JSON.stringify({
-        type: 'welcome',
+        type: "welcome",
         clientId,
         timestamp: Date.now(),
       })
@@ -94,42 +96,50 @@ export class RealtimeWebSocketServer {
   /**
    * Handle incoming messages
    */
-  private handleMessage(clientId: string, ws: WebSocket, message: WebSocketMessage) {
+  private handleMessage(
+    clientId: string,
+    ws: WebSocket,
+    message: WebSocketMessage
+  ) {
     const session = this.clients.get(clientId);
     if (!session) return;
 
     session.lastHeartbeat = Date.now();
 
     switch (message.type) {
-      case 'subscribe':
+      case "subscribe":
         this.handleSubscribe(clientId, session, message.channel);
         break;
 
-      case 'unsubscribe':
+      case "unsubscribe":
         this.handleUnsubscribe(clientId, session, message.channel);
         break;
 
-      case 'chat':
+      case "chat":
         this.broadcastMessage(message);
         break;
 
-      case 'market':
+      case "market":
         this.broadcastMarketData(message);
         break;
 
-      case 'event':
+      case "event":
         this.broadcastEvent(message);
         break;
 
       default:
-        ws.send(JSON.stringify({ error: 'Unknown message type' }));
+        ws.send(JSON.stringify({ error: "Unknown message type" }));
     }
   }
 
   /**
    * Subscribe to a channel
    */
-  private handleSubscribe(clientId: string, session: ClientSession, channel: string) {
+  private handleSubscribe(
+    clientId: string,
+    session: ClientSession,
+    channel: string
+  ) {
     session.channels.add(channel);
 
     if (!this.channels.has(channel)) {
@@ -141,7 +151,7 @@ export class RealtimeWebSocketServer {
     const buffered = this.messageBuffer.get(channel) || [];
     const client = this.getClientWebSocket(clientId);
     if (client) {
-      buffered.forEach((msg) => {
+      buffered.forEach(msg => {
         client.send(JSON.stringify(msg));
       });
     }
@@ -152,7 +162,11 @@ export class RealtimeWebSocketServer {
   /**
    * Unsubscribe from a channel
    */
-  private handleUnsubscribe(clientId: string, session: ClientSession, channel: string) {
+  private handleUnsubscribe(
+    clientId: string,
+    session: ClientSession,
+    channel: string
+  ) {
     session.channels.delete(channel);
 
     const channelClients = this.channels.get(channel);
@@ -169,7 +183,7 @@ export class RealtimeWebSocketServer {
   private broadcastMessage(message: WebSocketMessage) {
     const subscribers = this.channels.get(message.channel) || new Set();
 
-    subscribers.forEach((clientId) => {
+    subscribers.forEach(clientId => {
       const client = this.getClientWebSocket(clientId);
       if (client && client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(message));
@@ -189,7 +203,7 @@ export class RealtimeWebSocketServer {
    * Broadcast market data
    */
   private broadcastMarketData(message: WebSocketMessage) {
-    const channel = `market:${message.data.token || 'SKY444'}`;
+    const channel = `market:${message.data.token || "SKY444"}`;
     this.broadcastMessage({ ...message, channel });
   }
 
@@ -197,7 +211,7 @@ export class RealtimeWebSocketServer {
    * Broadcast platform events
    */
   private broadcastEvent(message: WebSocketMessage) {
-    const channel = `events:${message.data.type || 'general'}`;
+    const channel = `events:${message.data.type || "general"}`;
     this.broadcastMessage({ ...message, channel });
   }
 
@@ -213,7 +227,7 @@ export class RealtimeWebSocketServer {
         if (now - session.lastHeartbeat > timeout) {
           const client = this.getClientWebSocket(clientId);
           if (client) {
-            client.close(1000, 'Heartbeat timeout');
+            client.close(1000, "Heartbeat timeout");
           }
           this.clients.delete(clientId);
         }
@@ -229,10 +243,10 @@ export class RealtimeWebSocketServer {
       // Simulate market data updates
       const marketData: WebSocketMessage = {
         id: crypto.randomUUID(),
-        type: 'market',
-        channel: 'market:SKY444',
+        type: "market",
+        channel: "market:SKY444",
         data: {
-          token: 'SKY444',
+          token: "SKY444",
           price: 125.43 + Math.random() * 10,
           volume24h: 1250000 + Math.random() * 500000,
           change24h: -2.5 + Math.random() * 5,
@@ -258,7 +272,7 @@ export class RealtimeWebSocketServer {
    * Broadcast to all connected clients
    */
   public broadcastToAll(message: WebSocketMessage) {
-    this.wss.clients.forEach((client) => {
+    this.wss.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(message));
       }
@@ -272,12 +286,17 @@ export class RealtimeWebSocketServer {
     return {
       connectedClients: this.clients.size,
       activeChannels: this.channels.size,
-      totalMessages: Array.from(this.messageBuffer.values()).reduce((sum, msgs) => sum + msgs.length, 0),
+      totalMessages: Array.from(this.messageBuffer.values()).reduce(
+        (sum, msgs) => sum + msgs.length,
+        0
+      ),
     };
   }
 }
 
 // Initialize WebSocket server
-export function initializeWebSocketServer(httpServer: Server): RealtimeWebSocketServer {
+export function initializeWebSocketServer(
+  httpServer: Server
+): RealtimeWebSocketServer {
   return new RealtimeWebSocketServer(httpServer);
 }

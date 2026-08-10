@@ -21,38 +21,146 @@ import Stripe from "stripe";
 export const TOKENOMICS = {
   name: "SKYCOIN4444",
   symbol: "SKY444",
-  totalSupply: 1_000_000_000,       // 1 billion tokens
+  totalSupply: 1_000_000_000, // 1 billion tokens
   decimals: 8,
   network: "Multi-chain (ETH + SOL + BSC)",
   contractType: "ERC-20 / SPL",
 
   // Distribution allocations (% of total supply)
   distribution: {
-    publicSale:       { pct: 30, tokens: 300_000_000, label: "Public ICO Sale",          color: "#6366f1", vesting: "6mo cliff, 18mo linear" },
-    ecosystem:        { pct: 20, tokens: 200_000_000, label: "Ecosystem & Rewards",       color: "#8b5cf6", vesting: "No cliff, 36mo linear" },
-    team:             { pct: 15, tokens: 150_000_000, label: "Team & Advisors",           color: "#a78bfa", vesting: "12mo cliff, 24mo linear" },
-    treasury:         { pct: 15, tokens: 150_000_000, label: "Treasury Reserve",          color: "#c4b5fd", vesting: "6mo cliff, 48mo linear" },
-    liquidity:        { pct: 10, tokens: 100_000_000, label: "Liquidity & Market Making", color: "#7c3aed", vesting: "No cliff, 12mo linear" },
-    marketing:        { pct: 5,  tokens:  50_000_000, label: "Marketing & Partnerships",  color: "#5b21b6", vesting: "3mo cliff, 12mo linear" },
-    community:        { pct: 3,  tokens:  30_000_000, label: "Community Airdrops",        color: "#4c1d95", vesting: "No cliff, 6mo linear" },
-    legal:            { pct: 2,  tokens:  20_000_000, label: "Legal & Compliance",        color: "#2e1065", vesting: "No cliff, 24mo linear" },
+    publicSale: {
+      pct: 30,
+      tokens: 300_000_000,
+      label: "Public ICO Sale",
+      color: "#6366f1",
+      vesting: "6mo cliff, 18mo linear",
+    },
+    ecosystem: {
+      pct: 20,
+      tokens: 200_000_000,
+      label: "Ecosystem & Rewards",
+      color: "#8b5cf6",
+      vesting: "No cliff, 36mo linear",
+    },
+    team: {
+      pct: 15,
+      tokens: 150_000_000,
+      label: "Team & Advisors",
+      color: "#a78bfa",
+      vesting: "12mo cliff, 24mo linear",
+    },
+    treasury: {
+      pct: 15,
+      tokens: 150_000_000,
+      label: "Treasury Reserve",
+      color: "#c4b5fd",
+      vesting: "6mo cliff, 48mo linear",
+    },
+    liquidity: {
+      pct: 10,
+      tokens: 100_000_000,
+      label: "Liquidity & Market Making",
+      color: "#7c3aed",
+      vesting: "No cliff, 12mo linear",
+    },
+    marketing: {
+      pct: 5,
+      tokens: 50_000_000,
+      label: "Marketing & Partnerships",
+      color: "#5b21b6",
+      vesting: "3mo cliff, 12mo linear",
+    },
+    community: {
+      pct: 3,
+      tokens: 30_000_000,
+      label: "Community Airdrops",
+      color: "#4c1d95",
+      vesting: "No cliff, 6mo linear",
+    },
+    legal: {
+      pct: 2,
+      tokens: 20_000_000,
+      label: "Legal & Compliance",
+      color: "#2e1065",
+      vesting: "No cliff, 24mo linear",
+    },
   },
 
   // ICO Sale Tiers
   tiers: [
-    { id: "seed",    name: "Seed Round",    price: 0.001,  hardCap: 500_000,   minBuy: 500,   maxBuy: 50_000,  bonus: 40, tokens: 50_000_000,  vesting: "12mo cliff, 24mo linear", badge: "🌱", status: "closed" },
-    { id: "private", name: "Private Sale",  price: 0.003,  hardCap: 1_500_000, minBuy: 250,   maxBuy: 25_000,  bonus: 25, tokens: 75_000_000,  vesting: "9mo cliff, 18mo linear",  badge: "🔒", status: "closed" },
-    { id: "pre",     name: "Pre-Sale",      price: 0.005,  hardCap: 2_500_000, minBuy: 100,   maxBuy: 10_000,  bonus: 15, tokens: 75_000_000,  vesting: "6mo cliff, 12mo linear",  badge: "⚡", status: "active" },
-    { id: "public",  name: "Public Sale",   price: 0.01,   hardCap: 5_000_000, minBuy: 50,    maxBuy: 5_000,   bonus: 5,  tokens: 100_000_000, vesting: "3mo cliff, 6mo linear",   badge: "🌐", status: "upcoming" },
-    { id: "listing", name: "DEX Listing",   price: 0.015,  hardCap: 0,         minBuy: 0,     maxBuy: 0,       bonus: 0,  tokens: 0,           vesting: "Fully liquid at listing", badge: "🚀", status: "upcoming" },
+    {
+      id: "seed",
+      name: "Seed Round",
+      price: 0.001,
+      hardCap: 500_000,
+      minBuy: 500,
+      maxBuy: 50_000,
+      bonus: 40,
+      tokens: 50_000_000,
+      vesting: "12mo cliff, 24mo linear",
+      badge: "🌱",
+      status: "closed",
+    },
+    {
+      id: "private",
+      name: "Private Sale",
+      price: 0.003,
+      hardCap: 1_500_000,
+      minBuy: 250,
+      maxBuy: 25_000,
+      bonus: 25,
+      tokens: 75_000_000,
+      vesting: "9mo cliff, 18mo linear",
+      badge: "🔒",
+      status: "closed",
+    },
+    {
+      id: "pre",
+      name: "Pre-Sale",
+      price: 0.005,
+      hardCap: 2_500_000,
+      minBuy: 100,
+      maxBuy: 10_000,
+      bonus: 15,
+      tokens: 75_000_000,
+      vesting: "6mo cliff, 12mo linear",
+      badge: "⚡",
+      status: "active",
+    },
+    {
+      id: "public",
+      name: "Public Sale",
+      price: 0.01,
+      hardCap: 5_000_000,
+      minBuy: 50,
+      maxBuy: 5_000,
+      bonus: 5,
+      tokens: 100_000_000,
+      vesting: "3mo cliff, 6mo linear",
+      badge: "🌐",
+      status: "upcoming",
+    },
+    {
+      id: "listing",
+      name: "DEX Listing",
+      price: 0.015,
+      hardCap: 0,
+      minBuy: 0,
+      maxBuy: 0,
+      bonus: 0,
+      tokens: 0,
+      vesting: "Fully liquid at listing",
+      badge: "🚀",
+      status: "upcoming",
+    },
   ],
 
   // Burn mechanics
   burn: {
-    platformFeesBurnPct: 10,   // 10% of all platform fees burned
-    transactionBurnPct: 0.5,   // 0.5% of every SKY444 transaction burned
-    quarterlyBuyback: true,    // 5% of quarterly revenue used for buyback+burn
-    maxBurnPct: 30,            // Max 30% of total supply can be burned
+    platformFeesBurnPct: 10, // 10% of all platform fees burned
+    transactionBurnPct: 0.5, // 0.5% of every SKY444 transaction burned
+    quarterlyBuyback: true, // 5% of quarterly revenue used for buyback+burn
+    maxBurnPct: 30, // Max 30% of total supply can be burned
   },
 
   // Utility
@@ -143,27 +251,46 @@ async function ensureICOTables(): Promise<void> {
       tx_hash VARCHAR(200),
       burned_at BIGINT DEFAULT 0
     )`);
-  } catch { /* tables may already exist */ }
+  } catch {
+    /* tables may already exist */
+  }
 }
 
 async function getICOStats(): Promise<{
-  totalRaised: number; totalInvestors: number; tokensSold: number;
-  currentTier: string; progress: number; burnedTokens: number;
+  totalRaised: number;
+  totalInvestors: number;
+  tokensSold: number;
+  currentTier: string;
+  progress: number;
+  burnedTokens: number;
 }> {
   const db = await getDb();
-  if (!db) return { totalRaised: 0, totalInvestors: 0, tokensSold: 0, currentTier: "pre", progress: 0, burnedTokens: 0 };
+  if (!db)
+    return {
+      totalRaised: 0,
+      totalInvestors: 0,
+      tokensSold: 0,
+      currentTier: "pre",
+      progress: 0,
+      burnedTokens: 0,
+    };
   try {
     const [raised, burned] = await Promise.all([
-      db.execute(`SELECT COALESCE(SUM(usd_amount),0) as total, COUNT(DISTINCT user_id) as investors, COALESCE(SUM(token_amount + bonus_tokens),0) as tokens FROM ico_purchases WHERE status = 'completed'`),
+      db.execute(
+        `SELECT COALESCE(SUM(usd_amount),0) as total, COUNT(DISTINCT user_id) as investors, COALESCE(SUM(token_amount + bonus_tokens),0) as tokens FROM ico_purchases WHERE status = 'completed'`
+      ),
       db.execute(`SELECT COALESCE(SUM(amount),0) as total FROM ico_burn_log`),
     ]);
     const r = (raised as any).rows?.[0];
     const b = (burned as any).rows?.[0];
     const totalRaised = Number(r?.total ?? 0);
     const tokensSold = Number(r?.tokens ?? 0);
-    const currentTier = TOKENOMICS.tiers.find(t => t.status === "active")?.id ?? "pre";
+    const currentTier =
+      TOKENOMICS.tiers.find(t => t.status === "active")?.id ?? "pre";
     const activeTier = TOKENOMICS.tiers.find(t => t.id === currentTier);
-    const progress = activeTier ? Math.min(100, (totalRaised / activeTier.hardCap) * 100) : 0;
+    const progress = activeTier
+      ? Math.min(100, (totalRaised / activeTier.hardCap) * 100)
+      : 0;
     return {
       totalRaised,
       totalInvestors: Number(r?.investors ?? 0),
@@ -172,13 +299,21 @@ async function getICOStats(): Promise<{
       progress,
       burnedTokens: Number(b?.total ?? 0),
     };
-  } catch { return { totalRaised: 0, totalInvestors: 0, tokensSold: 0, currentTier: "pre", progress: 0, burnedTokens: 0 }; }
+  } catch {
+    return {
+      totalRaised: 0,
+      totalInvestors: 0,
+      tokensSold: 0,
+      currentTier: "pre",
+      progress: 0,
+      burnedTokens: 0,
+    };
+  }
 }
 
 // ─── Router ───────────────────────────────────────────────────────────────────
 
 export const icoEconomicsRouter = router({
-
   // ── Public endpoints ────────────────────────────────────────────────────────
 
   /** Full tokenomics data */
@@ -200,16 +335,27 @@ export const icoEconomicsRouter = router({
         `SELECT tier_id, COALESCE(SUM(usd_amount),0) as raised, COUNT(DISTINCT user_id) as investors FROM ico_purchases WHERE status = 'completed' GROUP BY tier_id`
       );
       const tierMap = new Map<string, { raised: number; investors: number }>();
-      for (const row of ((rows as any).rows || [])) {
-        tierMap.set(row.tier_id, { raised: Number(row.raised), investors: Number(row.investors) });
+      for (const row of (rows as any).rows || []) {
+        tierMap.set(row.tier_id, {
+          raised: Number(row.raised),
+          investors: Number(row.investors),
+        });
       }
       return TOKENOMICS.tiers.map(t => ({
         ...t,
         raised: tierMap.get(t.id)?.raised ?? 0,
         investors: tierMap.get(t.id)?.investors ?? 0,
-        progress: t.hardCap > 0 ? Math.min(100, ((tierMap.get(t.id)?.raised ?? 0) / t.hardCap) * 100) : 0,
+        progress:
+          t.hardCap > 0
+            ? Math.min(
+                100,
+                ((tierMap.get(t.id)?.raised ?? 0) / t.hardCap) * 100
+              )
+            : 0,
       }));
-    } catch { return TOKENOMICS.tiers; }
+    } catch {
+      return TOKENOMICS.tiers;
+    }
   }),
 
   /** Burn log */
@@ -218,9 +364,13 @@ export const icoEconomicsRouter = router({
     const db = await getDb();
     if (!db) return [];
     try {
-      const rows = await db.execute(`SELECT * FROM ico_burn_log ORDER BY burned_at DESC LIMIT 50`);
+      const rows = await db.execute(
+        `SELECT * FROM ico_burn_log ORDER BY burned_at DESC LIMIT 50`
+      );
       return (rows as any).rows || [];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   }),
 
   /** Rich list — top ICO investors */
@@ -249,7 +399,9 @@ export const icoEconomicsRouter = router({
         purchaseCount: Number(r.purchase_count ?? 0),
         firstPurchase: Number(r.first_purchase ?? 0),
       }));
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   }),
 
   // ── Protected endpoints ─────────────────────────────────────────────────────
@@ -258,18 +410,34 @@ export const icoEconomicsRouter = router({
   myPortfolio: protectedProcedure.query(async ({ ctx }) => {
     await ensureICOTables();
     const db = await getDb();
-    if (!db) return { purchases: [], totalInvested: 0, totalTokens: 0, vestedTokens: 0, pendingVest: 0, referralEarnings: 0 };
+    if (!db)
+      return {
+        purchases: [],
+        totalInvested: 0,
+        totalTokens: 0,
+        vestedTokens: 0,
+        pendingVest: 0,
+        referralEarnings: 0,
+      };
     try {
       const [purchases, referrals] = await Promise.all([
-        db.execute(`SELECT * FROM ico_purchases WHERE user_id = ${ctx.user.id} ORDER BY created_at DESC`),
-        db.execute(`SELECT COALESCE(SUM(commission_earned),0) as total FROM ico_referrals WHERE referrer_id = ${ctx.user.id}`),
+        db.execute(
+          `SELECT * FROM ico_purchases WHERE user_id = ${ctx.user.id} ORDER BY created_at DESC`
+        ),
+        db.execute(
+          `SELECT COALESCE(SUM(commission_earned),0) as total FROM ico_referrals WHERE referrer_id = ${ctx.user.id}`
+        ),
       ]);
       const rows = (purchases as any).rows || [];
       const now = Date.now();
-      let totalInvested = 0, totalTokens = 0, vestedTokens = 0, pendingVest = 0;
+      let totalInvested = 0,
+        totalTokens = 0,
+        vestedTokens = 0,
+        pendingVest = 0;
       const enriched = rows.map((r: any) => {
         const usd = Number(r.usd_amount ?? 0);
-        const tokens = Number(r.token_amount ?? 0) + Number(r.bonus_tokens ?? 0);
+        const tokens =
+          Number(r.token_amount ?? 0) + Number(r.bonus_tokens ?? 0);
         totalInvested += usd;
         totalTokens += tokens;
         // Calculate vested amount
@@ -287,7 +455,12 @@ export const icoEconomicsRouter = router({
         const claimable = Math.max(0, vested - released);
         vestedTokens += vested;
         pendingVest += claimable;
-        return { ...r, totalTokens: tokens, vestedTokens: vested, claimableTokens: claimable };
+        return {
+          ...r,
+          totalTokens: tokens,
+          vestedTokens: vested,
+          claimableTokens: claimable,
+        };
       });
       return {
         purchases: enriched,
@@ -297,51 +470,71 @@ export const icoEconomicsRouter = router({
         pendingVest,
         referralEarnings: Number((referrals as any).rows?.[0]?.total ?? 0),
       };
-    } catch { return { purchases: [], totalInvested: 0, totalTokens: 0, vestedTokens: 0, pendingVest: 0, referralEarnings: 0 }; }
+    } catch {
+      return {
+        purchases: [],
+        totalInvested: 0,
+        totalTokens: 0,
+        vestedTokens: 0,
+        pendingVest: 0,
+        referralEarnings: 0,
+      };
+    }
   }),
 
   /** Create Stripe checkout session for ICO purchase */
   createCheckout: protectedProcedure
-    .input(z.object({
-      tierId: z.enum(["seed", "private", "pre", "public"]),
-      usdAmount: z.number().min(50).max(50000),
-      referralCode: z.string().max(50).optional(),
-    }))
+    .input(
+      z.object({
+        tierId: z.enum(["seed", "private", "pre", "public"]),
+        usdAmount: z.number().min(50).max(50000),
+        referralCode: z.string().max(50).optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       await ensureICOTables();
       const stripe = getStripe();
-      if (!stripe) return { success: false, error: "Payment system unavailable" };
+      if (!stripe)
+        return { success: false, error: "Payment system unavailable" };
 
       const tier = TOKENOMICS.tiers.find(t => t.id === input.tierId);
       if (!tier) return { success: false, error: "Invalid tier" };
-      if (tier.status === "closed") return { success: false, error: "This tier is closed" };
-      if (tier.status === "upcoming") return { success: false, error: "This tier has not opened yet" };
-      if (input.usdAmount < tier.minBuy) return { success: false, error: `Minimum purchase is $${tier.minBuy}` };
-      if (input.usdAmount > tier.maxBuy) return { success: false, error: `Maximum purchase is $${tier.maxBuy}` };
+      if (tier.status === "closed")
+        return { success: false, error: "This tier is closed" };
+      if (tier.status === "upcoming")
+        return { success: false, error: "This tier has not opened yet" };
+      if (input.usdAmount < tier.minBuy)
+        return { success: false, error: `Minimum purchase is $${tier.minBuy}` };
+      if (input.usdAmount > tier.maxBuy)
+        return { success: false, error: `Maximum purchase is $${tier.maxBuy}` };
 
       const tokenAmount = input.usdAmount / tier.price;
       const bonusTokens = tokenAmount * (tier.bonus / 100);
       const totalTokens = tokenAmount + bonusTokens;
 
-      const origin = process.env.VITE_OAUTH_PORTAL_URL?.replace("/oauth", "") || "https://shadowchat-3jxahdvz.manus.space";
+      const origin =
+        process.env.VITE_OAUTH_PORTAL_URL?.replace("/oauth", "") ||
+        "https://shadowchat-3jxahdvz.manus.space";
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         mode: "payment",
         customer_email: ctx.user.email || undefined,
         allow_promotion_codes: true,
-        line_items: [{
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `SKY444 Token — ${tier.name}`,
-              description: `${totalTokens.toLocaleString()} SKY444 tokens (${tokenAmount.toLocaleString()} + ${bonusTokens.toLocaleString()} bonus) at $${tier.price}/token`,
-              images: [],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `SKY444 Token — ${tier.name}`,
+                description: `${totalTokens.toLocaleString()} SKY444 tokens (${tokenAmount.toLocaleString()} + ${bonusTokens.toLocaleString()} bonus) at $${tier.price}/token`,
+                images: [],
+              },
+              unit_amount: Math.round(input.usdAmount * 100),
             },
-            unit_amount: Math.round(input.usdAmount * 100),
+            quantity: 1,
           },
-          quantity: 1,
-        }],
+        ],
         client_reference_id: String(ctx.user.id),
         metadata: {
           user_id: String(ctx.user.id),
@@ -374,7 +567,8 @@ export const icoEconomicsRouter = router({
     .mutation(async ({ ctx, input }) => {
       await ensureICOTables();
       const stripe = getStripe();
-      if (!stripe) return { success: false, error: "Payment system unavailable" };
+      if (!stripe)
+        return { success: false, error: "Payment system unavailable" };
 
       const db = await getDb();
       if (!db) return { success: false, error: "DB unavailable" };
@@ -385,26 +579,36 @@ export const icoEconomicsRouter = router({
       );
       const purchase = (existing as any).rows?.[0];
       if (!purchase) return { success: false, error: "Purchase not found" };
-      if (purchase.status === "completed") return { success: true, alreadyProcessed: true };
+      if (purchase.status === "completed")
+        return { success: true, alreadyProcessed: true };
 
       // Verify with Stripe
       const session = await stripe.checkout.sessions.retrieve(input.sessionId);
-      if (session.payment_status !== "paid") return { success: false, error: "Payment not completed" };
+      if (session.payment_status !== "paid")
+        return { success: false, error: "Payment not completed" };
 
       const tier = TOKENOMICS.tiers.find(t => t.id === purchase.tier_id);
-      const vestingMonths = tier?.id === "pre" ? 18 : tier?.id === "public" ? 9 : 36;
-      const vestStart = Date.now() + (3 * 30 * 24 * 60 * 60 * 1000); // 3mo cliff
-      const vestEnd = vestStart + (vestingMonths * 30 * 24 * 60 * 60 * 1000);
+      const vestingMonths =
+        tier?.id === "pre" ? 18 : tier?.id === "public" ? 9 : 36;
+      const vestStart = Date.now() + 3 * 30 * 24 * 60 * 60 * 1000; // 3mo cliff
+      const vestEnd = vestStart + vestingMonths * 30 * 24 * 60 * 60 * 1000;
 
       await db.execute(
         `UPDATE ico_purchases SET status = 'completed', stripe_payment_intent = '${session.payment_intent || ""}', vesting_start = ${vestStart}, vesting_end = ${vestEnd}, updated_at = ${Date.now()} WHERE stripe_session_id = '${input.sessionId}'`
       );
 
       // Credit tokens to wallet (locked — will be released via vesting)
-      const dbInst = await import('./db');
-      const totalTokens = Number(purchase.token_amount) + Number(purchase.bonus_tokens);
+      const dbInst = await import("./db");
+      const totalTokens =
+        Number(purchase.token_amount) + Number(purchase.bonus_tokens);
       await dbInst.upsertTokenBalance(ctx.user.id, "SKY444", totalTokens);
-      await dbInst.createTransaction({ userId: ctx.user.id, type: "ico_purchase", token: "SKY444", amount: totalTokens, description: `ICO Purchase: ${tier?.name} — $${purchase.usd_amount} USD` });
+      await dbInst.createTransaction({
+        userId: ctx.user.id,
+        type: "ico_purchase",
+        token: "SKY444",
+        amount: totalTokens,
+        description: `ICO Purchase: ${tier?.name} — $${purchase.usd_amount} USD`,
+      });
 
       // Handle referral commission
       if (purchase.referral_code) {
@@ -417,8 +621,18 @@ export const icoEconomicsRouter = router({
           await db.execute(
             `UPDATE ico_referrals SET commission_earned = commission_earned + ${commission} WHERE referral_code = '${purchase.referral_code}'`
           );
-          await dbInst.upsertTokenBalance(Number(ref.referrer_id), "SKY444", commission);
-          await dbInst.createTransaction({ userId: Number(ref.referrer_id), type: "referral", token: "SKY444", amount: commission, description: `Referral commission from ICO purchase` });
+          await dbInst.upsertTokenBalance(
+            Number(ref.referrer_id),
+            "SKY444",
+            commission
+          );
+          await dbInst.createTransaction({
+            userId: Number(ref.referrer_id),
+            type: "referral",
+            token: "SKY444",
+            amount: commission,
+            description: `Referral commission from ICO purchase`,
+          });
         }
       }
 
@@ -442,7 +656,8 @@ export const icoEconomicsRouter = router({
       const now = Date.now();
       const vestStart = Number(purchase.vesting_start ?? 0);
       const vestEnd = Number(purchase.vesting_end ?? 0);
-      const totalTokens = Number(purchase.token_amount) + Number(purchase.bonus_tokens);
+      const totalTokens =
+        Number(purchase.token_amount) + Number(purchase.bonus_tokens);
       const released = Number(purchase.tokens_released ?? 0);
 
       let vested = 0;
@@ -454,7 +669,8 @@ export const icoEconomicsRouter = router({
       }
 
       const claimable = Math.max(0, vested - released);
-      if (claimable < 0.001) return { success: false, error: "No tokens available to claim yet" };
+      if (claimable < 0.001)
+        return { success: false, error: "No tokens available to claim yet" };
 
       await db.execute(
         `UPDATE ico_purchases SET tokens_released = tokens_released + ${claimable}, updated_at = ${Date.now()} WHERE id = ${input.purchaseId}`
@@ -480,18 +696,31 @@ export const icoEconomicsRouter = router({
 
   /** Trigger a token burn (admin/platform action) */
   burnTokens: protectedProcedure
-    .input(z.object({ amount: z.number().positive(), reason: z.string().max(200) }))
+    .input(
+      z.object({ amount: z.number().positive(), reason: z.string().max(200) })
+    )
     .mutation(async ({ ctx, input }) => {
       await ensureICOTables();
       const db = await getDb();
       if (!db) return { success: false };
-      const dbInst = await import('./db');
-      const result = await dbInst.upsertTokenBalance(ctx.user.id, "SKY444", -input.amount);
-      if (!result.success) return { success: false, error: "Insufficient balance" };
+      const dbInst = await import("./db");
+      const result = await dbInst.upsertTokenBalance(
+        ctx.user.id,
+        "SKY444",
+        -input.amount
+      );
+      if (!result.success)
+        return { success: false, error: "Insufficient balance" };
       await db.execute(
         `INSERT INTO ico_burn_log (amount, reason, burned_at) VALUES (${input.amount}, '${input.reason.replace(/'/g, "''")}', ${Date.now()})`
       );
-      await dbInst.createTransaction({ userId: ctx.user.id, type: "burn", token: "SKY444", amount: input.amount, description: `Burn: ${input.reason}` });
+      await dbInst.createTransaction({
+        userId: ctx.user.id,
+        type: "burn",
+        token: "SKY444",
+        amount: input.amount,
+        description: `Burn: ${input.reason}`,
+      });
       return { success: true, burned: input.amount };
     }),
 
@@ -499,16 +728,29 @@ export const icoEconomicsRouter = router({
   treasury: publicProcedure.query(async () => {
     await ensureICOTables();
     const db = await getDb();
-    if (!db) return { totalRaised: 0, burnedTokens: 0, circulatingSupply: 0, marketCap: 0 };
+    if (!db)
+      return {
+        totalRaised: 0,
+        burnedTokens: 0,
+        circulatingSupply: 0,
+        marketCap: 0,
+      };
     try {
       const [raised, burned] = await Promise.all([
-        db.execute(`SELECT COALESCE(SUM(usd_amount),0) as total FROM ico_purchases WHERE status = 'completed'`),
+        db.execute(
+          `SELECT COALESCE(SUM(usd_amount),0) as total FROM ico_purchases WHERE status = 'completed'`
+        ),
         db.execute(`SELECT COALESCE(SUM(amount),0) as total FROM ico_burn_log`),
       ]);
       const totalRaised = Number((raised as any).rows?.[0]?.total ?? 0);
       const burnedTokens = Number((burned as any).rows?.[0]?.total ?? 0);
-      const currentPrice = TOKENOMICS.tiers.find(t => t.status === "active")?.price ?? 0.005;
-      const circulatingSupply = TOKENOMICS.totalSupply - burnedTokens - TOKENOMICS.distribution.team.tokens - TOKENOMICS.distribution.treasury.tokens;
+      const currentPrice =
+        TOKENOMICS.tiers.find(t => t.status === "active")?.price ?? 0.005;
+      const circulatingSupply =
+        TOKENOMICS.totalSupply -
+        burnedTokens -
+        TOKENOMICS.distribution.team.tokens -
+        TOKENOMICS.distribution.treasury.tokens;
       const marketCap = circulatingSupply * currentPrice;
       return {
         totalRaised,
@@ -519,6 +761,13 @@ export const icoEconomicsRouter = router({
         fullyDilutedValuation: TOKENOMICS.totalSupply * currentPrice,
         treasuryReserve: TOKENOMICS.distribution.treasury.tokens * currentPrice,
       };
-    } catch { return { totalRaised: 0, burnedTokens: 0, circulatingSupply: 0, marketCap: 0 }; }
+    } catch {
+      return {
+        totalRaised: 0,
+        burnedTokens: 0,
+        circulatingSupply: 0,
+        marketCap: 0,
+      };
+    }
   }),
 });

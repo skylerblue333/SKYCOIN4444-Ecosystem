@@ -13,10 +13,11 @@ export default function Notifications() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<NotificationType>("all");
 
-  const { data: notifications, isLoading, refetch } = trpc.user.notifications.useQuery(
-    undefined,
-    { refetchInterval: 30000 }
-  );
+  const {
+    data: notifications,
+    isLoading,
+    refetch,
+  } = trpc.user.notifications.useQuery(undefined, { refetchInterval: 30000 });
 
   const markRead = trpc.user.markNotificationRead.useMutation({
     onSuccess: () => refetch(),
@@ -29,29 +30,42 @@ export default function Notifications() {
     toast.success("All notifications marked as read");
   };
 
-  const filteredNotifications = notifications?.filter((n: any) => {
-    if (filter === "all") return true;
-    if (filter === "tips") return n.type === "tip" || n.type === "donation";
-    if (filter === "follows") return n.type === "follow";
-    if (filter === "system") return n.type === "system" || n.type === "announcement";
-    if (filter === "marketplace") return n.type === "sale" || n.type === "bid";
-    return true;
-  }) || [];
+  const filteredNotifications =
+    notifications?.filter((n: any) => {
+      if (filter === "all") return true;
+      if (filter === "tips") return n.type === "tip" || n.type === "donation";
+      if (filter === "follows") return n.type === "follow";
+      if (filter === "system")
+        return n.type === "system" || n.type === "announcement";
+      if (filter === "marketplace")
+        return n.type === "sale" || n.type === "bid";
+      return true;
+    }) || [];
 
   const unreadCount = notifications?.filter((n: any) => !n.isRead).length || 0;
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case "tip": return "💰";
-      case "donation": return "🎁";
-      case "follow": return "👤";
-      case "system": return "⚙️";
-      case "announcement": return "📢";
-      case "sale": return "🛒";
-      case "bid": return "🔨";
-      case "achievement": return "🏆";
-      case "level_up": return "⬆️";
-      default: return "🔔";
+      case "tip":
+        return "💰";
+      case "donation":
+        return "🎁";
+      case "follow":
+        return "👤";
+      case "system":
+        return "⚙️";
+      case "announcement":
+        return "📢";
+      case "sale":
+        return "🛒";
+      case "bid":
+        return "🔨";
+      case "achievement":
+        return "🏆";
+      case "level_up":
+        return "⬆️";
+      default:
+        return "🔔";
     }
   };
 
@@ -94,7 +108,10 @@ export default function Notifications() {
         </div>
 
         {/* Filter Tabs */}
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as NotificationType)}>
+        <Tabs
+          value={filter}
+          onValueChange={v => setFilter(v as NotificationType)}
+        >
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="tips">Tips</TabsTrigger>
@@ -106,8 +123,11 @@ export default function Notifications() {
           <TabsContent value={filter} className="mt-4 space-y-2">
             {isLoading ? (
               <div className="space-y-2">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Card key={i} className="bg-card/50 border-border animate-pulse">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <Card
+                    key={i}
+                    className="bg-card/50 border-border animate-pulse"
+                  >
                     <CardContent className="p-4 h-16" />
                   </Card>
                 ))}
@@ -117,7 +137,9 @@ export default function Notifications() {
                 <Card
                   key={notification.id}
                   className={`border-border transition-all cursor-pointer hover:bg-muted/30 ${
-                    !notification.isRead ? "bg-purple-500/5 border-purple-500/20" : "bg-card/50"
+                    !notification.isRead
+                      ? "bg-purple-500/5 border-purple-500/20"
+                      : "bg-card/50"
                   }`}
                   onClick={() => {
                     if (!notification.isRead) {
@@ -131,7 +153,9 @@ export default function Notifications() {
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className={`text-sm ${!notification.isRead ? "font-medium" : "text-muted-foreground"}`}>
+                        <p
+                          className={`text-sm ${!notification.isRead ? "font-medium" : "text-muted-foreground"}`}
+                        >
                           {notification.message || notification.content}
                         </p>
                         {!notification.isRead && (
@@ -143,7 +167,10 @@ export default function Notifications() {
                       </p>
                     </div>
                     {notification.amount && (
-                      <Badge variant="outline" className="text-purple-400 border-purple-500/50 flex-shrink-0">
+                      <Badge
+                        variant="outline"
+                        className="text-purple-400 border-purple-500/50 flex-shrink-0"
+                      >
                         +{notification.amount} SKY444
                       </Badge>
                     )}
@@ -154,7 +181,9 @@ export default function Notifications() {
               <Card className="bg-card/50 border-border">
                 <CardContent className="p-12 text-center">
                   <p className="text-4xl mb-3">🔔</p>
-                  <p className="text-muted-foreground">No notifications in this category</p>
+                  <p className="text-muted-foreground">
+                    No notifications in this category
+                  </p>
                 </CardContent>
               </Card>
             )}

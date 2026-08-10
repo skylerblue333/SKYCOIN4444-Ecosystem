@@ -10,9 +10,17 @@ import { invokeLLM } from "./_core/llm";
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 export type LiveShoppingStatus = "scheduled" | "live" | "ended" | "cancelled";
-export type AuctionStatus = "pending" | "active" | "ended" | "cancelled" | "settled";
+export type AuctionStatus =
+  "pending" | "active" | "ended" | "cancelled" | "settled";
 export type DropStatus = "upcoming" | "active" | "sold_out" | "ended";
-export type OrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled"
+  | "refunded";
 
 export interface LiveShoppingStream {
   id: string;
@@ -162,7 +170,13 @@ export interface BuyerSegment {
   id: string;
   creatorId: number;
   segmentName: string;
-  segmentType: "whale" | "repeat_buyer" | "first_time" | "cart_abandoner" | "high_ltv" | "at_risk";
+  segmentType:
+    | "whale"
+    | "repeat_buyer"
+    | "first_time"
+    | "cart_abandoner"
+    | "high_ltv"
+    | "at_risk";
   buyerIds: number[];
   avgOrderValue: number;
   totalRevenue: number;
@@ -173,7 +187,8 @@ export interface BuyerSegment {
 export interface CommerceAIInsight {
   id: string;
   creatorId: number;
-  insightType: "pricing" | "upsell" | "cross_sell" | "conversion" | "inventory" | "timing";
+  insightType:
+    "pricing" | "upsell" | "cross_sell" | "conversion" | "inventory" | "timing";
   title: string;
   description: string;
   recommendation: string;
@@ -212,7 +227,18 @@ const _upsellOffers = new Map<string, UpsellOffer>();
 // ─── LIVE SHOPPING STREAM ENGINE ─────────────────────────────────────────────
 
 export const liveShoppingEngine = {
-  createStream(params: Omit<LiveShoppingStream, "id" | "viewerCount" | "peakViewerCount" | "totalSales" | "totalRevenue" | "pinnedProductIds" | "createdAt">): LiveShoppingStream {
+  createStream(
+    params: Omit<
+      LiveShoppingStream,
+      | "id"
+      | "viewerCount"
+      | "peakViewerCount"
+      | "totalSales"
+      | "totalRevenue"
+      | "pinnedProductIds"
+      | "createdAt"
+    >
+  ): LiveShoppingStream {
     const id = `lss_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const stream: LiveShoppingStream = {
       ...params,
@@ -244,7 +270,10 @@ export const liveShoppingEngine = {
     return stream;
   },
 
-  updateViewerCount(streamId: string, count: number): LiveShoppingStream | null {
+  updateViewerCount(
+    streamId: string,
+    count: number
+  ): LiveShoppingStream | null {
     const stream = _liveStreams.get(streamId);
     if (!stream) return null;
     stream.viewerCount = count;
@@ -252,14 +281,22 @@ export const liveShoppingEngine = {
     return stream;
   },
 
-  pinProduct(streamId: string, productId: string, durationSeconds?: number): ProductPin | null {
+  pinProduct(
+    streamId: string,
+    productId: string,
+    durationSeconds?: number
+  ): ProductPin | null {
     const stream = _liveStreams.get(streamId);
     const product = _products.get(productId);
     if (!stream || !product) return null;
 
     // Deactivate previous pins for this product
     for (const pin of _productPins.values()) {
-      if (pin.streamId === streamId && pin.productId === productId && pin.isActive) {
+      if (
+        pin.streamId === streamId &&
+        pin.productId === productId &&
+        pin.isActive
+      ) {
         pin.isActive = false;
         pin.unpinnedAt = new Date();
       }
@@ -285,17 +322,26 @@ export const liveShoppingEngine = {
 
   unpinProduct(streamId: string, productId: string): boolean {
     for (const pin of _productPins.values()) {
-      if (pin.streamId === streamId && pin.productId === productId && pin.isActive) {
+      if (
+        pin.streamId === streamId &&
+        pin.productId === productId &&
+        pin.isActive
+      ) {
         pin.isActive = false;
         pin.unpinnedAt = new Date();
       }
     }
     const stream = _liveStreams.get(streamId);
-    if (stream) stream.pinnedProductIds = stream.pinnedProductIds.filter(id => id !== productId);
+    if (stream)
+      stream.pinnedProductIds = stream.pinnedProductIds.filter(
+        id => id !== productId
+      );
     return true;
   },
 
-  getActivePins(streamId: string): Array<{ pin: ProductPin; product: ShoppingProduct }> {
+  getActivePins(
+    streamId: string
+  ): Array<{ pin: ProductPin; product: ShoppingProduct }> {
     const results: Array<{ pin: ProductPin; product: ShoppingProduct }> = [];
     for (const pin of _productPins.values()) {
       if (pin.streamId === streamId && pin.isActive) {
@@ -308,7 +354,9 @@ export const liveShoppingEngine = {
 
   getLiveStreams(creatorId?: number): LiveShoppingStream[] {
     return Array.from(_liveStreams.values())
-      .filter(s => s.status === "live" && (!creatorId || s.creatorId === creatorId))
+      .filter(
+        s => s.status === "live" && (!creatorId || s.creatorId === creatorId)
+      )
       .sort((a, b) => b.viewerCount - a.viewerCount);
   },
 
@@ -319,8 +367,12 @@ export const liveShoppingEngine = {
     conversionRate: number;
   } {
     const stream = _liveStreams.get(streamId) ?? null;
-    const pins = Array.from(_productPins.values()).filter(p => p.streamId === streamId);
-    const orders = Array.from(_orders.values()).filter(o => o.streamId === streamId);
+    const pins = Array.from(_productPins.values()).filter(
+      p => p.streamId === streamId
+    );
+    const orders = Array.from(_orders.values()).filter(
+      o => o.streamId === streamId
+    );
     const totalClicks = pins.reduce((s, p) => s + p.clickCount, 0);
     return {
       stream,
@@ -334,7 +386,12 @@ export const liveShoppingEngine = {
 // ─── PRODUCT ENGINE ───────────────────────────────────────────────────────────
 
 export const productEngine = {
-  createProduct(params: Omit<ShoppingProduct, "id" | "soldCount" | "rating" | "reviewCount" | "createdAt" | "updatedAt">): ShoppingProduct {
+  createProduct(
+    params: Omit<
+      ShoppingProduct,
+      "id" | "soldCount" | "rating" | "reviewCount" | "createdAt" | "updatedAt"
+    >
+  ): ShoppingProduct {
     const id = `prod_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const product: ShoppingProduct = {
       ...params,
@@ -353,7 +410,10 @@ export const productEngine = {
     return _products.get(id) ?? null;
   },
 
-  updateProduct(id: string, updates: Partial<ShoppingProduct>): ShoppingProduct | null {
+  updateProduct(
+    id: string,
+    updates: Partial<ShoppingProduct>
+  ): ShoppingProduct | null {
     const product = _products.get(id);
     if (!product) return null;
     Object.assign(product, updates, { updatedAt: new Date() });
@@ -366,14 +426,21 @@ export const productEngine = {
       .sort((a, b) => b.soldCount - a.soldCount);
   },
 
-  searchProducts(query: string, category?: string, maxPrice?: number): ShoppingProduct[] {
+  searchProducts(
+    query: string,
+    category?: string,
+    maxPrice?: number
+  ): ShoppingProduct[] {
     const q = query.toLowerCase();
     return Array.from(_products.values())
-      .filter(p =>
-        p.isActive &&
-        (p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q))) &&
-        (!category || p.category === category) &&
-        (!maxPrice || p.price <= maxPrice)
+      .filter(
+        p =>
+          p.isActive &&
+          (p.title.toLowerCase().includes(q) ||
+            p.description.toLowerCase().includes(q) ||
+            p.tags.some(t => t.toLowerCase().includes(q))) &&
+          (!category || p.category === category) &&
+          (!maxPrice || p.price <= maxPrice)
       )
       .sort((a, b) => b.soldCount - a.soldCount);
   },
@@ -391,7 +458,12 @@ export const productEngine = {
 // ─── TIMED DROPS ENGINE ───────────────────────────────────────────────────────
 
 export const timedDropsEngine = {
-  createDrop(params: Omit<TimedDrop, "id" | "remainingSupply" | "totalRevenue" | "createdAt">): TimedDrop {
+  createDrop(
+    params: Omit<
+      TimedDrop,
+      "id" | "remainingSupply" | "totalRevenue" | "createdAt"
+    >
+  ): TimedDrop {
     const id = `drop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const drop: TimedDrop = {
       ...params,
@@ -411,16 +483,27 @@ export const timedDropsEngine = {
     return drop;
   },
 
-  purchaseDrop(dropId: string, buyerId: number, quantity: number, walletAddress?: string): {
+  purchaseDrop(
+    dropId: string,
+    buyerId: number,
+    quantity: number,
+    walletAddress?: string
+  ): {
     success: boolean;
     order?: CommerceOrder;
     reason?: string;
   } {
     const drop = _timedDrops.get(dropId);
     if (!drop) return { success: false, reason: "Drop not found" };
-    if (drop.status !== "active") return { success: false, reason: "Drop not active" };
-    if (drop.remainingSupply < quantity) return { success: false, reason: "Insufficient supply" };
-    if (drop.whitelistOnly && walletAddress && !drop.whitelistAddresses.includes(walletAddress)) {
+    if (drop.status !== "active")
+      return { success: false, reason: "Drop not active" };
+    if (drop.remainingSupply < quantity)
+      return { success: false, reason: "Insufficient supply" };
+    if (
+      drop.whitelistOnly &&
+      walletAddress &&
+      !drop.whitelistAddresses.includes(walletAddress)
+    ) {
       return { success: false, reason: "Not whitelisted" };
     }
 
@@ -451,9 +534,12 @@ export const timedDropsEngine = {
   getActiveDrops(creatorId?: number): TimedDrop[] {
     const now = new Date();
     return Array.from(_timedDrops.values())
-      .filter(d =>
-        d.status === "active" && d.startsAt <= now && d.endsAt > now &&
-        (!creatorId || d.creatorId === creatorId)
+      .filter(
+        d =>
+          d.status === "active" &&
+          d.startsAt <= now &&
+          d.endsAt > now &&
+          (!creatorId || d.creatorId === creatorId)
       )
       .sort((a, b) => a.endsAt.getTime() - b.endsAt.getTime());
   },
@@ -470,7 +556,19 @@ export const timedDropsEngine = {
 // ─── FLASH AUCTION ENGINE ─────────────────────────────────────────────────────
 
 export const flashAuctionEngine = {
-  createAuction(params: Omit<FlashAuction, "id" | "currentBid" | "currentBidderId" | "bids" | "totalBids" | "winnerBidderId" | "finalPrice" | "createdAt">): FlashAuction {
+  createAuction(
+    params: Omit<
+      FlashAuction,
+      | "id"
+      | "currentBid"
+      | "currentBidderId"
+      | "bids"
+      | "totalBids"
+      | "winnerBidderId"
+      | "finalPrice"
+      | "createdAt"
+    >
+  ): FlashAuction {
     const id = `auction_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const auction: FlashAuction = {
       ...params,
@@ -484,20 +582,31 @@ export const flashAuctionEngine = {
     return auction;
   },
 
-  placeBid(auctionId: string, bidderId: number, amount: number): {
+  placeBid(
+    auctionId: string,
+    bidderId: number,
+    amount: number
+  ): {
     success: boolean;
     auction?: FlashAuction;
     reason?: string;
   } {
     const auction = _flashAuctions.get(auctionId);
     if (!auction) return { success: false, reason: "Auction not found" };
-    if (auction.status !== "active") return { success: false, reason: "Auction not active" };
-    if (amount <= auction.currentBid) return { success: false, reason: "Bid too low" };
+    if (auction.status !== "active")
+      return { success: false, reason: "Auction not active" };
+    if (amount <= auction.currentBid)
+      return { success: false, reason: "Bid too low" };
 
     // Mark previous bids as not winning
     for (const bid of auction.bids) bid.isWinning = false;
 
-    auction.bids.push({ bidderId, amount, timestamp: new Date(), isWinning: true });
+    auction.bids.push({
+      bidderId,
+      amount,
+      timestamp: new Date(),
+      isWinning: true,
+    });
     auction.currentBid = amount;
     auction.currentBidderId = bidderId;
     auction.totalBids++;
@@ -515,7 +624,10 @@ export const flashAuctionEngine = {
     const auction = _flashAuctions.get(auctionId);
     if (!auction || auction.status !== "active") return null;
     auction.status = "settled";
-    if (auction.currentBidderId && (!auction.reservePrice || auction.currentBid >= auction.reservePrice)) {
+    if (
+      auction.currentBidderId &&
+      (!auction.reservePrice || auction.currentBid >= auction.reservePrice)
+    ) {
       auction.winnerBidderId = auction.currentBidderId;
       auction.finalPrice = auction.currentBid;
 
@@ -545,7 +657,11 @@ export const flashAuctionEngine = {
 
   getActiveAuctions(auctionType?: FlashAuction["auctionType"]): FlashAuction[] {
     return Array.from(_flashAuctions.values())
-      .filter(a => a.status === "active" && (!auctionType || a.auctionType === auctionType))
+      .filter(
+        a =>
+          a.status === "active" &&
+          (!auctionType || a.auctionType === auctionType)
+      )
       .sort((a, b) => a.endsAt.getTime() - b.endsAt.getTime());
   },
 
@@ -553,13 +669,19 @@ export const flashAuctionEngine = {
     return _flashAuctions.get(id) ?? null;
   },
 
-  getAuctionLeaderboard(auctionId: string): Array<{ bidderId: number; amount: number; rank: number }> {
+  getAuctionLeaderboard(
+    auctionId: string
+  ): Array<{ bidderId: number; amount: number; rank: number }> {
     const auction = _flashAuctions.get(auctionId);
     if (!auction) return [];
     const sorted = [...auction.bids].sort((a, b) => b.amount - a.amount);
     const seen = new Set<number>();
     return sorted
-      .filter(b => { if (seen.has(b.bidderId)) return false; seen.add(b.bidderId); return true; })
+      .filter(b => {
+        if (seen.has(b.bidderId)) return false;
+        seen.add(b.bidderId);
+        return true;
+      })
       .map((b, i) => ({ bidderId: b.bidderId, amount: b.amount, rank: i + 1 }));
   },
 };
@@ -567,16 +689,27 @@ export const flashAuctionEngine = {
 // ─── ORDER ENGINE ─────────────────────────────────────────────────────────────
 
 export const orderEngine = {
-  createOrder(params: Omit<CommerceOrder, "id" | "createdAt" | "updatedAt">): CommerceOrder {
+  createOrder(
+    params: Omit<CommerceOrder, "id" | "createdAt" | "updatedAt">
+  ): CommerceOrder {
     const id = `ord_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const order: CommerceOrder = { ...params, id, createdAt: new Date(), updatedAt: new Date() };
+    const order: CommerceOrder = {
+      ...params,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     _orders.set(id, order);
     // Decrement stock
     productEngine.decrementStock(params.productId, params.quantity);
     return order;
   },
 
-  updateOrderStatus(orderId: string, status: OrderStatus, trackingNumber?: string): CommerceOrder | null {
+  updateOrderStatus(
+    orderId: string,
+    status: OrderStatus,
+    trackingNumber?: string
+  ): CommerceOrder | null {
     const order = _orders.get(orderId);
     if (!order) return null;
     order.status = status;
@@ -604,7 +737,9 @@ export const orderEngine = {
     byStatus: Record<string, number>;
     topProducts: Array<{ productId: string; count: number; revenue: number }>;
   } {
-    const orders = Array.from(_orders.values()).filter(o => o.sellerId === sellerId);
+    const orders = Array.from(_orders.values()).filter(
+      o => o.sellerId === sellerId
+    );
     const byStatus: Record<string, number> = {};
     const productStats: Record<string, { count: number; revenue: number }> = {};
     let totalRevenue = 0;
@@ -612,7 +747,8 @@ export const orderEngine = {
     for (const order of orders) {
       byStatus[order.status] = (byStatus[order.status] ?? 0) + 1;
       totalRevenue += order.totalPrice;
-      if (!productStats[order.productId]) productStats[order.productId] = { count: 0, revenue: 0 };
+      if (!productStats[order.productId])
+        productStats[order.productId] = { count: 0, revenue: 0 };
       productStats[order.productId].count++;
       productStats[order.productId].revenue += order.totalPrice;
     }
@@ -635,10 +771,18 @@ export const orderEngine = {
 // ─── COMMERCE AI ENGINE ───────────────────────────────────────────────────────
 
 export const commerceAIEngine = {
-  async generatePricingInsight(creatorId: number, productId: string): Promise<CommerceAIInsight> {
+  async generatePricingInsight(
+    creatorId: number,
+    productId: string
+  ): Promise<CommerceAIInsight> {
     const product = _products.get(productId);
-    const orders = Array.from(_orders.values()).filter(o => o.productId === productId);
-    const avgOrderValue = orders.length > 0 ? orders.reduce((s, o) => s + o.totalPrice, 0) / orders.length : 0;
+    const orders = Array.from(_orders.values()).filter(
+      o => o.productId === productId
+    );
+    const avgOrderValue =
+      orders.length > 0
+        ? orders.reduce((s, o) => s + o.totalPrice, 0) / orders.length
+        : 0;
 
     let recommendation = `Current price: ${product?.price ?? 0}. Based on ${orders.length} sales.`;
     let confidence = 0.6;
@@ -646,10 +790,12 @@ export const commerceAIEngine = {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `Analyze pricing for product "${product?.title ?? "unknown"}" priced at ${product?.price ?? 0} ${product?.currency ?? "USD"} with ${orders.length} sales and avg order value ${avgOrderValue.toFixed(2)}. Provide a JSON pricing recommendation: {"recommendation": "string", "suggestedPrice": number, "confidence": 0-1, "reasoning": "string"}`,
-        }],
+        messages: [
+          {
+            role: "user",
+            content: `Analyze pricing for product "${product?.title ?? "unknown"}" priced at ${product?.price ?? 0} ${product?.currency ?? "USD"} with ${orders.length} sales and avg order value ${avgOrderValue.toFixed(2)}. Provide a JSON pricing recommendation: {"recommendation": "string", "suggestedPrice": number, "confidence": 0-1, "reasoning": "string"}`,
+          },
+        ],
         maxTokens: 200,
       });
       const content = (response.choices[0]?.message?.content as string) ?? "";
@@ -659,7 +805,9 @@ export const commerceAIEngine = {
         recommendation = parsed.recommendation ?? recommendation;
         confidence = parsed.confidence ?? confidence;
       }
-    } catch { /* use default */ }
+    } catch {
+      /* use default */
+    }
 
     const insight: CommerceAIInsight = {
       id: `insight_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -678,14 +826,20 @@ export const commerceAIEngine = {
     return insight;
   },
 
-  generateUpsellOffer(triggeredByProductId: string, offeredProductId: string, offerType: "upsell" | "cross_sell" | "bundle"): UpsellOffer {
+  generateUpsellOffer(
+    triggeredByProductId: string,
+    offeredProductId: string,
+    offerType: "upsell" | "cross_sell" | "bundle"
+  ): UpsellOffer {
     const triggeredProduct = _products.get(triggeredByProductId);
     const offeredProduct = _products.get(offeredProductId);
     const id = `upsell_${triggeredByProductId}_${offeredProductId}`;
     const discountPercent = offerType === "bundle" ? 15 : 10;
-    const bundlePrice = offerType === "bundle" && triggeredProduct && offeredProduct
-      ? (triggeredProduct.price + offeredProduct.price) * (1 - discountPercent / 100)
-      : undefined;
+    const bundlePrice =
+      offerType === "bundle" && triggeredProduct && offeredProduct
+        ? (triggeredProduct.price + offeredProduct.price) *
+          (1 - discountPercent / 100)
+        : undefined;
 
     const offer: UpsellOffer = {
       id,
@@ -694,9 +848,10 @@ export const commerceAIEngine = {
       offerType,
       discountPercent: offerType !== "bundle" ? discountPercent : undefined,
       bundlePrice,
-      displayText: offerType === "bundle"
-        ? `Bundle with ${offeredProduct?.title ?? "item"} and save ${discountPercent}%!`
-        : `Customers also bought: ${offeredProduct?.title ?? "item"} — ${discountPercent}% off`,
+      displayText:
+        offerType === "bundle"
+          ? `Bundle with ${offeredProduct?.title ?? "item"} and save ${discountPercent}%!`
+          : `Customers also bought: ${offeredProduct?.title ?? "item"} — ${discountPercent}% off`,
       acceptanceRate: 0,
       isActive: true,
       createdAt: new Date(),
@@ -706,11 +861,17 @@ export const commerceAIEngine = {
   },
 
   segmentBuyers(creatorId: number): BuyerSegment[] {
-    const orders = Array.from(_orders.values()).filter(o => o.sellerId === creatorId);
-    const buyerStats: Record<number, { orders: CommerceOrder[]; totalSpent: number }> = {};
+    const orders = Array.from(_orders.values()).filter(
+      o => o.sellerId === creatorId
+    );
+    const buyerStats: Record<
+      number,
+      { orders: CommerceOrder[]; totalSpent: number }
+    > = {};
 
     for (const order of orders) {
-      if (!buyerStats[order.buyerId]) buyerStats[order.buyerId] = { orders: [], totalSpent: 0 };
+      if (!buyerStats[order.buyerId])
+        buyerStats[order.buyerId] = { orders: [], totalSpent: 0 };
       buyerStats[order.buyerId].orders.push(order);
       buyerStats[order.buyerId].totalSpent += order.totalPrice;
     }
@@ -727,24 +888,45 @@ export const commerceAIEngine = {
       else firstTimeIds.push(buyerId);
     }
 
-    const makeSegment = (type: BuyerSegment["segmentType"], ids: number[]): BuyerSegment => {
+    const makeSegment = (
+      type: BuyerSegment["segmentType"],
+      ids: number[]
+    ): BuyerSegment => {
       const segOrders = orders.filter(o => ids.includes(o.buyerId));
       return {
         id: `seg_${creatorId}_${type}`,
         creatorId,
-        segmentName: type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+        segmentName: type
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, c => c.toUpperCase()),
         segmentType: type,
         buyerIds: ids,
-        avgOrderValue: ids.length > 0 ? segOrders.reduce((s, o) => s + o.totalPrice, 0) / segOrders.length : 0,
+        avgOrderValue:
+          ids.length > 0
+            ? segOrders.reduce((s, o) => s + o.totalPrice, 0) / segOrders.length
+            : 0,
         totalRevenue: segOrders.reduce((s, o) => s + o.totalPrice, 0),
-        conversionRate: ids.length / Math.max(1, Object.keys(buyerStats).length),
+        conversionRate:
+          ids.length / Math.max(1, Object.keys(buyerStats).length),
         lastUpdated: new Date(),
       };
     };
 
-    if (whaleIds.length > 0) { const s = makeSegment("whale", whaleIds); _buyerSegments.set(s.id, s); segments.push(s); }
-    if (repeatIds.length > 0) { const s = makeSegment("repeat_buyer", repeatIds); _buyerSegments.set(s.id, s); segments.push(s); }
-    if (firstTimeIds.length > 0) { const s = makeSegment("first_time", firstTimeIds); _buyerSegments.set(s.id, s); segments.push(s); }
+    if (whaleIds.length > 0) {
+      const s = makeSegment("whale", whaleIds);
+      _buyerSegments.set(s.id, s);
+      segments.push(s);
+    }
+    if (repeatIds.length > 0) {
+      const s = makeSegment("repeat_buyer", repeatIds);
+      _buyerSegments.set(s.id, s);
+      segments.push(s);
+    }
+    if (firstTimeIds.length > 0) {
+      const s = makeSegment("first_time", firstTimeIds);
+      _buyerSegments.set(s.id, s);
+      segments.push(s);
+    }
 
     return segments;
   },
@@ -756,8 +938,9 @@ export const commerceAIEngine = {
   },
 
   getUpsellOffers(productId: string): UpsellOffer[] {
-    return Array.from(_upsellOffers.values())
-      .filter(o => o.triggeredByProductId === productId && o.isActive);
+    return Array.from(_upsellOffers.values()).filter(
+      o => o.triggeredByProductId === productId && o.isActive
+    );
   },
 
   getCommerceDashboard(): {
@@ -771,7 +954,8 @@ export const commerceAIEngine = {
     const orders = Array.from(_orders.values());
     const productRevenue: Record<string, number> = {};
     for (const o of orders) {
-      productRevenue[o.productId] = (productRevenue[o.productId] ?? 0) + o.totalPrice;
+      productRevenue[o.productId] =
+        (productRevenue[o.productId] ?? 0) + o.totalPrice;
     }
     const topProducts = Object.entries(productRevenue)
       .sort((a, b) => b[1] - a[1])

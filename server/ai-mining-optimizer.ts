@@ -1,5 +1,5 @@
-import { invokeLLM, listLLMModels } from './_core/llm';
-import { miningPoolConnector } from './mining-pool-connector';
+import { invokeLLM, listLLMModels } from "./_core/llm";
+import { miningPoolConnector } from "./mining-pool-connector";
 
 interface MiningStrategy {
   coin: string;
@@ -47,11 +47,13 @@ export class AIMiningOptimizer {
       try {
         const result = await this.optimize();
         if (result.shouldSwitch) {
-          console.log(`[AI Mining] Switching to ${result.recommendedStrategy.coin} for +${result.profitIncreasePercentage.toFixed(1)}% profit`);
+          console.log(
+            `[AI Mining] Switching to ${result.recommendedStrategy.coin} for +${result.profitIncreasePercentage.toFixed(1)}% profit`
+          );
           await this.executeMiningSwitch(result.recommendedStrategy);
         }
       } catch (error) {
-        console.error('[AI Mining] Optimization error:', error);
+        console.error("[AI Mining] Optimization error:", error);
       }
     }, 300000); // Run every 5 minutes
   }
@@ -62,7 +64,7 @@ export class AIMiningOptimizer {
   async optimize(): Promise<OptimizationResult> {
     const stats = miningPoolConnector.getAllStats();
     if (stats.length === 0) {
-      throw new Error('No active mining pools');
+      throw new Error("No active mining pools");
     }
 
     // Calculate current profitability
@@ -70,15 +72,23 @@ export class AIMiningOptimizer {
     const currentStrategy = this.currentStrategy || strategies[0];
     const recommendedStrategy = strategies[0]; // Highest profitability
 
-    const shouldSwitch = 
-      !this.currentStrategy || 
-      (recommendedStrategy.expectedDailyProfit > currentStrategy.expectedDailyProfit * 1.05); // 5% improvement threshold
+    const shouldSwitch =
+      !this.currentStrategy ||
+      recommendedStrategy.expectedDailyProfit >
+        currentStrategy.expectedDailyProfit * 1.05; // 5% improvement threshold
 
-    const profitIncrease = recommendedStrategy.expectedDailyProfit - currentStrategy.expectedDailyProfit;
-    const profitIncreasePercentage = (profitIncrease / currentStrategy.expectedDailyProfit) * 100;
+    const profitIncrease =
+      recommendedStrategy.expectedDailyProfit -
+      currentStrategy.expectedDailyProfit;
+    const profitIncreasePercentage =
+      (profitIncrease / currentStrategy.expectedDailyProfit) * 100;
 
     // Get AI analysis
-    const aiAnalysis = await this.getAIAnalysis(strategies, currentStrategy, recommendedStrategy);
+    const aiAnalysis = await this.getAIAnalysis(
+      strategies,
+      currentStrategy,
+      recommendedStrategy
+    );
 
     const result: OptimizationResult = {
       currentStrategy,
@@ -107,7 +117,7 @@ export class AIMiningOptimizer {
     for (const stat of stats) {
       // Get current price
       const price = await this.getCurrentPrice(stat.coin);
-      
+
       // Calculate profitability
       const dailyProfit = (stat.shares.accepted / 100) * price * 100; // Simplified calculation
       const monthlyProfit = dailyProfit * 30;
@@ -125,7 +135,9 @@ export class AIMiningOptimizer {
     }
 
     // Sort by profitability
-    return strategies.sort((a, b) => b.expectedDailyProfit - a.expectedDailyProfit);
+    return strategies.sort(
+      (a, b) => b.expectedDailyProfit - a.expectedDailyProfit
+    );
   }
 
   /**
@@ -140,22 +152,22 @@ export class AIMiningOptimizer {
       const response = await invokeLLM({
         messages: [
           {
-            role: 'system',
+            role: "system",
             content: `You are an expert cryptocurrency mining strategist. Analyze mining profitability data and provide concise recommendations. 
             Consider: difficulty trends, price volatility, pool reliability, and market conditions.
             Provide analysis in 2-3 sentences.`,
           },
           {
-            role: 'user',
+            role: "user",
             content: `Current mining strategy: ${current.coin} (${current.pool})
 Daily profit: $${current.expectedDailyProfit.toFixed(2)}
 Monthly profit: $${current.expectedMonthlyProfit.toFixed(2)}
 
 Available strategies:
-          ${strategies.map((s: MiningStrategy) => `- ${s.coin}: $${s.expectedDailyProfit.toFixed(2)}/day (difficulty: ${s.difficulty.toFixed(2)})`).join('\n')}
+          ${strategies.map((s: MiningStrategy) => `- ${s.coin}: $${s.expectedDailyProfit.toFixed(2)}/day (difficulty: ${s.difficulty.toFixed(2)})`).join("\n")}
 
 Recommended strategy: ${recommended.coin}
-Expected profit increase: ${((recommended.expectedDailyProfit - current.expectedDailyProfit) / current.expectedDailyProfit * 100).toFixed(1)}%
+Expected profit increase: ${(((recommended.expectedDailyProfit - current.expectedDailyProfit) / current.expectedDailyProfit) * 100).toFixed(1)}%
 
 Provide analysis and recommendation.`,
           },
@@ -163,10 +175,10 @@ Provide analysis and recommendation.`,
       });
 
       const content = response.choices[0].message.content;
-      return typeof content === 'string' ? content : 'AI analysis unavailable';
+      return typeof content === "string" ? content : "AI analysis unavailable";
     } catch (error) {
-      console.error('[AI Mining] Failed to get LLM analysis:', error);
-      return 'Unable to get AI analysis at this time.';
+      console.error("[AI Mining] Failed to get LLM analysis:", error);
+      return "Unable to get AI analysis at this time.";
     }
   }
 
@@ -176,7 +188,7 @@ Provide analysis and recommendation.`,
   private async executeMiningSwitch(strategy: MiningStrategy): Promise<void> {
     console.log(`[AI Mining] Executing switch to ${strategy.coin}`);
     this.currentStrategy = strategy;
-    
+
     // In a real implementation, this would:
     // 1. Stop current mining operation
     // 2. Reconfigure miners for new coin
@@ -191,7 +203,7 @@ Provide analysis and recommendation.`,
   private async getCurrentPrice(coin: string): Promise<number> {
     const prices: Record<string, number> = {
       BTC: 63800,
-      LTC: 89.50,
+      LTC: 89.5,
       DOGE: 0.072,
       ETC: 28.45,
     };
@@ -203,7 +215,7 @@ Provide analysis and recommendation.`,
    */
   private initializePriceData(): void {
     // Initialize with sample data
-    const coins = ['BTC', 'LTC', 'DOGE', 'ETC'];
+    const coins = ["BTC", "LTC", "DOGE", "ETC"];
     for (const coin of coins) {
       this.priceData.set(coin, []);
       this.difficultyData.set(coin, []);

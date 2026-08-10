@@ -29,8 +29,10 @@ export type OrderStatus =
   | "refunded"
   | "cancelled";
 
-export type ListingType = "physical" | "digital" | "nft" | "service" | "subscription";
-export type DisputeStatus = "open" | "under_review" | "resolved_buyer" | "resolved_seller" | "escalated";
+export type ListingType =
+  "physical" | "digital" | "nft" | "service" | "subscription";
+export type DisputeStatus =
+  "open" | "under_review" | "resolved_buyer" | "resolved_seller" | "escalated";
 
 export interface Order {
   orderId: string;
@@ -120,7 +122,12 @@ export interface SellerDashboard {
   refundCount: number;
   averageOrderValueCents: number;
   conversionRate: number;
-  topListings: { listingId: string; title: string; sales: number; revenueCents: number }[];
+  topListings: {
+    listingId: string;
+    title: string;
+    sales: number;
+    revenueCents: number;
+  }[];
   recentOrders: Order[];
   reputationScore: number;
   badges: string[];
@@ -247,9 +254,15 @@ export const cartSystem = {
   },
 
   _recalculate(cart: Cart): void {
-    cart.subtotalCents = cart.items.reduce((sum, i) => sum + i.unitPriceCents * i.quantity, 0);
-    cart.platformFeeCents = Math.floor(cart.subtotalCents * PLATFORM_FEE_PCT / 100);
-    cart.totalCents = cart.subtotalCents + cart.platformFeeCents - cart.affiliateDiscountCents;
+    cart.subtotalCents = cart.items.reduce(
+      (sum, i) => sum + i.unitPriceCents * i.quantity,
+      0
+    );
+    cart.platformFeeCents = Math.floor(
+      (cart.subtotalCents * PLATFORM_FEE_PCT) / 100
+    );
+    cart.totalCents =
+      cart.subtotalCents + cart.platformFeeCents - cart.affiliateDiscountCents;
     cart.updatedAt = new Date();
   },
 };
@@ -271,7 +284,9 @@ export const orderSystem = {
   }): Promise<Order> {
     const orderId = `order_${crypto.randomBytes(8).toString("hex")}`;
     const totalPriceCents = params.unitPriceCents * params.quantity;
-    const platformFeeCents = Math.floor(totalPriceCents * PLATFORM_FEE_PCT / 100);
+    const platformFeeCents = Math.floor(
+      (totalPriceCents * PLATFORM_FEE_PCT) / 100
+    );
     const sellerRevenueCents = totalPriceCents - platformFeeCents;
 
     // Handle affiliate commission
@@ -279,7 +294,9 @@ export const orderSystem = {
     if (params.affiliateCode) {
       const affiliate = _affiliateLinks.get(params.affiliateCode);
       if (affiliate && affiliate.isActive) {
-        affiliateCommissionCents = Math.floor(totalPriceCents * affiliate.commissionPct / 100);
+        affiliateCommissionCents = Math.floor(
+          (totalPriceCents * affiliate.commissionPct) / 100
+        );
         affiliate.conversionCount++;
         affiliate.totalEarningsCents += affiliateCommissionCents;
       }
@@ -296,7 +313,9 @@ export const orderSystem = {
       currency: params.currency ?? "USD",
       status: "held",
       heldAt: new Date(),
-      autoReleaseAt: new Date(Date.now() + AUTO_RELEASE_DAYS * 24 * 3600 * 1000),
+      autoReleaseAt: new Date(
+        Date.now() + AUTO_RELEASE_DAYS * 24 * 3600 * 1000
+      ),
       stripePaymentIntentId: params.paymentIntentId,
     };
     _escrows.set(escrowId, escrow);
@@ -325,18 +344,28 @@ export const orderSystem = {
     };
     _orders.set(orderId, order);
 
-    if (!_ordersByUser.has(params.buyerId)) _ordersByUser.set(params.buyerId, new Set());
+    if (!_ordersByUser.has(params.buyerId))
+      _ordersByUser.set(params.buyerId, new Set());
     _ordersByUser.get(params.buyerId)!.add(orderId);
-    if (!_ordersBySeller.has(params.sellerId)) _ordersBySeller.set(params.sellerId, new Set());
+    if (!_ordersBySeller.has(params.sellerId))
+      _ordersBySeller.set(params.sellerId, new Set());
     _ordersBySeller.get(params.sellerId)!.add(orderId);
 
     log.info(`Order created: ${orderId}`, {
-      data: { buyerId: params.buyerId, sellerId: params.sellerId, totalPriceCents, listingType: params.listingType },
+      data: {
+        buyerId: params.buyerId,
+        sellerId: params.sellerId,
+        totalPriceCents,
+        listingType: params.listingType,
+      },
     });
     return order;
   },
 
-  async confirmPayment(orderId: string, stripeChargeId: string): Promise<Order> {
+  async confirmPayment(
+    orderId: string,
+    stripeChargeId: string
+  ): Promise<Order> {
     const order = _orders.get(orderId);
     if (!order) throw new Error(`Order ${orderId} not found`);
     order.status = "payment_confirmed";
@@ -357,15 +386,23 @@ export const orderSystem = {
       data: { orderId, type: "new_order" },
     });
 
-    log.info(`Payment confirmed for order ${orderId}`, { data: { stripeChargeId } });
+    log.info(`Payment confirmed for order ${orderId}`, {
+      data: { stripeChargeId },
+    });
     return order;
   },
 
-  async markShipped(orderId: string, sellerId: number, trackingNumber: string, carrier: string): Promise<Order> {
+  async markShipped(
+    orderId: string,
+    sellerId: number,
+    trackingNumber: string,
+    carrier: string
+  ): Promise<Order> {
     const order = _orders.get(orderId);
     if (!order) throw new Error(`Order ${orderId} not found`);
     if (order.sellerId !== sellerId) throw new Error("Not authorized");
-    if (order.status !== "payment_confirmed" && order.status !== "processing") throw new Error("Order not ready to ship");
+    if (order.status !== "payment_confirmed" && order.status !== "processing")
+      throw new Error("Order not ready to ship");
 
     order.status = "shipped";
     order.trackingNumber = trackingNumber;
@@ -381,7 +418,9 @@ export const orderSystem = {
       data: { orderId, trackingNumber, carrier, type: "order_shipped" },
     });
 
-    log.info(`Order ${orderId} marked as shipped`, { data: { trackingNumber, carrier } });
+    log.info(`Order ${orderId} marked as shipped`, {
+      data: { trackingNumber, carrier },
+    });
     return order;
   },
 
@@ -389,7 +428,8 @@ export const orderSystem = {
     const order = _orders.get(orderId);
     if (!order) throw new Error(`Order ${orderId} not found`);
     if (order.buyerId !== buyerId) throw new Error("Not authorized");
-    if (order.status !== "shipped" && order.status !== "delivered") throw new Error("Order not in shippable state");
+    if (order.status !== "shipped" && order.status !== "delivered")
+      throw new Error("Order not in shippable state");
 
     order.status = "completed";
     order.deliveryConfirmedAt = new Date();
@@ -403,11 +443,17 @@ export const orderSystem = {
     return order;
   },
 
-  async cancelOrder(orderId: string, userId: number, reason: string): Promise<Order> {
+  async cancelOrder(
+    orderId: string,
+    userId: number,
+    reason: string
+  ): Promise<Order> {
     const order = _orders.get(orderId);
     if (!order) throw new Error(`Order ${orderId} not found`);
-    if (order.buyerId !== userId && order.sellerId !== userId) throw new Error("Not authorized");
-    if (["completed", "disputed", "refunded"].includes(order.status)) throw new Error("Cannot cancel order in current state");
+    if (order.buyerId !== userId && order.sellerId !== userId)
+      throw new Error("Not authorized");
+    if (["completed", "disputed", "refunded"].includes(order.status))
+      throw new Error("Cannot cancel order in current state");
 
     order.status = "cancelled";
     order.updatedAt = new Date();
@@ -448,7 +494,9 @@ export const orderSystem = {
       idempotencyKey: `escrow_release_${escrowId}`,
     });
 
-    log.info(`Escrow ${escrowId} released to seller ${sellerId}`, { data: { amountCents: escrow.amountCents } });
+    log.info(`Escrow ${escrowId} released to seller ${sellerId}`, {
+      data: { amountCents: escrow.amountCents },
+    });
   },
 
   getOrder(orderId: string): Order | null {
@@ -482,11 +530,17 @@ export const disputeSystem = {
   }): Promise<Dispute> {
     const order = _orders.get(params.orderId);
     if (!order) throw new Error(`Order ${params.orderId} not found`);
-    if (order.buyerId !== params.initiatorId && order.sellerId !== params.initiatorId) throw new Error("Not a party to this order");
-    if (order.status === "completed") throw new Error("Cannot dispute a completed order");
+    if (
+      order.buyerId !== params.initiatorId &&
+      order.sellerId !== params.initiatorId
+    )
+      throw new Error("Not a party to this order");
+    if (order.status === "completed")
+      throw new Error("Cannot dispute a completed order");
 
     const disputeId = `dispute_${crypto.randomBytes(8).toString("hex")}`;
-    const respondentId = order.buyerId === params.initiatorId ? order.sellerId : order.buyerId;
+    const respondentId =
+      order.buyerId === params.initiatorId ? order.sellerId : order.buyerId;
 
     const dispute: Dispute = {
       disputeId,
@@ -519,14 +573,28 @@ export const disputeSystem = {
       data: { disputeId, orderId: params.orderId, type: "dispute_opened" },
     });
 
-    log.warn(`Dispute opened: ${disputeId}`, { data: { orderId: params.orderId, initiatorId: params.initiatorId, reason: params.reason } });
+    log.warn(`Dispute opened: ${disputeId}`, {
+      data: {
+        orderId: params.orderId,
+        initiatorId: params.initiatorId,
+        reason: params.reason,
+      },
+    });
     return dispute;
   },
 
-  async addEvidence(disputeId: string, userId: number, evidence: Omit<DisputeEvidence, "evidenceId" | "submittedBy" | "submittedAt">): Promise<Dispute> {
+  async addEvidence(
+    disputeId: string,
+    userId: number,
+    evidence: Omit<
+      DisputeEvidence,
+      "evidenceId" | "submittedBy" | "submittedAt"
+    >
+  ): Promise<Dispute> {
     const dispute = _disputes.get(disputeId);
     if (!dispute) throw new Error(`Dispute ${disputeId} not found`);
-    if (dispute.initiatorId !== userId && dispute.respondentId !== userId) throw new Error("Not a party to this dispute");
+    if (dispute.initiatorId !== userId && dispute.respondentId !== userId)
+      throw new Error("Not a party to this dispute");
 
     dispute.evidence.push({
       evidenceId: crypto.randomBytes(8).toString("hex"),
@@ -537,7 +605,12 @@ export const disputeSystem = {
     return dispute;
   },
 
-  async resolveDispute(disputeId: string, adminId: number, resolution: string, favorBuyer: boolean): Promise<Dispute> {
+  async resolveDispute(
+    disputeId: string,
+    adminId: number,
+    resolution: string,
+    favorBuyer: boolean
+  ): Promise<Dispute> {
     const dispute = _disputes.get(disputeId);
     if (!dispute) throw new Error(`Dispute ${disputeId} not found`);
 
@@ -579,7 +652,9 @@ export const disputeSystem = {
     }
 
     order.updatedAt = new Date();
-    log.info(`Dispute ${disputeId} resolved`, { data: { adminId, resolution, favorBuyer } });
+    log.info(`Dispute ${disputeId} resolved`, {
+      data: { adminId, resolution, favorBuyer },
+    });
     return dispute;
   },
 
@@ -596,25 +671,47 @@ export const disputeSystem = {
 
 // ─── Seller Dashboard ─────────────────────────────────────────────────────────
 export const sellerDashboard = {
-  getDashboard(sellerId: number, period: SellerDashboard["period"] = "month"): SellerDashboard {
+  getDashboard(
+    sellerId: number,
+    period: SellerDashboard["period"] = "month"
+  ): SellerDashboard {
     const allOrders = orderSystem.getSellerOrders(sellerId);
     const now = new Date();
-    const cutoff = period === "today" ? new Date(now.setHours(0, 0, 0, 0)) :
-      period === "week" ? new Date(Date.now() - 7 * 24 * 3600 * 1000) :
-      period === "month" ? new Date(Date.now() - 30 * 24 * 3600 * 1000) :
-      new Date(0);
+    const cutoff =
+      period === "today"
+        ? new Date(now.setHours(0, 0, 0, 0))
+        : period === "week"
+          ? new Date(Date.now() - 7 * 24 * 3600 * 1000)
+          : period === "month"
+            ? new Date(Date.now() - 30 * 24 * 3600 * 1000)
+            : new Date(0);
 
     const periodOrders = allOrders.filter(o => o.createdAt >= cutoff);
     const completedOrders = periodOrders.filter(o => o.status === "completed");
-    const pendingOrders = periodOrders.filter(o => ["payment_confirmed", "processing", "shipped"].includes(o.status));
+    const pendingOrders = periodOrders.filter(o =>
+      ["payment_confirmed", "processing", "shipped"].includes(o.status)
+    );
 
-    const totalRevenueCents = completedOrders.reduce((sum, o) => sum + o.sellerRevenueCents, 0);
-    const pendingPayoutCents = pendingOrders.reduce((sum, o) => sum + o.sellerRevenueCents, 0);
+    const totalRevenueCents = completedOrders.reduce(
+      (sum, o) => sum + o.sellerRevenueCents,
+      0
+    );
+    const pendingPayoutCents = pendingOrders.reduce(
+      (sum, o) => sum + o.sellerRevenueCents,
+      0
+    );
 
     // Top listings by revenue
-    const listingRevenue = new Map<string, { title: string; sales: number; revenueCents: number }>();
+    const listingRevenue = new Map<
+      string,
+      { title: string; sales: number; revenueCents: number }
+    >();
     for (const order of completedOrders) {
-      const existing = listingRevenue.get(order.listingId) ?? { title: order.listingTitle, sales: 0, revenueCents: 0 };
+      const existing = listingRevenue.get(order.listingId) ?? {
+        title: order.listingTitle,
+        sales: 0,
+        revenueCents: 0,
+      };
       existing.sales += order.quantity;
       existing.revenueCents += order.sellerRevenueCents;
       listingRevenue.set(order.listingId, existing);
@@ -635,8 +732,12 @@ export const sellerDashboard = {
       pendingOrderCount: pendingOrders.length,
       disputeCount: periodOrders.filter(o => o.status === "disputed").length,
       refundCount: periodOrders.filter(o => o.status === "refunded").length,
-      averageOrderValueCents: completedOrders.length > 0 ? Math.floor(totalRevenueCents / completedOrders.length) : 0,
-      conversionRate: allOrders.length > 0 ? completedOrders.length / allOrders.length : 0,
+      averageOrderValueCents:
+        completedOrders.length > 0
+          ? Math.floor(totalRevenueCents / completedOrders.length)
+          : 0,
+      conversionRate:
+        allOrders.length > 0 ? completedOrders.length / allOrders.length : 0,
       topListings,
       recentOrders: allOrders.slice(0, 10),
       reputationScore: reputation.overallScore,
@@ -645,31 +746,80 @@ export const sellerDashboard = {
   },
 
   getReputation(sellerId: number): SellerReputation {
-    if (_sellerReputations.has(sellerId)) return _sellerReputations.get(sellerId)!;
+    if (_sellerReputations.has(sellerId))
+      return _sellerReputations.get(sellerId)!;
 
     const allOrders = orderSystem.getSellerOrders(sellerId);
     const completedOrders = allOrders.filter(o => o.status === "completed");
-    const disputedOrders = allOrders.filter(o => o.status === "disputed" || o.status === "refunded");
+    const disputedOrders = allOrders.filter(
+      o => o.status === "disputed" || o.status === "refunded"
+    );
 
-    const disputeRate = allOrders.length > 0 ? disputedOrders.length / allOrders.length : 0;
-    const onTimeDeliveryRate = completedOrders.length > 0 ?
-      completedOrders.filter(o => o.deliveryConfirmedAt && o.deliveryConfirmedAt <= new Date(o.createdAt.getTime() + 7 * 24 * 3600 * 1000)).length / completedOrders.length : 1;
+    const disputeRate =
+      allOrders.length > 0 ? disputedOrders.length / allOrders.length : 0;
+    const onTimeDeliveryRate =
+      completedOrders.length > 0
+        ? completedOrders.filter(
+            o =>
+              o.deliveryConfirmedAt &&
+              o.deliveryConfirmedAt <=
+                new Date(o.createdAt.getTime() + 7 * 24 * 3600 * 1000)
+          ).length / completedOrders.length
+        : 1;
 
-    const overallScore = Math.max(0, Math.min(100, Math.round(
-      100 - (disputeRate * 50) - ((1 - onTimeDeliveryRate) * 30) + (completedOrders.length > 10 ? 10 : 0)
-    )));
+    const overallScore = Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(
+          100 -
+            disputeRate * 50 -
+            (1 - onTimeDeliveryRate) * 30 +
+            (completedOrders.length > 10 ? 10 : 0)
+        )
+      )
+    );
 
     const badges: SellerBadge[] = [];
-    if (completedOrders.length >= 10) badges.push({ id: "first_10", name: "Rising Seller", description: "Completed 10+ orders", earnedAt: new Date() });
-    if (completedOrders.length >= 100) badges.push({ id: "century", name: "Century Seller", description: "Completed 100+ orders", earnedAt: new Date() });
-    if (disputeRate < 0.01 && completedOrders.length >= 20) badges.push({ id: "trusted", name: "Trusted Seller", description: "Less than 1% dispute rate", earnedAt: new Date() });
-    if (onTimeDeliveryRate >= 0.95 && completedOrders.length >= 10) badges.push({ id: "reliable", name: "Reliable Delivery", description: "95%+ on-time delivery", earnedAt: new Date() });
+    if (completedOrders.length >= 10)
+      badges.push({
+        id: "first_10",
+        name: "Rising Seller",
+        description: "Completed 10+ orders",
+        earnedAt: new Date(),
+      });
+    if (completedOrders.length >= 100)
+      badges.push({
+        id: "century",
+        name: "Century Seller",
+        description: "Completed 100+ orders",
+        earnedAt: new Date(),
+      });
+    if (disputeRate < 0.01 && completedOrders.length >= 20)
+      badges.push({
+        id: "trusted",
+        name: "Trusted Seller",
+        description: "Less than 1% dispute rate",
+        earnedAt: new Date(),
+      });
+    if (onTimeDeliveryRate >= 0.95 && completedOrders.length >= 10)
+      badges.push({
+        id: "reliable",
+        name: "Reliable Delivery",
+        description: "95%+ on-time delivery",
+        earnedAt: new Date(),
+      });
 
     const tier: SellerReputation["tier"] =
-      completedOrders.length >= 500 && overallScore >= 90 ? "elite" :
-      completedOrders.length >= 100 && overallScore >= 80 ? "top_seller" :
-      completedOrders.length >= 20 && overallScore >= 70 ? "established" :
-      completedOrders.length >= 5 ? "rising" : "new";
+      completedOrders.length >= 500 && overallScore >= 90
+        ? "elite"
+        : completedOrders.length >= 100 && overallScore >= 80
+          ? "top_seller"
+          : completedOrders.length >= 20 && overallScore >= 70
+            ? "established"
+            : completedOrders.length >= 5
+              ? "rising"
+              : "new";
 
     const reputation: SellerReputation = {
       sellerId,
@@ -688,12 +838,19 @@ export const sellerDashboard = {
     return reputation;
   },
 
-  getPayoutHistory(sellerId: number): { date: string; amountCents: number; orderCount: number }[] {
+  getPayoutHistory(
+    sellerId: number
+  ): { date: string; amountCents: number; orderCount: number }[] {
     const orders = orderSystem.getSellerOrders(sellerId, "completed");
-    const byDate = new Map<string, { amountCents: number; orderCount: number }>();
+    const byDate = new Map<
+      string,
+      { amountCents: number; orderCount: number }
+    >();
 
     for (const order of orders) {
-      const date = order.completedAt?.toISOString().split("T")[0] ?? order.updatedAt.toISOString().split("T")[0];
+      const date =
+        order.completedAt?.toISOString().split("T")[0] ??
+        order.updatedAt.toISOString().split("T")[0];
       const existing = byDate.get(date) ?? { amountCents: 0, orderCount: 0 };
       existing.amountCents += order.sellerRevenueCents;
       existing.orderCount++;
@@ -708,7 +865,11 @@ export const sellerDashboard = {
 
 // ─── Affiliate System ─────────────────────────────────────────────────────────
 export const affiliateSystem = {
-  createLink(affiliateId: number, listingId?: string, commissionPct = 5): AffiliateLink {
+  createLink(
+    affiliateId: number,
+    listingId?: string,
+    commissionPct = 5
+  ): AffiliateLink {
     const code = crypto.randomBytes(6).toString("hex").toUpperCase();
     const link: AffiliateLink = {
       code,
@@ -722,7 +883,9 @@ export const affiliateSystem = {
       createdAt: new Date(),
     };
     _affiliateLinks.set(code, link);
-    log.info(`Affiliate link created: ${code}`, { data: { affiliateId, listingId, commissionPct } });
+    log.info(`Affiliate link created: ${code}`, {
+      data: { affiliateId, listingId, commissionPct },
+    });
     return link;
   },
 
@@ -738,7 +901,9 @@ export const affiliateSystem = {
   },
 
   getAffiliateLinks(affiliateId: number): AffiliateLink[] {
-    return Array.from(_affiliateLinks.values()).filter(l => l.affiliateId === affiliateId);
+    return Array.from(_affiliateLinks.values()).filter(
+      l => l.affiliateId === affiliateId
+    );
   },
 
   getAffiliateStats(affiliateId: number): {
@@ -749,8 +914,14 @@ export const affiliateSystem = {
   } {
     const links = this.getAffiliateLinks(affiliateId);
     const totalClicks = links.reduce((sum, l) => sum + l.clickCount, 0);
-    const totalConversions = links.reduce((sum, l) => sum + l.conversionCount, 0);
-    const totalEarningsCents = links.reduce((sum, l) => sum + l.totalEarningsCents, 0);
+    const totalConversions = links.reduce(
+      (sum, l) => sum + l.conversionCount,
+      0
+    );
+    const totalEarningsCents = links.reduce(
+      (sum, l) => sum + l.totalEarningsCents,
+      0
+    );
     return {
       totalClicks,
       totalConversions,
@@ -772,18 +943,30 @@ export const marketplaceStats = {
   getOverview() {
     const allOrders = Array.from(_orders.values());
     const completedOrders = allOrders.filter(o => o.status === "completed");
-    const totalGMVCents = completedOrders.reduce((sum, o) => sum + o.totalPriceCents, 0);
-    const totalPlatformRevenueCents = completedOrders.reduce((sum, o) => sum + o.platformFeeCents, 0);
+    const totalGMVCents = completedOrders.reduce(
+      (sum, o) => sum + o.totalPriceCents,
+      0
+    );
+    const totalPlatformRevenueCents = completedOrders.reduce(
+      (sum, o) => sum + o.platformFeeCents,
+      0
+    );
 
     return {
       totalOrders: allOrders.length,
       completedOrders: completedOrders.length,
-      pendingOrders: allOrders.filter(o => o.status === "pending_payment" || o.status === "payment_confirmed").length,
+      pendingOrders: allOrders.filter(
+        o => o.status === "pending_payment" || o.status === "payment_confirmed"
+      ).length,
       disputedOrders: allOrders.filter(o => o.status === "disputed").length,
       totalGMVCents,
       totalPlatformRevenueCents,
-      activeEscrows: Array.from(_escrows.values()).filter(e => e.status === "held").length,
-      openDisputes: Array.from(_disputes.values()).filter(d => d.status === "open").length,
+      activeEscrows: Array.from(_escrows.values()).filter(
+        e => e.status === "held"
+      ).length,
+      openDisputes: Array.from(_disputes.values()).filter(
+        d => d.status === "open"
+      ).length,
       affiliateLinks: _affiliateLinks.size,
     };
   },
@@ -792,22 +975,59 @@ export const marketplaceStats = {
 export const marketplaceEngine = orderSystem;
 
 // ─── COMMANDMENT ALIASES: marketplaceEngine ──────────────────────────────────
-const _listings = new Map<string, { listingId: string; sellerId: number; title: string; price: number; currency: string; status: string; createdAt: Date }>();
+const _listings = new Map<
+  string,
+  {
+    listingId: string;
+    sellerId: number;
+    title: string;
+    price: number;
+    currency: string;
+    status: string;
+    createdAt: Date;
+  }
+>();
 
-(marketplaceEngine as any).createListing = async function(params: { sellerId: number; title: string; price: number; currency?: string; description?: string; category?: string; stock?: number }) {
+(marketplaceEngine as any).createListing = async function (params: {
+  sellerId: number;
+  title: string;
+  price: number;
+  currency?: string;
+  description?: string;
+  category?: string;
+  stock?: number;
+}) {
   const listingId = `lst_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const listing = { id: listingId, listingId, sellerId: params.sellerId, title: params.title, price: params.price, currency: params.currency ?? "USD", description: params.description ?? "", category: params.category ?? "general", stock: params.stock ?? 1, status: "active", createdAt: new Date() };
+  const listing = {
+    id: listingId,
+    listingId,
+    sellerId: params.sellerId,
+    title: params.title,
+    price: params.price,
+    currency: params.currency ?? "USD",
+    description: params.description ?? "",
+    category: params.category ?? "general",
+    stock: params.stock ?? 1,
+    status: "active",
+    createdAt: new Date(),
+  };
   _listings.set(listingId, listing);
   return listing;
 };
 
-(marketplaceEngine as any).getListing = function(listingId: string) {
+(marketplaceEngine as any).getListing = function (listingId: string) {
   return _listings.get(listingId) ?? null;
 };
 
 // ─── ESCROW ENGINE (Commandment-compliant export) ─────────────────────────────
 export const escrowEngine = {
-  async createEscrow(params: { orderId: string; buyerId: number; sellerId: number; amount: number; currency?: string }) {
+  async createEscrow(params: {
+    orderId: string;
+    buyerId: number;
+    sellerId: number;
+    amount: number;
+    currency?: string;
+  }) {
     const escrowId = `esc_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
     const escrow = {
       escrowId,
@@ -825,13 +1045,19 @@ export const escrowEngine = {
   },
   async releaseEscrow(escrowId: string) {
     const e = _escrows.get(escrowId) as any;
-    if (e) { e.status = "released"; }
+    if (e) {
+      e.status = "released";
+    }
     return e ?? null;
   },
   async refundEscrow(escrowId: string) {
     const e = _escrows.get(escrowId) as any;
-    if (e) { e.status = "refunded"; }
+    if (e) {
+      e.status = "refunded";
+    }
     return e ?? null;
   },
-  getEscrow(escrowId: string) { return (_escrows.get(escrowId) as any) ?? null; },
+  getEscrow(escrowId: string) {
+    return (_escrows.get(escrowId) as any) ?? null;
+  },
 };

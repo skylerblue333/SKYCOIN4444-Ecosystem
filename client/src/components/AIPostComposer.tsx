@@ -21,7 +21,7 @@ export function AIPostComposer({ onPost }: AIPostComposerProps) {
       toast.success("Post published!");
       onPost?.();
     },
-    onError: (err) => toast.error(err.message),
+    onError: err => toast.error(err.message),
   });
 
   const generateSuggestions = async () => {
@@ -37,7 +37,9 @@ export function AIPostComposer({ onPost }: AIPostComposerProps) {
       .filter(w => w.length > 4)
       .slice(0, 3)
       .map(w => `#${w.replace(/[^a-z0-9]/g, "")}`);
-    const extras = ["#skycoin4444", "#web3", "#crypto"].filter(t => !tags.includes(t));
+    const extras = ["#skycoin4444", "#web3", "#crypto"].filter(
+      t => !tags.includes(t)
+    );
     setSuggestions([...tags, ...extras].slice(0, 5));
     setAiLoading(false);
   };
@@ -65,12 +67,20 @@ export function AIPostComposer({ onPost }: AIPostComposerProps) {
 
       {/* Char counter */}
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{charCount}/{maxChars}</span>
+        <span>
+          {charCount}/{maxChars}
+        </span>
         <div className="flex gap-1">
-          <button onClick={() => setContent(prev => prev + " @")} className="p-1 hover:text-primary transition-colors">
+          <button
+            onClick={() => setContent(prev => prev + " @")}
+            className="p-1 hover:text-primary transition-colors"
+          >
             <AtSign className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => setContent(prev => prev + " #")} className="p-1 hover:text-primary transition-colors">
+          <button
+            onClick={() => setContent(prev => prev + " #")}
+            className="p-1 hover:text-primary transition-colors"
+          >
             <Hash className="w-3.5 h-3.5" />
           </button>
           <button className="p-1 hover:text-primary transition-colors">
@@ -102,7 +112,11 @@ export function AIPostComposer({ onPost }: AIPostComposerProps) {
           disabled={aiLoading}
           className="flex-1"
         >
-          {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Sparkles className="w-3.5 h-3.5 mr-1" />}
+          {aiLoading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
+          ) : (
+            <Sparkles className="w-3.5 h-3.5 mr-1" />
+          )}
           AI Enhance
         </Button>
         <Button
@@ -111,7 +125,9 @@ export function AIPostComposer({ onPost }: AIPostComposerProps) {
           disabled={!content.trim() || createPost.isPending}
           className="flex-1"
         >
-          {createPost.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
+          {createPost.isPending ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
+          ) : null}
           Post
         </Button>
       </div>

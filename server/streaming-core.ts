@@ -23,10 +23,14 @@ import { invokeLLM } from "./_core/llm";
 // ═══════════════════════════════════════════════════════════════
 
 export type StreamStatus = "scheduled" | "live" | "ended" | "vod" | "cancelled";
-export type StreamQuality = "source" | "1080p60" | "720p60" | "720p30" | "480p" | "360p" | "160p";
-export type GiftType = "coin" | "star" | "rocket" | "crown" | "diamond" | "galaxy" | "custom";
-export type MembershipTier = "bronze" | "silver" | "gold" | "platinum" | "diamond";
-export type BattleStatus = "pending" | "active" | "voting" | "completed" | "cancelled";
+export type StreamQuality =
+  "source" | "1080p60" | "720p60" | "720p30" | "480p" | "360p" | "160p";
+export type GiftType =
+  "coin" | "star" | "rocket" | "crown" | "diamond" | "galaxy" | "custom";
+export type MembershipTier =
+  "bronze" | "silver" | "gold" | "platinum" | "diamond";
+export type BattleStatus =
+  "pending" | "active" | "voting" | "completed" | "cancelled";
 
 export interface WebRTCSession {
   sessionId: string;
@@ -36,7 +40,8 @@ export interface WebRTCSession {
   sdpOffer?: string;
   sdpAnswer?: string;
   iceCandidates: RTCIceCandidateInit[];
-  connectionState: "new" | "connecting" | "connected" | "disconnected" | "failed";
+  connectionState:
+    "new" | "connecting" | "connected" | "disconnected" | "failed";
   quality: StreamQuality;
   latencyMs: number;
   bitrateKbps: number;
@@ -237,7 +242,11 @@ export class WebRTCSignalingService {
     return session;
   }
 
-  async submitSDP(sessionId: string, sdp: string, type: "offer" | "answer"): Promise<boolean> {
+  async submitSDP(
+    sessionId: string,
+    sdp: string,
+    type: "offer" | "answer"
+  ): Promise<boolean> {
     const session = this.sessions.get(sessionId);
     if (!session) return false;
 
@@ -250,25 +259,37 @@ export class WebRTCSignalingService {
     return true;
   }
 
-  async addICECandidate(sessionId: string, candidate: RTCIceCandidateInit): Promise<boolean> {
+  async addICECandidate(
+    sessionId: string,
+    candidate: RTCIceCandidateInit
+  ): Promise<boolean> {
     const session = this.sessions.get(sessionId);
     if (!session) return false;
     session.iceCandidates.push(candidate);
     return true;
   }
 
-  async getSessionICECandidates(sessionId: string): Promise<RTCIceCandidateInit[]> {
+  async getSessionICECandidates(
+    sessionId: string
+  ): Promise<RTCIceCandidateInit[]> {
     return this.sessions.get(sessionId)?.iceCandidates || [];
   }
 
-  async updateConnectionState(sessionId: string, state: WebRTCSession["connectionState"]): Promise<void> {
+  async updateConnectionState(
+    sessionId: string,
+    state: WebRTCSession["connectionState"]
+  ): Promise<void> {
     const session = this.sessions.get(sessionId);
     if (!session) return;
     session.connectionState = state;
     if (state === "connected") session.connectedAt = new Date();
   }
 
-  async updateQualityMetrics(sessionId: string, latencyMs: number, bitrateKbps: number): Promise<void> {
+  async updateQualityMetrics(
+    sessionId: string,
+    latencyMs: number,
+    bitrateKbps: number
+  ): Promise<void> {
     const session = this.sessions.get(sessionId);
     if (!session) return;
     session.latencyMs = latencyMs;
@@ -282,9 +303,15 @@ export class WebRTCSignalingService {
       .filter(Boolean) as WebRTCSession[];
   }
 
-  async getActiveBroadcasterSession(streamId: string): Promise<WebRTCSession | null> {
+  async getActiveBroadcasterSession(
+    streamId: string
+  ): Promise<WebRTCSession | null> {
     const sessions = await this.getStreamSessions(streamId);
-    return sessions.find(s => s.role === "broadcaster" && s.connectionState === "connected") || null;
+    return (
+      sessions.find(
+        s => s.role === "broadcaster" && s.connectionState === "connected"
+      ) || null
+    );
   }
 
   async terminateSession(sessionId: string): Promise<void> {
@@ -297,13 +324,21 @@ export class WebRTCSignalingService {
 
   async getStreamViewerCount(streamId: string): Promise<number> {
     const sessions = await this.getStreamSessions(streamId);
-    return sessions.filter(s => s.role === "viewer" && s.connectionState === "connected").length;
+    return sessions.filter(
+      s => s.role === "viewer" && s.connectionState === "connected"
+    ).length;
   }
 
   // Generate STUN/TURN server configuration for clients
-  getICEServerConfig(): { urls: string[]; username?: string; credential?: string }[] {
+  getICEServerConfig(): {
+    urls: string[];
+    username?: string;
+    credential?: string;
+  }[] {
     return [
-      { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+      {
+        urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"],
+      },
       // In production: add TURN servers for NAT traversal
       // { urls: ["turn:turn.skycoin4444.com:3478"], username: "user", credential: "pass" },
     ];
@@ -323,16 +358,23 @@ export class RTMPIngestService {
     "rtmp://ingest-ap-southeast.skycoin4444.com/live",
   ];
 
-  async generateStreamKey(creatorId: number, streamId: string): Promise<RTMPStreamKey> {
+  async generateStreamKey(
+    creatorId: number,
+    streamId: string
+  ): Promise<RTMPStreamKey> {
     // Revoke existing key if present
-    const existing = Array.from(this.streamKeys.values()).find(k => k.creatorId === creatorId && k.isActive);
+    const existing = Array.from(this.streamKeys.values()).find(
+      k => k.creatorId === creatorId && k.isActive
+    );
     if (existing) {
       existing.isActive = false;
     }
 
     const key = this.generateSecureKey();
-    const ingestUrl = this.INGEST_ENDPOINTS[creatorId % this.INGEST_ENDPOINTS.length];
-    const backupUrl = this.INGEST_ENDPOINTS[(creatorId + 1) % this.INGEST_ENDPOINTS.length];
+    const ingestUrl =
+      this.INGEST_ENDPOINTS[creatorId % this.INGEST_ENDPOINTS.length];
+    const backupUrl =
+      this.INGEST_ENDPOINTS[(creatorId + 1) % this.INGEST_ENDPOINTS.length];
 
     const streamKey: RTMPStreamKey = {
       streamId,
@@ -356,14 +398,20 @@ export class RTMPIngestService {
   }
 
   async revokeStreamKey(creatorId: number): Promise<boolean> {
-    const key = Array.from(this.streamKeys.values()).find(k => k.creatorId === creatorId && k.isActive);
+    const key = Array.from(this.streamKeys.values()).find(
+      k => k.creatorId === creatorId && k.isActive
+    );
     if (!key) return false;
     key.isActive = false;
     return true;
   }
 
   async getCreatorStreamKey(creatorId: number): Promise<RTMPStreamKey | null> {
-    return Array.from(this.streamKeys.values()).find(k => k.creatorId === creatorId && k.isActive) || null;
+    return (
+      Array.from(this.streamKeys.values()).find(
+        k => k.creatorId === creatorId && k.isActive
+      ) || null
+    );
   }
 
   getIngestEndpoints(): string[] {
@@ -371,8 +419,12 @@ export class RTMPIngestService {
   }
 
   private generateSecureKey(): string {
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    return Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const chars =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    return Array.from(
+      { length: 32 },
+      () => chars[Math.floor(Math.random() * chars.length)]
+    ).join("");
   }
 }
 
@@ -385,12 +437,78 @@ export class LiveGiftingService {
   private giftCounter = 0;
 
   readonly GIFT_CATALOG: GiftCatalog[] = [
-    { id: "coin",    name: "Coin",    emoji: "🪙",  coinPrice: 1,     usdPrice: 0.01,  animationDuration: 1000, rarity: "common",    platformFeePercent: 30, creatorRevenuePercent: 70, isAvailable: true },
-    { id: "star",    name: "Star",    emoji: "⭐",  coinPrice: 5,     usdPrice: 0.05,  animationDuration: 1500, rarity: "common",    platformFeePercent: 30, creatorRevenuePercent: 70, isAvailable: true },
-    { id: "rocket",  name: "Rocket",  emoji: "🚀",  coinPrice: 50,    usdPrice: 0.50,  animationDuration: 3000, rarity: "rare",      platformFeePercent: 25, creatorRevenuePercent: 75, isAvailable: true },
-    { id: "crown",   name: "Crown",   emoji: "👑",  coinPrice: 200,   usdPrice: 2.00,  animationDuration: 4000, rarity: "rare",      platformFeePercent: 25, creatorRevenuePercent: 75, isAvailable: true },
-    { id: "diamond", name: "Diamond", emoji: "💎",  coinPrice: 500,   usdPrice: 5.00,  animationDuration: 5000, rarity: "epic",      platformFeePercent: 20, creatorRevenuePercent: 80, isAvailable: true },
-    { id: "galaxy",  name: "Galaxy",  emoji: "🌌",  coinPrice: 5000,  usdPrice: 50.00, animationDuration: 8000, rarity: "legendary", platformFeePercent: 15, creatorRevenuePercent: 85, isAvailable: true },
+    {
+      id: "coin",
+      name: "Coin",
+      emoji: "🪙",
+      coinPrice: 1,
+      usdPrice: 0.01,
+      animationDuration: 1000,
+      rarity: "common",
+      platformFeePercent: 30,
+      creatorRevenuePercent: 70,
+      isAvailable: true,
+    },
+    {
+      id: "star",
+      name: "Star",
+      emoji: "⭐",
+      coinPrice: 5,
+      usdPrice: 0.05,
+      animationDuration: 1500,
+      rarity: "common",
+      platformFeePercent: 30,
+      creatorRevenuePercent: 70,
+      isAvailable: true,
+    },
+    {
+      id: "rocket",
+      name: "Rocket",
+      emoji: "🚀",
+      coinPrice: 50,
+      usdPrice: 0.5,
+      animationDuration: 3000,
+      rarity: "rare",
+      platformFeePercent: 25,
+      creatorRevenuePercent: 75,
+      isAvailable: true,
+    },
+    {
+      id: "crown",
+      name: "Crown",
+      emoji: "👑",
+      coinPrice: 200,
+      usdPrice: 2.0,
+      animationDuration: 4000,
+      rarity: "rare",
+      platformFeePercent: 25,
+      creatorRevenuePercent: 75,
+      isAvailable: true,
+    },
+    {
+      id: "diamond",
+      name: "Diamond",
+      emoji: "💎",
+      coinPrice: 500,
+      usdPrice: 5.0,
+      animationDuration: 5000,
+      rarity: "epic",
+      platformFeePercent: 20,
+      creatorRevenuePercent: 80,
+      isAvailable: true,
+    },
+    {
+      id: "galaxy",
+      name: "Galaxy",
+      emoji: "🌌",
+      coinPrice: 5000,
+      usdPrice: 50.0,
+      animationDuration: 8000,
+      rarity: "legendary",
+      platformFeePercent: 15,
+      creatorRevenuePercent: 85,
+      isAvailable: true,
+    },
   ];
 
   async sendGift(params: {
@@ -404,7 +522,8 @@ export class LiveGiftingService {
   }): Promise<LiveGift> {
     const catalog = this.GIFT_CATALOG.find(g => g.id === params.giftType);
     if (!catalog) throw new Error(`Invalid gift type: ${params.giftType}`);
-    if (!catalog.isAvailable) throw new Error(`Gift ${params.giftType} is not available`);
+    if (!catalog.isAvailable)
+      throw new Error(`Gift ${params.giftType} is not available`);
 
     const giftId = `gift_${Date.now()}_${++this.giftCounter}`;
     const gift: LiveGift = {
@@ -442,13 +561,24 @@ export class LiveGiftingService {
     platformRevenue: number;
     topGifters: { userId: number; totalUsd: number; giftCount: number }[];
   }> {
-    const streamGifts = Array.from(this.gifts.values()).filter(g => g.streamId === streamId);
+    const streamGifts = Array.from(this.gifts.values()).filter(
+      g => g.streamId === streamId
+    );
     const totalUsdValue = streamGifts.reduce((sum, g) => sum + g.usdValue, 0);
-    const creatorRevenue = streamGifts.reduce((sum, g) => sum + g.usdValue * (g.creatorRevenuePercent / 100), 0);
+    const creatorRevenue = streamGifts.reduce(
+      (sum, g) => sum + g.usdValue * (g.creatorRevenuePercent / 100),
+      0
+    );
 
-    const gifterMap = new Map<number, { totalUsd: number; giftCount: number }>();
+    const gifterMap = new Map<
+      number,
+      { totalUsd: number; giftCount: number }
+    >();
     for (const gift of streamGifts) {
-      const existing = gifterMap.get(gift.senderId) || { totalUsd: 0, giftCount: 0 };
+      const existing = gifterMap.get(gift.senderId) || {
+        totalUsd: 0,
+        giftCount: 0,
+      };
       gifterMap.set(gift.senderId, {
         totalUsd: existing.totalUsd + gift.usdValue,
         giftCount: existing.giftCount + gift.quantity,
@@ -472,7 +602,10 @@ export class LiveGiftingService {
   async getCreatorGiftRevenue(creatorId: number, since: Date): Promise<number> {
     return Array.from(this.gifts.values())
       .filter(g => g.recipientId === creatorId && g.timestamp >= since)
-      .reduce((sum, g) => sum + g.usdValue * (g.creatorRevenuePercent / 100), 0);
+      .reduce(
+        (sum, g) => sum + g.usdValue * (g.creatorRevenuePercent / 100),
+        0
+      );
   }
 
   getGiftCatalog(): GiftCatalog[] {
@@ -515,9 +648,13 @@ export class StreamBattleService {
     return battle;
   }
 
-  async acceptBattle(battleId: string, challengedStreamId: string): Promise<StreamBattle> {
+  async acceptBattle(
+    battleId: string,
+    challengedStreamId: string
+  ): Promise<StreamBattle> {
     const battle = this.battles.get(battleId);
-    if (!battle || battle.status !== "pending") throw new Error("Battle not found or already started");
+    if (!battle || battle.status !== "pending")
+      throw new Error("Battle not found or already started");
 
     battle.challengedStreamId = challengedStreamId;
     battle.status = "active";
@@ -534,7 +671,11 @@ export class StreamBattleService {
     return true;
   }
 
-  async addScore(battleId: string, creatorId: number, points: number): Promise<void> {
+  async addScore(
+    battleId: string,
+    creatorId: number,
+    points: number
+  ): Promise<void> {
     const battle = this.battles.get(battleId);
     if (!battle || battle.status !== "active") return;
 
@@ -551,9 +692,10 @@ export class StreamBattleService {
 
     battle.status = "completed";
     battle.endTime = new Date();
-    battle.winnerId = battle.challengerScore >= battle.challengedScore
-      ? battle.challengerId
-      : battle.challengedId;
+    battle.winnerId =
+      battle.challengerScore >= battle.challengedScore
+        ? battle.challengerId
+        : battle.challengedId;
 
     return battle;
   }
@@ -622,7 +764,11 @@ export class StreamSchedulerService {
     return schedule;
   }
 
-  async updateSchedule(scheduleId: string, creatorId: number, updates: Partial<StreamSchedule>): Promise<StreamSchedule | null> {
+  async updateSchedule(
+    scheduleId: string,
+    creatorId: number,
+    updates: Partial<StreamSchedule>
+  ): Promise<StreamSchedule | null> {
     const schedule = this.schedules.get(scheduleId);
     if (!schedule || schedule.creatorId !== creatorId) return null;
 
@@ -630,7 +776,10 @@ export class StreamSchedulerService {
     return schedule;
   }
 
-  async cancelSchedule(scheduleId: string, creatorId: number): Promise<boolean> {
+  async cancelSchedule(
+    scheduleId: string,
+    creatorId: number
+  ): Promise<boolean> {
     const schedule = this.schedules.get(scheduleId);
     if (!schedule || schedule.creatorId !== creatorId) return false;
     this.schedules.delete(scheduleId);
@@ -644,14 +793,18 @@ export class StreamSchedulerService {
     return true;
   }
 
-  async getUpcomingSchedules(params: {
-    creatorId?: number;
-    category?: string;
-    limit?: number;
-    hoursAhead?: number;
-  } = {}): Promise<StreamSchedule[]> {
+  async getUpcomingSchedules(
+    params: {
+      creatorId?: number;
+      category?: string;
+      limit?: number;
+      hoursAhead?: number;
+    } = {}
+  ): Promise<StreamSchedule[]> {
     const now = new Date();
-    const cutoff = new Date(now.getTime() + (params.hoursAhead || 168) * 3600000); // 1 week default
+    const cutoff = new Date(
+      now.getTime() + (params.hoursAhead || 168) * 3600000
+    ); // 1 week default
 
     return Array.from(this.schedules.values())
       .filter(s => s.scheduledAt >= now && s.scheduledAt <= cutoff)
@@ -668,8 +821,10 @@ export class StreamSchedulerService {
 
     return Array.from(this.schedules.values()).filter(s => {
       const timeUntil = s.scheduledAt.getTime() - now.getTime();
-      return (timeUntil > 0 && timeUntil <= 15 * 60000 && s.remindersSent === 0) ||
-             (timeUntil > 0 && timeUntil <= 60 * 60000 && s.remindersSent === 1);
+      return (
+        (timeUntil > 0 && timeUntil <= 15 * 60000 && s.remindersSent === 0) ||
+        (timeUntil > 0 && timeUntil <= 60 * 60000 && s.remindersSent === 1)
+      );
     });
   }
 
@@ -730,8 +885,9 @@ export class PremiumStreamService {
   }
 
   async getStreamAccessList(streamId: string): Promise<PremiumStreamAccess[]> {
-    return Array.from(this.accessRecords.values())
-      .filter(a => a.streamId === streamId && a.isActive);
+    return Array.from(this.accessRecords.values()).filter(
+      a => a.streamId === streamId && a.isActive
+    );
   }
 
   async getStreamRevenue(streamId: string): Promise<number> {
@@ -764,7 +920,12 @@ export class StreamMembershipService {
       monthlyPrice: 9.99,
       badgeEmoji: "🥈",
       color: "#C0C0C0",
-      perks: ["All Bronze perks", "Sub-only chat", "Priority queue", "Monthly sticker pack"],
+      perks: [
+        "All Bronze perks",
+        "Sub-only chat",
+        "Priority queue",
+        "Monthly sticker pack",
+      ],
     },
     {
       tier: "gold",
@@ -772,7 +933,12 @@ export class StreamMembershipService {
       monthlyPrice: 19.99,
       badgeEmoji: "🥇",
       color: "#FFD700",
-      perks: ["All Silver perks", "VOD access", "Discord role", "Monthly Q&A session"],
+      perks: [
+        "All Silver perks",
+        "VOD access",
+        "Discord role",
+        "Monthly Q&A session",
+      ],
     },
     {
       tier: "platinum",
@@ -780,7 +946,12 @@ export class StreamMembershipService {
       monthlyPrice: 49.99,
       badgeEmoji: "💿",
       color: "#E5E4E2",
-      perks: ["All Gold perks", "1-on-1 monthly chat", "Early stream access", "Creator merch discount"],
+      perks: [
+        "All Gold perks",
+        "1-on-1 monthly chat",
+        "Early stream access",
+        "Creator merch discount",
+      ],
     },
     {
       tier: "diamond",
@@ -788,7 +959,12 @@ export class StreamMembershipService {
       monthlyPrice: 99.99,
       badgeEmoji: "💎",
       color: "#B9F2FF",
-      perks: ["All Platinum perks", "Co-stream invite", "Name in credits", "Custom emote design"],
+      perks: [
+        "All Platinum perks",
+        "Co-stream invite",
+        "Name in credits",
+        "Custom emote design",
+      ],
     },
   ];
 
@@ -798,7 +974,9 @@ export class StreamMembershipService {
     userId: number;
     tier: MembershipTier;
   }): Promise<StreamMembership> {
-    const tierConfig = this.DEFAULT_TIER_CONFIGS.find(t => t.tier === params.tier);
+    const tierConfig = this.DEFAULT_TIER_CONFIGS.find(
+      t => t.tier === params.tier
+    );
     if (!tierConfig) throw new Error(`Invalid membership tier: ${params.tier}`);
 
     const membershipId = `mem_${Date.now()}_${++this.membershipCounter}`;
@@ -822,7 +1000,10 @@ export class StreamMembershipService {
     return membership;
   }
 
-  async getMembership(streamId: string, userId: number): Promise<StreamMembership | null> {
+  async getMembership(
+    streamId: string,
+    userId: number
+  ): Promise<StreamMembership | null> {
     return this.memberships.get(`${streamId}_${userId}`) || null;
   }
 
@@ -832,15 +1013,22 @@ export class StreamMembershipService {
     monthlyRevenue: number;
     members: StreamMembership[];
   }> {
-    const creatorMemberships = Array.from(this.memberships.values())
-      .filter(m => m.creatorId === creatorId && m.isActive);
+    const creatorMemberships = Array.from(this.memberships.values()).filter(
+      m => m.creatorId === creatorId && m.isActive
+    );
 
-    const byTier = creatorMemberships.reduce((acc, m) => {
-      acc[m.tier] = (acc[m.tier] || 0) + 1;
-      return acc;
-    }, {} as Record<MembershipTier, number>);
+    const byTier = creatorMemberships.reduce(
+      (acc, m) => {
+        acc[m.tier] = (acc[m.tier] || 0) + 1;
+        return acc;
+      },
+      {} as Record<MembershipTier, number>
+    );
 
-    const monthlyRevenue = creatorMemberships.reduce((sum, m) => sum + m.monthlyPrice, 0);
+    const monthlyRevenue = creatorMemberships.reduce(
+      (sum, m) => sum + m.monthlyPrice,
+      0
+    );
 
     return {
       total: creatorMemberships.length,
@@ -858,7 +1046,10 @@ export class StreamMembershipService {
     return true;
   }
 
-  async renewMembership(streamId: string, userId: number): Promise<StreamMembership | null> {
+  async renewMembership(
+    streamId: string,
+    userId: number
+  ): Promise<StreamMembership | null> {
     const key = `${streamId}_${userId}`;
     const membership = this.memberships.get(key);
     if (!membership) return null;
@@ -877,7 +1068,10 @@ export class StreamHighlightService {
   private highlights: Map<string, StreamHighlight[]> = new Map();
   private highlightCounter = 0;
 
-  async detectHighlights(streamId: string, chatMessages: { content: string; timestamp: number }[]): Promise<StreamHighlight[]> {
+  async detectHighlights(
+    streamId: string,
+    chatMessages: { content: string; timestamp: number }[]
+  ): Promise<StreamHighlight[]> {
     // AI-powered highlight detection based on chat activity spikes
     const highlights: StreamHighlight[] = [];
 
@@ -890,7 +1084,8 @@ export class StreamHighlightService {
       messagesByWindow.set(window, (messagesByWindow.get(window) || 0) + 1);
     }
 
-    const avgMessages = chatMessages.length / Math.max(1, messagesByWindow.size);
+    const avgMessages =
+      chatMessages.length / Math.max(1, messagesByWindow.size);
     const spikeThreshold = avgMessages * 3; // 3x average = highlight
 
     for (const [window, count] of messagesByWindow.entries()) {
@@ -910,7 +1105,7 @@ export class StreamHighlightService {
           clipUrl: `https://cdn.skycoin4444.com/media/highlights/${highlightId}/clip.mp4`,
           thumbnailUrl: `https://cdn.skycoin4444.com/media/highlights/${highlightId}/thumb.jpg`,
           aiGenerated: true,
-          aiConfidence: Math.min(0.99, count / spikeThreshold * 0.8),
+          aiConfidence: Math.min(0.99, (count / spikeThreshold) * 0.8),
           viewCount: 0,
           shareCount: 0,
           createdAt: new Date(),
@@ -975,7 +1170,10 @@ export class StreamHighlightService {
 export class StreamAnalyticsDashboardService {
   private snapshots: Map<string, StreamAnalyticsSnapshot[]> = new Map();
 
-  async recordSnapshot(streamId: string, data: Omit<StreamAnalyticsSnapshot, "streamId" | "timestamp">): Promise<void> {
+  async recordSnapshot(
+    streamId: string,
+    data: Omit<StreamAnalyticsSnapshot, "streamId" | "timestamp">
+  ): Promise<void> {
     const snapshot: StreamAnalyticsSnapshot = {
       streamId,
       timestamp: new Date(),
@@ -995,7 +1193,12 @@ export class StreamAnalyticsDashboardService {
   async getStreamAnalytics(streamId: string): Promise<{
     current: StreamAnalyticsSnapshot | null;
     peak: Partial<StreamAnalyticsSnapshot>;
-    totals: { views: number; revenue: number; followers: number; subscribers: number };
+    totals: {
+      views: number;
+      revenue: number;
+      followers: number;
+      subscribers: number;
+    };
     timeline: StreamAnalyticsSnapshot[];
   }> {
     const snaps = this.snapshots.get(streamId) || [];
@@ -1003,7 +1206,10 @@ export class StreamAnalyticsDashboardService {
 
     const peak = {
       concurrentViewers: Math.max(0, ...snaps.map(s => s.concurrentViewers)),
-      chatMessagesPerMinute: Math.max(0, ...snaps.map(s => s.chatMessagesPerMinute)),
+      chatMessagesPerMinute: Math.max(
+        0,
+        ...snaps.map(s => s.chatMessagesPerMinute)
+      ),
       giftsPerMinute: Math.max(0, ...snaps.map(s => s.giftsPerMinute)),
     };
 
@@ -1017,12 +1223,17 @@ export class StreamAnalyticsDashboardService {
     return { current, peak, totals, timeline: snaps.slice(-60) }; // Last 60 snapshots
   }
 
-  async getCreatorStreamHistory(creatorId: number, limit = 10): Promise<{
-    streamId: string;
-    peakViewers: number;
-    totalRevenue: number;
-    duration: number;
-  }[]> {
+  async getCreatorStreamHistory(
+    creatorId: number,
+    limit = 10
+  ): Promise<
+    {
+      streamId: string;
+      peakViewers: number;
+      totalRevenue: number;
+      duration: number;
+    }[]
+  > {
     // In production: query from database
     return [];
   }
@@ -1042,28 +1253,90 @@ export const streamMemberships = new StreamMembershipService();
 export const streamHighlights = new StreamHighlightService();
 export const streamAnalyticsDashboard = new StreamAnalyticsDashboardService();
 
-
 // ─── ROUTER COMPATIBILITY FACADE ─────────────────────────────────────────────
 export const streamingCore = {
-  createStreamSession(params: { creatorId: number; title: string; description?: string; category?: string; tags?: string[]; isPremium?: boolean; premiumPrice?: number; scheduledFor?: Date }) {
-    return rtmpIngest.generateStreamKey(params.creatorId, `stream_${Date.now()}`).then(key => ({
-      sessionId: key.streamId, streamKey: key.key, ingestUrl: key.ingestUrl, creatorId: params.creatorId, title: params.title, status: "created",
-    }));
+  createStreamSession(params: {
+    creatorId: number;
+    title: string;
+    description?: string;
+    category?: string;
+    tags?: string[];
+    isPremium?: boolean;
+    premiumPrice?: number;
+    scheduledFor?: Date;
+  }) {
+    return rtmpIngest
+      .generateStreamKey(params.creatorId, `stream_${Date.now()}`)
+      .then(key => ({
+        sessionId: key.streamId,
+        streamKey: key.key,
+        ingestUrl: key.ingestUrl,
+        creatorId: params.creatorId,
+        title: params.title,
+        status: "created",
+      }));
   },
   goLive(sessionId: string, creatorId: number, _rtmpUrl?: string) {
-    return Promise.resolve({ sessionId, creatorId, status: "live", startedAt: new Date() });
+    return Promise.resolve({
+      sessionId,
+      creatorId,
+      status: "live",
+      startedAt: new Date(),
+    });
   },
   endStream(sessionId: string, creatorId: number) {
-    return Promise.resolve({ sessionId, creatorId, status: "ended", endedAt: new Date() });
+    return Promise.resolve({
+      sessionId,
+      creatorId,
+      status: "ended",
+      endedAt: new Date(),
+    });
   },
-  sendGift(params: { senderId: number; sessionId: string; giftType: string; quantity: number; message?: string }) {
-    return liveGifting.sendGift({ streamId: params.sessionId, senderId: params.senderId, recipientId: 0, giftType: params.giftType as any, quantity: params.quantity, message: params.message });
+  sendGift(params: {
+    senderId: number;
+    sessionId: string;
+    giftType: string;
+    quantity: number;
+    message?: string;
+  }) {
+    return liveGifting.sendGift({
+      streamId: params.sessionId,
+      senderId: params.senderId,
+      recipientId: 0,
+      giftType: params.giftType as any,
+      quantity: params.quantity,
+      message: params.message,
+    });
   },
-  startStreamBattle(sessionId: string, _opponentSessionId: string, creatorId: number, durationMinutes: number) {
-    return streamBattles.challengeCreator({ challengerId: creatorId, challengedId: 0, challengerStreamId: sessionId, durationSeconds: durationMinutes * 60 });
+  startStreamBattle(
+    sessionId: string,
+    _opponentSessionId: string,
+    creatorId: number,
+    durationMinutes: number
+  ) {
+    return streamBattles.challengeCreator({
+      challengerId: creatorId,
+      challengedId: 0,
+      challengerStreamId: sessionId,
+      durationSeconds: durationMinutes * 60,
+    });
   },
-  scheduleStream(params: { creatorId: number; title: string; scheduledFor: Date; category?: string; description?: string; isPremium?: boolean }) {
-    return (streamScheduler as any).createSchedule({ creatorId: params.creatorId, title: params.title, scheduledFor: params.scheduledFor, category: params.category, description: (params.description || '') as string, isPremium: params.isPremium });
+  scheduleStream(params: {
+    creatorId: number;
+    title: string;
+    scheduledFor: Date;
+    category?: string;
+    description?: string;
+    isPremium?: boolean;
+  }) {
+    return (streamScheduler as any).createSchedule({
+      creatorId: params.creatorId,
+      title: params.title,
+      scheduledFor: params.scheduledFor,
+      category: params.category,
+      description: (params.description || "") as string,
+      isPremium: params.isPremium,
+    });
   },
   getLiveStreams(_category?: string, _limit = 20) {
     return Promise.resolve([]);

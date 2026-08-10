@@ -5,9 +5,32 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, Zap, Heart, Flame, Star, Trophy, Sparkles, Users, TrendingUp } from "lucide-react";
+import {
+  ArrowLeft,
+  Zap,
+  Heart,
+  Flame,
+  Star,
+  Trophy,
+  Sparkles,
+  Users,
+  TrendingUp,
+} from "lucide-react";
 
-const REACTION_EMOJIS = ["❤️", "🔥", "⚡", "🚀", "💎", "👑", "🎉", "💯", "🌟", "😍", "🤯", "💪"];
+const REACTION_EMOJIS = [
+  "❤️",
+  "🔥",
+  "⚡",
+  "🚀",
+  "💎",
+  "👑",
+  "🎉",
+  "💯",
+  "🌟",
+  "😍",
+  "🤯",
+  "💪",
+];
 
 interface FloatingReaction {
   id: string;
@@ -50,26 +73,40 @@ export default function LiveReactions() {
   // Simulate incoming reactions from other users
   useEffect(() => {
     intervalRef.current = setInterval(() => {
-      const randomEmoji = REACTION_EMOJIS[Math.floor(Math.random() * REACTION_EMOJIS.length)];
+      const randomEmoji =
+        REACTION_EMOJIS[Math.floor(Math.random() * REACTION_EMOJIS.length)];
       const x = 10 + Math.random() * 80;
 
       setFloating(prev => [
         ...prev.slice(-30),
-        { id: Math.random().toString(36).slice(2), emoji: randomEmoji, x, createdAt: Date.now() }
+        {
+          id: Math.random().toString(36).slice(2),
+          emoji: randomEmoji,
+          x,
+          createdAt: Date.now(),
+        },
       ]);
 
-      setCounts(prev => prev.map(r =>
-        r.emoji === randomEmoji
-          ? { ...r, count: r.count + 1, recent: true }
-          : { ...r, recent: false }
-      ));
+      setCounts(prev =>
+        prev.map(r =>
+          r.emoji === randomEmoji
+            ? { ...r, count: r.count + 1, recent: true }
+            : { ...r, recent: false }
+        )
+      );
 
       setTotalReactions(prev => prev + 1);
-      setViewerCount(prev => prev + (Math.random() > 0.7 ? 1 : Math.random() > 0.8 ? -1 : 0));
-      setReactionRate(prev => Math.max(50, Math.min(500, prev + (Math.random() - 0.5) * 20)));
+      setViewerCount(
+        prev => prev + (Math.random() > 0.7 ? 1 : Math.random() > 0.8 ? -1 : 0)
+      );
+      setReactionRate(prev =>
+        Math.max(50, Math.min(500, prev + (Math.random() - 0.5) * 20))
+      );
     }, 400);
 
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, []);
 
   // Remove old floating reactions
@@ -85,11 +122,18 @@ export default function LiveReactions() {
     const x = 10 + Math.random() * 80;
     setFloating(prev => [
       ...prev,
-      { id: Math.random().toString(36).slice(2), emoji, x, createdAt: Date.now() }
+      {
+        id: Math.random().toString(36).slice(2),
+        emoji,
+        x,
+        createdAt: Date.now(),
+      },
     ]);
-    setCounts(prev => prev.map(r =>
-      r.emoji === emoji ? { ...r, count: r.count + 1, recent: true } : r
-    ));
+    setCounts(prev =>
+      prev.map(r =>
+        r.emoji === emoji ? { ...r, count: r.count + 1, recent: true } : r
+      )
+    );
     setTotalReactions(prev => prev + 1);
   }, []);
 
@@ -102,7 +146,11 @@ export default function LiveReactions() {
       <div className="border-b border-white/10 bg-black/40 backdrop-blur-sm sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/social">
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-white"
+            >
               <ArrowLeft className="w-4 h-4 mr-1" /> Back
             </Button>
           </Link>
@@ -112,8 +160,12 @@ export default function LiveReactions() {
             ● LIVE
           </Badge>
           <div className="ml-auto flex items-center gap-3 text-sm text-gray-400">
-            <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {viewerCount.toLocaleString()}</span>
-            <span className="flex items-center gap-1 text-yellow-400"><TrendingUp className="w-3 h-3" /> {Math.round(reactionRate)}/min</span>
+            <span className="flex items-center gap-1">
+              <Users className="w-3 h-3" /> {viewerCount.toLocaleString()}
+            </span>
+            <span className="flex items-center gap-1 text-yellow-400">
+              <TrendingUp className="w-3 h-3" /> {Math.round(reactionRate)}/min
+            </span>
           </div>
         </div>
       </div>
@@ -123,7 +175,10 @@ export default function LiveReactions() {
           {/* Main reaction stage */}
           <div className="lg:col-span-2 space-y-4">
             {/* Floating reaction stage */}
-            <Card className="bg-black/60 border-white/10 relative overflow-hidden" style={{ height: 320 }}>
+            <Card
+              className="bg-black/60 border-white/10 relative overflow-hidden"
+              style={{ height: 320 }}
+            >
               <div ref={containerRef} className="absolute inset-0">
                 {/* Background glow */}
                 <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-transparent" />
@@ -132,8 +187,12 @@ export default function LiveReactions() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-6xl mb-3">🌑</div>
-                    <p className="text-gray-500 text-sm">Live Stream / Post Preview</p>
-                    <p className="text-gray-600 text-xs mt-1">Reactions overlay here in real streams</p>
+                    <p className="text-gray-500 text-sm">
+                      Live Stream / Post Preview
+                    </p>
+                    <p className="text-gray-600 text-xs mt-1">
+                      Reactions overlay here in real streams
+                    </p>
                   </div>
                 </div>
 
@@ -203,8 +262,12 @@ export default function LiveReactions() {
             <Card className="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 border-yellow-500/20">
               <CardContent className="p-4 text-center">
                 <div className="text-5xl mb-2">{topReaction?.emoji}</div>
-                <div className="text-xl font-bold text-yellow-400">{topReaction?.count.toLocaleString()}</div>
-                <div className="text-xs text-gray-400">Most popular reaction</div>
+                <div className="text-xl font-bold text-yellow-400">
+                  {topReaction?.count.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-400">
+                  Most popular reaction
+                </div>
               </CardContent>
             </Card>
 
@@ -212,19 +275,27 @@ export default function LiveReactions() {
             <Card className="bg-black/40 border-white/10">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-yellow-400" /> Reaction Leaderboard
+                  <Trophy className="w-4 h-4 text-yellow-400" /> Reaction
+                  Leaderboard
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {sortedCounts.map((r, i) => {
                   const pct = Math.round((r.count / totalReactions) * 100);
                   return (
-                    <div key={r.emoji} className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${r.recent ? "bg-purple-500/10" : ""}`}>
-                      <span className="text-xs text-gray-500 w-4">#{i + 1}</span>
+                    <div
+                      key={r.emoji}
+                      className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${r.recent ? "bg-purple-500/10" : ""}`}
+                    >
+                      <span className="text-xs text-gray-500 w-4">
+                        #{i + 1}
+                      </span>
                       <span className="text-lg">{r.emoji}</span>
                       <div className="flex-1">
                         <div className="flex justify-between text-xs mb-0.5">
-                          <span className="text-gray-300">{r.count.toLocaleString()}</span>
+                          <span className="text-gray-300">
+                            {r.count.toLocaleString()}
+                          </span>
                           <span className="text-gray-500">{pct}%</span>
                         </div>
                         <div className="h-1 bg-white/10 rounded-full overflow-hidden">
@@ -249,17 +320,42 @@ export default function LiveReactions() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
-                  { label: "Viewers", value: viewerCount.toLocaleString(), icon: Users, color: "text-blue-400" },
-                  { label: "Total Reactions", value: totalReactions.toLocaleString(), icon: Heart, color: "text-pink-400" },
-                  { label: "Reactions/min", value: Math.round(reactionRate).toString(), icon: TrendingUp, color: "text-yellow-400" },
-                  { label: "Unique Reactors", value: Math.round(viewerCount * 0.73).toLocaleString(), icon: Star, color: "text-green-400" },
+                  {
+                    label: "Viewers",
+                    value: viewerCount.toLocaleString(),
+                    icon: Users,
+                    color: "text-blue-400",
+                  },
+                  {
+                    label: "Total Reactions",
+                    value: totalReactions.toLocaleString(),
+                    icon: Heart,
+                    color: "text-pink-400",
+                  },
+                  {
+                    label: "Reactions/min",
+                    value: Math.round(reactionRate).toString(),
+                    icon: TrendingUp,
+                    color: "text-yellow-400",
+                  },
+                  {
+                    label: "Unique Reactors",
+                    value: Math.round(viewerCount * 0.73).toLocaleString(),
+                    icon: Star,
+                    color: "text-green-400",
+                  },
                 ].map(stat => (
-                  <div key={stat.label} className="flex items-center justify-between">
+                  <div
+                    key={stat.label}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-2 text-sm text-gray-400">
                       <stat.icon className={`w-3 h-3 ${stat.color}`} />
                       {stat.label}
                     </div>
-                    <span className={`text-sm font-bold ${stat.color}`}>{stat.value}</span>
+                    <span className={`text-sm font-bold ${stat.color}`}>
+                      {stat.value}
+                    </span>
                   </div>
                 ))}
               </CardContent>

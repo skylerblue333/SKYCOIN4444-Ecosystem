@@ -9,11 +9,14 @@ export class AutoPublishService {
 
   start() {
     console.log("[AutoPublish] Service started");
-    
+
     // Publish every 5 minutes
-    this.publishInterval = setInterval(() => {
-      this.attemptPublish();
-    }, 5 * 60 * 1000);
+    this.publishInterval = setInterval(
+      () => {
+        this.attemptPublish();
+      },
+      5 * 60 * 1000
+    );
 
     // Initial publish
     this.attemptPublish();

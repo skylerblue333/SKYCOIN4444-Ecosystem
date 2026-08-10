@@ -1,10 +1,11 @@
 // @ts-nocheck
-import React, { useState } from 'react';
-import { trpc } from '@/lib/trpc';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users,
   BarChart3,
@@ -14,44 +15,37 @@ import {
   Trash2,
   Ban,
   CheckCircle,
-} from 'lucide-react';
+} from "lucide-react";
 
 export default function AdminDashboard() {
+  const { user, isAuthenticated } = useAuth();
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch admin stats
-  const { data: stats } = trpc.admin.getStats.useQuery();
+  const { data: stats } = trpc.admin.getSystemStats.useQuery();
 
   // Fetch users list
-  const { data: users } = trpc.admin.listUsers.useQuery({
-    search: searchQuery || undefined,
-    limit: 50,
-    page: 1,
-  });
+  const { data: users } = trpc.admin.getUsers.useQuery();
 
   // Fetch audit logs
-  const { data: auditLogs } = trpc.admin.getAuditLogs.useQuery({
-    limit: 20,
-  });
+  const { data: auditLogs } = trpc.admin.getReports.useQuery();
 
   // Fetch reports
-  const { data: reports } = trpc.admin.getReports.useQuery({
-    limit: 20,
-  });
+  const { data: reports } = trpc.admin.getReports.useQuery();
 
   // Ban user mutation
   const banUserMutation = trpc.admin.banUser.useMutation({
     onSuccess: () => {
-      alert('User banned');
-      trpc.useUtils().admin.listUsers.invalidate();
+      alert("User banned");
+      trpc.useUtils().admin.getUsers.invalidate();
     },
   });
 
   // Approve report mutation
-  const approveReportMutation = trpc.admin.approveReport.useMutation({
+  const approveReportMutation = trpc.admin.banUser.useMutation({
     onSuccess: () => {
-      alert('Report approved');
+      alert("Report approved");
       trpc.useUtils().admin.getReports.invalidate();
     },
   });
@@ -62,7 +56,9 @@ export default function AdminDashboard() {
       <div className="border-b bg-card p-6">
         <div className="mx-auto max-w-7xl">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Platform management and monitoring</p>
+          <p className="text-muted-foreground mt-1">
+            Platform management and monitoring
+          </p>
         </div>
       </div>
 
@@ -73,8 +69,12 @@ export default function AdminDashboard() {
           <Card className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Total Users</p>
-                <p className="text-3xl font-bold">{stats?.totalUsers.toLocaleString()}</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Total Users
+                </p>
+                <p className="text-3xl font-bold">
+                  {stats?.totalUsers.toLocaleString()}
+                </p>
               </div>
               <Users className="h-8 w-8 text-blue-600" />
             </div>
@@ -86,33 +86,43 @@ export default function AdminDashboard() {
           <Card className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Active Sessions</p>
-                <p className="text-3xl font-bold">{stats?.activeSessions.toLocaleString()}</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Active Sessions
+                </p>
+                <p className="text-3xl font-bold">
+                  {stats?.activeSessions.toLocaleString()}
+                </p>
               </div>
               <TrendingUp className="h-8 w-8 text-purple-400" />
             </div>
             <p className="text-xs text-muted-foreground mt-3">
-              {((stats?.activeSessions || 0) / (stats?.totalUsers || 1) * 100).toFixed(1)}% online
+              {(
+                ((stats?.activeSessions || 0) / (stats?.totalUsers || 1)) *
+                100
+              ).toFixed(1)}
+              % online
             </p>
           </Card>
 
           <Card className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Pending Reports</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Pending Reports
+                </p>
                 <p className="text-3xl font-bold">{stats?.pendingReports}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-red-600" />
             </div>
-            <p className="text-xs text-red-600 mt-3">
-              Requires attention
-            </p>
+            <p className="text-xs text-red-600 mt-3">Requires attention</p>
           </Card>
 
           <Card className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">System Health</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  System Health
+                </p>
                 <p className="text-3xl font-bold">{stats?.systemHealth}%</p>
               </div>
               <BarChart3 className="h-8 w-8 text-purple-600" />
@@ -140,7 +150,7 @@ export default function AdminDashboard() {
                 <Input
                   placeholder="Search users..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="max-w-xs"
                 />
               </div>
@@ -149,30 +159,45 @@ export default function AdminDashboard() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-semibold">User</th>
-                      <th className="text-left py-3 px-4 font-semibold">Email</th>
-                      <th className="text-left py-3 px-4 font-semibold">Status</th>
-                      <th className="text-left py-3 px-4 font-semibold">Joined</th>
-                      <th className="text-left py-3 px-4 font-semibold">Actions</th>
+                      <th className="text-left py-3 px-4 font-semibold">
+                        User
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold">
+                        Email
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold">
+                        Status
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold">
+                        Joined
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {users?.users && users.users.length > 0 ? (
                       users.users.map((user: any) => (
-                        <tr key={user.id} className="border-b hover:bg-accent/5">
+                        <tr
+                          key={user.id}
+                          className="border-b hover:bg-accent/5"
+                        >
                           <td className="py-3 px-4">
                             <div>
                               <p className="font-semibold">{user.name}</p>
-                              <p className="text-xs text-muted-foreground">{user.id}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {user.id}
+                              </p>
                             </div>
                           </td>
                           <td className="py-3 px-4">{user.email}</td>
                           <td className="py-3 px-4">
                             <span
                               className={`px-2 py-1 rounded text-xs font-semibold ${
-                                user.status === 'active'
-                                  ? 'bg-purple-600/10 text-purple-400'
-                                  : 'bg-red-500/10 text-red-700'
+                                user.status === "active"
+                                  ? "bg-purple-600/10 text-purple-400"
+                                  : "bg-red-500/10 text-red-700"
                               }`}
                             >
                               {user.status}
@@ -193,7 +218,9 @@ export default function AdminDashboard() {
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => banUserMutation.mutate({ userId: user.id })}
+                                onClick={() =>
+                                  banUserMutation.mutate({ userId: user.id })
+                                }
                                 disabled={banUserMutation.isPending}
                               >
                                 <Ban className="h-4 w-4" />
@@ -204,7 +231,10 @@ export default function AdminDashboard() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                        <td
+                          colSpan={5}
+                          className="py-8 text-center text-muted-foreground"
+                        >
                           No users found
                         </td>
                       </tr>
@@ -232,9 +262,9 @@ export default function AdminDashboard() {
                           <p className="font-semibold">{report.type}</p>
                           <span
                             className={`px-2 py-1 rounded text-xs font-semibold ${
-                              report.priority === 'high'
-                                ? 'bg-red-500/10 text-red-700'
-                                : 'bg-yellow-500/10 text-yellow-700'
+                              report.priority === "high"
+                                ? "bg-red-500/10 text-red-700"
+                                : "bg-yellow-500/10 text-yellow-700"
                             }`}
                           >
                             {report.priority}
@@ -244,13 +274,18 @@ export default function AdminDashboard() {
                           {report.description}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Reported by {report.reporterName} • {new Date(report.createdAt).toLocaleDateString()}
+                          Reported by {report.reporterName} •{" "}
+                          {new Date(report.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          onClick={() => approveReportMutation.mutate({ reportId: report.id })}
+                          onClick={() =>
+                            approveReportMutation.mutate({
+                              reportId: report.id,
+                            })
+                          }
                           disabled={approveReportMutation.isPending}
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
@@ -279,10 +314,7 @@ export default function AdminDashboard() {
               <div className="space-y-3">
                 {auditLogs && auditLogs.length > 0 ? (
                   auditLogs.map((log: any) => (
-                    <div
-                      key={log.id}
-                      className="p-3 border rounded-lg text-sm"
-                    >
+                    <div key={log.id} className="p-3 border rounded-lg text-sm">
                       <div className="flex justify-between mb-1">
                         <p className="font-semibold">{log.action}</p>
                         <p className="text-muted-foreground text-xs">

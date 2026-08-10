@@ -8,7 +8,7 @@
  * This component only shows a subtle ambient transcript toast when a command fires.
  */
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, ChevronRight } from "lucide-react";
+import { CheckCircle, ChevronRight } from "lucide-react";
 import { useGlobalVoiceEngine } from "@/hooks/useGlobalVoiceEngine";
 
 export function GlobalVoiceNav() {
@@ -62,7 +62,7 @@ export function GlobalVoiceNav() {
           backdropFilter: "blur(12px)",
         }}
       >
-        <CheckCircle2 className="w-3 h-3 text-cyan-400 shrink-0" />
+        <CheckCircle className="w-3 h-3 text-cyan-400 shrink-0" />
         <span>{voiceState.lastCommandLabel}</span>
         <ChevronRight className="w-3 h-3 text-cyan-500 shrink-0" />
       </div>

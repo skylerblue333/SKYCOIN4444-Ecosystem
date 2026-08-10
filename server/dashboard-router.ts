@@ -15,7 +15,7 @@ export const dashboardRouter = router({
       verified: true,
     };
   }),
-  
+
   getMetricsHistory: publicProcedure
     .input(z.object({ hours: z.number().default(24) }))
     .query(async ({ input }) => {
@@ -34,8 +34,18 @@ export const dashboardRouter = router({
 
   getAlerts: publicProcedure.query(async () => {
     return [
-      { id: "1", level: "info", message: "System operating normally", timestamp: Date.now() },
-      { id: "2", level: "warning", message: "API latency elevated", timestamp: Date.now() - 300000 },
+      {
+        id: "1",
+        level: "info",
+        message: "System operating normally",
+        timestamp: Date.now(),
+      },
+      {
+        id: "2",
+        level: "warning",
+        message: "API latency elevated",
+        timestamp: Date.now() - 300000,
+      },
     ];
   }),
 });

@@ -32,13 +32,13 @@ function AmbientNotificationLayer() {
   useEffect(() => {
     // Subscribe to key events for ambient notifications
     const unsubs = [
-      subscribe("action:completed", (event) => {
+      subscribe("action:completed", event => {
         console.log("[AppShell] Action completed:", event.payload);
       }),
-      subscribe("payment:confirmed", (event) => {
+      subscribe("payment:confirmed", event => {
         console.log("[AppShell] Payment confirmed:", event.payload);
       }),
-      subscribe("match:new", (event) => {
+      subscribe("match:new", event => {
         console.log("[AppShell] New match:", event.payload);
       }),
     ];

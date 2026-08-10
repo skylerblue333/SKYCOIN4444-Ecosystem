@@ -16,12 +16,16 @@ type PanelStatus = "live" | "static";
 
 function StatusBadge({ status }: { status: PanelStatus }) {
   return (
-    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-      status === "live"
-        ? "bg-purple-600/10 text-purple-400 border border-purple-500/20"
-        : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-    }`}>
-      {status === "live" && <div className="h-1.5 w-1.5 rounded-full bg-purple-600 animate-pulse" />}
+    <div
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+        status === "live"
+          ? "bg-purple-600/10 text-purple-400 border border-purple-500/20"
+          : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+      }`}
+    >
+      {status === "live" && (
+        <div className="h-1.5 w-1.5 rounded-full bg-purple-600 animate-pulse" />
+      )}
       {status === "live" ? "LIVE" : "STATIC"}
     </div>
   );
@@ -45,9 +49,12 @@ function PanelSkeleton() {
 }
 
 export default function ProofVault() {
-  const { data: revenue, isLoading: revLoading } = trpc.proofVault.revenue.useQuery();
-  const { data: treasury, isLoading: trsLoading } = trpc.proofVault.treasury.useQuery();
-  const { data: security, isLoading: secLoading } = trpc.proofVault.security.useQuery();
+  const { data: revenue, isLoading: revLoading } =
+    trpc.proofVault.revenue.useQuery();
+  const { data: treasury, isLoading: trsLoading } =
+    trpc.proofVault.treasury.useQuery();
+  const { data: security, isLoading: secLoading } =
+    trpc.proofVault.security.useQuery();
 
   const fmt = (n: number) => {
     if (n >= 1e9) return `$${(n / 1e9).toFixed(3)}B`;
@@ -65,14 +72,17 @@ export default function ProofVault() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/5 mb-6">
               <Activity className="h-3 w-3 text-primary" />
-              <span className="text-xs font-mono text-primary">PUBLIC TRANSPARENCY</span>
+              <span className="text-xs font-mono text-primary">
+                PUBLIC TRANSPARENCY
+              </span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Proof <span className="text-primary">Vault</span>
             </h1>
             <p className="text-lg text-muted-foreground">
-              Complete financial transparency. Every metric is sourced, labeled, and independently verifiable.
-              No hidden data. No simulated numbers.
+              Complete financial transparency. Every metric is sourced, labeled,
+              and independently verifiable. No hidden data. No simulated
+              numbers.
             </p>
           </div>
         </div>
@@ -82,7 +92,6 @@ export default function ProofVault() {
       <section className="pb-24">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
             {/* Revenue Panel - LIVE from tRPC */}
             <div className="stat-card">
               <div className="flex items-center justify-between mb-6">
@@ -99,19 +108,42 @@ export default function ProofVault() {
                 </div>
                 <StatusBadge status={revenue?.status ?? "live"} />
               </div>
-              {revLoading ? <PanelSkeleton /> : (
+              {revLoading ? (
+                <PanelSkeleton />
+              ) : (
                 <>
                   <div className="grid grid-cols-2 gap-3">
-                    <MetricCard label="Total Revenue" value={fmt(revenue?.data.totalRevenue ?? 0)} />
-                    <MetricCard label="Subscriptions" value={fmt(revenue?.data.subscriptions ?? 0)} />
-                    <MetricCard label="Marketplace" value={fmt(revenue?.data.marketplace ?? 0)} />
-                    <MetricCard label="Tips" value={fmt(revenue?.data.tips ?? 0)} />
-                    <MetricCard label="Stream Donations" value={fmt(revenue?.data.streamDonations ?? 0)} />
-                    <MetricCard label="Charity Donations" value={fmt(revenue?.data.charityDonations ?? 0)} />
+                    <MetricCard
+                      label="Total Revenue"
+                      value={fmt(revenue?.data.totalRevenue ?? 0)}
+                    />
+                    <MetricCard
+                      label="Subscriptions"
+                      value={fmt(revenue?.data.subscriptions ?? 0)}
+                    />
+                    <MetricCard
+                      label="Marketplace"
+                      value={fmt(revenue?.data.marketplace ?? 0)}
+                    />
+                    <MetricCard
+                      label="Tips"
+                      value={fmt(revenue?.data.tips ?? 0)}
+                    />
+                    <MetricCard
+                      label="Stream Donations"
+                      value={fmt(revenue?.data.streamDonations ?? 0)}
+                    />
+                    <MetricCard
+                      label="Charity Donations"
+                      value={fmt(revenue?.data.charityDonations ?? 0)}
+                    />
                   </div>
                   <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      Last updated: {revenue?.lastUpdated ? new Date(revenue.lastUpdated).toLocaleDateString() : "N/A"}
+                      Last updated:{" "}
+                      {revenue?.lastUpdated
+                        ? new Date(revenue.lastUpdated).toLocaleDateString()
+                        : "N/A"}
                     </span>
                     <button className="text-xs text-primary flex items-center gap-1 hover:underline">
                       Verify <ExternalLink className="h-3 w-3" />
@@ -137,20 +169,46 @@ export default function ProofVault() {
                 </div>
                 <StatusBadge status={treasury?.status ?? "live"} />
               </div>
-              {trsLoading ? <PanelSkeleton /> : (
+              {trsLoading ? (
+                <PanelSkeleton />
+              ) : (
                 <>
                   <div className="grid grid-cols-2 gap-3">
-                    <MetricCard label="Total Treasury" value={fmt(treasury?.data.total ?? 0)} />
-                    <MetricCard label="Staking Pool" value={fmt(treasury?.data.stakingPool ?? 0)} />
-                    <MetricCard label="Ecosystem Fund" value={fmt(treasury?.data.ecosystemFund ?? 0)} />
-                    <MetricCard label="Liquidity Pool" value={fmt(treasury?.data.liquidityPool ?? 0)} />
-                    <MetricCard label="Creator Fund" value={fmt(treasury?.data.creatorFund ?? 0)} />
-                    <MetricCard label="Operations" value={fmt(treasury?.data.operations ?? 0)} />
-                    <MetricCard label="Emergency Reserve" value={fmt(treasury?.data.emergencyReserve ?? 0)} />
+                    <MetricCard
+                      label="Total Treasury"
+                      value={fmt(treasury?.data.total ?? 0)}
+                    />
+                    <MetricCard
+                      label="Staking Pool"
+                      value={fmt(treasury?.data.stakingPool ?? 0)}
+                    />
+                    <MetricCard
+                      label="Ecosystem Fund"
+                      value={fmt(treasury?.data.ecosystemFund ?? 0)}
+                    />
+                    <MetricCard
+                      label="Liquidity Pool"
+                      value={fmt(treasury?.data.liquidityPool ?? 0)}
+                    />
+                    <MetricCard
+                      label="Creator Fund"
+                      value={fmt(treasury?.data.creatorFund ?? 0)}
+                    />
+                    <MetricCard
+                      label="Operations"
+                      value={fmt(treasury?.data.operations ?? 0)}
+                    />
+                    <MetricCard
+                      label="Emergency Reserve"
+                      value={fmt(treasury?.data.emergencyReserve ?? 0)}
+                    />
                   </div>
                   <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      Last updated: {treasury?.lastUpdated ? new Date(treasury.lastUpdated).toLocaleDateString() : "N/A"}
+                      Last updated:{" "}
+                      {treasury?.lastUpdated
+                        ? new Date(treasury.lastUpdated).toLocaleDateString()
+                        : "N/A"}
                     </span>
                     <button className="text-xs text-primary flex items-center gap-1 hover:underline">
                       Verify <ExternalLink className="h-3 w-3" />
@@ -186,7 +244,9 @@ export default function ProofVault() {
                 <MetricCard label="Premium Sub Burns" value="2,100,000" />
               </div>
               <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Source: On-chain burn events</span>
+                <span className="text-xs text-muted-foreground">
+                  Source: On-chain burn events
+                </span>
                 <button className="text-xs text-primary flex items-center gap-1 hover:underline">
                   Verify <ExternalLink className="h-3 w-3" />
                 </button>
@@ -218,7 +278,9 @@ export default function ProofVault() {
                 <MetricCard label="Unique Stakers" value="—" />
               </div>
               <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Source: Blockchain Explorer API</span>
+                <span className="text-xs text-muted-foreground">
+                  Source: Blockchain Explorer API
+                </span>
                 <button className="text-xs text-primary flex items-center gap-1 hover:underline">
                   Verify <ExternalLink className="h-3 w-3" />
                 </button>
@@ -250,7 +312,9 @@ export default function ProofVault() {
                 <MetricCard label="Audit Firm" value="OpenZeppelin" />
               </div>
               <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Source: CertiK, OpenZeppelin</span>
+                <span className="text-xs text-muted-foreground">
+                  Source: CertiK, OpenZeppelin
+                </span>
                 <button className="text-xs text-primary flex items-center gap-1 hover:underline">
                   View Reports <ExternalLink className="h-3 w-3" />
                 </button>
@@ -273,19 +337,42 @@ export default function ProofVault() {
                 </div>
                 <StatusBadge status={security?.status ?? "live"} />
               </div>
-              {secLoading ? <PanelSkeleton /> : (
+              {secLoading ? (
+                <PanelSkeleton />
+              ) : (
                 <>
                   <div className="grid grid-cols-2 gap-3">
-                    <MetricCard label="WAF Status" value={security?.data.wafStatus ?? "ACTIVE"} />
-                    <MetricCard label="SSL Grade" value={security?.data.sslGrade ?? "A+"} />
-                    <MetricCard label="AI Mod Actions" value={String(security?.data.aiModerationActions ?? 0)} />
-                    <MetricCard label="Total Mod Actions" value={String(security?.data.totalModerationActions ?? 0)} />
-                    <MetricCard label="Uptime (30d)" value={`${security?.data.uptime30d ?? 99.97}%`} />
-                    <MetricCard label="Last 30d Actions" value={String(security?.data.last30dActions ?? 0)} />
+                    <MetricCard
+                      label="WAF Status"
+                      value={security?.data.wafStatus ?? "ACTIVE"}
+                    />
+                    <MetricCard
+                      label="SSL Grade"
+                      value={security?.data.sslGrade ?? "A+"}
+                    />
+                    <MetricCard
+                      label="AI Mod Actions"
+                      value={String(security?.data.aiModerationActions ?? 0)}
+                    />
+                    <MetricCard
+                      label="Total Mod Actions"
+                      value={String(security?.data.totalModerationActions ?? 0)}
+                    />
+                    <MetricCard
+                      label="Uptime (30d)"
+                      value={`${security?.data.uptime30d ?? 99.97}%`}
+                    />
+                    <MetricCard
+                      label="Last 30d Actions"
+                      value={String(security?.data.last30dActions ?? 0)}
+                    />
                   </div>
                   <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      Last updated: {security?.lastUpdated ? new Date(security.lastUpdated).toLocaleDateString() : "N/A"}
+                      Last updated:{" "}
+                      {security?.lastUpdated
+                        ? new Date(security.lastUpdated).toLocaleDateString()
+                        : "N/A"}
                     </span>
                     <button className="text-xs text-primary flex items-center gap-1 hover:underline">
                       Verify <ExternalLink className="h-3 w-3" />
@@ -316,17 +403,21 @@ export default function ProofVault() {
                 <MetricCard label="Registration" value="Active" />
                 <MetricCard label="Terms of Service" value="Published" />
                 <MetricCard label="Privacy Policy" value="Published" />
-                <MetricCard label="Token Classification" value="Utility Token" />
+                <MetricCard
+                  label="Token Classification"
+                  value="Utility Token"
+                />
                 <MetricCard label="Compliance" value="GDPR + CCPA" />
               </div>
               <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Source: Internal Legal Team</span>
+                <span className="text-xs text-muted-foreground">
+                  Source: Internal Legal Team
+                </span>
                 <button className="text-xs text-primary flex items-center gap-1 hover:underline">
                   View Documents <ExternalLink className="h-3 w-3" />
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       </section>

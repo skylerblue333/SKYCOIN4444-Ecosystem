@@ -14,7 +14,9 @@ export interface UnifiedIdentity {
   bio: string;
   avatarUrl?: string;
   bannerUrl?: string;
-  verifiedBadges: Array<"creator" | "verified" | "institution" | "charity" | "partner" | "developer">;
+  verifiedBadges: Array<
+    "creator" | "verified" | "institution" | "charity" | "partner" | "developer"
+  >;
   socialLinks: Record<string, string>;
   // Wallet identity
   primaryWalletAddress?: string;
@@ -22,7 +24,8 @@ export interface UnifiedIdentity {
   totalWalletValue: number;
   // Creator identity
   isCreator: boolean;
-  creatorTier: "none" | "emerging" | "rising" | "established" | "elite" | "legendary";
+  creatorTier:
+    "none" | "emerging" | "rising" | "established" | "elite" | "legendary";
   creatorScore: number;
   totalFollowers: number;
   totalSubscribers: number;
@@ -38,7 +41,15 @@ export interface UnifiedIdentity {
   engagementLadderTier: string;
   governanceVotingPower: number;
   // Cross-system linkage
-  linkedSystems: Array<"social" | "streaming" | "marketplace" | "gaming" | "charity" | "staking" | "nft">;
+  linkedSystems: Array<
+    | "social"
+    | "streaming"
+    | "marketplace"
+    | "gaming"
+    | "charity"
+    | "staking"
+    | "nft"
+  >;
   lastUpdatedAt: Date;
   createdAt: Date;
 }
@@ -46,7 +57,13 @@ export interface UnifiedIdentity {
 export interface IdentityVerification {
   id: string;
   userId: number;
-  verificationType: "email" | "phone" | "kyc" | "wallet_ownership" | "social_oauth" | "institution";
+  verificationType:
+    | "email"
+    | "phone"
+    | "kyc"
+    | "wallet_ownership"
+    | "social_oauth"
+    | "institution";
   status: "pending" | "verified" | "failed" | "expired";
   verifiedAt?: Date;
   expiresAt?: Date;
@@ -85,7 +102,8 @@ export interface CrossSystemLink {
   entityAId: string;
   systemB: string;
   entityBId: string;
-  linkType: "created_from" | "references" | "rewards" | "unlocks" | "governs" | "funds";
+  linkType:
+    "created_from" | "references" | "rewards" | "unlocks" | "governs" | "funds";
   metadata: Record<string, unknown>;
   createdAt: Date;
 }
@@ -100,7 +118,13 @@ export interface PlatformValueScore {
   governanceScore: number;
   totalScore: number;
   percentile: number;
-  tier: "newcomer" | "member" | "contributor" | "power_user" | "ecosystem_pillar" | "legend";
+  tier:
+    | "newcomer"
+    | "member"
+    | "contributor"
+    | "power_user"
+    | "ecosystem_pillar"
+    | "legend";
   breakdown: Record<string, number>;
   calculatedAt: Date;
 }
@@ -126,7 +150,12 @@ export interface AudienceGraph {
   creatorId: number;
   totalFollowers: number;
   totalSubscribers: number;
-  topFans: Array<{ userId: number; lifetimeValue: number; watchHours: number; tier: string }>;
+  topFans: Array<{
+    userId: number;
+    lifetimeValue: number;
+    watchHours: number;
+    tier: string;
+  }>;
   demographicBreakdown: Record<string, number>;
   engagementRate: number;
   retentionRate: number;
@@ -191,7 +220,9 @@ const _trustHistories = new Map<number, TrustHistory>();
 // ─── UNIFIED IDENTITY ENGINE ──────────────────────────────────────────────────
 
 export const unifiedIdentityEngine = {
-  upsertIdentity(params: Partial<UnifiedIdentity> & { userId: number }): UnifiedIdentity {
+  upsertIdentity(
+    params: Partial<UnifiedIdentity> & { userId: number }
+  ): UnifiedIdentity {
     const existing = _unifiedIdentities.get(params.userId);
     if (existing) {
       Object.assign(existing, params);
@@ -233,7 +264,10 @@ export const unifiedIdentityEngine = {
     return _unifiedIdentities.get(userId) ?? null;
   },
 
-  addVerifiedBadge(userId: number, badge: UnifiedIdentity["verifiedBadges"][number]): UnifiedIdentity | null {
+  addVerifiedBadge(
+    userId: number,
+    badge: UnifiedIdentity["verifiedBadges"][number]
+  ): UnifiedIdentity | null {
     const identity = _unifiedIdentities.get(userId);
     if (!identity) return null;
     if (!identity.verifiedBadges.includes(badge)) {
@@ -248,13 +282,17 @@ export const unifiedIdentityEngine = {
     if (!identity) return null;
     if (!identity.linkedWallets.includes(walletAddress)) {
       identity.linkedWallets.push(walletAddress);
-      if (!identity.primaryWalletAddress) identity.primaryWalletAddress = walletAddress;
+      if (!identity.primaryWalletAddress)
+        identity.primaryWalletAddress = walletAddress;
       identity.lastUpdatedAt = new Date();
     }
     return identity;
   },
 
-  linkSystem(userId: number, system: UnifiedIdentity["linkedSystems"][number]): UnifiedIdentity | null {
+  linkSystem(
+    userId: number,
+    system: UnifiedIdentity["linkedSystems"][number]
+  ): UnifiedIdentity | null {
     const identity = _unifiedIdentities.get(userId);
     if (!identity) return null;
     if (!identity.linkedSystems.includes(system)) {
@@ -264,7 +302,9 @@ export const unifiedIdentityEngine = {
     return identity;
   },
 
-  addVerification(params: Omit<IdentityVerification, "id">): IdentityVerification {
+  addVerification(
+    params: Omit<IdentityVerification, "id">
+  ): IdentityVerification {
     const id = `verify_${params.userId}_${params.verificationType}`;
     const verification: IdentityVerification = { ...params, id };
     _identityVerifications.set(id, verification);
@@ -272,13 +312,19 @@ export const unifiedIdentityEngine = {
   },
 
   getVerifications(userId: number): IdentityVerification[] {
-    return Array.from(_identityVerifications.values()).filter(v => v.userId === userId);
+    return Array.from(_identityVerifications.values()).filter(
+      v => v.userId === userId
+    );
   },
 
   searchIdentities(query: string, limit = 20): UnifiedIdentity[] {
     const q = query.toLowerCase();
     return Array.from(_unifiedIdentities.values())
-      .filter(i => i.username.toLowerCase().includes(q) || i.displayName.toLowerCase().includes(q))
+      .filter(
+        i =>
+          i.username.toLowerCase().includes(q) ||
+          i.displayName.toLowerCase().includes(q)
+      )
       .slice(0, limit);
   },
 };
@@ -286,7 +332,10 @@ export const unifiedIdentityEngine = {
 // ─── CROSS-SYSTEM PERSISTENCE ENGINE ─────────────────────────────────────────
 
 export const crossSystemPersistence = {
-  updateActivityGraph(userId: number, updates: Partial<Omit<UserActivityGraph, "userId" | "lastUpdatedAt">>): UserActivityGraph {
+  updateActivityGraph(
+    userId: number,
+    updates: Partial<Omit<UserActivityGraph, "userId" | "lastUpdatedAt">>
+  ): UserActivityGraph {
     const existing = _activityGraphs.get(userId);
     if (existing) {
       for (const [key, value] of Object.entries(updates)) {
@@ -299,13 +348,24 @@ export const crossSystemPersistence = {
     }
     const graph: UserActivityGraph = {
       userId,
-      posts: 0, comments: 0, likes: 0, shares: 0,
-      streams: 0, streamWatchHours: 0,
-      nftsMinted: 0, nftsPurchased: 0,
-      marketplacePurchases: 0, marketplaceSales: 0,
-      communitiesJoined: 0, communitiesCreated: 0,
-      referrals: 0, donations: 0, governanceVotes: 0,
-      rewardsEarned: 0, totalTransactions: 0, totalValueTransacted: 0,
+      posts: 0,
+      comments: 0,
+      likes: 0,
+      shares: 0,
+      streams: 0,
+      streamWatchHours: 0,
+      nftsMinted: 0,
+      nftsPurchased: 0,
+      marketplacePurchases: 0,
+      marketplaceSales: 0,
+      communitiesJoined: 0,
+      communitiesCreated: 0,
+      referrals: 0,
+      donations: 0,
+      governanceVotes: 0,
+      rewardsEarned: 0,
+      totalTransactions: 0,
+      totalValueTransacted: 0,
       lastUpdatedAt: new Date(),
       ...updates,
     };
@@ -317,7 +377,9 @@ export const crossSystemPersistence = {
     return _activityGraphs.get(userId) ?? null;
   },
 
-  createCrossSystemLink(params: Omit<CrossSystemLink, "id" | "createdAt">): CrossSystemLink {
+  createCrossSystemLink(
+    params: Omit<CrossSystemLink, "id" | "createdAt">
+  ): CrossSystemLink {
     const id = `link_${params.userId}_${params.systemA}_${params.entityAId}_${params.systemB}_${params.entityBId}`;
     const link: CrossSystemLink = { ...params, id, createdAt: new Date() };
     _crossSystemLinks.set(id, link);
@@ -325,8 +387,10 @@ export const crossSystemPersistence = {
   },
 
   getEntityLinks(userId: number, system?: string): CrossSystemLink[] {
-    return Array.from(_crossSystemLinks.values()).filter(l =>
-      l.userId === userId && (!system || l.systemA === system || l.systemB === system)
+    return Array.from(_crossSystemLinks.values()).filter(
+      l =>
+        l.userId === userId &&
+        (!system || l.systemA === system || l.systemB === system)
     );
   },
 
@@ -334,34 +398,79 @@ export const crossSystemPersistence = {
     const graph = _activityGraphs.get(userId);
     const identity = _unifiedIdentities.get(userId);
     const socialScore = graph
-      ? Math.min(100, graph.posts * 2 + graph.comments * 1 + graph.likes * 0.5 + graph.shares * 3)
+      ? Math.min(
+          100,
+          graph.posts * 2 +
+            graph.comments * 1 +
+            graph.likes * 0.5 +
+            graph.shares * 3
+        )
       : 0;
     const economicScore = graph
-      ? Math.min(100, graph.totalValueTransacted * 0.01 + graph.rewardsEarned * 0.1)
+      ? Math.min(
+          100,
+          graph.totalValueTransacted * 0.01 + graph.rewardsEarned * 0.1
+        )
       : 0;
     const creatorScore = identity?.isCreator
-      ? Math.min(100, identity.totalFollowers * 0.001 + identity.totalEarned * 0.01)
+      ? Math.min(
+          100,
+          identity.totalFollowers * 0.001 + identity.totalEarned * 0.01
+        )
       : 0;
     const communityScore = graph
-      ? Math.min(100, graph.communitiesJoined * 5 + graph.communitiesCreated * 20)
+      ? Math.min(
+          100,
+          graph.communitiesJoined * 5 + graph.communitiesCreated * 20
+        )
       : 0;
     const trustScore = identity?.trustScore ?? 50;
     const governanceScore = identity
-      ? Math.min(100, identity.governanceVotingPower * 0.1 + (graph?.governanceVotes ?? 0) * 5)
+      ? Math.min(
+          100,
+          identity.governanceVotingPower * 0.1 +
+            (graph?.governanceVotes ?? 0) * 5
+        )
       : 0;
-    const totalScore = (socialScore + economicScore + creatorScore + communityScore + trustScore + governanceScore) / 6;
+    const totalScore =
+      (socialScore +
+        economicScore +
+        creatorScore +
+        communityScore +
+        trustScore +
+        governanceScore) /
+      6;
     const tier: PlatformValueScore["tier"] =
-      totalScore >= 90 ? "legend" :
-      totalScore >= 70 ? "ecosystem_pillar" :
-      totalScore >= 50 ? "power_user" :
-      totalScore >= 30 ? "contributor" :
-      totalScore >= 10 ? "member" : "newcomer";
+      totalScore >= 90
+        ? "legend"
+        : totalScore >= 70
+          ? "ecosystem_pillar"
+          : totalScore >= 50
+            ? "power_user"
+            : totalScore >= 30
+              ? "contributor"
+              : totalScore >= 10
+                ? "member"
+                : "newcomer";
     const score: PlatformValueScore = {
-      userId, socialScore, economicScore, creatorScore, communityScore, trustScore, governanceScore,
+      userId,
+      socialScore,
+      economicScore,
+      creatorScore,
+      communityScore,
+      trustScore,
+      governanceScore,
       totalScore,
       percentile: Math.min(99, totalScore),
       tier,
-      breakdown: { socialScore, economicScore, creatorScore, communityScore, trustScore, governanceScore },
+      breakdown: {
+        socialScore,
+        economicScore,
+        creatorScore,
+        communityScore,
+        trustScore,
+        governanceScore,
+      },
       calculatedAt: new Date(),
     };
     _platformValueScores.set(userId, score);
@@ -382,10 +491,15 @@ export const crossSystemPersistence = {
 // ─── MIGRATION RESISTANCE ENGINE ─────────────────────────────────────────────
 
 export const migrationResistanceEngine = {
-  requestVaultExport(creatorId: number, exportType: CreatorVaultExport["exportType"]): CreatorVaultExport {
+  requestVaultExport(
+    creatorId: number,
+    exportType: CreatorVaultExport["exportType"]
+  ): CreatorVaultExport {
     const id = `export_${creatorId}_${exportType}_${Date.now()}`;
     const exportRecord: CreatorVaultExport = {
-      id, creatorId, exportType,
+      id,
+      creatorId,
+      exportType,
       status: "pending",
       requestedAt: new Date(),
       expiresAt: new Date(Date.now() + 7 * 86400000), // 7 days
@@ -421,7 +535,9 @@ export const migrationResistanceEngine = {
   },
 
   getCreatorExports(creatorId: number): CreatorVaultExport[] {
-    return Array.from(_vaultExports.values()).filter(e => e.creatorId === creatorId);
+    return Array.from(_vaultExports.values()).filter(
+      e => e.creatorId === creatorId
+    );
   },
 
   generateAudienceGraph(creatorId: number): AudienceGraph {
@@ -430,7 +546,12 @@ export const migrationResistanceEngine = {
       totalFollowers: 0,
       totalSubscribers: 0,
       topFans: [],
-      demographicBreakdown: { "18-24": 0.35, "25-34": 0.40, "35-44": 0.15, "45+": 0.10 },
+      demographicBreakdown: {
+        "18-24": 0.35,
+        "25-34": 0.4,
+        "35-44": 0.15,
+        "45+": 0.1,
+      },
       engagementRate: 0.045,
       retentionRate: 0.72,
       churnRate: 0.28,
@@ -459,8 +580,14 @@ export const migrationResistanceEngine = {
     return history;
   },
 
-  recordEarning(userId: number, amount: number, source: string): MonetizationHistory {
-    const history = _monetizationHistories.get(userId) ?? this.generateMonetizationHistory(userId);
+  recordEarning(
+    userId: number,
+    amount: number,
+    source: string
+  ): MonetizationHistory {
+    const history =
+      _monetizationHistories.get(userId) ??
+      this.generateMonetizationHistory(userId);
     history.totalEarned += amount;
     history.totalPending += amount;
     history.bySource[source] = (history.bySource[source] ?? 0) + amount;
@@ -486,10 +613,13 @@ export const migrationResistanceEngine = {
     return _monetizationHistories.get(userId) ?? null;
   },
 
-  registerContentOwnership(params: Omit<ContentOwnershipProof, "id" | "registeredAt" | "platform">): ContentOwnershipProof {
+  registerContentOwnership(
+    params: Omit<ContentOwnershipProof, "id" | "registeredAt" | "platform">
+  ): ContentOwnershipProof {
     const id = `proof_${params.creatorId}_${params.contentId}`;
     const proof: ContentOwnershipProof = {
-      ...params, id,
+      ...params,
+      id,
       platform: "shadowchat",
       registeredAt: new Date(),
     };
@@ -498,11 +628,17 @@ export const migrationResistanceEngine = {
   },
 
   getContentOwnershipProof(contentId: string): ContentOwnershipProof | null {
-    return Array.from(_contentOwnershipProofs.values()).find(p => p.contentId === contentId) ?? null;
+    return (
+      Array.from(_contentOwnershipProofs.values()).find(
+        p => p.contentId === contentId
+      ) ?? null
+    );
   },
 
   getCreatorContentProofs(creatorId: number): ContentOwnershipProof[] {
-    return Array.from(_contentOwnershipProofs.values()).filter(p => p.creatorId === creatorId);
+    return Array.from(_contentOwnershipProofs.values()).filter(
+      p => p.creatorId === creatorId
+    );
   },
 
   buildTrustHistory(userId: number): TrustHistory {
@@ -520,17 +656,36 @@ export const migrationResistanceEngine = {
     return history;
   },
 
-  recordTrustEvent(userId: number, eventType: "positive" | "negative" | "neutral", description: string, scoreChange: number): TrustHistory {
-    const history = _trustHistories.get(userId) ?? this.buildTrustHistory(userId);
-    history.events.push({ eventType, description, scoreChange, recordedAt: new Date() });
-    history.trustScore = Math.max(0, Math.min(100, history.trustScore + scoreChange));
+  recordTrustEvent(
+    userId: number,
+    eventType: "positive" | "negative" | "neutral",
+    description: string,
+    scoreChange: number
+  ): TrustHistory {
+    const history =
+      _trustHistories.get(userId) ?? this.buildTrustHistory(userId);
+    history.events.push({
+      eventType,
+      description,
+      scoreChange,
+      recordedAt: new Date(),
+    });
+    history.trustScore = Math.max(
+      0,
+      Math.min(100, history.trustScore + scoreChange)
+    );
     if (eventType === "positive") history.totalPositiveEvents++;
     if (eventType === "negative") history.totalNegativeEvents++;
     history.trustLevel =
-      history.trustScore >= 90 ? "elite" :
-      history.trustScore >= 70 ? "verified" :
-      history.trustScore >= 50 ? "trusted" :
-      history.trustScore >= 25 ? "basic" : "new";
+      history.trustScore >= 90
+        ? "elite"
+        : history.trustScore >= 70
+          ? "verified"
+          : history.trustScore >= 50
+            ? "trusted"
+            : history.trustScore >= 25
+              ? "basic"
+              : "new";
     history.generatedAt = new Date();
     _trustHistories.set(userId, history);
     // Sync to identity
@@ -561,12 +716,14 @@ export const migrationResistanceEngine = {
     return {
       totalUnifiedIdentities: identities.length,
       verifiedUsers: identities.filter(i => i.verifiedBadges.length > 0).length,
-      multiSystemUsers: identities.filter(i => i.linkedSystems.length >= 3).length,
+      multiSystemUsers: identities.filter(i => i.linkedSystems.length >= 3)
+        .length,
       totalCrossSystemLinks: _crossSystemLinks.size,
       totalContentProofs: _contentOwnershipProofs.size,
-      avgPlatformValueScore: scores.length > 0
-        ? scores.reduce((s, v) => s + v.totalScore, 0) / scores.length
-        : 0,
+      avgPlatformValueScore:
+        scores.length > 0
+          ? scores.reduce((s, v) => s + v.totalScore, 0) / scores.length
+          : 0,
       legendUsers: scores.filter(s => s.tier === "legend").length,
     };
   },

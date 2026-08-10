@@ -21,7 +21,9 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -33,7 +35,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const checkConnection = async () => {
       if (typeof window !== "undefined" && (window as any).ethereum) {
         try {
-          const accounts = await window.ethereum.request({ method: "eth_accounts" });
+          const accounts = await window.ethereum.request({
+            method: "eth_accounts",
+          });
           if (accounts.length > 0) {
             await connectWallet(accounts[0]);
           }
@@ -54,7 +58,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       const accounts = account
         ? [account]
-        : await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+        : await (window as any).ethereum.request({
+            method: "eth_requestAccounts",
+          });
 
       const newProvider = new ethers.BrowserProvider(window.ethereum);
       const newSigner = await newProvider.getSigner();
@@ -71,13 +77,16 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setBalance(balanceEth);
 
       // Listen for account changes
-      (window as any).ethereum.on("accountsChanged", (newAccounts: string[]) => {
-        if (newAccounts.length === 0) {
-          disconnectWallet();
-        } else {
-          connectWallet(newAccounts[0]);
+      (window as any).ethereum.on(
+        "accountsChanged",
+        (newAccounts: string[]) => {
+          if (newAccounts.length === 0) {
+            disconnectWallet();
+          } else {
+            connectWallet(newAccounts[0]);
+          }
         }
-      });
+      );
 
       // Listen for network changes
       (window as any).ethereum.on("chainChanged", () => {
@@ -104,7 +113,10 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     disconnectWallet();
   };
 
-  const sendTransaction = async (to: string, amount: string): Promise<string | null> => {
+  const sendTransaction = async (
+    to: string,
+    amount: string
+  ): Promise<string | null> => {
     if (!signer || !provider) return null;
 
     try {

@@ -1,9 +1,9 @@
-import crypto from 'crypto';
-import { getDb } from './db';
+import crypto from "crypto";
+import { getDb } from "./db";
 
 /**
  * AI-Powered Search Engine
- * 
+ *
  * Capabilities:
  * - Semantic search across all platform data
  * - Ranking and relevance scoring
@@ -15,7 +15,7 @@ import { getDb } from './db';
 
 interface SearchResult {
   id: string;
-  type: 'user' | 'post' | 'proposal' | 'agent' | 'transaction' | 'document';
+  type: "user" | "post" | "proposal" | "agent" | "transaction" | "document";
   title: string;
   description: string;
   relevanceScore: number;
@@ -35,7 +35,7 @@ interface SearchQuery {
 interface SearchTrend {
   term: string;
   count: number;
-  trend: 'rising' | 'stable' | 'falling';
+  trend: "rising" | "stable" | "falling";
   lastUpdated: number;
 }
 
@@ -48,7 +48,10 @@ export class AIPoweredSearchEngine {
   /**
    * Perform semantic search
    */
-  async search(query: string, userId: string | null = null): Promise<SearchQuery> {
+  async search(
+    query: string,
+    userId: string | null = null
+  ): Promise<SearchQuery> {
     const startTime = Date.now();
     const searchId = crypto.randomUUID();
 
@@ -85,7 +88,7 @@ export class AIPoweredSearchEngine {
     return query
       .toLowerCase()
       .split(/\s+/)
-      .filter((token) => token.length > 2);
+      .filter(token => token.length > 2);
   }
 
   /**
@@ -107,7 +110,10 @@ export class AIPoweredSearchEngine {
   /**
    * Rank results by relevance
    */
-  private rankResults(query: string, matches: Map<string, number>): SearchResult[] {
+  private rankResults(
+    query: string,
+    matches: Map<string, number>
+  ): SearchResult[] {
     const results: SearchResult[] = [];
 
     for (const [docId, matchCount] of matches) {
@@ -118,9 +124,9 @@ export class AIPoweredSearchEngine {
 
       results.push({
         id: docId,
-        type: (doc.type as SearchResult['type']) || 'document',
-        title: (doc.title as string) || '',
-        description: (doc.description as string) || '',
+        type: (doc.type as SearchResult["type"]) || "document",
+        title: (doc.title as string) || "",
+        description: (doc.description as string) || "",
         relevanceScore,
         timestamp: (doc.timestamp as number) || Date.now(),
         metadata: doc,
@@ -128,15 +134,29 @@ export class AIPoweredSearchEngine {
     }
 
     // Sort by relevance score
-    return results.sort((a, b) => b.relevanceScore - a.relevanceScore).slice(0, 20);
+    return results
+      .sort((a, b) => b.relevanceScore - a.relevanceScore)
+      .slice(0, 20);
   }
 
   /**
    * Calculate relevance score
    */
-  private calculateRelevance(query: string, doc: Record<string, unknown>, matchCount: number): number {
-    const titleMatch = (doc.title as string || '').toLowerCase().includes(query.toLowerCase()) ? 0.5 : 0;
-    const descriptionMatch = (doc.description as string || '').toLowerCase().includes(query.toLowerCase()) ? 0.3 : 0;
+  private calculateRelevance(
+    query: string,
+    doc: Record<string, unknown>,
+    matchCount: number
+  ): number {
+    const titleMatch = ((doc.title as string) || "")
+      .toLowerCase()
+      .includes(query.toLowerCase())
+      ? 0.5
+      : 0;
+    const descriptionMatch = ((doc.description as string) || "")
+      .toLowerCase()
+      .includes(query.toLowerCase())
+      ? 0.3
+      : 0;
     const tokenMatch = Math.min(matchCount / 5, 0.5); // Normalize to 0-0.5
     const recencyBoost = this.calculateRecencyBoost(doc.timestamp as number);
 
@@ -185,7 +205,7 @@ export class AIPoweredSearchEngine {
       this.searchTrends.set(term, {
         term,
         count: 1,
-        trend: 'rising',
+        trend: "rising",
         lastUpdated: Date.now(),
       });
     }
@@ -198,7 +218,8 @@ export class AIPoweredSearchEngine {
     this.documents.set(docId, doc);
 
     // Extract searchable text
-    const searchableText = `${doc.title || ''} ${doc.description || ''} ${doc.content || ''}`.toLowerCase();
+    const searchableText =
+      `${doc.title || ""} ${doc.description || ""} ${doc.content || ""}`.toLowerCase();
     const tokens = this.tokenizeQuery(searchableText);
 
     for (const token of tokens) {
@@ -226,12 +247,16 @@ export class AIPoweredSearchEngine {
    */
   getSearchAnalytics(timeWindowMs: number = 86400000): Record<string, unknown> {
     const cutoff = Date.now() - timeWindowMs;
-    const recentQueries = this.searchQueries.filter((q) => q.timestamp > cutoff);
+    const recentQueries = this.searchQueries.filter(q => q.timestamp > cutoff);
 
     return {
       total_searches: recentQueries.length,
-      unique_queries: new Set(recentQueries.map((q) => q.query)).size,
-      average_execution_time_ms: recentQueries.length > 0 ? recentQueries.reduce((sum, q) => sum + q.executionTime, 0) / recentQueries.length : 0,
+      unique_queries: new Set(recentQueries.map(q => q.query)).size,
+      average_execution_time_ms:
+        recentQueries.length > 0
+          ? recentQueries.reduce((sum, q) => sum + q.executionTime, 0) /
+            recentQueries.length
+          : 0,
       trending_searches: this.getTrendingSearches(5),
     };
   }
@@ -241,7 +266,7 @@ export class AIPoweredSearchEngine {
    */
   getUserSearchHistory(userId: string, limit: number = 50): SearchQuery[] {
     return this.searchQueries
-      .filter((q) => q.userId === userId)
+      .filter(q => q.userId === userId)
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }

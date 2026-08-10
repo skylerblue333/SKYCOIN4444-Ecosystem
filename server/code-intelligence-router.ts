@@ -27,12 +27,24 @@ Prioritize critical issues first, then high, medium, low severity.`;
 export const codeIntelligenceRouter = router({
   // Analyze a code snippet or file
   analyzeCode: protectedProcedure
-    .input(z.object({
-      code: z.string().min(1).max(50000),
-      language: z.string().default("typescript"),
-      filename: z.string().optional(),
-      analysisType: z.enum(["review", "security", "performance", "refactor", "explain", "test", "document"]).default("review"),
-    }))
+    .input(
+      z.object({
+        code: z.string().min(1).max(50000),
+        language: z.string().default("typescript"),
+        filename: z.string().optional(),
+        analysisType: z
+          .enum([
+            "review",
+            "security",
+            "performance",
+            "refactor",
+            "explain",
+            "test",
+            "document",
+          ])
+          .default("review"),
+      })
+    )
     .mutation(async ({ input }) => {
       const prompts: Record<string, string> = {
         review: `Perform a comprehensive code review of this ${input.language} code${input.filename ? ` (${input.filename})` : ""}. Identify bugs, code smells, anti-patterns, and improvement opportunities. Rate severity as CRITICAL/HIGH/MEDIUM/LOW.`,
@@ -47,12 +59,16 @@ export const codeIntelligenceRouter = router({
       const response = await invokeLLM({
         messages: [
           { role: "system", content: HOPE_CODE_SYSTEM },
-          { role: "user", content: `${prompts[input.analysisType]}\n\n\`\`\`${input.language}\n${input.code}\n\`\`\`` },
+          {
+            role: "user",
+            content: `${prompts[input.analysisType]}\n\n\`\`\`${input.language}\n${input.code}\n\`\`\``,
+          },
         ],
       });
 
       const content = response.choices?.[0]?.message?.content;
-      const analysis = typeof content === "string" ? content : JSON.stringify(content);
+      const analysis =
+        typeof content === "string" ? content : JSON.stringify(content);
 
       return {
         analysis,
@@ -65,20 +81,28 @@ export const codeIntelligenceRouter = router({
 
   // Analyze a full repository structure (provided as file tree + key files)
   analyzeRepo: protectedProcedure
-    .input(z.object({
-      repoName: z.string(),
-      fileTree: z.string().max(10000),
-      keyFiles: z.array(z.object({
-        path: z.string(),
-        content: z.string().max(5000),
-      })).max(10).optional(),
-      techStack: z.string().optional(),
-      goals: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        repoName: z.string(),
+        fileTree: z.string().max(10000),
+        keyFiles: z
+          .array(
+            z.object({
+              path: z.string(),
+              content: z.string().max(5000),
+            })
+          )
+          .max(10)
+          .optional(),
+        techStack: z.string().optional(),
+        goals: z.string().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
-      const keyFilesText = input.keyFiles?.map(f =>
-        `### ${f.path}\n\`\`\`\n${f.content}\n\`\`\``
-      ).join("\n\n") || "";
+      const keyFilesText =
+        input.keyFiles
+          ?.map(f => `### ${f.path}\n\`\`\`\n${f.content}\n\`\`\``)
+          .join("\n\n") || "";
 
       const response = await invokeLLM({
         messages: [
@@ -111,7 +135,8 @@ Provide:
 
       const content = response.choices?.[0]?.message?.content;
       return {
-        analysis: typeof content === "string" ? content : JSON.stringify(content),
+        analysis:
+          typeof content === "string" ? content : JSON.stringify(content),
         repoName: input.repoName,
         timestamp: new Date(),
       };
@@ -119,11 +144,13 @@ Provide:
 
   // Smart code completion / suggestion
   suggest: protectedProcedure
-    .input(z.object({
-      context: z.string().max(5000), // code before cursor
-      language: z.string().default("typescript"),
-      intent: z.string().optional(), // what the user wants to do
-    }))
+    .input(
+      z.object({
+        context: z.string().max(5000), // code before cursor
+        language: z.string().default("typescript"),
+        intent: z.string().optional(), // what the user wants to do
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
@@ -154,11 +181,13 @@ Complete the code:`,
 
   // Detect bugs in code
   detectBugs: protectedProcedure
-    .input(z.object({
-      code: z.string().min(1).max(20000),
-      language: z.string().default("typescript"),
-      errorMessage: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        code: z.string().min(1).max(20000),
+        language: z.string().default("typescript"),
+        errorMessage: z.string().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
@@ -185,7 +214,8 @@ Then provide the complete fixed version of the code.`,
 
       const content = response.choices?.[0]?.message?.content;
       return {
-        analysis: typeof content === "string" ? content : JSON.stringify(content),
+        analysis:
+          typeof content === "string" ? content : JSON.stringify(content),
         language: input.language,
         timestamp: new Date(),
       };
@@ -193,17 +223,23 @@ Then provide the complete fixed version of the code.`,
 
   // Generate code from description
   generate: protectedProcedure
-    .input(z.object({
-      description: z.string().min(10).max(2000),
-      language: z.string().default("typescript"),
-      framework: z.string().optional(),
-      style: z.enum(["minimal", "production", "documented"]).default("production"),
-    }))
+    .input(
+      z.object({
+        description: z.string().min(10).max(2000),
+        language: z.string().default("typescript"),
+        framework: z.string().optional(),
+        style: z
+          .enum(["minimal", "production", "documented"])
+          .default("production"),
+      })
+    )
     .mutation(async ({ input }) => {
       const styleGuide = {
         minimal: "Write minimal, clean code without comments.",
-        production: "Write production-ready code with error handling, TypeScript types, and best practices.",
-        documented: "Write fully documented code with JSDoc comments, examples, and inline explanations.",
+        production:
+          "Write production-ready code with error handling, TypeScript types, and best practices.",
+        documented:
+          "Write fully documented code with JSDoc comments, examples, and inline explanations.",
       };
 
       const response = await invokeLLM({
@@ -232,11 +268,13 @@ Return only the code, properly formatted.`,
 
   // Get AI-powered refactor suggestions with diff
   refactor: protectedProcedure
-    .input(z.object({
-      code: z.string().min(1).max(20000),
-      language: z.string().default("typescript"),
-      goal: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        code: z.string().min(1).max(20000),
+        language: z.string().default("typescript"),
+        goal: z.string().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
@@ -260,7 +298,8 @@ Provide:
 
       const content = response.choices?.[0]?.message?.content;
       return {
-        refactored: typeof content === "string" ? content : JSON.stringify(content),
+        refactored:
+          typeof content === "string" ? content : JSON.stringify(content),
         language: input.language,
         timestamp: new Date(),
       };
@@ -268,29 +307,42 @@ Provide:
 
   // Quick AI chat about code
   chat: protectedProcedure
-    .input(z.object({
-      message: z.string().min(1).max(5000),
-      codeContext: z.string().max(10000).optional(),
-      history: z.array(z.object({
-        role: z.enum(["user", "assistant"]),
-        content: z.string(),
-      })).max(20).optional(),
-    }))
+    .input(
+      z.object({
+        message: z.string().min(1).max(5000),
+        codeContext: z.string().max(10000).optional(),
+        history: z
+          .array(
+            z.object({
+              role: z.enum(["user", "assistant"]),
+              content: z.string(),
+            })
+          )
+          .max(20)
+          .optional(),
+      })
+    )
     .mutation(async ({ input }) => {
-      const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
-        { role: "system", content: HOPE_CODE_SYSTEM },
-      ];
+      const messages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }> = [{ role: "system", content: HOPE_CODE_SYSTEM }];
 
       if (input.codeContext) {
         messages.push({
           role: "user",
           content: `Code context:\n\`\`\`\n${input.codeContext}\n\`\`\``,
         });
-        messages.push({ role: "assistant", content: "I've reviewed your code context. How can I help?" });
+        messages.push({
+          role: "assistant",
+          content: "I've reviewed your code context. How can I help?",
+        });
       }
 
       if (input.history) {
-        messages.push(...input.history.map(h => ({ role: h.role, content: h.content })));
+        messages.push(
+          ...input.history.map(h => ({ role: h.role, content: h.content }))
+        );
       }
 
       messages.push({ role: "user", content: input.message });
@@ -323,10 +375,34 @@ Current scale: ~60K+ lines of code across 50+ router files, 25+ test files, 1988
     return {
       summary: platformSummary,
       techStack: {
-        frontend: ["React 19", "TypeScript", "Tailwind CSS 4", "shadcn/ui", "Wouter", "tRPC client", "TanStack Query"],
-        backend: ["Node.js", "Express 4", "tRPC 11", "Drizzle ORM", "MySQL/TiDB"],
-        ai: ["HOPE AI (Claude/GPT-5/Gemini via invokeLLM)", "LLM moderation", "Feed ranking AI", "Fraud detection AI"],
-        infra: ["Manus OAuth", "S3 storage", "SSE real-time", "Stripe payments"],
+        frontend: [
+          "React 19",
+          "TypeScript",
+          "Tailwind CSS 4",
+          "shadcn/ui",
+          "Wouter",
+          "tRPC client",
+          "TanStack Query",
+        ],
+        backend: [
+          "Node.js",
+          "Express 4",
+          "tRPC 11",
+          "Drizzle ORM",
+          "MySQL/TiDB",
+        ],
+        ai: [
+          "HOPE AI (Claude/GPT-5/Gemini via invokeLLM)",
+          "LLM moderation",
+          "Feed ranking AI",
+          "Fraud detection AI",
+        ],
+        infra: [
+          "Manus OAuth",
+          "S3 storage",
+          "SSE real-time",
+          "Stripe payments",
+        ],
       },
       stats: {
         linesOfCode: "60K+",

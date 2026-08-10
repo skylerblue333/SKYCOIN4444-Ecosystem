@@ -1,18 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { trpc } from '@/lib/trpc';
-import { Card } from '@/components/ui/card';
-import { Spinner } from '@/components/ui/spinner';
+import React, { useEffect, useRef, useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function MemoryGraphVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { data: graph, isLoading } = trpc.enterprise.memoryGraph.snapshot.useQuery();
+  const { data: graph, isLoading } =
+    trpc.enterprise.memoryGraph.snapshot.useQuery();
   const [selectedNode, setSelectedNode] = useState<any>(null);
 
   useEffect(() => {
     if (!canvasRef.current || !graph) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     canvas.width = canvas.offsetWidth;
@@ -34,7 +35,7 @@ export default function MemoryGraphVisualizer() {
     let animationId: number;
     const animate = () => {
       // Clear canvas
-      ctx.fillStyle = '#000000';
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Apply forces
@@ -52,7 +53,7 @@ export default function MemoryGraphVisualizer() {
       });
 
       // Draw links
-      ctx.strokeStyle = '#444444';
+      ctx.strokeStyle = "#444444";
       ctx.lineWidth = 1;
       ((graph as any)?.links || []).forEach((link: any) => {
         const source = nodes[link.source];
@@ -68,15 +69,15 @@ export default function MemoryGraphVisualizer() {
       // Draw nodes
       (nodes as any[]).forEach((node: any) => {
         const size = node.size || 8;
-        ctx.fillStyle = node.color || '#00ff88';
+        ctx.fillStyle = node.color || "#00ff88";
         ctx.beginPath();
         ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
         ctx.fill();
 
         // Draw label
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '12px monospace';
-        ctx.fillText(node.label || '', node.x + size + 5, node.y);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "12px monospace";
+        ctx.fillText(node.label || "", node.x + size + 5, node.y);
       });
 
       animationId = requestAnimationFrame(animate);
@@ -94,7 +95,9 @@ export default function MemoryGraphVisualizer() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">MEMORY CONSTELLATION</h1>
-          <p className="text-gray-400">Your life as a star map — every memory, skill, and connection</p>
+          <p className="text-gray-400">
+            Your life as a star map — every memory, skill, and connection
+          </p>
         </div>
 
         <div className="grid grid-cols-3 gap-8">
@@ -104,14 +107,16 @@ export default function MemoryGraphVisualizer() {
               <canvas
                 ref={canvasRef}
                 className="w-full h-full bg-black rounded cursor-pointer"
-                onClick={(e) => {
+                onClick={e => {
                   const rect = canvasRef.current?.getBoundingClientRect();
                   if (rect) {
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
                     // Find clicked node
                     (graph as any)?.nodes?.forEach((node: any) => {
-                      const dist = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2);
+                      const dist = Math.sqrt(
+                        (node.x - x) ** 2 + (node.y - y) ** 2
+                      );
                       if (dist < (node.size || 8) + 5) {
                         setSelectedNode(node);
                       }
@@ -129,25 +134,37 @@ export default function MemoryGraphVisualizer() {
               <div className="space-y-4">
                 <div>
                   <p className="text-gray-400 text-sm">Total Memories</p>
-                  <p className="text-2xl font-bold text-cyan-400">{(graph as any)?.nodes?.length || 0}</p>
+                  <p className="text-2xl font-bold text-cyan-400">
+                    {(graph as any)?.nodes?.length || 0}
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Connections</p>
-                  <p className="text-2xl font-bold text-purple-400">{(graph as any)?.links?.length || 0}</p>
+                  <p className="text-2xl font-bold text-purple-400">
+                    {(graph as any)?.links?.length || 0}
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Knowledge Clusters</p>
-                  <p className="text-2xl font-bold text-yellow-400">{(graph as any)?.clusters?.length || 0}</p>
+                  <p className="text-2xl font-bold text-yellow-400">
+                    {(graph as any)?.clusters?.length || 0}
+                  </p>
                 </div>
               </div>
 
               {selectedNode && (
                 <div className="mt-8 pt-8 border-t border-gray-700">
                   <h4 className="font-bold mb-4">{selectedNode.label}</h4>
-                  <p className="text-sm text-gray-400 mb-4">{selectedNode.description}</p>
+                  <p className="text-sm text-gray-400 mb-4">
+                    {selectedNode.description}
+                  </p>
                   <div className="space-y-2">
-                    <p className="text-xs text-gray-500">Type: {selectedNode.type}</p>
-                    <p className="text-xs text-gray-500">Strength: {selectedNode.strength}%</p>
+                    <p className="text-xs text-gray-500">
+                      Type: {selectedNode.type}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Strength: {selectedNode.strength}%
+                    </p>
                   </div>
                 </div>
               )}

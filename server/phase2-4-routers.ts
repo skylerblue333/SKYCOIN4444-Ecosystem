@@ -1,12 +1,12 @@
-import { router, protectedProcedure } from './_core/trpc';
-import { z } from 'zod';
-import { competitiveRadarEngine } from './competitive-radar-engine';
-import { behavioralIntelligenceEngine } from './behavioral-intelligence-engine';
-import { experimentFactoryEngine } from './experiment-factory-engine';
-import { narrativeEngine } from './narrative-engine';
-import { connectorIntelligenceEngine } from './connector-intelligence-engine';
-import { productBrainEngine } from './product-brain-engine';
-import { companySimulatorEngine } from './company-simulator-engine';
+import { router, protectedProcedure } from "./_core/trpc";
+import { z } from "zod";
+import { competitiveRadarEngine } from "./competitive-radar-engine";
+import { behavioralIntelligenceEngine } from "./behavioral-intelligence-engine";
+import { experimentFactoryEngine } from "./experiment-factory-engine";
+import { narrativeEngine } from "./narrative-engine";
+import { connectorIntelligenceEngine } from "./connector-intelligence-engine";
+import { productBrainEngine } from "./product-brain-engine";
+import { companySimulatorEngine } from "./company-simulator-engine";
 
 /**
  * Phase 2-4 tRPC Routers
@@ -60,15 +60,31 @@ export const phase2to4Routers = {
       }),
 
     getEmergingPainPatterns: protectedProcedure
-      .input(z.object({ periodDays: z.number().default(7), limit: z.number().default(3) }))
+      .input(
+        z.object({
+          periodDays: z.number().default(7),
+          limit: z.number().default(3),
+        })
+      )
       .query(async ({ input }) => {
-        return behavioralIntelligenceEngine.getEmergingPainPatterns(input.periodDays, input.limit);
+        return behavioralIntelligenceEngine.getEmergingPainPatterns(
+          input.periodDays,
+          input.limit
+        );
       }),
 
     getChurnRiskUsers: protectedProcedure
-      .input(z.object({ threshold: z.number().default(0.5), limit: z.number().default(20) }))
+      .input(
+        z.object({
+          threshold: z.number().default(0.5),
+          limit: z.number().default(20),
+        })
+      )
       .query(async ({ input }) => {
-        return behavioralIntelligenceEngine.getChurnRiskUsers(input.threshold, input.limit);
+        return behavioralIntelligenceEngine.getChurnRiskUsers(
+          input.threshold,
+          input.limit
+        );
       }),
 
     getPersonaClusters: protectedProcedure.query(async () => {
@@ -102,13 +118,17 @@ export const phase2to4Routers = {
           title: input.title,
           description: input.hypothesis,
           hypothesis: input.hypothesis,
-          expectedImpact: 'TBD',
-          estimatedDuration: '2 weeks',
-          difficulty: 'medium' as const,
-          priority: 'high' as const,
-          successMetrics: ['Conversion', 'Engagement'],
+          expectedImpact: "TBD",
+          estimatedDuration: "2 weeks",
+          difficulty: "medium" as const,
+          priority: "high" as const,
+          successMetrics: ["Conversion", "Engagement"],
         };
-        return experimentFactoryEngine.createExperiment(idea, input.controlDescription, input.treatmentDescription);
+        return experimentFactoryEngine.createExperiment(
+          idea,
+          input.controlDescription,
+          input.treatmentDescription
+        );
       }),
 
     getExperiments: protectedProcedure
@@ -149,21 +169,37 @@ export const phase2to4Routers = {
   // Narrative Engine Router
   narratives: router({
     generateNarrative: protectedProcedure
-      .input(z.object({ featureId: z.string(), featureName: z.string(), context: z.string() }))
+      .input(
+        z.object({
+          featureId: z.string(),
+          featureName: z.string(),
+          context: z.string(),
+        })
+      )
       .query(async ({ input }) => {
-        return narrativeEngine.generateNarrative(input.featureId, input.featureName, input.context);
+        return narrativeEngine.generateNarrative(
+          input.featureId,
+          input.featureName,
+          input.context
+        );
       }),
 
     getPositioningStatement: protectedProcedure
       .input(z.object({ featureName: z.string(), audience: z.string() }))
       .query(async ({ input }) => {
-        return narrativeEngine.getPositioningStatement(input.featureName, input.audience);
+        return narrativeEngine.getPositioningStatement(
+          input.featureName,
+          input.audience
+        );
       }),
 
     generateMarketingAssets: protectedProcedure
       .input(z.object({ featureName: z.string(), audience: z.string() }))
       .query(async ({ input }) => {
-        return narrativeEngine.generateMarketingAssets(input.featureName, input.audience);
+        return narrativeEngine.generateMarketingAssets(
+          input.featureName,
+          input.audience
+        );
       }),
 
     checkNarrativeConsistency: protectedProcedure
@@ -206,7 +242,9 @@ export const phase2to4Routers = {
     getConnectorTrendAnalysis: protectedProcedure
       .input(z.object({ periodDays: z.number().default(30) }))
       .query(async ({ input }) => {
-        return connectorIntelligenceEngine.getConnectorTrendAnalysis(input.periodDays);
+        return connectorIntelligenceEngine.getConnectorTrendAnalysis(
+          input.periodDays
+        );
       }),
   }),
 
@@ -241,9 +279,19 @@ export const phase2to4Routers = {
     }),
 
     comparePlaybookVersions: protectedProcedure
-      .input(z.object({ playbookId: z.string(), version1: z.number(), version2: z.number() }))
+      .input(
+        z.object({
+          playbookId: z.string(),
+          version1: z.number(),
+          version2: z.number(),
+        })
+      )
       .query(async ({ input }) => {
-        return productBrainEngine.comparePlaybookVersions(input.playbookId, input.version1, input.version2);
+        return productBrainEngine.comparePlaybookVersions(
+          input.playbookId,
+          input.version1,
+          input.version2
+        );
       }),
   }),
 
@@ -258,14 +306,18 @@ export const phase2to4Routers = {
     getWhatIfScenario: protectedProcedure
       .input(z.object({ baselinePrompt: z.string(), change: z.string() }))
       .query(async ({ input }) => {
-        const baseline = await companySimulatorEngine.runCompanySimulation(input.baselinePrompt);
+        const baseline = await companySimulatorEngine.runCompanySimulation(
+          input.baselinePrompt
+        );
         return companySimulatorEngine.getWhatIfScenario(baseline, input.change);
       }),
 
     get90DayForecast: protectedProcedure
       .input(z.object({ prompt: z.string() }))
       .query(async ({ input }) => {
-        const simulation = await companySimulatorEngine.runCompanySimulation(input.prompt);
+        const simulation = await companySimulatorEngine.runCompanySimulation(
+          input.prompt
+        );
         return companySimulatorEngine.get90DayForecast(simulation);
       }),
   }),

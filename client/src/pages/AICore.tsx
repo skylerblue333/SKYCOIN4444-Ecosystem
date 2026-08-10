@@ -1,16 +1,18 @@
 // @ts-nocheck
-import React, { useState } from 'react';
-import { trpc } from '@/lib/trpc';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Send, Copy, Trash2, BarChart3, Zap } from 'lucide-react';
+import React, { useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sparkles, Send, Copy, Trash2, BarChart3, Zap } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function AICore() {
-  const [activeTab, setActiveTab] = useState('chat');
-  const [prompt, setPrompt] = useState('');
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("chat");
+  const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
   const [tokenUsage, setTokenUsage] = useState(0);
 
@@ -19,50 +21,50 @@ export default function AICore() {
 
   // Chat mutation
   const chatMutation = trpc.ai.chat.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       setMessages([
         ...messages,
-        { role: 'user', content: prompt },
-        { role: 'assistant', content: data.response },
+        { role: "user", content: prompt },
+        { role: "assistant", content: data.response },
       ]);
-      setPrompt('');
+      setPrompt("");
       setTokenUsage(tokenUsage + data.tokensUsed);
     },
   });
 
   // Content generation mutation
   const generateMutation = trpc.ai.generateContent.useMutation({
-    onSuccess: (data) => {
-      alert('Content generated! Check your dashboard.');
-      setPrompt('');
+    onSuccess: data => {
+      alert("Content generated! Check your dashboard.");
+      setPrompt("");
     },
   });
 
   // Market analysis mutation
   const analysisMutation = trpc.ai.analyzeMarket.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       setMessages([
         ...messages,
-        { role: 'user', content: `Analyze: ${prompt}` },
-        { role: 'assistant', content: data.analysis },
+        { role: "user", content: `Analyze: ${prompt}` },
+        { role: "assistant", content: data.analysis },
       ]);
-      setPrompt('');
+      setPrompt("");
     },
   });
 
   const handleChat = () => {
     if (!prompt) return;
-    chatMutation.mutate({ message: prompt });
+    chatMutation.mutate({userId: user?.id || "guest",  message: prompt });
   };
 
   const handleGenerate = () => {
     if (!prompt) return;
-    generateMutation.mutate({ prompt });
+    generateMutation.mutate({userId: user?.id || "guest",  prompt });
   };
 
   const handleAnalyze = () => {
     if (!prompt) return;
-    analysisMutation.mutate({ symbol: prompt });
+    analysisMutation.mutate({userId: user?.id || "guest",  symbol: prompt });
   };
 
   return (
@@ -75,7 +77,8 @@ export default function AICore() {
             <h1 className="text-3xl font-bold">AI Core</h1>
           </div>
           <p className="text-muted-foreground">
-            Powered by OpenAI • {aiUsage?.tokensRemaining.toLocaleString()} tokens remaining
+            Powered by OpenAI • {aiUsage?.tokensRemaining.toLocaleString()}{" "}
+            tokens remaining
           </p>
         </div>
       </div>
@@ -111,14 +114,16 @@ export default function AICore() {
                         <div
                           key={i}
                           className={`flex ${
-                            msg.role === 'user' ? 'justify-end' : 'justify-start'
+                            msg.role === "user"
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
                           <div
                             className={`max-w-xs px-4 py-2 rounded-lg ${
-                              msg.role === 'user'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-accent text-foreground'
+                              msg.role === "user"
+                                ? "bg-blue-600 text-white"
+                                : "bg-accent text-foreground"
                             }`}
                           >
                             <p className="text-sm">{msg.content}</p>
@@ -133,8 +138,8 @@ export default function AICore() {
                     <Input
                       placeholder="Ask AI anything..."
                       value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleChat()}
+                      onChange={e => setPrompt(e.target.value)}
+                      onKeyPress={e => e.key === "Enter" && handleChat()}
                       disabled={chatMutation.isPending}
                     />
                     <Button
@@ -160,19 +165,25 @@ export default function AICore() {
                       <Textarea
                         placeholder="Describe the content you want to generate..."
                         value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
+                        onChange={e => setPrompt(e.target.value)}
                         className="h-32"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-3 border rounded-lg">
-                        <p className="text-sm font-semibold mb-1">Content Type</p>
-                        <p className="text-xs text-muted-foreground">Blog Post</p>
+                        <p className="text-sm font-semibold mb-1">
+                          Content Type
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Blog Post
+                        </p>
                       </div>
                       <div className="p-3 border rounded-lg">
                         <p className="text-sm font-semibold mb-1">Tone</p>
-                        <p className="text-xs text-muted-foreground">Professional</p>
+                        <p className="text-xs text-muted-foreground">
+                          Professional
+                        </p>
                       </div>
                     </div>
 
@@ -181,7 +192,9 @@ export default function AICore() {
                       disabled={!prompt || generateMutation.isPending}
                       className="w-full"
                     >
-                      {generateMutation.isPending ? 'Generating...' : 'Generate Content'}
+                      {generateMutation.isPending
+                        ? "Generating..."
+                        : "Generate Content"}
                     </Button>
                   </div>
                 </Card>
@@ -199,17 +212,21 @@ export default function AICore() {
                       <Input
                         placeholder="e.g., BTC, ETH, SKY"
                         value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
+                        onChange={e => setPrompt(e.target.value)}
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Analysis Type</p>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Analysis Type
+                        </p>
                         <p className="font-semibold">Technical</p>
                       </div>
                       <div className="p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Timeframe</p>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Timeframe
+                        </p>
                         <p className="font-semibold">24h</p>
                       </div>
                     </div>
@@ -219,7 +236,9 @@ export default function AICore() {
                       disabled={!prompt || analysisMutation.isPending}
                       className="w-full"
                     >
-                      {analysisMutation.isPending ? 'Analyzing...' : 'Analyze Market'}
+                      {analysisMutation.isPending
+                        ? "Analyzing..."
+                        : "Analyze Market"}
                     </Button>
                   </div>
                 </Card>
@@ -248,8 +267,8 @@ export default function AICore() {
                       className="bg-blue-600 h-2 rounded-full"
                       style={{
                         width: `${
-                          (aiUsage?.tokensUsedMonth || 0) /
-                          (aiUsage?.monthlyLimit || 1) *
+                          ((aiUsage?.tokensUsedMonth || 0) /
+                            (aiUsage?.monthlyLimit || 1)) *
                           100
                         }%`,
                       }}
@@ -273,19 +292,25 @@ export default function AICore() {
                   <p className="text-sm font-semibold line-clamp-2">
                     Market Analysis Report
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    2 hours ago
+                  </p>
                 </div>
                 <div className="p-3 border rounded-lg">
                   <p className="text-sm font-semibold line-clamp-2">
                     Trading Strategy Guide
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">5 hours ago</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    5 hours ago
+                  </p>
                 </div>
                 <div className="p-3 border rounded-lg">
                   <p className="text-sm font-semibold line-clamp-2">
                     Portfolio Optimization Tips
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">1 day ago</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    1 day ago
+                  </p>
                 </div>
               </div>
             </Card>

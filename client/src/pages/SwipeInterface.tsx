@@ -8,9 +8,7 @@ const SwipeInterface = () => {
       <div className="mx-auto max-w-6xl">
         <h1 className="mb-6 text-4xl font-bold text-white">SwipeInterface</h1>
         <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">
-            SwipeInterface feature coming soon...
-          </p>
+          <p className="text-gray-300">SwipeInterface feature coming soon...</p>
         </Card>
       </div>
     </div>

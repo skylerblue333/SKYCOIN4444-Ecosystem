@@ -3,9 +3,30 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
-  Home, Zap, Users, Gamepad2, Brain, Coins, Heart, Settings, LogOut,
-  Menu, X, Bell, Search, User, TrendingUp, Sparkles, MessageSquare,
-  Award, Wallet, ShoppingCart, Tv, Radio, Code, Lightbulb
+  Home,
+  Zap,
+  Users,
+  Gamepad2,
+  Brain,
+  Coins,
+  Heart,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  Bell,
+  Search,
+  User,
+  TrendingUp,
+  Sparkles,
+  MessageSquare,
+  Award,
+  Wallet,
+  ShoppingCart,
+  Tv,
+  Radio,
+  Code,
+  Lightbulb,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,26 +42,121 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   // Main
-  { id: "home", label: "Home", icon: <Home className="w-5 h-5" />, path: "/", category: "main" },
-  { id: "feed", label: "Feed", icon: <TrendingUp className="w-5 h-5" />, path: "/feed", category: "main", badge: 12 },
-  { id: "discover", label: "Discover", icon: <Sparkles className="w-5 h-5" />, path: "/discover", category: "main" },
+  {
+    id: "home",
+    label: "Home",
+    icon: <Home className="w-5 h-5" />,
+    path: "/",
+    category: "main",
+  },
+  {
+    id: "feed",
+    label: "Feed",
+    icon: <TrendingUp className="w-5 h-5" />,
+    path: "/feed",
+    category: "main",
+    badge: 12,
+  },
+  {
+    id: "discover",
+    label: "Discover",
+    icon: <Sparkles className="w-5 h-5" />,
+    path: "/discover",
+    category: "main",
+  },
 
   // Features
-  { id: "hope-ai", label: "Hope AI", icon: <Brain className="w-5 h-5" />, path: "/hope-ai-meta", category: "features", color: "text-purple-400" },
-  { id: "sky-school", label: "Sky School", icon: <Lightbulb className="w-5 h-5" />, path: "/sky-school", category: "features", color: "text-cyan-400" },
-  { id: "gaming", label: "Gaming", icon: <Gamepad2 className="w-5 h-5" />, path: "/gaming", category: "features", color: "text-orange-400" },
-  { id: "crypto", label: "Crypto", icon: <Coins className="w-5 h-5" />, path: "/crypto", category: "features", color: "text-yellow-400" },
-  { id: "marketplace", label: "Marketplace", icon: <ShoppingCart className="w-5 h-5" />, path: "/marketplace", category: "features", color: "text-green-400" },
+  {
+    id: "hope-ai",
+    label: "Hope AI",
+    icon: <Brain className="w-5 h-5" />,
+    path: "/hope-ai-meta",
+    category: "features",
+    color: "text-purple-400",
+  },
+  {
+    id: "sky-school",
+    label: "Sky School",
+    icon: <Lightbulb className="w-5 h-5" />,
+    path: "/sky-school",
+    category: "features",
+    color: "text-cyan-400",
+  },
+  {
+    id: "gaming",
+    label: "Gaming",
+    icon: <Gamepad2 className="w-5 h-5" />,
+    path: "/gaming",
+    category: "features",
+    color: "text-orange-400",
+  },
+  {
+    id: "crypto",
+    label: "Crypto",
+    icon: <Coins className="w-5 h-5" />,
+    path: "/crypto",
+    category: "features",
+    color: "text-yellow-400",
+  },
+  {
+    id: "marketplace",
+    label: "Marketplace",
+    icon: <ShoppingCart className="w-5 h-5" />,
+    path: "/marketplace",
+    category: "features",
+    color: "text-green-400",
+  },
 
   // Social
-  { id: "social", label: "Social", icon: <Users className="w-5 h-5" />, path: "/social", category: "social" },
-  { id: "messages", label: "Messages", icon: <MessageSquare className="w-5 h-5" />, path: "/messages", category: "social", badge: 3 },
-  { id: "charity", label: "Charity", icon: <Heart className="w-5 h-5" />, path: "/charity", category: "social", color: "text-red-400" },
+  {
+    id: "social",
+    label: "Social",
+    icon: <Users className="w-5 h-5" />,
+    path: "/social",
+    category: "social",
+  },
+  {
+    id: "messages",
+    label: "Messages",
+    icon: <MessageSquare className="w-5 h-5" />,
+    path: "/messages",
+    category: "social",
+    badge: 3,
+  },
+  {
+    id: "charity",
+    label: "Charity",
+    icon: <Heart className="w-5 h-5" />,
+    path: "/charity",
+    category: "social",
+    color: "text-red-400",
+  },
 
   // Tools
-  { id: "live", label: "Live", icon: <Tv className="w-5 h-5" />, path: "/live", category: "tools", color: "text-red-500" },
-  { id: "wallet", label: "Wallet", icon: <Wallet className="w-5 h-5" />, path: "/wallet", category: "tools", color: "text-cyan-400" },
-  { id: "achievements", label: "Achievements", icon: <Award className="w-5 h-5" />, path: "/achievements", category: "tools", color: "text-yellow-400" },
+  {
+    id: "live",
+    label: "Live",
+    icon: <Tv className="w-5 h-5" />,
+    path: "/live",
+    category: "tools",
+    color: "text-red-500",
+  },
+  {
+    id: "wallet",
+    label: "Wallet",
+    icon: <Wallet className="w-5 h-5" />,
+    path: "/wallet",
+    category: "tools",
+    color: "text-cyan-400",
+  },
+  {
+    id: "achievements",
+    label: "Achievements",
+    icon: <Award className="w-5 h-5" />,
+    path: "/achievements",
+    category: "tools",
+    color: "text-yellow-400",
+  },
 ];
 
 export function UnifiedAppShell({ children }: { children: React.ReactNode }) {
@@ -93,14 +209,18 @@ export function UnifiedAppShell({ children }: { children: React.ReactNode }) {
             </div>
             <h1 className="text-xl font-bold text-white">SKYCOIN4444</h1>
           </div>
-          <p className="text-xs text-slate-400">One Platform. Unlimited Potential.</p>
+          <p className="text-xs text-slate-400">
+            One Platform. Unlimited Potential.
+          </p>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {/* Main Section */}
           <div>
-            <p className="text-xs font-semibold text-slate-400 px-3 py-2 uppercase tracking-wider">Main</p>
+            <p className="text-xs font-semibold text-slate-400 px-3 py-2 uppercase tracking-wider">
+              Main
+            </p>
             {NAV_ITEMS.filter(i => i.category === "main").map(item => (
               <button
                 key={item.id}
@@ -124,7 +244,9 @@ export function UnifiedAppShell({ children }: { children: React.ReactNode }) {
 
           {/* Features Section */}
           <div className="pt-2">
-            <p className="text-xs font-semibold text-slate-400 px-3 py-2 uppercase tracking-wider">Features</p>
+            <p className="text-xs font-semibold text-slate-400 px-3 py-2 uppercase tracking-wider">
+              Features
+            </p>
             {NAV_ITEMS.filter(i => i.category === "features").map(item => (
               <button
                 key={item.id}
@@ -143,7 +265,9 @@ export function UnifiedAppShell({ children }: { children: React.ReactNode }) {
 
           {/* Social Section */}
           <div className="pt-2">
-            <p className="text-xs font-semibold text-slate-400 px-3 py-2 uppercase tracking-wider">Social</p>
+            <p className="text-xs font-semibold text-slate-400 px-3 py-2 uppercase tracking-wider">
+              Social
+            </p>
             {NAV_ITEMS.filter(i => i.category === "social").map(item => (
               <button
                 key={item.id}
@@ -167,7 +291,9 @@ export function UnifiedAppShell({ children }: { children: React.ReactNode }) {
 
           {/* Tools Section */}
           <div className="pt-2">
-            <p className="text-xs font-semibold text-slate-400 px-3 py-2 uppercase tracking-wider">Tools</p>
+            <p className="text-xs font-semibold text-slate-400 px-3 py-2 uppercase tracking-wider">
+              Tools
+            </p>
             {NAV_ITEMS.filter(i => i.category === "tools").map(item => (
               <button
                 key={item.id}
@@ -216,7 +342,11 @@ export function UnifiedAppShell({ children }: { children: React.ReactNode }) {
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="lg:hidden text-slate-400 hover:text-white"
               >
-                {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {sidebarOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
               </button>
               <h2 className="text-lg font-semibold text-white">
                 {currentNav?.label || "SKYCOIN4444"}
@@ -261,7 +391,9 @@ export function UnifiedAppShell({ children }: { children: React.ReactNode }) {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-all"
                 >
                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600" />
-                  <span className="text-sm text-white hidden sm:inline">{user.email?.split("@")[0]}</span>
+                  <span className="text-sm text-white hidden sm:inline">
+                    {user.email?.split("@")[0]}
+                  </span>
                 </button>
               ) : (
                 <Button
@@ -276,9 +408,7 @@ export function UnifiedAppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="min-h-[calc(100vh-4rem)]">
-          {children}
-        </main>
+        <main className="min-h-[calc(100vh-4rem)]">{children}</main>
       </div>
     </div>
   );

@@ -3,17 +3,36 @@
  */
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Zap, Gift, ChevronLeft, Trophy, Star, Coins, Crown } from "lucide-react";
+import {
+  Zap,
+  Gift,
+  ChevronLeft,
+  Trophy,
+  Star,
+  Coins,
+  Crown,
+} from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 
 const PRIZE_COLORS = [
-  "#f59e0b", "#f97316", "#ef4444", "#8b5cf6",
-  "#7c3aed", "#06b6d4", "#10b981", "#6b7280",
+  "#f59e0b",
+  "#f97316",
+  "#ef4444",
+  "#8b5cf6",
+  "#7c3aed",
+  "#06b6d4",
+  "#10b981",
+  "#6b7280",
 ];
 
-function SpinWheelCanvas({ prizes, spinning, targetIndex, onSpinEnd }: {
+function SpinWheelCanvas({
+  prizes,
+  spinning,
+  targetIndex,
+  onSpinEnd,
+}: {
   prizes: { label: string; color: string }[];
   spinning: boolean;
   targetIndex: number;
@@ -89,7 +108,8 @@ function SpinWheelCanvas({ prizes, spinning, targetIndex, onSpinEnd }: {
 
     const arc = (2 * Math.PI) / prizes.length;
     // Target: land on targetIndex — pointer is at top (3π/2), so rotate to align
-    const targetAngle = (2 * Math.PI) - (targetIndex * arc) - arc / 2 + (3 * Math.PI / 2);
+    const targetAngle =
+      2 * Math.PI - targetIndex * arc - arc / 2 + (3 * Math.PI) / 2;
     const spins = 5 * 2 * Math.PI; // 5 full rotations
     const finalAngle = spins + targetAngle;
 
@@ -137,11 +157,18 @@ export default function SpinWheel() {
   const [, navigate] = useLocation();
   const [spinning, setSpinning] = useState(false);
   const [targetIndex, setTargetIndex] = useState(0);
-  const [result, setResult] = useState<{ label: string; type: string; amount: number } | null>(null);
+  const [result, setResult] = useState<{
+    label: string;
+    type: string;
+    amount: number;
+  } | null>(null);
   const [showResult, setShowResult] = useState(false);
 
   const { data: prizes = [] } = trpc.gamification.getSpinPrizes.useQuery();
-  const { data: state, refetch } = trpc.gamification.getState.useQuery(undefined, { enabled: !!user });
+  const { data: state, refetch } = trpc.gamification.getState.useQuery(
+    undefined,
+    { enabled: !!user }
+  );
 
   const spinMutation = trpc.gamification.spin.useMutation({
     onSuccess: (data: any) => {
@@ -166,9 +193,19 @@ export default function SpinWheel() {
     refetch();
   };
 
-  const prizeItems = (Array.isArray(prizes) && prizes.length > 0) ? prizes : [
-    { id: "loading", label: "Loading...", color: "#333", type: "nothing" as const, amount: 0, weight: 1 },
-  ];
+  const prizeItems =
+    Array.isArray(prizes) && prizes.length > 0
+      ? prizes
+      : [
+          {
+            id: "loading",
+            label: "Loading...",
+            color: "#333",
+            type: "nothing" as const,
+            amount: 0,
+            weight: 1,
+          },
+        ];
 
   return (
     <div className="min-h-screen bg-[#050508] text-white">
@@ -188,8 +225,12 @@ export default function SpinWheel() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-sm font-medium mb-4">
             <Gift className="w-4 h-4" /> Daily Reward
           </div>
-          <h1 className="text-5xl font-black mb-3 rainbow-text">Daily Spin Wheel</h1>
-          <p className="text-lg text-muted-foreground metallic-shimmer">Spin once per day. Win XP, SKY444 tokens, badges, and boosts.</p>
+          <h1 className="text-5xl font-black mb-3 rainbow-text">
+            Daily Spin Wheel
+          </h1>
+          <p className="text-lg text-muted-foreground metallic-shimmer">
+            Spin once per day. Win XP, SKY444 tokens, badges, and boosts.
+          </p>
         </div>
       </div>
 
@@ -206,14 +247,22 @@ export default function SpinWheel() {
 
             {/* Spin button */}
             {!user ? (
-              <div className="text-center text-muted-foreground">Sign in to spin</div>
+              <div className="text-center text-muted-foreground">
+                Sign in to spin
+              </div>
             ) : (state as any)?.hasSpunToday ? (
               <div className="text-center">
-                <div className="text-muted-foreground text-sm mb-1">Already spun today!</div>
+                <div className="text-muted-foreground text-sm mb-1">
+                  Already spun today!
+                </div>
                 {(state as any)?.lastSpin && (
-                  <div className="text-amber-400 font-bold">Last prize: {((state as any).lastSpin as any).prize}</div>
+                  <div className="text-amber-400 font-bold">
+                    Last prize: {((state as any).lastSpin as any).prize}
+                  </div>
                 )}
-                <div className="text-xs text-muted-foreground mt-2">Come back tomorrow for another spin</div>
+                <div className="text-xs text-muted-foreground mt-2">
+                  Come back tomorrow for another spin
+                </div>
               </div>
             ) : (
               <button
@@ -232,12 +281,32 @@ export default function SpinWheel() {
             {showResult && result && (
               <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 p-6 text-center animate-in fade-in zoom-in-95 duration-300">
                 <div className="text-4xl mb-2">🎉</div>
-                <div className="text-xl font-black text-amber-300 mb-1">You won!</div>
-                <div className="text-3xl font-black text-white mb-2">{result.label}</div>
-                {result.type === "xp" && <div className="text-amber-400">+{result.amount} XP added to your account</div>}
-                {result.type === "sky444" && <div className="text-purple-400">+{result.amount} SKY444 tokens added to your wallet</div>}
-                {result.type === "badge" && <div className="text-green-400">Lucky Spinner badge added to your profile!</div>}
-                {result.type === "boost" && <div className="text-cyan-400">2x XP boost active for 1 hour!</div>}
+                <div className="text-xl font-black text-amber-300 mb-1">
+                  You won!
+                </div>
+                <div className="text-3xl font-black text-white mb-2">
+                  {result.label}
+                </div>
+                {result.type === "xp" && (
+                  <div className="text-amber-400">
+                    +{result.amount} XP added to your account
+                  </div>
+                )}
+                {result.type === "sky444" && (
+                  <div className="text-purple-400">
+                    +{result.amount} SKY444 tokens added to your wallet
+                  </div>
+                )}
+                {result.type === "badge" && (
+                  <div className="text-green-400">
+                    Lucky Spinner badge added to your profile!
+                  </div>
+                )}
+                {result.type === "boost" && (
+                  <div className="text-cyan-400">
+                    2x XP boost active for 1 hour!
+                  </div>
+                )}
                 <button
                   onClick={() => setShowResult(false)}
                   className="mt-4 px-4 py-2 rounded-lg bg-white/10 text-sm hover:bg-white/20 transition-colors"
@@ -251,14 +320,28 @@ export default function SpinWheel() {
             <div className="rounded-xl border border-white/10 bg-white/3 overflow-hidden">
               <div className="px-4 py-3 border-b border-white/10 flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-amber-400" />
-                <span className="text-sm font-bold text-white">Possible Prizes</span>
+                <span className="text-sm font-bold text-white">
+                  Possible Prizes
+                </span>
               </div>
               <div className="divide-y divide-white/5">
                 {prizeItems.map((prize: any, i: number) => (
-                  <div key={prize.id} className="flex items-center gap-3 px-4 py-2.5">
-                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: PRIZE_COLORS[i % PRIZE_COLORS.length] }} />
-                    <span className="flex-1 text-sm text-white">{prize.label}</span>
-                    <span className="text-xs text-muted-foreground">{prize.weight}% chance</span>
+                  <div
+                    key={prize.id}
+                    className="flex items-center gap-3 px-4 py-2.5"
+                  >
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{
+                        backgroundColor: PRIZE_COLORS[i % PRIZE_COLORS.length],
+                      }}
+                    />
+                    <span className="flex-1 text-sm text-white">
+                      {prize.label}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {prize.weight}% chance
+                    </span>
                   </div>
                 ))}
               </div>
@@ -268,16 +351,23 @@ export default function SpinWheel() {
             <div className="rounded-xl border border-white/10 bg-white/3 p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Zap className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm font-bold text-white">Login Streak Bonuses</span>
+                <span className="text-sm font-bold text-white">
+                  Login Streak Bonuses
+                </span>
               </div>
               <div className="space-y-1.5 text-xs">
                 {[
-                  { days: 7,  bonus: "+100 XP",  color: "text-yellow-400" },
-                  { days: 14, bonus: "+200 XP",  color: "text-orange-400" },
-                  { days: 30, bonus: "+500 XP",  color: "text-red-400"    },
+                  { days: 7, bonus: "+100 XP", color: "text-yellow-400" },
+                  { days: 14, bonus: "+200 XP", color: "text-orange-400" },
+                  { days: 30, bonus: "+500 XP", color: "text-red-400" },
                 ].map(b => (
-                  <div key={b.days} className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{b.days}-day streak</span>
+                  <div
+                    key={b.days}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-muted-foreground">
+                      {b.days}-day streak
+                    </span>
                     <span className={`font-bold ${b.color}`}>{b.bonus}</span>
                   </div>
                 ))}

@@ -1,8 +1,8 @@
-import { WebSocket, WebSocketServer } from 'ws';
-import { IncomingMessage } from 'http';
-import { db } from './db';
-import { datingNotifications, datingMatches } from '../drizzle/schema';
-import { eq, and } from 'drizzle-orm';
+import { WebSocket, WebSocketServer } from "ws";
+import { IncomingMessage } from "http";
+import { db } from "./db";
+import { datingNotifications, datingMatches } from "../drizzle/schema";
+import { eq, and } from "drizzle-orm";
 
 interface WebSocketClient {
   ws: WebSocket;
@@ -13,17 +13,17 @@ interface WebSocketClient {
 const clients = new Map<number, WebSocketClient[]>();
 
 export function setupWebSocketServer(wss: WebSocketServer) {
-  wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
-    console.log('[WebSocket] New connection from', req.socket.remoteAddress);
+  wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
+    console.log("[WebSocket] New connection from", req.socket.remoteAddress);
 
     let userId: number | null = null;
 
-    ws.on('message', async (data: Buffer) => {
+    ws.on("message", async (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
-        console.log('[WebSocket] Received:', message.type);
+        console.log("[WebSocket] Received:", message.type);
 
-        if (message.type === 'auth') {
+        if (message.type === "auth") {
           userId = message.data.userId;
           if (userId && !clients.has(userId)) {
             clients.set(userId, []);
@@ -35,28 +35,28 @@ export function setupWebSocketServer(wss: WebSocketServer) {
 
           ws.send(
             JSON.stringify({
-              type: 'auth_success',
+              type: "auth_success",
               data: { userId },
               timestamp: new Date().toISOString(),
             })
           );
-        } else if (message.type === 'load_notifications' && userId) {
+        } else if (message.type === "load_notifications" && userId) {
           // Load existing notifications
           const notifications = await db
             .select()
             .from(datingNotifications)
             .where(eq(datingNotifications.userId, userId as number))
-            .orderBy((t) => t.createdAt)
+            .orderBy(t => t.createdAt)
             .limit(50);
 
           ws.send(
             JSON.stringify({
-              type: 'notifications_loaded',
+              type: "notifications_loaded",
               data: notifications,
               timestamp: new Date().toISOString(),
             })
           );
-        } else if (message.type === 'mark_read' && userId) {
+        } else if (message.type === "mark_read" && userId) {
           const { notificationId } = message.data;
           await db
             .update(datingNotifications)
@@ -65,38 +65,38 @@ export function setupWebSocketServer(wss: WebSocketServer) {
 
           ws.send(
             JSON.stringify({
-              type: 'notification_read',
+              type: "notification_read",
               data: { notificationId },
               timestamp: new Date().toISOString(),
             })
           );
-        } else if (message.type === 'ping') {
+        } else if (message.type === "ping") {
           ws.send(
             JSON.stringify({
-              type: 'pong',
+              type: "pong",
               timestamp: new Date().toISOString(),
             })
           );
         }
       } catch (error) {
-        console.error('[WebSocket] Error processing message:', error);
+        console.error("[WebSocket] Error processing message:", error);
       }
     });
 
-    ws.on('pong', () => {
+    ws.on("pong", () => {
       if (userId && clients.has(userId)) {
         const userClients = clients.get(userId)!;
-        const client = userClients.find((c) => c.ws === ws);
+        const client = userClients.find(c => c.ws === ws);
         if (client) {
           client.isAlive = true;
         }
       }
     });
 
-    ws.on('close', () => {
+    ws.on("close", () => {
       if (userId && clients.has(userId)) {
         const userClients = clients.get(userId)!;
-        const index = userClients.findIndex((c) => c.ws === ws);
+        const index = userClients.findIndex(c => c.ws === ws);
         if (index > -1) {
           userClients.splice(index, 1);
         }
@@ -104,18 +104,18 @@ export function setupWebSocketServer(wss: WebSocketServer) {
           clients.delete(userId);
         }
       }
-      console.log('[WebSocket] Connection closed');
+      console.log("[WebSocket] Connection closed");
     });
 
-    ws.on('error', (error) => {
-      console.error('[WebSocket] Error:', error);
+    ws.on("error", error => {
+      console.error("[WebSocket] Error:", error);
     });
   });
 
   // Heartbeat to detect dead connections
   const heartbeatInterval = setInterval(() => {
-    clients.forEach((userClients) => {
-      userClients.forEach((client) => {
+    clients.forEach(userClients => {
+      userClients.forEach(client => {
         if (!client.isAlive) {
           client.ws.terminate();
           return;
@@ -127,7 +127,7 @@ export function setupWebSocketServer(wss: WebSocketServer) {
   }, 30000);
 
   // Cleanup on server close
-  wss.on('close', () => {
+  wss.on("close", () => {
     clearInterval(heartbeatInterval);
   });
 }
@@ -135,7 +135,13 @@ export function setupWebSocketServer(wss: WebSocketServer) {
 export async function broadcastNotification(
   userId: number,
   notification: {
-    type: 'match' | 'message' | 'superlike' | 'like' | 'profile_view' | 'message_read';
+    type:
+      | "match"
+      | "message"
+      | "superlike"
+      | "like"
+      | "profile_view"
+      | "message_read";
     content: string;
     relatedUserId?: number;
     relatedUserName?: string;
@@ -149,7 +155,7 @@ export async function broadcastNotification(
   }
 
   const message = JSON.stringify({
-    type: 'notification',
+    type: "notification",
     data: {
       ...notification,
       createdAt: new Date().toISOString(),
@@ -157,7 +163,7 @@ export async function broadcastNotification(
     timestamp: new Date().toISOString(),
   });
 
-  userClients.forEach((client) => {
+  userClients.forEach(client => {
     if (client.ws.readyState === WebSocket.OPEN) {
       client.ws.send(message);
     }
@@ -169,29 +175,32 @@ export async function broadcastNotification(
 export async function broadcastMatch(
   userId1: number,
   userId2: number,
-  matchType: 'like' | 'superlike' | 'mutual_like' | 'mutual_superlike'
+  matchType: "like" | "superlike" | "mutual_like" | "mutual_superlike"
 ) {
-  const isMutual = matchType.startsWith('mutual_');
+  const isMutual = matchType.startsWith("mutual_");
 
   if (isMutual) {
     // Send to both users
     await broadcastNotification(userId1, {
-      type: 'match',
-      content: 'You have a new mutual match!',
+      type: "match",
+      content: "You have a new mutual match!",
       relatedUserId: userId2,
     });
 
     await broadcastNotification(userId2, {
-      type: 'match',
-      content: 'You have a new mutual match!',
+      type: "match",
+      content: "You have a new mutual match!",
       relatedUserId: userId1,
     });
   } else {
     // Send only to the recipient
     const recipientId = userId2;
     await broadcastNotification(recipientId, {
-      type: matchType === 'superlike' ? 'superlike' : 'like',
-      content: matchType === 'superlike' ? 'Someone super liked you!' : 'Someone liked you!',
+      type: matchType === "superlike" ? "superlike" : "like",
+      content:
+        matchType === "superlike"
+          ? "Someone super liked you!"
+          : "Someone liked you!",
       relatedUserId: userId1,
     });
   }
@@ -204,16 +213,19 @@ export async function broadcastMessage(
   content: string
 ) {
   await broadcastNotification(recipientId, {
-    type: 'message',
+    type: "message",
     content: `New message: ${content.substring(0, 50)}...`,
     relatedUserId: senderId,
   });
 }
 
-export async function broadcastProfileView(viewerId: number, profileOwnerId: number) {
+export async function broadcastProfileView(
+  viewerId: number,
+  profileOwnerId: number
+) {
   await broadcastNotification(profileOwnerId, {
-    type: 'profile_view',
-    content: 'Someone viewed your profile',
+    type: "profile_view",
+    content: "Someone viewed your profile",
     relatedUserId: viewerId,
   });
 }
@@ -224,8 +236,8 @@ export async function broadcastMessageRead(
   readerId: number
 ) {
   await broadcastNotification(senderId, {
-    type: 'message_read',
-    content: 'Your message was read',
+    type: "message_read",
+    content: "Your message was read",
     relatedUserId: readerId,
   });
 }

@@ -1,6 +1,6 @@
 export const healthCheck = async () => {
   return {
-    status: 'healthy',
+    status: "healthy",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),

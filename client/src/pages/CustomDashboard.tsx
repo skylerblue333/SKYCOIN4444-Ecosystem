@@ -2,7 +2,13 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Search, Settings } from "lucide-react";
 
@@ -33,7 +39,9 @@ export default function CustomDashboard() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold">CustomDashboard</h1>
-            <p className="text-muted-foreground mt-2">Create custom dashboard</p>
+            <p className="text-muted-foreground mt-2">
+              Create custom dashboard
+            </p>
           </div>
           <Button>
             <Plus className="w-4 h-4 mr-2" />
@@ -48,7 +56,7 @@ export default function CustomDashboard() {
               <Input
                 placeholder="Search..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="max-w-sm"
               />
               <Button variant="outline" size="icon">

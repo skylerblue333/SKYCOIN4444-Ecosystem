@@ -249,7 +249,10 @@ describe("Token Distribution & Supply", () => {
 
   it("all tokens circulating after full vesting", () => {
     const result = calculateCirculatingSupply(SKY444_DISTRIBUTION, 120); // 10 years
-    const totalAmount = SKY444_DISTRIBUTION.reduce((sum, d) => sum + d.amount, 0);
+    const totalAmount = SKY444_DISTRIBUTION.reduce(
+      (sum, d) => sum + d.amount,
+      0
+    );
     expect(result.circulating).toBeCloseTo(totalAmount, -2);
     expect(result.percentCirculating).toBeCloseTo(100, 0);
   });
@@ -392,8 +395,12 @@ describe("Formatting Utilities", () => {
   });
 
   it("truncates wallet addresses", () => {
-    expect(truncateAddress("0x1234567890abcdef1234567890abcdef12345678")).toBe("0x1234...5678");
-    expect(truncateAddress("0x1234567890abcdef1234567890abcdef12345678", 8, 6)).toBe("0x123456...345678");
+    expect(truncateAddress("0x1234567890abcdef1234567890abcdef12345678")).toBe(
+      "0x1234...5678"
+    );
+    expect(
+      truncateAddress("0x1234567890abcdef1234567890abcdef12345678", 8, 6)
+    ).toBe("0x123456...345678");
   });
 });
 
@@ -413,7 +420,9 @@ describe("Utility Functions", () => {
   });
 
   it("sanitizes strings", () => {
-    expect(sanitizeString("<script>alert('xss')</script>")).not.toContain("<script>");
+    expect(sanitizeString("<script>alert('xss')</script>")).not.toContain(
+      "<script>"
+    );
     expect(sanitizeString("normal text")).toBe("normal text");
     expect(sanitizeString("  spaces  ")).toBe("spaces");
   });

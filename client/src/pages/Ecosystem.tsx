@@ -17,7 +17,7 @@ import {
   Database,
   Globe,
   Rocket,
-  CheckCircle2,
+  CheckCircle,
   ArrowRight,
   Zap,
   Users,
@@ -34,31 +34,54 @@ function GitHubSection() {
         <h2 className="text-2xl md:text-3xl font-bold mb-3 flex items-center justify-center gap-2">
           <GitBranch className="w-7 h-7" /> Open Source
         </h2>
-        <p className="text-muted-foreground">SKYCOIN4444 is built in public. Explore the codebase.</p>
+        <p className="text-muted-foreground">
+          SKYCOIN4444 is built in public. Explore the codebase.
+        </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {(repos || []).map((repo: any) => (
-          <a key={repo.name} href={repo.url} target="_blank" rel="noopener noreferrer"
-            className="stat-card hover:border-[oklch(0.72 0.28 305)]/50 hover:-translate-y-0.5 transition-all duration-200 block">
+          <a
+            key={repo.name}
+            href={repo.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="stat-card hover:border-[oklch(0.72 0.28 305)]/50 hover:-translate-y-0.5 transition-all duration-200 block"
+          >
             <div className="flex items-start justify-between mb-2">
-              <div className="font-semibold text-sm truncate flex-1">{repo.name}</div>
+              <div className="font-semibold text-sm truncate flex-1">
+                {repo.name}
+              </div>
               <ExternalLink className="w-3.5 h-3.5 text-muted-foreground shrink-0 ml-2" />
             </div>
-            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{repo.description}</p>
+            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+              {repo.description}
+            </p>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {repo.language && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[oklch(0.72 0.22 295)]" />{repo.language}</span>}
-              <span className="flex items-center gap-1"><Star className="w-3 h-3" />{repo.stars}</span>
-              <span className="flex items-center gap-1"><GitFork className="w-3 h-3" />{repo.forks}</span>
+              {repo.language && (
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-[oklch(0.72 0.22 295)]" />
+                  {repo.language}
+                </span>
+              )}
+              <span className="flex items-center gap-1">
+                <Star className="w-3 h-3" />
+                {repo.stars}
+              </span>
+              <span className="flex items-center gap-1">
+                <GitFork className="w-3 h-3" />
+                {repo.forks}
+              </span>
             </div>
           </a>
         ))}
-        {!repos && [0,1,2].map(i => (
-          <div key={i} className="stat-card animate-pulse">
-            <div className="h-4 bg-white/10 rounded mb-2 w-3/4" />
-            <div className="h-3 bg-white/10 rounded mb-3" />
-            <div className="h-3 bg-white/10 rounded w-1/2" />
-          </div>
-        ))}
+        {!repos &&
+          [0, 1, 2].map(i => (
+            <div key={i} className="stat-card animate-pulse">
+              <div className="h-4 bg-white/10 rounded mb-2 w-3/4" />
+              <div className="h-3 bg-white/10 rounded mb-3" />
+              <div className="h-3 bg-white/10 rounded w-1/2" />
+            </div>
+          ))}
       </div>
     </div>
   );
@@ -273,17 +296,21 @@ export default function Ecosystem() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[oklch(0.72 0.28 305)]/30 bg-[oklch(0.72 0.28 305)]/5 mb-6">
             <Rocket className="h-3 w-3 text-[oklch(0.72 0.28 305)]" />
-            <span className="text-xs font-mono text-[oklch(0.72 0.28 305)]">FULL ECOSYSTEM</span>
+            <span className="text-xs font-mono text-[oklch(0.72 0.28 305)]">
+              FULL ECOSYSTEM
+            </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            The <span className="text-[oklch(0.72 0.28 305)]">SKYCOIN4444</span> Ecosystem
+            The <span className="text-[oklch(0.72 0.28 305)]">SKYCOIN4444</span>{" "}
+            Ecosystem
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
-            Eight fully integrated sectors. Click any card to explore that section.
+            Eight fully integrated sectors. Click any card to explore that
+            section.
           </p>
           {/* Quick nav pills */}
           <div className="flex flex-wrap justify-center gap-2 mb-4">
-            {quickLinks.map((link) => (
+            {quickLinks.map(link => (
               <Link key={link.href} href={link.href}>
                 <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-border/50 bg-card hover:border-[oklch(0.72 0.28 305)]/50 hover:bg-[oklch(0.72 0.28 305)]/5 transition-all duration-200 cursor-pointer">
                   <link.icon className="w-3 h-3" />
@@ -299,27 +326,45 @@ export default function Ecosystem() {
         {(stats || tokenMetrics) && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12">
             <div className="stat-card text-center py-3">
-              <div className="text-2xl font-bold text-[oklch(0.72 0.28 305)]">{stats?.totalUsers?.toLocaleString() ?? "—"}</div>
-              <div className="text-xs text-muted-foreground mt-1">Total Users</div>
+              <div className="text-2xl font-bold text-[oklch(0.72 0.28 305)]">
+                {stats?.totalUsers?.toLocaleString() ?? "—"}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Total Users
+              </div>
             </div>
             <div className="stat-card text-center py-3">
-              <div className="text-2xl font-bold text-[oklch(0.7_0.15_280)]">{stats?.totalPosts?.toLocaleString() ?? "—"}</div>
-              <div className="text-xs text-muted-foreground mt-1">Posts Created</div>
+              <div className="text-2xl font-bold text-[oklch(0.7_0.15_280)]">
+                {stats?.totalPosts?.toLocaleString() ?? "—"}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Posts Created
+              </div>
             </div>
             <div className="stat-card text-center py-3">
-              <div className="text-2xl font-bold text-[oklch(0.8_0.15_90)]">{tokenMetrics?.totalSupply ? `${(tokenMetrics.totalSupply / 1e9).toFixed(1)}B` : "—"}</div>
-              <div className="text-xs text-muted-foreground mt-1">SKY444 Price</div>
+              <div className="text-2xl font-bold text-[oklch(0.8_0.15_90)]">
+                {tokenMetrics?.totalSupply
+                  ? `${(tokenMetrics.totalSupply / 1e9).toFixed(1)}B`
+                  : "—"}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                SKY444 Price
+              </div>
             </div>
             <div className="stat-card text-center py-3">
-              <div className="text-2xl font-bold text-[oklch(0.7_0.15_30)]">{stats?.totalStreams?.toLocaleString() ?? "—"}</div>
-              <div className="text-xs text-muted-foreground mt-1">Live Streams</div>
+              <div className="text-2xl font-bold text-[oklch(0.7_0.15_30)]">
+                {stats?.totalStreams?.toLocaleString() ?? "—"}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Live Streams
+              </div>
             </div>
           </div>
         )}
 
         {/* Sectors Grid — ALL CLICKABLE */}
         <div className="grid md:grid-cols-2 gap-6 mb-20">
-          {sectors.map((sector) => (
+          {sectors.map(sector => (
             <Link key={sector.name} href={sector.href}>
               <div className="stat-card group cursor-pointer hover:border-[oklch(0.72 0.28 305)]/60 hover:shadow-lg hover:shadow-[oklch(0.72 0.28 305)]/5 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.99]">
                 {/* Card Header */}
@@ -327,13 +372,22 @@ export default function Ecosystem() {
                   <div className="flex items-center gap-3">
                     <div
                       className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `color-mix(in oklch, ${sector.color} 15%, transparent)` }}
+                      style={{
+                        backgroundColor: `color-mix(in oklch, ${sector.color} 15%, transparent)`,
+                      }}
                     >
-                      <sector.icon className="w-6 h-6" style={{ color: sector.color }} />
+                      <sector.icon
+                        className="w-6 h-6"
+                        style={{ color: sector.color }}
+                      />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold leading-tight">{sector.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">{sector.tagline}</p>
+                      <h3 className="text-xl font-bold leading-tight">
+                        {sector.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {sector.tagline}
+                      </p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -342,7 +396,10 @@ export default function Ecosystem() {
                     </span>
                     <span
                       className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: `color-mix(in oklch, ${sector.color} 12%, transparent)`, color: sector.color }}
+                      style={{
+                        backgroundColor: `color-mix(in oklch, ${sector.color} 12%, transparent)`,
+                        color: sector.color,
+                      }}
                     >
                       {sector.badge}
                     </span>
@@ -350,19 +407,28 @@ export default function Ecosystem() {
                 </div>
                 {/* Features */}
                 <ul className="space-y-1.5 mb-4">
-                  {sector.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: sector.color }} />
+                  {sector.features.map(feature => (
+                    <li
+                      key={feature}
+                      className="flex items-center gap-2 text-sm text-muted-foreground"
+                    >
+                      <CheckCircle
+                        className="w-3.5 h-3.5 shrink-0"
+                        style={{ color: sector.color }}
+                      />
                       {feature}
                     </li>
                   ))}
                 </ul>
                 {/* Sub-links */}
                 <div className="flex flex-wrap gap-1.5 mb-4">
-                  {sector.subLinks.map((sub) => (
+                  {sector.subLinks.map(sub => (
                     <span
                       key={sub.href}
-                      onClick={(e) => { e.preventDefault(); navigate(sub.href); }}
+                      onClick={e => {
+                        e.preventDefault();
+                        navigate(sub.href);
+                      }}
                       className="text-xs px-2 py-1 rounded-md border border-border/50 bg-background/50 hover:border-[oklch(0.72 0.28 305)]/40 hover:bg-[oklch(0.72 0.28 305)]/5 transition-colors cursor-pointer"
                     >
                       {sub.label}
@@ -371,7 +437,9 @@ export default function Ecosystem() {
                 </div>
                 {/* CTA Row */}
                 <div className="flex items-center justify-between pt-3 border-t border-border/30">
-                  <span className="text-xs text-muted-foreground">Tap to explore</span>
+                  <span className="text-xs text-muted-foreground">
+                    Tap to explore
+                  </span>
                   <div
                     className="flex items-center gap-1 text-xs font-semibold group-hover:gap-2 transition-all duration-200"
                     style={{ color: sector.color }}
@@ -389,18 +457,21 @@ export default function Ecosystem() {
         <div className="mb-20">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-3">
-              Technology <span className="text-[oklch(0.72 0.28 305)]">Stack</span>
+              Technology{" "}
+              <span className="text-[oklch(0.72 0.28 305)]">Stack</span>
             </h2>
             <p className="text-muted-foreground">
               Built on modern, battle-tested infrastructure designed for scale.
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {techStack.map((tech) => (
+            {techStack.map(tech => (
               <div key={tech.label} className="stat-card text-center">
                 <tech.icon className="w-6 h-6 text-[oklch(0.72 0.28 305)] mx-auto mb-2" />
                 <div className="text-xs font-semibold mb-1">{tech.label}</div>
-                <div className="text-xs text-muted-foreground">{tech.category}</div>
+                <div className="text-xs text-muted-foreground">
+                  {tech.category}
+                </div>
               </div>
             ))}
           </div>
@@ -411,11 +482,14 @@ export default function Ecosystem() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-[oklch(0.7_0.15_280)] opacity-5 blur-[80px] rounded-full" />
           <div className="relative z-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-6">
-              What Makes This <span className="text-[oklch(0.72 0.28 305)]">Different</span>
+              What Makes This{" "}
+              <span className="text-[oklch(0.72 0.28 305)]">Different</span>
             </h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <h3 className="font-semibold mb-3 text-muted-foreground uppercase text-xs tracking-wider">Traditional Approach</h3>
+                <h3 className="font-semibold mb-3 text-muted-foreground uppercase text-xs tracking-wider">
+                  Traditional Approach
+                </h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500/70" />
@@ -440,26 +514,28 @@ export default function Ecosystem() {
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold mb-3 text-[oklch(0.72 0.28 305)] uppercase text-xs tracking-wider">SKYCOIN4444 Approach</h3>
+                <h3 className="font-semibold mb-3 text-[oklch(0.72 0.28 305)] uppercase text-xs tracking-wider">
+                  SKYCOIN4444 Approach
+                </h3>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
+                    <CheckCircle className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
                     One unified platform
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
+                    <CheckCircle className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
                     $5M–$20M+ equivalent value
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
+                    <CheckCircle className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
                     Engineered into existence now
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
+                    <CheckCircle className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
                     Seamless cross-sector integration
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
+                    <CheckCircle className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)]" />
                     Single codebase, infinite scale
                   </li>
                 </ul>
@@ -481,27 +557,42 @@ export default function Ecosystem() {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/proof-vault">
-              <Button variant="outline" className="border-[oklch(0.72 0.28 305)]/30 gap-2">
+              <Button
+                variant="outline"
+                className="border-[oklch(0.72 0.28 305)]/30 gap-2"
+              >
                 <Shield className="w-4 h-4" /> Proof Vault
               </Button>
             </Link>
             <Link href="/staking">
-              <Button variant="outline" className="border-[oklch(0.72 0.28 305)]/30 gap-2">
+              <Button
+                variant="outline"
+                className="border-[oklch(0.72 0.28 305)]/30 gap-2"
+              >
                 <TrendingUp className="w-4 h-4" /> Staking
               </Button>
             </Link>
             <Link href="/token">
-              <Button variant="outline" className="border-[oklch(0.72 0.28 305)]/30 gap-2">
+              <Button
+                variant="outline"
+                className="border-[oklch(0.72 0.28 305)]/30 gap-2"
+              >
                 <Layers className="w-4 h-4" /> SKY444
               </Button>
             </Link>
             <Link href="/trading">
-              <Button variant="outline" className="border-[oklch(0.72 0.28 305)]/30 gap-2">
+              <Button
+                variant="outline"
+                className="border-[oklch(0.72 0.28 305)]/30 gap-2"
+              >
                 <Bot className="w-4 h-4" /> AI Trading
               </Button>
             </Link>
             <Link href="/marketplace">
-              <Button variant="outline" className="border-[oklch(0.72 0.28 305)]/30 gap-2">
+              <Button
+                variant="outline"
+                className="border-[oklch(0.72 0.28 305)]/30 gap-2"
+              >
                 <Store className="w-4 h-4" /> Marketplace
               </Button>
             </Link>

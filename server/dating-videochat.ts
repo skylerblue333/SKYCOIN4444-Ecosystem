@@ -1,13 +1,13 @@
-import { db } from './db';
-import { datingMatches } from '../drizzle/schema';
-import { eq, and } from 'drizzle-orm';
+import { db } from "./db";
+import { datingMatches } from "../drizzle/schema";
+import { eq, and } from "drizzle-orm";
 
 export interface VideoCallSession {
   id: string;
   matchId: number;
   initiatorId: number;
   recipientId: number;
-  status: 'pending' | 'active' | 'ended';
+  status: "pending" | "active" | "ended";
   startedAt?: Date;
   endedAt?: Date;
   duration?: number;
@@ -21,7 +21,7 @@ export interface ICECandidate {
 }
 
 export interface SDPOffer {
-  type: 'offer' | 'answer';
+  type: "offer" | "answer";
   sdp: string;
 }
 
@@ -45,7 +45,7 @@ export async function initiateVideoCall(
     matchId,
     initiatorId,
     recipientId,
-    status: 'pending',
+    status: "pending",
   };
 
   activeSessions.set(callId, session);
@@ -65,7 +65,7 @@ export function acceptVideoCall(callId: string): VideoCallSession | null {
   const session = activeSessions.get(callId);
   if (!session) return null;
 
-  session.status = 'active';
+  session.status = "active";
   session.startedAt = new Date();
 
   console.log(`[Video Call] Accepted: ${callId}`);
@@ -90,7 +90,7 @@ export function endVideoCall(callId: string): VideoCallSession | null {
   const session = activeSessions.get(callId);
   if (!session) return null;
 
-  session.status = 'ended';
+  session.status = "ended";
   session.endedAt = new Date();
 
   if (session.startedAt) {
@@ -106,9 +106,7 @@ export function endVideoCall(callId: string): VideoCallSession | null {
     iceCandidates.delete(callId);
   }, 5000);
 
-  console.log(
-    `[Video Call] Ended: ${callId} (Duration: ${session.duration}s)`
-  );
+  console.log(`[Video Call] Ended: ${callId} (Duration: ${session.duration}s)`);
 
   return session;
 }
@@ -155,9 +153,8 @@ export async function recordCallMetrics(
 }
 
 export function getActiveCallCount(): number {
-  return Array.from(activeSessions.values()).filter(
-    (s) => s.status === 'active'
-  ).length;
+  return Array.from(activeSessions.values()).filter(s => s.status === "active")
+    .length;
 }
 
 export function getCallStats(): {
@@ -167,9 +164,9 @@ export function getCallStats(): {
   averageDuration: number;
 } {
   const sessions = Array.from(activeSessions.values());
-  const activeCalls = sessions.filter((s) => s.status === 'active').length;
-  const pendingCalls = sessions.filter((s) => s.status === 'pending').length;
-  const endedCalls = sessions.filter((s) => s.status === 'ended');
+  const activeCalls = sessions.filter(s => s.status === "active").length;
+  const pendingCalls = sessions.filter(s => s.status === "pending").length;
+  const endedCalls = sessions.filter(s => s.status === "ended");
 
   const averageDuration =
     endedCalls.length > 0

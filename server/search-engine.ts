@@ -106,7 +106,11 @@ export class SearchIndex {
   /**
    * Calculate TF-IDF score for a term in a document
    */
-  private calculateTfIdf(term: string, tokens: string[], totalDocs: number): number {
+  private calculateTfIdf(
+    term: string,
+    tokens: string[],
+    totalDocs: number
+  ): number {
     const tf = tokens.filter(t => t === term).length / tokens.length;
     const docsWithTerm = this.invertedIndex.get(term)?.size || 1;
     const idf = Math.log(totalDocs / docsWithTerm);
@@ -161,7 +165,11 @@ export class SearchIndex {
   /**
    * Search the index with scoring and ranking
    */
-  search(query: SearchQuery): { results: SearchResult[]; total: number; facets: FacetResult[] } {
+  search(query: SearchQuery): {
+    results: SearchResult[];
+    total: number;
+    facets: FacetResult[];
+  } {
     const startTime = Date.now();
     const tokens = this.tokenize(query.query);
     const limit = query.limit || 20;
@@ -179,7 +187,11 @@ export class SearchIndex {
         if (!entry) continue;
 
         // Filter by type if specified
-        if (query.types && query.types.length > 0 && !query.types.includes(entry.type)) {
+        if (
+          query.types &&
+          query.types.length > 0 &&
+          !query.types.includes(entry.type)
+        ) {
           continue;
         }
 
@@ -194,12 +206,19 @@ export class SearchIndex {
     // Also do prefix matching for partial queries
     if (tokens.length > 0) {
       const lastToken = tokens[tokens.length - 1];
-      for (const [indexToken, docIds] of Array.from(this.invertedIndex.entries())) {
+      for (const [indexToken, docIds] of Array.from(
+        this.invertedIndex.entries()
+      )) {
         if (indexToken.startsWith(lastToken) && indexToken !== lastToken) {
           for (const docId of Array.from(docIds)) {
             const entry = this.index.get(docId);
             if (!entry) continue;
-            if (query.types && query.types.length > 0 && !query.types.includes(entry.type)) continue;
+            if (
+              query.types &&
+              query.types.length > 0 &&
+              !query.types.includes(entry.type)
+            )
+              continue;
             const currentScore = candidateScores.get(docId) || 0;
             candidateScores.set(docId, currentScore + 0.3); // Partial match bonus
           }
@@ -208,8 +227,9 @@ export class SearchIndex {
     }
 
     // Sort by score
-    let sorted = Array.from(candidateScores.entries())
-      .sort((a, b) => b[1] - a[1]);
+    let sorted = Array.from(candidateScores.entries()).sort(
+      (a, b) => b[1] - a[1]
+    );
 
     // Apply sorting preference
     if (query.sortBy === "recent") {
@@ -272,7 +292,10 @@ export class SearchIndex {
 
     // Hashtag suggestions
     for (const token of Array.from(this.invertedIndex.keys())) {
-      if (token.startsWith(`#${normalizedPrefix}`) || token.startsWith(normalizedPrefix)) {
+      if (
+        token.startsWith(`#${normalizedPrefix}`) ||
+        token.startsWith(normalizedPrefix)
+      ) {
         if (token.startsWith("#")) {
           suggestions.push({
             text: token,
@@ -313,15 +336,15 @@ export class SearchIndex {
       }
     }
 
-    return suggestions
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+    return suggestions.sort((a, b) => b.score - a.score).slice(0, limit);
   }
 
   /**
    * Get trending searches
    */
-  getTrendingSearches(limit: number = 10): Array<{ query: string; count: number }> {
+  getTrendingSearches(
+    limit: number = 10
+  ): Array<{ query: string; count: number }> {
     return Array.from(this.popularQueries.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit)
@@ -381,7 +404,11 @@ export class SearchIndex {
       if (idx >= 0) {
         const start = Math.max(0, idx - 40);
         const end = Math.min(content.length, idx + token.length + 80);
-        return (start > 0 ? "..." : "") + content.slice(start, end) + (end < content.length ? "..." : "");
+        return (
+          (start > 0 ? "..." : "") +
+          content.slice(start, end) +
+          (end < content.length ? "..." : "")
+        );
       }
     }
     return content.slice(0, 150);
@@ -389,13 +416,20 @@ export class SearchIndex {
 
   private buildUrl(entry: IndexEntry): string {
     switch (entry.type) {
-      case "post": return `/social?post=${entry.id}`;
-      case "user": return `/profile/${entry.id}`;
-      case "community": return `/community/${entry.id}`;
-      case "listing": return `/marketplace?listing=${entry.id}`;
-      case "stream": return `/live?stream=${entry.id}`;
-      case "channel": return `/community?channel=${entry.id}`;
-      default: return `/search?id=${entry.id}`;
+      case "post":
+        return `/social?post=${entry.id}`;
+      case "user":
+        return `/profile/${entry.id}`;
+      case "community":
+        return `/community/${entry.id}`;
+      case "listing":
+        return `/marketplace?listing=${entry.id}`;
+      case "stream":
+        return `/live?stream=${entry.id}`;
+      case "channel":
+        return `/community?channel=${entry.id}`;
+      default:
+        return `/search?id=${entry.id}`;
     }
   }
 
@@ -416,7 +450,10 @@ export class SearchIndex {
     return highlights.slice(0, 3);
   }
 
-  private buildFacets(scores: Map<string, number>, query: SearchQuery): FacetResult[] {
+  private buildFacets(
+    scores: Map<string, number>,
+    query: SearchQuery
+  ): FacetResult[] {
     const typeCounts = new Map<string, number>();
 
     for (const docId of Array.from(scores.keys())) {
@@ -425,17 +462,27 @@ export class SearchIndex {
       typeCounts.set(entry.type, (typeCounts.get(entry.type) || 0) + 1);
     }
 
-    return [{
-      field: "type",
-      values: Array.from(typeCounts.entries())
-        .map(([value, count]) => ({ value, count }))
-        .sort((a, b) => b.count - a.count),
-    }];
+    return [
+      {
+        field: "type",
+        values: Array.from(typeCounts.entries())
+          .map(([value, count]) => ({ value, count }))
+          .sort((a, b) => b.count - a.count),
+      },
+    ];
   }
 
-  private trackSearch(query: string, resultCount: number, userId: number | undefined, duration: number): void {
+  private trackSearch(
+    query: string,
+    resultCount: number,
+    userId: number | undefined,
+    duration: number
+  ): void {
     const normalized = query.toLowerCase().trim();
-    this.popularQueries.set(normalized, (this.popularQueries.get(normalized) || 0) + 1);
+    this.popularQueries.set(
+      normalized,
+      (this.popularQueries.get(normalized) || 0) + 1
+    );
 
     if (userId) {
       const recent = this.recentSearches.get(userId) || [];
@@ -582,7 +629,11 @@ export class SearchService {
   /**
    * Perform a unified search
    */
-  search(query: SearchQuery): { results: SearchResult[]; total: number; facets: FacetResult[] } {
+  search(query: SearchQuery): {
+    results: SearchResult[];
+    total: number;
+    facets: FacetResult[];
+  } {
     return this.index.search(query);
   }
 
@@ -644,7 +695,12 @@ export class SearchAnalyticsService {
   private searches: SearchAnalytics[] = [];
   private clickthrough: Map<string, Map<string, number>> = new Map();
 
-  recordSearch(query: string, resultCount: number, userId?: number, duration: number = 0): void {
+  recordSearch(
+    query: string,
+    resultCount: number,
+    userId?: number,
+    duration: number = 0
+  ): void {
     this.searches.push({
       query: query.toLowerCase().trim(),
       resultCount,
@@ -669,7 +725,9 @@ export class SearchAnalyticsService {
     clicks.set(resultId, (clicks.get(resultId) || 0) + 1);
   }
 
-  getZeroResultQueries(limit: number = 20): Array<{ query: string; count: number }> {
+  getZeroResultQueries(
+    limit: number = 20
+  ): Array<{ query: string; count: number }> {
     const zeroCounts = new Map<string, number>();
     for (const search of this.searches) {
       if (search.resultCount === 0) {
@@ -695,7 +753,9 @@ export class SearchAnalyticsService {
 
   getClickThroughRate(query: string): number {
     const normalized = query.toLowerCase().trim();
-    const totalSearches = this.searches.filter(s => s.query === normalized).length;
+    const totalSearches = this.searches.filter(
+      s => s.query === normalized
+    ).length;
     const clicks = this.clickthrough.get(normalized);
     if (!clicks || totalSearches === 0) return 0;
 
@@ -720,7 +780,8 @@ export class SearchAnalyticsService {
       totalSearches: this.searches.length,
       uniqueQueries,
       avgResponseTime: this.getAverageResponseTime(),
-      zeroResultRate: this.searches.length > 0 ? zeroResults / this.searches.length : 0,
+      zeroResultRate:
+        this.searches.length > 0 ? zeroResults / this.searches.length : 0,
       searchesLast24h: this.getSearchVolume(24),
     };
   }

@@ -3,18 +3,22 @@
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 22+
 - pnpm 9+
 - Docker (optional, for containerized deployment)
 
 ### Installation
+
 ```bash
 cd build-output
 pnpm install --frozen-lockfile
 ```
 
 ### Environment Variables
+
 Create a `.env.production` file with:
+
 ```
 DATABASE_URL=<your-database-url>
 JWT_SECRET=<your-jwt-secret>
@@ -24,6 +28,7 @@ BUILT_IN_FORGE_API_KEY=<your-forge-key>
 ```
 
 ### Start Production Server
+
 ```bash
 pnpm start:production
 ```
@@ -31,18 +36,21 @@ pnpm start:production
 ## Architecture
 
 ### Client (React 19 + Vite)
+
 - 350+ pages and components
 - Real-time updates with WebSocket
 - Responsive dark theme UI
 - Optimized bundle: ~2.4MB gzipped
 
 ### Server (Express + tRPC)
+
 - 6 real backend services
 - 44 AI agents
 - Crypto infrastructure
 - Database: MySQL/TiDB
 
 ### Features
+
 1. **Hope AI** - LLM integration with 12 capabilities
 2. **Sky School** - Complete LMS with quizzes and forums
 3. **Social Network** - Real-time posts, messages, notifications
@@ -53,18 +61,21 @@ pnpm start:production
 ## Deployment Options
 
 ### Option 1: Manus Platform (Recommended)
+
 - One-click deployment
 - Auto-scaling
 - Custom domains
 - Built-in monitoring
 
 ### Option 2: Docker
+
 ```bash
 docker build -t skycoin4444 .
 docker run -p 3000:3000 skycoin4444
 ```
 
 ### Option 3: Traditional Hosting
+
 - Node.js hosting (Railway, Render, Heroku)
 - Separate frontend CDN (Vercel, Netlify)
 - Database hosting (AWS RDS, Supabase)
@@ -72,16 +83,19 @@ docker run -p 3000:3000 skycoin4444
 ## Monitoring & Maintenance
 
 ### Health Checks
+
 - API endpoint: `/api/health`
 - Database connectivity: `/api/db/health`
 - Cache status: `/api/cache/health`
 
 ### Logs
+
 - Server logs: `logs/server.log`
 - Error logs: `logs/error.log`
 - Access logs: `logs/access.log`
 
 ### Performance Metrics
+
 - Response time: < 200ms (p95)
 - Database queries: < 50ms (p95)
 - Bundle size: 2.4MB gzipped
@@ -90,12 +104,14 @@ docker run -p 3000:3000 skycoin4444
 ## Scaling
 
 ### Horizontal Scaling
+
 - Load balancer (nginx, HAProxy)
 - Multiple Node.js instances
 - Shared database (TiDB, PostgreSQL)
 - Redis cache layer
 
 ### Vertical Scaling
+
 - Increase CPU/RAM
 - Optimize database indexes
 - Enable query caching
@@ -104,17 +120,20 @@ docker run -p 3000:3000 skycoin4444
 ## Security
 
 ### SSL/TLS
+
 - HTTPS enforced
 - Let's Encrypt certificates
 - HSTS headers enabled
 
 ### Authentication
+
 - OAuth 2.0 (Manus)
 - JWT tokens
 - Secure cookies
 - Rate limiting
 
 ### Data Protection
+
 - Database encryption at rest
 - Encrypted connections
 - GDPR compliance
@@ -123,6 +142,7 @@ docker run -p 3000:3000 skycoin4444
 ## Troubleshooting
 
 ### Build Fails
+
 ```bash
 # Clean and rebuild
 pnpm clean
@@ -131,6 +151,7 @@ pnpm build
 ```
 
 ### Server Won't Start
+
 ```bash
 # Check environment variables
 env | grep DATABASE_URL
@@ -143,6 +164,7 @@ lsof -i :3000
 ```
 
 ### Performance Issues
+
 ```bash
 # Enable profiling
 NODE_ENV=production node --prof server/index.js
@@ -154,6 +176,7 @@ node --inspect server/index.js
 ## Support
 
 For issues or questions:
+
 - GitHub: https://github.com/skyler-spillers/skycoin4444
 - Email: support@skycoin4444.com
 - Discord: https://discord.gg/skycoin4444

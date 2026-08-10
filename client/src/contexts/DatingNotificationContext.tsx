@@ -1,11 +1,23 @@
-import React, { createContext, useContext, useCallback, useState, useEffect } from 'react';
-import { useWebSocket } from '@/hooks/useWebSocket';
-import { useAuth } from '@/_core/hooks/useAuth';
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useState,
+  useEffect,
+} from "react";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export interface DatingNotification {
   id: number;
   userId: number;
-  type: 'match' | 'message' | 'superlike' | 'like' | 'profile_view' | 'message_read';
+  type:
+    | "match"
+    | "message"
+    | "superlike"
+    | "like"
+    | "profile_view"
+    | "message_read";
   content: string;
   relatedUserId?: number;
   relatedUserName?: string;
@@ -23,7 +35,9 @@ interface DatingNotificationContextType {
   deleteNotification: (notificationId: number) => Promise<void>;
 }
 
-const DatingNotificationContext = createContext<DatingNotificationContextType | undefined>(undefined);
+const DatingNotificationContext = createContext<
+  DatingNotificationContextType | undefined
+>(undefined);
 
 // Fallback context for when WebSocket is unavailable
 const defaultContext: DatingNotificationContextType = {
@@ -35,29 +49,33 @@ const defaultContext: DatingNotificationContextType = {
   deleteNotification: async () => {},
 };
 
-export function DatingNotificationProvider({ children }: { children: React.ReactNode }) {
+export function DatingNotificationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<DatingNotification[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
-  const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/dating/notifications/ws`;
+  const wsUrl = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/api/dating/notifications/ws`;
 
   const { isConnected: wsConnected, send } = useWebSocket({
     url: wsUrl,
     onConnect: () => {
-      console.log('[DatingNotifications] WebSocket connected');
+      console.log("[DatingNotifications] WebSocket connected");
       setIsConnected(true);
       // Send auth message first
       if (user?.id) {
         send({
-          type: 'auth',
+          type: "auth",
           data: { userId: user.id },
           timestamp: new Date().toISOString(),
         });
         // Then request to load existing notifications
         setTimeout(() => {
           send({
-            type: 'load_notifications',
+            type: "load_notifications",
             data: { userId: user.id },
             timestamp: new Date().toISOString(),
           });
@@ -65,17 +83,17 @@ export function DatingNotificationProvider({ children }: { children: React.React
       }
     },
     onDisconnect: () => {
-      console.log('[DatingNotifications] WebSocket disconnected');
+      console.log("[DatingNotifications] WebSocket disconnected");
       setIsConnected(false);
     },
-    onMessage: (message) => {
-      if (message.type === 'notification') {
-        setNotifications((prev) => [message.data, ...prev]);
-      } else if (message.type === 'notifications_loaded') {
+    onMessage: message => {
+      if (message.type === "notification") {
+        setNotifications(prev => [message.data, ...prev]);
+      } else if (message.type === "notifications_loaded") {
         setNotifications(message.data || []);
-      } else if (message.type === 'notification_read') {
-        setNotifications((prev) =>
-          prev.map((n) =>
+      } else if (message.type === "notification_read") {
+        setNotifications(prev =>
+          prev.map(n =>
             n.id === message.data.notificationId
               ? { ...n, readAt: new Date().toISOString() }
               : n
@@ -83,8 +101,8 @@ export function DatingNotificationProvider({ children }: { children: React.React
         );
       }
     },
-    onError: (error) => {
-      console.error('[DatingNotifications] WebSocket error:', error);
+    onError: error => {
+      console.error("[DatingNotifications] WebSocket error:", error);
       // Don't block rendering on WebSocket error
     },
     autoReconnect: true,
@@ -92,49 +110,49 @@ export function DatingNotificationProvider({ children }: { children: React.React
     maxReconnectAttempts: 5,
   });
 
-  const unreadCount = notifications.filter((n) => !n.readAt).length;
+  const unreadCount = notifications.filter(n => !n.readAt).length;
 
   const markAsRead = useCallback(async (notificationId: number) => {
     try {
       await fetch(`/api/dating/notifications/${notificationId}/read`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
       });
 
-      setNotifications((prev) =>
-        prev.map((n) =>
+      setNotifications(prev =>
+        prev.map(n =>
           n.id === notificationId
             ? { ...n, readAt: new Date().toISOString() }
             : n
         )
       );
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      console.error("Failed to mark notification as read:", error);
     }
   }, []);
 
   const clearNotifications = useCallback(async () => {
     try {
-      await fetch('/api/dating/notifications/clear', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/dating/notifications/clear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
       });
 
       setNotifications([]);
     } catch (error) {
-      console.error('Failed to clear notifications:', error);
+      console.error("Failed to clear notifications:", error);
     }
   }, []);
 
   const deleteNotification = useCallback(async (notificationId: number) => {
     try {
       await fetch(`/api/dating/notifications/${notificationId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
-      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
     } catch (error) {
-      console.error('Failed to delete notification:', error);
+      console.error("Failed to delete notification:", error);
     }
   }, []);
 

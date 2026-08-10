@@ -5,34 +5,60 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, TrendingUp, Heart, ShoppingCart, Target, Vote, Zap, X } from "lucide-react";
+import {
+  Bell,
+  TrendingUp,
+  Heart,
+  ShoppingCart,
+  Target,
+  Vote,
+  Zap,
+  X,
+} from "lucide-react";
 
 export default function NotificationsHub() {
   const [selectedTab, setSelectedTab] = useState("all");
-  const { data: notifications } = trpc.notifications.getNotifications.useQuery({ limit: 50 });
-  const { data: trading } = trpc.notifications.getTradingAlerts.useQuery({ symbol: undefined });
-  const { data: marketplace } = trpc.notifications.getMarketplaceAlerts.useQuery();
+  const { data: notifications } = trpc.notifications.getNotifications.useQuery({
+    limit: 50,
+  });
+  const { data: trading } = trpc.notifications.getTradingAlerts.useQuery({
+    symbol: undefined,
+  });
+  const { data: marketplace } =
+    trpc.notifications.getMarketplaceAlerts.useQuery();
   const { data: social } = trpc.notifications.getSocialAlerts.useQuery();
 
   const getIconForType = (type: string) => {
     switch (type) {
-      case "trading_signal": return <TrendingUp className="w-5 h-5 text-yellow-400" />;
-      case "new_follower": return <Heart className="w-5 h-5 text-pink-400" />;
-      case "marketplace": return <ShoppingCart className="w-5 h-5 text-cyan-400" />;
-      case "charity": return <Target className="w-5 h-5 text-purple-400" />;
-      case "governance": return <Vote className="w-5 h-5 text-purple-400" />;
-      default: return <Bell className="w-5 h-5 text-blue-400" />;
+      case "trading_signal":
+        return <TrendingUp className="w-5 h-5 text-yellow-400" />;
+      case "new_follower":
+        return <Heart className="w-5 h-5 text-pink-400" />;
+      case "marketplace":
+        return <ShoppingCart className="w-5 h-5 text-cyan-400" />;
+      case "charity":
+        return <Target className="w-5 h-5 text-purple-400" />;
+      case "governance":
+        return <Vote className="w-5 h-5 text-purple-400" />;
+      default:
+        return <Bell className="w-5 h-5 text-blue-400" />;
     }
   };
 
   const getGradientForType = (type: string) => {
     switch (type) {
-      case "trading_signal": return "from-yellow-900/20 to-yellow-900/5 border-yellow-500/20";
-      case "new_follower": return "from-pink-900/20 to-pink-900/5 border-pink-500/20";
-      case "marketplace": return "from-cyan-900/20 to-cyan-900/5 border-cyan-500/20";
-      case "charity": return "from-green-900/20 to-green-900/5 border-purple-500/20";
-      case "governance": return "from-purple-900/20 to-purple-900/5 border-purple-500/20";
-      default: return "from-blue-900/20 to-blue-900/5 border-blue-500/20";
+      case "trading_signal":
+        return "from-yellow-900/20 to-yellow-900/5 border-yellow-500/20";
+      case "new_follower":
+        return "from-pink-900/20 to-pink-900/5 border-pink-500/20";
+      case "marketplace":
+        return "from-cyan-900/20 to-cyan-900/5 border-cyan-500/20";
+      case "charity":
+        return "from-green-900/20 to-green-900/5 border-purple-500/20";
+      case "governance":
+        return "from-purple-900/20 to-purple-900/5 border-purple-500/20";
+      default:
+        return "from-blue-900/20 to-blue-900/5 border-blue-500/20";
     }
   };
 
@@ -46,8 +72,12 @@ export default function NotificationsHub() {
               <Bell className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">Notifications Hub</h1>
-              <p className="text-slate-400">Stay updated with real-time alerts</p>
+              <h1 className="text-3xl font-bold text-white">
+                Notifications Hub
+              </h1>
+              <p className="text-slate-400">
+                Stay updated with real-time alerts
+              </p>
             </div>
           </div>
           <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
@@ -56,7 +86,11 @@ export default function NotificationsHub() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="mb-6">
+        <Tabs
+          value={selectedTab}
+          onValueChange={setSelectedTab}
+          className="mb-6"
+        >
           <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 border border-slate-700/50">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="trading">Trading</TabsTrigger>
@@ -77,15 +111,23 @@ export default function NotificationsHub() {
                   <div className="mt-1">{getIconForType(notif.type)}</div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-semibold text-white">{notif.title}</h3>
-                      {!notif.read && <div className="w-2 h-2 bg-cyan-400 rounded-full" />}
+                      <h3 className="font-semibold text-white">
+                        {notif.title}
+                      </h3>
+                      {!notif.read && (
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full" />
+                      )}
                     </div>
                     <p className="text-sm text-slate-300">{notif.message}</p>
                     <p className="text-xs text-slate-500 mt-2">
                       {new Date(notif.timestamp).toLocaleTimeString()}
                     </p>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400 hover:text-slate-200"
+                  >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -106,8 +148,16 @@ export default function NotificationsHub() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-white">{alert.symbol}</h3>
-                      <Badge className={alert.signal === "BUY" ? "bg-purple-600/20 text-purple-400" : "bg-blue-500/20 text-blue-300"}>
+                      <h3 className="font-semibold text-white">
+                        {alert.symbol}
+                      </h3>
+                      <Badge
+                        className={
+                          alert.signal === "BUY"
+                            ? "bg-purple-600/20 text-purple-400"
+                            : "bg-blue-500/20 text-blue-300"
+                        }
+                      >
                         {alert.signal}
                       </Badge>
                       <Badge className="bg-slate-700 text-slate-300">
@@ -138,8 +188,12 @@ export default function NotificationsHub() {
                     <ShoppingCart className="w-5 h-5 text-cyan-400" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-white mb-1">{alert.message}</h3>
-                    <p className="text-sm text-slate-300">{alert.seller || alert.item}</p>
+                    <h3 className="font-semibold text-white mb-1">
+                      {alert.message}
+                    </h3>
+                    <p className="text-sm text-slate-300">
+                      {alert.seller || alert.item}
+                    </p>
                   </div>
                   <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600">
                     View
@@ -161,7 +215,9 @@ export default function NotificationsHub() {
                     <Heart className="w-5 h-5 text-pink-400" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-white mb-1">{alert.user}</h3>
+                    <h3 className="font-semibold text-white mb-1">
+                      {alert.user}
+                    </h3>
                     <p className="text-sm text-slate-300">{alert.message}</p>
                   </div>
                   <Button className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600">
@@ -187,20 +243,28 @@ export default function NotificationsHub() {
         <div className="grid grid-cols-4 gap-4 mt-8">
           <Card className="bg-gradient-to-br from-cyan-900/20 to-cyan-900/5 border-cyan-500/20 p-4">
             <div className="text-sm text-slate-400 mb-2">Trading Alerts</div>
-            <div className="text-2xl font-bold text-cyan-400">{trading?.alerts.length || 0}</div>
+            <div className="text-2xl font-bold text-cyan-400">
+              {trading?.alerts.length || 0}
+            </div>
           </Card>
           <Card className="bg-gradient-to-br from-yellow-900/20 to-yellow-900/5 border-yellow-500/20 p-4">
             <div className="text-sm text-slate-400 mb-2">Marketplace</div>
-            <div className="text-2xl font-bold text-yellow-400">{marketplace?.alerts.length || 0}</div>
+            <div className="text-2xl font-bold text-yellow-400">
+              {marketplace?.alerts.length || 0}
+            </div>
           </Card>
           <Card className="bg-gradient-to-br from-pink-900/20 to-pink-900/5 border-pink-500/20 p-4">
             <div className="text-sm text-slate-400 mb-2">Social</div>
-            <div className="text-2xl font-bold text-pink-400">{social?.alerts.length || 0}</div>
+            <div className="text-2xl font-bold text-pink-400">
+              {social?.alerts.length || 0}
+            </div>
           </Card>
           <Card className="bg-gradient-to-br from-purple-900/20 to-purple-900/5 border-purple-500/20 p-4">
             <div className="text-sm text-slate-400 mb-2">Total</div>
             <div className="text-2xl font-bold text-purple-400">
-              {(trading?.alerts.length || 0) + (marketplace?.alerts.length || 0) + (social?.alerts.length || 0)}
+              {(trading?.alerts.length || 0) +
+                (marketplace?.alerts.length || 0) +
+                (social?.alerts.length || 0)}
             </div>
           </Card>
         </div>

@@ -1,51 +1,66 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { BookOpen, Users, Zap, TrendingUp, CheckCircle } from 'lucide-react';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { BookOpen, Users, Zap, TrendingUp, CheckCircle } from "lucide-react";
 
 export default function NarrativeEngine() {
-  const [selectedNarrative, setSelectedNarrative] = useState('investor');
+  const [selectedNarrative, setSelectedNarrative] = useState("investor");
 
   // Narrative variants
   const narratives = [
     {
-      id: 'investor',
-      audience: 'Investors',
-      title: 'SKYCOIN4444: The $10B Opportunity',
-      focus: 'Market size, growth potential, ROI',
+      id: "investor",
+      audience: "Investors",
+      title: "SKYCOIN4444: The $10B Opportunity",
+      focus: "Market size, growth potential, ROI",
       variant: `SKYCOIN4444 is a fully integrated AI-powered digital ecosystem combining social, gaming, finance, and enterprise tools into one addictive platform. With a $14.2T TAM and 0.65 viral coefficient, we project $100M Year 1 revenue and $100B+ valuation by Year 10. Our 1000x AI advantage creates an unassailable competitive moat.`,
       engagement: 0.94,
       persuasiveness: 0.92,
       ctr: 0.18,
     },
     {
-      id: 'users',
-      audience: 'Users',
-      title: 'SKYCOIN4444: Earn, Play, Connect',
-      focus: 'Value, fun, community',
+      id: "users",
+      audience: "Users",
+      title: "SKYCOIN4444: Earn, Play, Connect",
+      focus: "Value, fun, community",
       variant: `Join 100M+ users earning real money while having fun. Stake tokens, play games, create content, and build your empire. SKYCOIN4444 is the only platform where chat executes real actions—ask Hope AI to buy products, tip creators, or launch campaigns from a single message.`,
       engagement: 0.88,
       persuasiveness: 0.85,
       ctr: 0.22,
     },
     {
-      id: 'enterprise',
-      audience: 'Scalable',
-      title: 'SKYCOIN4444: Scalable Platform',
-      focus: 'Security, compliance, ROI',
+      id: "enterprise",
+      audience: "Scalable",
+      title: "SKYCOIN4444: Scalable Platform",
+      focus: "Security, compliance, ROI",
       variant: `SKYCOIN4444 Scalable provides SOC 2 Type II, ISO 27001, and GDPR-compliant infrastructure for 1M+ concurrent users. White-label capabilities, advanced analytics, and dedicated support enable Fortune 500 companies to launch branded digital ecosystems in weeks, not years.`,
       engagement: 0.82,
       persuasiveness: 0.88,
       ctr: 0.14,
     },
     {
-      id: 'creator',
-      audience: 'Creators',
-      title: 'SKYCOIN4444: Creator Economy',
-      focus: 'Monetization, audience, tools',
+      id: "creator",
+      audience: "Creators",
+      title: "SKYCOIN4444: Creator Economy",
+      focus: "Monetization, audience, tools",
       variant: `Monetize every interaction. Earn 40% lifetime commission on referrals, 85% on marketplace sales, and direct tips from fans. SKYCOIN4444 provides AI-powered analytics, content recommendations, and audience growth tools to help creators scale to millions.`,
       engagement: 0.91,
       persuasiveness: 0.89,
@@ -55,21 +70,56 @@ export default function NarrativeEngine() {
 
   // Narrative performance data
   const performanceData = [
-    { metric: 'Engagement', investor: 94, users: 88, enterprise: 82, creator: 91 },
-    { metric: 'Persuasiveness', investor: 92, users: 85, enterprise: 88, creator: 89 },
-    { metric: 'CTR', investor: 18, users: 22, enterprise: 14, creator: 25 },
-    { metric: 'Conversion', investor: 8.5, users: 12.3, enterprise: 6.2, creator: 15.8 },
+    {
+      metric: "Engagement",
+      investor: 94,
+      users: 88,
+      enterprise: 82,
+      creator: 91,
+    },
+    {
+      metric: "Persuasiveness",
+      investor: 92,
+      users: 85,
+      enterprise: 88,
+      creator: 89,
+    },
+    { metric: "CTR", investor: 18, users: 22, enterprise: 14, creator: 25 },
+    {
+      metric: "Conversion",
+      investor: 8.5,
+      users: 12.3,
+      enterprise: 6.2,
+      creator: 15.8,
+    },
   ];
 
   // Narrative testing results
   const testingData = [
-    { variant: 'Original', engagement: 72, conversion: 5.2, sentiment: 0.68 },
-    { variant: 'v1 (Optimized)', engagement: 81, conversion: 7.1, sentiment: 0.76 },
-    { variant: 'v2 (AI-Generated)', engagement: 88, conversion: 12.3, sentiment: 0.85 },
-    { variant: 'v3 (Current)', engagement: 94, conversion: 18.0, sentiment: 0.92 },
+    { variant: "Original", engagement: 72, conversion: 5.2, sentiment: 0.68 },
+    {
+      variant: "v1 (Optimized)",
+      engagement: 81,
+      conversion: 7.1,
+      sentiment: 0.76,
+    },
+    {
+      variant: "v2 (AI-Generated)",
+      engagement: 88,
+      conversion: 12.3,
+      sentiment: 0.85,
+    },
+    {
+      variant: "v3 (Current)",
+      engagement: 94,
+      conversion: 18.0,
+      sentiment: 0.92,
+    },
   ];
 
-  const selectedNarrativeData = narratives.find(n => n.id === selectedNarrative);
+  const selectedNarrativeData = narratives.find(
+    n => n.id === selectedNarrative
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
@@ -80,7 +130,9 @@ export default function NarrativeEngine() {
             <BookOpen className="w-8 h-8 text-amber-400" />
             <h1 className="text-4xl font-bold text-white">Narrative Engine</h1>
           </div>
-          <p className="text-gray-400">Multi-audience story generation and positioning optimization</p>
+          <p className="text-gray-400">
+            Multi-audience story generation and positioning optimization
+          </p>
         </div>
 
         {/* Key Metrics */}
@@ -129,8 +181,12 @@ export default function NarrativeEngine() {
         {/* Narrative Performance */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">Narrative Performance by Audience</CardTitle>
-            <CardDescription>Comparative metrics across audience segments</CardDescription>
+            <CardTitle className="text-white">
+              Narrative Performance by Audience
+            </CardTitle>
+            <CardDescription>
+              Comparative metrics across audience segments
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>
@@ -138,9 +194,12 @@ export default function NarrativeEngine() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="metric" stroke="#9ca3af" />
                 <YAxis stroke="#9ca3af" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
-                  labelStyle={{ color: '#fff' }}
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    border: "1px solid #374151",
+                  }}
+                  labelStyle={{ color: "#fff" }}
                 />
                 <Legend />
                 <Bar dataKey="investor" fill="#3b82f6" name="Investors" />
@@ -156,7 +215,9 @@ export default function NarrativeEngine() {
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white">Narrative Evolution</CardTitle>
-            <CardDescription>Performance improvements through iterations</CardDescription>
+            <CardDescription>
+              Performance improvements through iterations
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -164,9 +225,12 @@ export default function NarrativeEngine() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="variant" stroke="#9ca3af" />
                 <YAxis stroke="#9ca3af" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
-                  labelStyle={{ color: '#fff' }}
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    border: "1px solid #374151",
+                  }}
+                  labelStyle={{ color: "#fff" }}
                 />
                 <Legend />
                 <Bar dataKey="engagement" fill="#3b82f6" name="Engagement %" />
@@ -180,7 +244,9 @@ export default function NarrativeEngine() {
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white">Audience Narratives</CardTitle>
-            <CardDescription>Select an audience to view tailored narrative</CardDescription>
+            <CardDescription>
+              Select an audience to view tailored narrative
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {narratives.map(narrative => (
@@ -189,14 +255,18 @@ export default function NarrativeEngine() {
                 onClick={() => setSelectedNarrative(narrative.id)}
                 className={`w-full p-4 rounded-lg border transition text-left ${
                   selectedNarrative === narrative.id
-                    ? 'bg-amber-900/50 border-amber-500'
-                    : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
+                    ? "bg-amber-900/50 border-amber-500"
+                    : "bg-slate-700/30 border-slate-600 hover:border-slate-500"
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
-                    <p className="text-white font-medium">{narrative.audience}</p>
-                    <p className="text-sm text-gray-400 mt-1">{narrative.title}</p>
+                    <p className="text-white font-medium">
+                      {narrative.audience}
+                    </p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      {narrative.title}
+                    </p>
                   </div>
                   <Badge variant="outline">{narrative.focus}</Badge>
                 </div>
@@ -214,32 +284,48 @@ export default function NarrativeEngine() {
           <>
             <Card className="bg-gradient-to-r from-amber-900/50 to-orange-900/50 border-amber-700">
               <CardHeader>
-                <CardTitle className="text-white">{selectedNarrativeData.title}</CardTitle>
-                <CardDescription>Tailored for {selectedNarrativeData.audience}</CardDescription>
+                <CardTitle className="text-white">
+                  {selectedNarrativeData.title}
+                </CardTitle>
+                <CardDescription>
+                  Tailored for {selectedNarrativeData.audience}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 bg-slate-700/50 rounded border border-slate-600">
-                  <p className="text-white leading-relaxed">{selectedNarrativeData.variant}</p>
+                  <p className="text-white leading-relaxed">
+                    {selectedNarrativeData.variant}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-3 bg-slate-700/30 rounded border border-slate-600">
                     <p className="text-xs text-gray-400">Engagement</p>
-                    <p className="text-2xl font-bold text-white">{Math.round(selectedNarrativeData.engagement * 100)}%</p>
+                    <p className="text-2xl font-bold text-white">
+                      {Math.round(selectedNarrativeData.engagement * 100)}%
+                    </p>
                   </div>
                   <div className="p-3 bg-slate-700/30 rounded border border-slate-600">
                     <p className="text-xs text-gray-400">Persuasiveness</p>
-                    <p className="text-2xl font-bold text-white">{Math.round(selectedNarrativeData.persuasiveness * 100)}%</p>
+                    <p className="text-2xl font-bold text-white">
+                      {Math.round(selectedNarrativeData.persuasiveness * 100)}%
+                    </p>
                   </div>
                   <div className="p-3 bg-slate-700/30 rounded border border-slate-600">
                     <p className="text-xs text-gray-400">CTR</p>
-                    <p className="text-2xl font-bold text-white">{Math.round(selectedNarrativeData.ctr * 100)}%</p>
+                    <p className="text-2xl font-bold text-white">
+                      {Math.round(selectedNarrativeData.ctr * 100)}%
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex gap-2">
-                  <Button className="flex-1 bg-amber-600 hover:bg-amber-700">Copy Narrative</Button>
-                  <Button variant="outline" className="flex-1">Generate Variants</Button>
+                  <Button className="flex-1 bg-amber-600 hover:bg-amber-700">
+                    Copy Narrative
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    Generate Variants
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -251,20 +337,34 @@ export default function NarrativeEngine() {
                   <Zap className="w-5 h-5 text-yellow-400" />
                   Narrative Insights
                 </CardTitle>
-                <CardDescription>Key findings and recommendations</CardDescription>
+                <CardDescription>
+                  Key findings and recommendations
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
-                  <p className="text-sm text-white font-medium">✓ Creator narrative shows highest engagement</p>
-                  <p className="text-xs text-gray-400 mt-1">25% CTR - recommend prioritizing creator outreach</p>
+                  <p className="text-sm text-white font-medium">
+                    ✓ Creator narrative shows highest engagement
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    25% CTR - recommend prioritizing creator outreach
+                  </p>
                 </div>
                 <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
-                  <p className="text-sm text-white font-medium">✓ Investor narrative emphasizes market opportunity</p>
-                  <p className="text-xs text-gray-400 mt-1">94% engagement - strong for fundraising</p>
+                  <p className="text-sm text-white font-medium">
+                    ✓ Investor narrative emphasizes market opportunity
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    94% engagement - strong for fundraising
+                  </p>
                 </div>
                 <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
-                  <p className="text-sm text-white font-medium">⚠ Scalable narrative needs refinement</p>
-                  <p className="text-xs text-gray-400 mt-1">Lower CTR (14%) - recommend emphasizing ROI</p>
+                  <p className="text-sm text-white font-medium">
+                    ⚠ Scalable narrative needs refinement
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Lower CTR (14%) - recommend emphasizing ROI
+                  </p>
                 </div>
               </CardContent>
             </Card>

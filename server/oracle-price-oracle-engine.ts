@@ -6,7 +6,7 @@
  * price history, volatility calculation, and market data normalization.
  */
 
-import { invokeLLM } from './_core/llm';
+import { invokeLLM } from "./_core/llm";
 
 // --- Interfaces and Types ---
 
@@ -57,177 +57,177 @@ const DEFAULT_ORACLE_CONFIG: OracleConfig = {
   twapPeriodSeconds: 3600, // 1 hour
   confidenceThreshold: 0.75,
   crossChainFeedUrls: {
-    'ethereum': 'https://api.skycoin4444.io/oracle/ethereum',
-    'binance-smart-chain': 'https://api.skycoin4444.io/oracle/bsc',
-    'polygon': 'https://api.skycoin4444.io/oracle/polygon',
+    ethereum: "https://api.skycoin4444.io/oracle/ethereum",
+    "binance-smart-chain": "https://api.skycoin4444.io/oracle/bsc",
+    polygon: "https://api.skycoin4444.io/oracle/polygon",
   },
 };
 
 const SUPPORTED_ASSET_PAIRS: string[] = [
-  'BTC/USD',
-  'ETH/USD',
-  'BNB/USD',
-  'SOL/USD',
-  'ADA/USD',
-  'XRP/USD',
-  'DOT/USD',
-  'DOGE/USD',
-  'SHIB/USD',
-  'LINK/USD',
-  'UNI/USD',
-  'LTC/USD',
-  'BCH/USD',
-  'AVAX/USD',
-  'TRX/USD',
-  'ETC/USD',
-  'XLM/USD',
-  'FIL/USD',
-  'ICP/USD',
-  'VET/USD',
-  'EOS/USD',
-  'XTZ/USD',
-  'ALGO/USD',
-  'ATOM/USD',
-  'EGLD/USD',
-  'THETA/USD',
-  'XMR/USD',
-  'NEO/USD',
-  'IOTA/USD',
-  'DASH/USD',
-  'ZEC/USD',
-  'AAVE/USD',
-  'COMP/USD',
-  'MKR/USD',
-  'SNX/USD',
-  'YFI/USD',
-  'SUSHI/USD',
-  'CRV/USD',
-  'GRT/USD',
-  'ENJ/USD',
-  'MANA/USD',
-  'SAND/USD',
-  'AXS/USD',
-  'CHZ/USD',
-  'FTM/USD',
-  'NEAR/USD',
-  'APT/USD',
-  'OP/USD',
-  'ARB/USD',
-  'SUI/USD',
-  'SEI/USD',
-  'TIA/USD',
-  'PYTH/USD',
-  'JTO/USD',
-  'WIF/USD',
-  'BONK/USD',
-  'PEPE/USD',
-  'FLOKI/USD',
-  'INJ/USD',
-  'KAS/USD',
-  'RNDR/USD',
-  'MINA/USD',
-  'CELO/USD',
-  'ZIL/USD',
-  'KSM/USD',
-  'FLOW/USD',
-  'ICX/USD',
-  'ONT/USD',
-  'QTUM/USD',
-  'WAVES/USD',
-  'OMG/USD',
-  'BAT/USD',
-  'ZRX/USD',
-  'KNC/USD',
-  'RLC/USD',
-  'OCEAN/USD',
-  'BAND/USD',
-  'UMA/USD',
-  'BAL/USD',
-  'REN/USD',
-  'SRM/USD',
-  'PERP/USD',
-  'ALPHA/USD',
-  'CVC/USD',
-  'CTSI/USD',
-  'ANKR/USD',
-  'RVN/USD',
-  'SC/USD',
-  'DGB/USD',
-  'ONE/USD',
-  'HOT/USD',
-  'NANO/USD',
-  'AR/USD',
-  'IOST/USD',
-  'WAN/USD',
-  'HBAR/USD',
-  'CELR/USD',
-  'FET/USD',
-  'OGN/USD',
-  'MDT/USD',
-  'STX/USD',
-  'KAVA/USD',
-  'ROSE/USD',
-  'CFX/USD',
-  'GALA/USD',
-  'IMX/USD',
-  'APT/USD',
-  'SUI/USD',
-  'SEI/USD',
-  'TIA/USD',
-  'PYTH/USD',
-  'JTO/USD',
-  'WIF/USD',
-  'BONK/USD',
-  'PEPE/USD',
-  'FLOKI/USD',
-  'INJ/USD',
-  'KAS/USD',
-  'RNDR/USD',
-  'MINA/USD',
-  'CELO/USD',
-  'ZIL/USD',
-  'KSM/USD',
-  'FLOW/USD',
-  'ICX/USD',
-  'ONT/USD',
-  'QTUM/USD',
-  'WAVES/USD',
-  'OMG/USD',
-  'BAT/USD',
-  'ZRX/USD',
-  'KNC/USD',
-  'RLC/USD',
-  'OCEAN/USD',
-  'BAND/USD',
-  'UMA/USD',
-  'BAL/USD',
-  'REN/USD',
-  'SRM/USD',
-  'PERP/USD',
-  'ALPHA/USD',
-  'CVC/USD',
-  'CTSI/USD',
-  'ANKR/USD',
-  'RVN/USD',
-  'SC/USD',
-  'DGB/USD',
-  'ONE/USD',
-  'HOT/USD',
-  'NANO/USD',
-  'AR/USD',
-  'IOST/USD',
-  'WAN/USD',
-  'HBAR/USD',
-  'CELR/USD',
-  'FET/USD',
-  'OGN/USD',
-  'MDT/USD',
-  'STX/USD',
-  'KAVA/USD',
-  'ROSE/USD',
-  'CFX/USD',
-  'GALA/USD',
-  'IMX/USD',
+  "BTC/USD",
+  "ETH/USD",
+  "BNB/USD",
+  "SOL/USD",
+  "ADA/USD",
+  "XRP/USD",
+  "DOT/USD",
+  "DOGE/USD",
+  "SHIB/USD",
+  "LINK/USD",
+  "UNI/USD",
+  "LTC/USD",
+  "BCH/USD",
+  "AVAX/USD",
+  "TRX/USD",
+  "ETC/USD",
+  "XLM/USD",
+  "FIL/USD",
+  "ICP/USD",
+  "VET/USD",
+  "EOS/USD",
+  "XTZ/USD",
+  "ALGO/USD",
+  "ATOM/USD",
+  "EGLD/USD",
+  "THETA/USD",
+  "XMR/USD",
+  "NEO/USD",
+  "IOTA/USD",
+  "DASH/USD",
+  "ZEC/USD",
+  "AAVE/USD",
+  "COMP/USD",
+  "MKR/USD",
+  "SNX/USD",
+  "YFI/USD",
+  "SUSHI/USD",
+  "CRV/USD",
+  "GRT/USD",
+  "ENJ/USD",
+  "MANA/USD",
+  "SAND/USD",
+  "AXS/USD",
+  "CHZ/USD",
+  "FTM/USD",
+  "NEAR/USD",
+  "APT/USD",
+  "OP/USD",
+  "ARB/USD",
+  "SUI/USD",
+  "SEI/USD",
+  "TIA/USD",
+  "PYTH/USD",
+  "JTO/USD",
+  "WIF/USD",
+  "BONK/USD",
+  "PEPE/USD",
+  "FLOKI/USD",
+  "INJ/USD",
+  "KAS/USD",
+  "RNDR/USD",
+  "MINA/USD",
+  "CELO/USD",
+  "ZIL/USD",
+  "KSM/USD",
+  "FLOW/USD",
+  "ICX/USD",
+  "ONT/USD",
+  "QTUM/USD",
+  "WAVES/USD",
+  "OMG/USD",
+  "BAT/USD",
+  "ZRX/USD",
+  "KNC/USD",
+  "RLC/USD",
+  "OCEAN/USD",
+  "BAND/USD",
+  "UMA/USD",
+  "BAL/USD",
+  "REN/USD",
+  "SRM/USD",
+  "PERP/USD",
+  "ALPHA/USD",
+  "CVC/USD",
+  "CTSI/USD",
+  "ANKR/USD",
+  "RVN/USD",
+  "SC/USD",
+  "DGB/USD",
+  "ONE/USD",
+  "HOT/USD",
+  "NANO/USD",
+  "AR/USD",
+  "IOST/USD",
+  "WAN/USD",
+  "HBAR/USD",
+  "CELR/USD",
+  "FET/USD",
+  "OGN/USD",
+  "MDT/USD",
+  "STX/USD",
+  "KAVA/USD",
+  "ROSE/USD",
+  "CFX/USD",
+  "GALA/USD",
+  "IMX/USD",
+  "APT/USD",
+  "SUI/USD",
+  "SEI/USD",
+  "TIA/USD",
+  "PYTH/USD",
+  "JTO/USD",
+  "WIF/USD",
+  "BONK/USD",
+  "PEPE/USD",
+  "FLOKI/USD",
+  "INJ/USD",
+  "KAS/USD",
+  "RNDR/USD",
+  "MINA/USD",
+  "CELO/USD",
+  "ZIL/USD",
+  "KSM/USD",
+  "FLOW/USD",
+  "ICX/USD",
+  "ONT/USD",
+  "QTUM/USD",
+  "WAVES/USD",
+  "OMG/USD",
+  "BAT/USD",
+  "ZRX/USD",
+  "KNC/USD",
+  "RLC/USD",
+  "OCEAN/USD",
+  "BAND/USD",
+  "UMA/USD",
+  "BAL/USD",
+  "REN/USD",
+  "SRM/USD",
+  "PERP/USD",
+  "ALPHA/USD",
+  "CVC/USD",
+  "CTSI/USD",
+  "ANKR/USD",
+  "RVN/USD",
+  "SC/USD",
+  "DGB/USD",
+  "ONE/USD",
+  "HOT/USD",
+  "NANO/USD",
+  "AR/USD",
+  "IOST/USD",
+  "WAN/USD",
+  "HBAR/USD",
+  "CELR/USD",
+  "FET/USD",
+  "OGN/USD",
+  "MDT/USD",
+  "STX/USD",
+  "KAVA/USD",
+  "ROSE/USD",
+  "CFX/USD",
+  "GALA/USD",
+  "IMX/USD",
 ];
 
 // --- Utility Functions ---
@@ -235,7 +235,9 @@ const SUPPORTED_ASSET_PAIRS: string[] = [
 function calculateStandardDeviation(prices: number[]): number {
   if (prices.length < 2) return 0;
   const mean = prices.reduce((sum, p) => sum + p, 0) / prices.length;
-  const variance = prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / (prices.length - 1);
+  const variance =
+    prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) /
+    (prices.length - 1);
   return Math.sqrt(variance);
 }
 
@@ -256,23 +258,33 @@ class PriceFeedAggregator {
 
   public addPriceData(data: PriceData): void {
     if (!SUPPORTED_ASSET_PAIRS.includes(data.assetPair)) {
-      console.warn(`Unsupported asset pair: ${data.assetPair}. Data not stored.`);
+      console.warn(
+        `Unsupported asset pair: ${data.assetPair}. Data not stored.`
+      );
       return;
     }
     const currentData = this.priceDataStore.get(data.assetPair) || [];
     currentData.push(data);
     // Keep only recent data, e.g., last 2 hours for aggregation purposes
-    const twoHoursAgo = Date.now() - (2 * 3600 * 1000);
-    this.priceDataStore.set(data.assetPair, currentData.filter(d => d.timestamp > twoHoursAgo));
+    const twoHoursAgo = Date.now() - 2 * 3600 * 1000;
+    this.priceDataStore.set(
+      data.assetPair,
+      currentData.filter(d => d.timestamp > twoHoursAgo)
+    );
   }
 
-  public getAggregatedPrice(assetPair: string, config: OracleConfig): AggregatedPrice | null {
+  public getAggregatedPrice(
+    assetPair: string,
+    config: OracleConfig
+  ): AggregatedPrice | null {
     const data = this.priceDataStore.get(assetPair);
     if (!data || data.length < config.minSources) {
       return null;
     }
 
-    const validPrices = data.filter(d => d.confidence >= config.confidenceThreshold);
+    const validPrices = data.filter(
+      d => d.confidence >= config.confidenceThreshold
+    );
 
     if (validPrices.length < config.minSources) {
       return null;
@@ -283,27 +295,38 @@ class PriceFeedAggregator {
 
     // Filter out prices that deviate too much from the mean
     const filteredPrices = validPrices.filter(d => {
-      return Math.abs(d.price - meanPrice) / meanPrice <= config.maxPriceDeviation;
+      return (
+        Math.abs(d.price - meanPrice) / meanPrice <= config.maxPriceDeviation
+      );
     });
 
     if (filteredPrices.length === 0) {
       return null;
     }
 
-    const weights = filteredPrices.map(d => ({ price: d.price, weight: d.confidence }));
+    const weights = filteredPrices.map(d => ({
+      price: d.price,
+      weight: d.confidence,
+    }));
     const aggregatedPrice = weightedAverage(weights);
     const sources = [...new Set(filteredPrices.map(d => d.source))];
-    const volatility = calculateStandardDeviation(filteredPrices.map(d => d.price));
+    const volatility = calculateStandardDeviation(
+      filteredPrices.map(d => d.price)
+    );
 
     // Simple check for potential manipulation: if filtered prices are too few compared to initial valid prices
-    const isManipulated = filteredPrices.length < (validPrices.length / 2) && validPrices.length >= config.minSources * 2;
+    const isManipulated =
+      filteredPrices.length < validPrices.length / 2 &&
+      validPrices.length >= config.minSources * 2;
 
     return {
       assetPair,
       price: aggregatedPrice,
       timestamp: Date.now(),
       sources,
-      confidenceScore: filteredPrices.reduce((sum, d) => sum + d.confidence, 0) / filteredPrices.length,
+      confidenceScore:
+        filteredPrices.reduce((sum, d) => sum + d.confidence, 0) /
+        filteredPrices.length,
       volatility,
       isManipulated,
     };
@@ -323,7 +346,9 @@ class TWAPCalculator {
 
   public addPrice(assetPair: string, price: number, timestamp: number): void {
     if (!SUPPORTED_ASSET_PAIRS.includes(assetPair)) {
-      console.warn(`Unsupported asset pair: ${assetPair}. Price not added to history.`);
+      console.warn(
+        `Unsupported asset pair: ${assetPair}. Price not added to history.`
+      );
       return;
     }
     const history = this.priceHistory.get(assetPair) || [];
@@ -331,14 +356,19 @@ class TWAPCalculator {
     this.priceHistory.set(assetPair, history);
   }
 
-  public calculateTWAP(assetPair: string, periodSeconds: number): number | null {
+  public calculateTWAP(
+    assetPair: string,
+    periodSeconds: number
+  ): number | null {
     const history = this.priceHistory.get(assetPair);
     if (!history || history.length === 0) {
       return null;
     }
 
-    const cutoffTime = Date.now() - (periodSeconds * 1000);
-    const relevantHistory = history.filter(entry => entry.timestamp >= cutoffTime);
+    const cutoffTime = Date.now() - periodSeconds * 1000;
+    const relevantHistory = history.filter(
+      entry => entry.timestamp >= cutoffTime
+    );
 
     if (relevantHistory.length === 0) {
       return null;
@@ -351,7 +381,9 @@ class TWAPCalculator {
       const currentEntry = relevantHistory[i];
       const nextEntry = relevantHistory[i + 1];
 
-      const duration = nextEntry ? nextEntry.timestamp - currentEntry.timestamp : Date.now() - currentEntry.timestamp;
+      const duration = nextEntry
+        ? nextEntry.timestamp - currentEntry.timestamp
+        : Date.now() - currentEntry.timestamp;
       totalWeightedPrice += currentEntry.price * duration;
       totalTime += duration;
     }
@@ -359,19 +391,27 @@ class TWAPCalculator {
     return totalTime > 0 ? totalWeightedPrice / totalTime : null;
   }
 
-  public getPriceHistory(assetPair: string, limit: number = 100): PriceHistoryEntry[] {
+  public getPriceHistory(
+    assetPair: string,
+    limit: number = 100
+  ): PriceHistoryEntry[] {
     const history = this.priceHistory.get(assetPair) || [];
     return history.slice(-limit);
   }
 
-  public calculateVolatility(assetPair: string, periodSeconds: number): number | null {
+  public calculateVolatility(
+    assetPair: string,
+    periodSeconds: number
+  ): number | null {
     const history = this.priceHistory.get(assetPair);
     if (!history || history.length < 2) {
       return null;
     }
 
-    const cutoffTime = Date.now() - (periodSeconds * 1000);
-    const relevantHistory = history.filter(entry => entry.timestamp >= cutoffTime);
+    const cutoffTime = Date.now() - periodSeconds * 1000;
+    const relevantHistory = history.filter(
+      entry => entry.timestamp >= cutoffTime
+    );
 
     if (relevantHistory.length < 2) {
       return null;
@@ -389,7 +429,10 @@ class CrossChainPriceFeed {
     this.config = config;
   }
 
-  public async fetchCrossChainPrice(chain: string, assetPair: string): Promise<PriceData | null> {
+  public async fetchCrossChainPrice(
+    chain: string,
+    assetPair: string
+  ): Promise<PriceData | null> {
     const url = this.config.crossChainFeedUrls[chain];
     if (!url) {
       console.warn(`No cross-chain feed URL configured for chain: ${chain}`);
@@ -400,10 +443,17 @@ class CrossChainPriceFeed {
       // In a real scenario, this would involve a network request.
       // For this example, we simulate a fetch and invoke LLM for a dynamic price.
       const prompt = `Provide a realistic current price for ${assetPair} on ${chain} blockchain. Respond with a JSON object { "price": number, "confidence": number }.`;
-      const llmRaw = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
-      const parsedResponse = JSON.parse(String(llmRaw.choices[0]?.message?.content || "{}"));
+      const llmRaw = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
+      const parsedResponse = JSON.parse(
+        String(llmRaw.choices[0]?.message?.content || "{}")
+      );
 
-      if (typeof parsedResponse.price === 'number' && typeof parsedResponse.confidence === 'number') {
+      if (
+        typeof parsedResponse.price === "number" &&
+        typeof parsedResponse.confidence === "number"
+      ) {
         return {
           source: `cross-chain-${chain}`,
           assetPair,
@@ -412,10 +462,16 @@ class CrossChainPriceFeed {
           confidence: parsedResponse.confidence,
         };
       }
-      console.error('Invalid LLM response format for cross-chain price:', llmRaw.choices[0]?.message?.content || "");
+      console.error(
+        "Invalid LLM response format for cross-chain price:",
+        llmRaw.choices[0]?.message?.content || ""
+      );
       return null;
     } catch (error) {
-      console.error(`Error fetching cross-chain price for ${assetPair} on ${chain}:`, error);
+      console.error(
+        `Error fetching cross-chain price for ${assetPair} on ${chain}:`,
+        error
+      );
       return null;
     }
   }
@@ -442,7 +498,11 @@ export class OracleEngine {
    */
   public ingestPriceData(priceData: PriceData): void {
     this.aggregator.addPriceData(priceData);
-    this.twapCalculator.addPrice(priceData.assetPair, priceData.price, priceData.timestamp);
+    this.twapCalculator.addPrice(
+      priceData.assetPair,
+      priceData.price,
+      priceData.timestamp
+    );
   }
 
   /**
@@ -455,8 +515,13 @@ export class OracleEngine {
     let aggregated = this.aggregator.getAggregatedPrice(assetPair, this.config);
 
     if (!aggregated && this.config.fallbackAssetPair) {
-      console.warn(`No reliable price for ${assetPair}. Attempting fallback to ${this.config.fallbackAssetPair}.`);
-      aggregated = this.aggregator.getAggregatedPrice(this.config.fallbackAssetPair, this.config);
+      console.warn(
+        `No reliable price for ${assetPair}. Attempting fallback to ${this.config.fallbackAssetPair}.`
+      );
+      aggregated = this.aggregator.getAggregatedPrice(
+        this.config.fallbackAssetPair,
+        this.config
+      );
       if (aggregated) {
         // Adjust the assetPair to reflect the original request, but note it's a fallback
         aggregated.assetPair = `${assetPair} (fallback from ${this.config.fallbackAssetPair})`;
@@ -472,7 +537,10 @@ export class OracleEngine {
    * @returns The TWAP or null if not enough data.
    */
   public getTWAP(assetPair: string): number | null {
-    return this.twapCalculator.calculateTWAP(assetPair, this.config.twapPeriodSeconds);
+    return this.twapCalculator.calculateTWAP(
+      assetPair,
+      this.config.twapPeriodSeconds
+    );
   }
 
   /**
@@ -494,7 +562,10 @@ export class OracleEngine {
     }
 
     const meanPrice = prices.reduce((sum, p) => sum + p, 0) / prices.length;
-    return Math.abs(currentPrice - meanPrice) / meanPrice > this.config.maxPriceDeviation;
+    return (
+      Math.abs(currentPrice - meanPrice) / meanPrice >
+      this.config.maxPriceDeviation
+    );
   }
 
   /**
@@ -503,7 +574,10 @@ export class OracleEngine {
    * @param limit The maximum number of history entries to return.
    * @returns An array of PriceHistoryEntry.
    */
-  public getPriceHistory(assetPair: string, limit: number = 100): PriceHistoryEntry[] {
+  public getPriceHistory(
+    assetPair: string,
+    limit: number = 100
+  ): PriceHistoryEntry[] {
     return this.twapCalculator.getPriceHistory(assetPair, limit);
   }
 
@@ -513,7 +587,10 @@ export class OracleEngine {
    * @returns The volatility (standard deviation) or null if not enough data.
    */
   public getVolatility(assetPair: string): number | null {
-    return this.twapCalculator.calculateVolatility(assetPair, this.config.twapPeriodSeconds);
+    return this.twapCalculator.calculateVolatility(
+      assetPair,
+      this.config.twapPeriodSeconds
+    );
   }
 
   /**
@@ -522,7 +599,10 @@ export class OracleEngine {
    * @param assetPair The asset pair.
    * @returns PriceData or null.
    */
-  public async getCrossChainPrice(chain: string, assetPair: string): Promise<PriceData | null> {
+  public async getCrossChainPrice(
+    chain: string,
+    assetPair: string
+  ): Promise<PriceData | null> {
     return this.crossChainFeeds.fetchCrossChainPrice(chain, assetPair);
   }
 
@@ -535,26 +615,35 @@ export class OracleEngine {
   public async normalizeMarketData(rawData: any): Promise<MarketData> {
     // Basic normalization for known fields
     const normalized: MarketData = {
-      assetPair: rawData.assetPair || 'UNKNOWN/UNKNOWN',
-      volume24h: typeof rawData.volume24h === 'number' ? rawData.volume24h : 0,
-      marketCap: typeof rawData.marketCap === 'number' ? rawData.marketCap : 0,
-      lastPrice: typeof rawData.lastPrice === 'number' ? rawData.lastPrice : 0,
+      assetPair: rawData.assetPair || "UNKNOWN/UNKNOWN",
+      volume24h: typeof rawData.volume24h === "number" ? rawData.volume24h : 0,
+      marketCap: typeof rawData.marketCap === "number" ? rawData.marketCap : 0,
+      lastPrice: typeof rawData.lastPrice === "number" ? rawData.lastPrice : 0,
     };
 
     // Use LLM for advanced normalization and anomaly detection
     try {
       const prompt = `Normalize the following market data and identify any potential anomalies or inconsistencies. If anomalies are found, suggest corrections. Input: ${JSON.stringify(rawData)}. Output a JSON object { "normalizedData": MarketData, "anomaliesDetected": boolean, "suggestedCorrections": string | null }.`;
-      const llmRaw = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
-      const parsedResponse = JSON.parse(String(llmRaw.choices[0]?.message?.content || "{}"));
+      const llmRaw = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
+      const parsedResponse = JSON.parse(
+        String(llmRaw.choices[0]?.message?.content || "{}")
+      );
 
       if (parsedResponse.normalizedData) {
         return parsedResponse.normalizedData as MarketData;
       } else {
-        console.warn('LLM did not return normalizedData, using basic normalization.');
+        console.warn(
+          "LLM did not return normalizedData, using basic normalization."
+        );
         return normalized;
       }
     } catch (error) {
-      console.error('Error during LLM-powered market data normalization:', error);
+      console.error(
+        "Error during LLM-powered market data normalization:",
+        error
+      );
       return normalized;
     }
   }

@@ -14,7 +14,9 @@ export default function DayTradeRoom() {
   const [quantity, setQuantity] = useState(1);
   const [isVoiceOn, setIsVoiceOn] = useState(false);
 
-  const { data: signals } = trpc.trading.getSignals.useQuery({ symbol: selectedSymbol });
+  const { data: signals } = trpc.trading.getSignals.useQuery({
+    symbol: selectedSymbol,
+  });
   const generateSignal = trpc.trading.generateSignal.useMutation();
   const openTrade = trpc.trading.openTrade.useMutation();
   const { data: tradeHistory } = trpc.trading.getTradeHistory.useQuery();
@@ -37,7 +39,9 @@ export default function DayTradeRoom() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Day Trade Room</h1>
-          <p className="text-muted-foreground">AI-powered trading with voice partner and real-time signals</p>
+          <p className="text-muted-foreground">
+            AI-powered trading with voice partner and real-time signals
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -68,7 +72,9 @@ export default function DayTradeRoom() {
               <h2 className="text-xl font-bold mb-4">Market Entry</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-muted-foreground">Current Price ($)</label>
+                  <label className="text-sm text-muted-foreground">
+                    Current Price ($)
+                  </label>
                   <Input
                     type="number"
                     value={currentPrice}
@@ -77,7 +83,9 @@ export default function DayTradeRoom() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-muted-foreground">Quantity</label>
+                  <label className="text-sm text-muted-foreground">
+                    Quantity
+                  </label>
                   <Input
                     type="number"
                     value={quantity}
@@ -106,20 +114,29 @@ export default function DayTradeRoom() {
               {signals && signals.length > 0 && (
                 <div className="space-y-2">
                   {signals.slice(0, 3).map((signal, i) => (
-                    <div key={i} className="p-3 bg-card border border-border rounded-lg">
+                    <div
+                      key={i}
+                      className="p-3 bg-card border border-border rounded-lg"
+                    >
                       <div className="flex justify-between items-center">
-                        <span className={`font-semibold uppercase ${
-                          signal.signal === "buy" ? "text-[var(--neon-green)]" :
-                          signal.signal === "sell" ? "text-red-500" :
-                          "text-yellow-500"
-                        }`}>
+                        <span
+                          className={`font-semibold uppercase ${
+                            signal.signal === "buy"
+                              ? "text-[var(--neon-green)]"
+                              : signal.signal === "sell"
+                                ? "text-red-500"
+                                : "text-yellow-500"
+                          }`}
+                        >
                           {signal.signal}
                         </span>
                         <span className="text-[var(--neon-cyan)]">
                           {(signal.confidence * 100).toFixed(0)}% confidence
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">${signal.price}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        ${signal.price}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -143,15 +160,19 @@ export default function DayTradeRoom() {
           <div className="space-y-6">
             {/* AI Voice Partner */}
             <Card className="p-6 text-center">
-              <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center transition-all ${
-                isVoiceOn 
-                  ? "bg-gradient-to-br from-[var(--neon-cyan)] to-[var(--neon-magenta)] animate-pulse"
-                  : "bg-gradient-to-br from-[var(--neon-cyan)] to-[var(--neon-magenta)]"
-              }`}>
+              <div
+                className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center transition-all ${
+                  isVoiceOn
+                    ? "bg-gradient-to-br from-[var(--neon-cyan)] to-[var(--neon-magenta)] animate-pulse"
+                    : "bg-gradient-to-br from-[var(--neon-cyan)] to-[var(--neon-magenta)]"
+                }`}
+              >
                 <Volume2 className="w-10 h-10 text-black" />
               </div>
               <h3 className="text-lg font-bold mb-2">AI Voice Partner</h3>
-              <p className="text-sm text-muted-foreground mb-4">Real-time trading insights & analysis</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Real-time trading insights & analysis
+              </p>
               <Button
                 onClick={() => setIsVoiceOn(!isVoiceOn)}
                 variant={isVoiceOn ? "default" : "outline"}
@@ -161,7 +182,9 @@ export default function DayTradeRoom() {
                 {isVoiceOn ? "Voice: ON" : "Voice: OFF"}
               </Button>
               {isVoiceOn && (
-                <p className="text-xs text-[var(--neon-cyan)] mt-3">🎙️ Voice partner active</p>
+                <p className="text-xs text-[var(--neon-cyan)] mt-3">
+                  🎙️ Voice partner active
+                </p>
               )}
             </Card>
 
@@ -171,11 +194,21 @@ export default function DayTradeRoom() {
               {tradeHistory && tradeHistory.length > 0 ? (
                 <div className="space-y-2">
                   {tradeHistory.slice(0, 5).map(trade => (
-                    <div key={trade.id} className="p-2 bg-card border border-border rounded text-sm">
+                    <div
+                      key={trade.id}
+                      className="p-2 bg-card border border-border rounded text-sm"
+                    >
                       <div className="flex justify-between">
                         <span className="font-semibold">{trade.symbol}</span>
-                        <span className={trade.profitLoss >= 0 ? "text-[var(--neon-green)]" : "text-red-500"}>
-                          {trade.profitLoss >= 0 ? "+" : ""}{trade.profitLoss.toFixed(2)}
+                        <span
+                          className={
+                            trade.profitLoss >= 0
+                              ? "text-[var(--neon-green)]"
+                              : "text-red-500"
+                          }
+                        >
+                          {trade.profitLoss >= 0 ? "+" : ""}
+                          {trade.profitLoss.toFixed(2)}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
@@ -185,7 +218,9 @@ export default function DayTradeRoom() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No trades yet. Start trading!</p>
+                <p className="text-sm text-muted-foreground">
+                  No trades yet. Start trading!
+                </p>
               )}
             </Card>
 
@@ -195,13 +230,19 @@ export default function DayTradeRoom() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Trades:</span>
-                  <span className="font-semibold">{tradeHistory?.length || 0}</span>
+                  <span className="font-semibold">
+                    {tradeHistory?.length || 0}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Win Rate:</span>
                   <span className="font-semibold text-[var(--neon-green)]">
                     {tradeHistory && tradeHistory.length > 0
-                      ? ((tradeHistory.filter(t => t.profitLoss > 0).length / tradeHistory.length) * 100).toFixed(0) + "%"
+                      ? (
+                          (tradeHistory.filter(t => t.profitLoss > 0).length /
+                            tradeHistory.length) *
+                          100
+                        ).toFixed(0) + "%"
                       : "N/A"}
                   </span>
                 </div>

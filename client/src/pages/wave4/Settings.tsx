@@ -1,19 +1,19 @@
 // @ts-nocheck
-import { useState } from 'react';
-import { trpc } from '@/lib/trpc';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/_core/hooks/useAuth';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { isAuthenticated, user } = useAuth();
-  const [name, setName] = useState(user?.name || '');
-  const [bio, setBio] = useState('');
-  const [theme, setTheme] = useState('light');
+  const [name, setName] = useState(user?.name || "");
+  const [bio, setBio] = useState("");
+  const [theme, setTheme] = useState("light");
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [profilePublic, setProfilePublic] = useState(false);
 
@@ -21,27 +21,29 @@ export default function SettingsPage() {
 
   const updateProfileMutation = trpc.wave4Settings.updateProfile.useMutation({
     onSuccess: () => {
-      toast.success('Profile updated!');
+      toast.success("Profile updated!");
     },
   });
 
   const updatePrivacyMutation = trpc.wave4Settings.updatePrivacy.useMutation({
     onSuccess: () => {
-      toast.success('Privacy settings updated!');
+      toast.success("Privacy settings updated!");
     },
   });
 
-  const updateNotificationsMutation = trpc.wave4Settings.updateNotifications.useMutation({
-    onSuccess: () => {
-      toast.success('Notification settings updated!');
-    },
-  });
+  const updateNotificationsMutation =
+    trpc.wave4Settings.updateNotifications.useMutation({
+      onSuccess: () => {
+        toast.success("Notification settings updated!");
+      },
+    });
 
-  const updatePreferencesMutation = trpc.wave4Settings.updatePreferences.useMutation({
-    onSuccess: () => {
-      toast.success('Preferences updated!');
-    },
-  });
+  const updatePreferencesMutation =
+    trpc.wave4Settings.updatePreferences.useMutation({
+      onSuccess: () => {
+        toast.success("Preferences updated!");
+      },
+    });
 
   if (!isAuthenticated) {
     return (
@@ -75,11 +77,15 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Name</label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} />
+                <Input value={name} onChange={e => setName(e.target.value)} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Bio</label>
-                <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={4} />
+                <Textarea
+                  value={bio}
+                  onChange={e => setBio(e.target.value)}
+                  rows={4}
+                />
               </div>
               <Button
                 onClick={() => {
@@ -105,7 +111,7 @@ export default function SettingsPage() {
                 <input
                   type="checkbox"
                   checked={profilePublic}
-                  onChange={(e) => setProfilePublic(e.target.checked)}
+                  onChange={e => setProfilePublic(e.target.checked)}
                 />
                 <span>Make profile public</span>
               </label>
@@ -134,13 +140,15 @@ export default function SettingsPage() {
         {/* Notifications Tab */}
         <TabsContent value="notifications" className="space-y-4">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Notification Preferences</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              Notification Preferences
+            </h3>
             <div className="space-y-4">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={emailNotifications}
-                  onChange={(e) => setEmailNotifications(e.target.checked)}
+                  onChange={e => setEmailNotifications(e.target.checked)}
                 />
                 <span>Email notifications</span>
               </label>
@@ -175,7 +183,7 @@ export default function SettingsPage() {
                 <label className="block text-sm font-medium mb-2">Theme</label>
                 <select
                   value={theme}
-                  onChange={(e) => setTheme(e.target.value)}
+                  onChange={e => setTheme(e.target.value)}
                   className="w-full border rounded px-3 py-2"
                 >
                   <option value="light">Light</option>
@@ -183,7 +191,9 @@ export default function SettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Language</label>
+                <label className="block text-sm font-medium mb-2">
+                  Language
+                </label>
                 <select className="w-full border rounded px-3 py-2">
                   <option value="en">English</option>
                   <option value="es">Spanish</option>
@@ -191,7 +201,9 @@ export default function SettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Timezone</label>
+                <label className="block text-sm font-medium mb-2">
+                  Timezone
+                </label>
                 <select className="w-full border rounded px-3 py-2">
                   <option value="UTC">UTC</option>
                   <option value="EST">EST</option>
@@ -201,7 +213,7 @@ export default function SettingsPage() {
               <Button
                 onClick={() => {
                   updatePreferencesMutation.mutate({
-                    theme: theme as 'light' | 'dark',
+                    theme: theme as "light" | "dark",
                   });
                 }}
                 disabled={updatePreferencesMutation.isPending}

@@ -68,7 +68,10 @@ export class MemoryGraphEngine {
 
   constructor() {
     // Snapshot to DB every 5 minutes
-    this.snapshotTimer = setInterval(() => void this.snapshotToDb(), 5 * 60 * 1000);
+    this.snapshotTimer = setInterval(
+      () => void this.snapshotToDb(),
+      5 * 60 * 1000
+    );
     // Subscribe to all events to build the graph
     this.registerEventListeners();
   }
@@ -83,7 +86,9 @@ export class MemoryGraphEngine {
 
   private async processEvent(event: PlatformEvent): Promise<void> {
     const eventNodeId = `event:${event.type}`;
-    this.upsertNode(eventNodeId, "event", event.type, 1, { lastPayload: event.payload });
+    this.upsertNode(eventNodeId, "event", event.type, 1, {
+      lastPayload: event.payload,
+    });
 
     if (event.userId) {
       const userNodeId = `user:${event.userId}`;
@@ -120,7 +125,9 @@ export class MemoryGraphEngine {
       existing.metadata = { ...existing.metadata, ...metadata };
     } else {
       this.nodes.set(id, {
-        id, type, label,
+        id,
+        type,
+        label,
         weight: weightDelta,
         metadata,
         firstSeen: new Date(),
@@ -129,7 +136,12 @@ export class MemoryGraphEngine {
     }
   }
 
-  private upsertEdge(from: string, to: string, relationship: string, strength: number): void {
+  private upsertEdge(
+    from: string,
+    to: string,
+    relationship: string,
+    strength: number
+  ): void {
     const edgeId = `${from}→${to}:${relationship}`;
     const existing = this.edges.get(edgeId);
     if (existing) {
@@ -138,7 +150,10 @@ export class MemoryGraphEngine {
       existing.lastOccurred = new Date();
     } else {
       this.edges.set(edgeId, {
-        from, to, relationship, strength,
+        from,
+        to,
+        relationship,
+        strength,
         occurrences: 1,
         lastOccurred: new Date(),
       });
@@ -156,14 +171,23 @@ export class MemoryGraphEngine {
         predictedEvent: this.predictNextEvent(eventType),
         timeHorizon: node.weight > 10 ? "1h" : "24h",
         suggestedPreemptiveAction: this.getSuggestedAction(eventType),
-        dataPoints: [`${eventType} occurred ${node.weight} times`, `Last: ${node.lastSeen.toISOString()}`],
+        dataPoints: [
+          `${eventType} occurred ${node.weight} times`,
+          `Last: ${node.lastSeen.toISOString()}`,
+        ],
       };
 
       this.patternCache.push(pattern);
       if (this.patternCache.length > 20) this.patternCache.shift();
 
-      this.upsertNode(patternId, "pattern", `Pattern: ${eventType}`, 1, { prediction: pattern });
-      eventBus.publish("DIGITAL_NATION_EVENT", { type: "pattern_detected", pattern: eventType, confidence: pattern.confidence });
+      this.upsertNode(patternId, "pattern", `Pattern: ${eventType}`, 1, {
+        prediction: pattern,
+      });
+      eventBus.publish("DIGITAL_NATION_EVENT", {
+        type: "pattern_detected",
+        pattern: eventType,
+        confidence: pattern.confidence,
+      });
     }
   }
 
@@ -182,15 +206,20 @@ export class MemoryGraphEngine {
     if (hotNodes.length === 0) return [];
 
     const prompt = `You are HOPE AI's prediction engine. Based on these active patterns in the SKYCOIN4444 ecosystem:
-${hotNodes.map((n) => `- ${n.label} (weight: ${n.weight}, type: ${n.type})`).join("\n")}
+${hotNodes.map(n => `- ${n.label} (weight: ${n.weight}, type: ${n.type})`).join("\n")}
 
 Predict 2-3 likely system events in the next 24 hours. Respond in JSON array:
 [{ "pattern": "...", "confidence": 0.0-1.0, "predictedEvent": "...", "timeHorizon": "1h|24h|7d", "suggestedPreemptiveAction": "...", "dataPoints": ["..."] }]`;
 
     try {
-      const response = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+      const response = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
       const rawContent = response.choices[0].message.content ?? "[]";
-      const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
+      const content =
+        typeof rawContent === "string"
+          ? rawContent
+          : JSON.stringify(rawContent);
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0]) as PatternPrediction[];
@@ -284,9 +313,12 @@ Predict 2-3 likely system events in the next 24 hours. Respond in JSON array:
   private getSuggestedAction(eventType: string): string {
     const actions: Record<string, string> = {
       INFLATION_WARNING: "Pre-emptively apply sink pressure before cap is hit",
-      FRAUD_SIGNAL_DETECTED: "Increase rate limit sensitivity for affected user segment",
-      RETENTION_DROPPING: "Activate HOPE AI personalized re-engagement campaign",
-      LOW_LIQUIDITY_DETECTED: "Propose governance vote to introduce new token utility",
+      FRAUD_SIGNAL_DETECTED:
+        "Increase rate limit sensitivity for affected user segment",
+      RETENTION_DROPPING:
+        "Activate HOPE AI personalized re-engagement campaign",
+      LOW_LIQUIDITY_DETECTED:
+        "Propose governance vote to introduce new token utility",
       PROPOSAL_CREATED: "Run AI simulation before voting opens",
       TOKEN_MINTED: "Monitor demand index for 30 minutes after mint",
     };

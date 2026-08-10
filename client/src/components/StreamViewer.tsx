@@ -4,7 +4,15 @@
  * Supports: native HLS (Safari), HLS.js (Chrome/Firefox), direct video URLs.
  */
 import { useEffect, useRef, useState } from "react";
-import { Radio, Eye, Volume2, VolumeX, Maximize2, Loader2, AlertCircle } from "lucide-react";
+import {
+  Radio,
+  Eye,
+  Volume2,
+  VolumeX,
+  Maximize2,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 
 interface StreamViewerProps {
   hlsUrl?: string | null;
@@ -51,55 +59,65 @@ export default function StreamViewer({
     // Check if native HLS is supported (Safari)
     if (hlsUrl && video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = hlsUrl;
-      video.addEventListener("canplay", () => setPlayerState("playing"), { once: true });
-      video.addEventListener("error", () => setPlayerState("error"), { once: true });
+      video.addEventListener("canplay", () => setPlayerState("playing"), {
+        once: true,
+      });
+      video.addEventListener("error", () => setPlayerState("error"), {
+        once: true,
+      });
       video.play().catch(() => setPlayerState("error"));
       return;
     }
 
     // Try HLS.js for Chrome/Firefox
     if (hlsUrl) {
-      import("hls.js").then(({ default: Hls }) => {
-        if (!Hls.isSupported()) {
-          // Fallback to direct video URL if available
+      import("hls.js")
+        .then(({ default: Hls }) => {
+          if (!Hls.isSupported()) {
+            // Fallback to direct video URL if available
+            if (videoUrl) {
+              video.src = videoUrl;
+              video.play().catch(() => setPlayerState("error"));
+              setPlayerState("playing");
+            } else {
+              setPlayerState("error");
+            }
+            return;
+          }
+          const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+          hlsRef.current = hls;
+          hls.loadSource(hlsUrl);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            setPlayerState("playing");
+            video.play().catch(() => {});
+          });
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+            if (data.fatal) setPlayerState("error");
+          });
+        })
+        .catch(() => {
+          // HLS.js not available, try direct
           if (videoUrl) {
             video.src = videoUrl;
             video.play().catch(() => setPlayerState("error"));
             setPlayerState("playing");
           } else {
-            setPlayerState("error");
+            setPlayerState("no-source");
           }
-          return;
-        }
-        const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
-        hlsRef.current = hls;
-        hls.loadSource(hlsUrl);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          setPlayerState("playing");
-          video.play().catch(() => {});
         });
-        hls.on(Hls.Events.ERROR, (_: any, data: any) => {
-          if (data.fatal) setPlayerState("error");
-        });
-      }).catch(() => {
-        // HLS.js not available, try direct
-        if (videoUrl) {
-          video.src = videoUrl;
-          video.play().catch(() => setPlayerState("error"));
-          setPlayerState("playing");
-        } else {
-          setPlayerState("no-source");
-        }
-      });
       return;
     }
 
     // Direct video URL
     if (videoUrl) {
       video.src = videoUrl;
-      video.addEventListener("canplay", () => setPlayerState("playing"), { once: true });
-      video.addEventListener("error", () => setPlayerState("error"), { once: true });
+      video.addEventListener("canplay", () => setPlayerState("playing"), {
+        once: true,
+      });
+      video.addEventListener("error", () => setPlayerState("error"), {
+        once: true,
+      });
       video.play().catch(() => {});
     }
 
@@ -167,16 +185,23 @@ export default function StreamViewer({
           <div className="text-center">
             <p className="text-white font-bold text-lg">{title}</p>
             <p className="text-slate-400 text-sm mt-1">
-              {isLive ? "Stream is live — waiting for video feed" : "Stream has not started yet"}
+              {isLive
+                ? "Stream is live — waiting for video feed"
+                : "Stream has not started yet"}
             </p>
-            <p className="text-slate-600 text-xs mt-2">{streamerName} · {viewerCount} watching</p>
+            <p className="text-slate-600 text-xs mt-2">
+              {streamerName} · {viewerCount} watching
+            </p>
           </div>
           {isLive && (
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1.5 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> LIVE
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />{" "}
+                LIVE
               </span>
-              <span className="text-slate-500 text-xs">Broadcaster connecting via OBS/RTMP...</span>
+              <span className="text-slate-500 text-xs">
+                Broadcaster connecting via OBS/RTMP...
+              </span>
             </div>
           )}
         </div>
@@ -187,7 +212,9 @@ export default function StreamViewer({
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80">
           <AlertCircle className="w-10 h-10 text-red-400" />
           <p className="text-red-400 text-sm font-medium">Stream unavailable</p>
-          <p className="text-slate-600 text-xs">The stream may have ended or the connection was lost.</p>
+          <p className="text-slate-600 text-xs">
+            The stream may have ended or the connection was lost.
+          </p>
         </div>
       )}
 
@@ -195,7 +222,8 @@ export default function StreamViewer({
       {isLive && (
         <div className="absolute top-3 left-3 flex items-center gap-2">
           <span className="flex items-center gap-1.5 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> LIVE
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />{" "}
+            LIVE
           </span>
           <span className="flex items-center gap-1.5 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full">
             <Eye className="w-3 h-3" /> {viewerCount.toLocaleString()}
@@ -207,8 +235,15 @@ export default function StreamViewer({
       {playerState === "playing" && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
           <div className="flex items-center gap-3">
-            <button onClick={toggleMute} className="text-white hover:text-purple-300 transition-colors">
-              {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            <button
+              onClick={toggleMute}
+              className="text-white hover:text-purple-300 transition-colors"
+            >
+              {muted ? (
+                <VolumeX className="w-5 h-5" />
+              ) : (
+                <Volume2 className="w-5 h-5" />
+              )}
             </button>
             <input
               type="range"
@@ -220,7 +255,10 @@ export default function StreamViewer({
               className="w-24 h-1 accent-purple-500 cursor-pointer"
             />
             <div className="flex-1" />
-            <button onClick={requestFullscreen} className="text-white hover:text-purple-300 transition-colors">
+            <button
+              onClick={requestFullscreen}
+              className="text-white hover:text-purple-300 transition-colors"
+            >
               <Maximize2 className="w-4 h-4" />
             </button>
           </div>

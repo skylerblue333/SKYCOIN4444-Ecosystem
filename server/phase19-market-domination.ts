@@ -26,16 +26,24 @@ export interface PublicAPIKey {
 }
 
 export type APIScope =
-  | "creator:read" | "creator:write"
-  | "marketplace:read" | "marketplace:write"
-  | "wallet:read" | "wallet:write"
+  | "creator:read"
+  | "creator:write"
+  | "marketplace:read"
+  | "marketplace:write"
+  | "wallet:read"
+  | "wallet:write"
   | "analytics:read"
   | "ai:invoke"
-  | "community:read" | "community:write"
-  | "stream:read" | "stream:write"
-  | "social:read" | "social:write"
-  | "nft:read" | "nft:write"
-  | "governance:read" | "governance:write";
+  | "community:read"
+  | "community:write"
+  | "stream:read"
+  | "stream:write"
+  | "social:read"
+  | "social:write"
+  | "nft:read"
+  | "nft:write"
+  | "governance:read"
+  | "governance:write";
 
 export interface APIRequest {
   id: string;
@@ -107,7 +115,15 @@ export interface SDKInstallation {
 export interface ExternalIntegration {
   id: string;
   userId: number;
-  platform: "youtube" | "twitch" | "discord" | "twitter_x" | "coinbase" | "opensea" | "instagram" | "tiktok";
+  platform:
+    | "youtube"
+    | "twitch"
+    | "discord"
+    | "twitter_x"
+    | "coinbase"
+    | "opensea"
+    | "instagram"
+    | "tiktok";
   platformUserId: string;
   platformUsername: string;
   accessToken: string;
@@ -126,7 +142,8 @@ export interface YouTubeSyncJob {
   id: string;
   userId: number;
   integrationId: string;
-  jobType: "import_videos" | "sync_subscribers" | "cross_post" | "import_analytics";
+  jobType:
+    "import_videos" | "sync_subscribers" | "cross_post" | "import_analytics";
   status: "queued" | "running" | "completed" | "failed";
   itemsProcessed: number;
   itemsTotal: number;
@@ -157,7 +174,8 @@ export interface DiscordSyncJob {
   userId: number;
   integrationId: string;
   guildId: string;
-  jobType: "sync_members" | "post_announcement" | "sync_roles" | "stream_notification";
+  jobType:
+    "sync_members" | "post_announcement" | "sync_roles" | "stream_notification";
   status: "queued" | "running" | "completed" | "failed";
   result?: Record<string, unknown>;
   error?: string;
@@ -224,12 +242,26 @@ const _crossPlatformPosts = new Map<string, CrossPlatformPost>();
 // ─── PUBLIC API MANAGEMENT ───────────────────────────────────────────────────
 
 export const publicAPIManager = {
-  createAPIKey(params: Omit<PublicAPIKey, "id" | "key" | "secret" | "requestCount" | "isActive" | "createdAt">): PublicAPIKey {
+  createAPIKey(
+    params: Omit<
+      PublicAPIKey,
+      "id" | "key" | "secret" | "requestCount" | "isActive" | "createdAt"
+    >
+  ): PublicAPIKey {
     const id = `apik_${params.ownerId}_${Date.now()}`;
-    const key = `sky_${Buffer.from(`${id}_${Date.now()}`).toString("base64").replace(/[^a-zA-Z0-9]/g, "").slice(0, 32)}`;
-    const secret = `sks_${Buffer.from(`${id}_secret_${Math.random()}`).toString("base64").replace(/[^a-zA-Z0-9]/g, "").slice(0, 48)}`;
+    const key = `sky_${Buffer.from(`${id}_${Date.now()}`)
+      .toString("base64")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .slice(0, 32)}`;
+    const secret = `sks_${Buffer.from(`${id}_secret_${Math.random()}`)
+      .toString("base64")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .slice(0, 48)}`;
     const apiKey: PublicAPIKey = {
-      ...params, id, key, secret,
+      ...params,
+      id,
+      key,
+      secret,
       requestCount: 0,
       isActive: true,
       createdAt: new Date(),
@@ -239,18 +271,31 @@ export const publicAPIManager = {
     return apiKey;
   },
 
-  validateAPIKey(key: string, requiredScope?: APIScope): { valid: boolean; apiKey?: PublicAPIKey; error?: string } {
+  validateAPIKey(
+    key: string,
+    requiredScope?: APIScope
+  ): { valid: boolean; apiKey?: PublicAPIKey; error?: string } {
     const apiKey = _apiKeysByKey.get(key);
     if (!apiKey) return { valid: false, error: "Invalid API key" };
     if (!apiKey.isActive) return { valid: false, error: "API key is inactive" };
-    if (apiKey.expiresAt && apiKey.expiresAt < new Date()) return { valid: false, error: "API key expired" };
+    if (apiKey.expiresAt && apiKey.expiresAt < new Date())
+      return { valid: false, error: "API key expired" };
     if (requiredScope && !apiKey.scopes.includes(requiredScope)) {
-      return { valid: false, error: `Missing required scope: ${requiredScope}` };
+      return {
+        valid: false,
+        error: `Missing required scope: ${requiredScope}`,
+      };
     }
     return { valid: true, apiKey };
   },
 
-  recordRequest(apiKeyId: string, endpoint: string, method: APIRequest["method"], statusCode: number, responseTimeMs: number): APIRequest {
+  recordRequest(
+    apiKeyId: string,
+    endpoint: string,
+    method: APIRequest["method"],
+    statusCode: number,
+    responseTimeMs: number
+  ): APIRequest {
     const apiKey = _apiKeys.get(apiKeyId);
     if (apiKey) {
       apiKey.requestCount++;
@@ -258,7 +303,11 @@ export const publicAPIManager = {
     }
     const request: APIRequest = {
       id: `req_${apiKeyId}_${Date.now()}`,
-      apiKeyId, endpoint, method, statusCode, responseTimeMs,
+      apiKeyId,
+      endpoint,
+      method,
+      statusCode,
+      responseTimeMs,
       requestSizeBytes: 256,
       responseSizeBytes: 1024,
       ipAddress: "0.0.0.0",
@@ -269,14 +318,22 @@ export const publicAPIManager = {
     return request;
   },
 
-  checkRateLimit(apiKeyId: string): { allowed: boolean; remaining: number; resetAt: Date } {
+  checkRateLimit(apiKeyId: string): {
+    allowed: boolean;
+    remaining: number;
+    resetAt: Date;
+  } {
     const apiKey = _apiKeys.get(apiKeyId);
     if (!apiKey) return { allowed: false, remaining: 0, resetAt: new Date() };
-    const windowMs = apiKey.rateLimitWindow === "minute" ? 60000 :
-                     apiKey.rateLimitWindow === "hour" ? 3600000 : 86400000;
+    const windowMs =
+      apiKey.rateLimitWindow === "minute"
+        ? 60000
+        : apiKey.rateLimitWindow === "hour"
+          ? 3600000
+          : 86400000;
     const windowStart = new Date(Date.now() - windowMs);
-    const recentRequests = _apiRequests.filter(r =>
-      r.apiKeyId === apiKeyId && r.timestamp >= windowStart
+    const recentRequests = _apiRequests.filter(
+      r => r.apiKeyId === apiKeyId && r.timestamp >= windowStart
     ).length;
     const remaining = Math.max(0, apiKey.rateLimit - recentRequests);
     return {
@@ -301,9 +358,10 @@ export const publicAPIManager = {
     const requests = _apiRequests.filter(r => r.apiKeyId === apiKeyId);
     const successful = requests.filter(r => r.statusCode < 400).length;
     const failed = requests.filter(r => r.statusCode >= 400).length;
-    const avgResponseTime = requests.length > 0
-      ? requests.reduce((s, r) => s + r.responseTimeMs, 0) / requests.length
-      : 0;
+    const avgResponseTime =
+      requests.length > 0
+        ? requests.reduce((s, r) => s + r.responseTimeMs, 0) / requests.length
+        : 0;
     const endpointCounts = new Map<string, number>();
     for (const r of requests) {
       endpointCounts.set(r.endpoint, (endpointCounts.get(r.endpoint) ?? 0) + 1);
@@ -313,7 +371,8 @@ export const publicAPIManager = {
       errorBreakdown[r.statusCode] = (errorBreakdown[r.statusCode] ?? 0) + 1;
     }
     return {
-      apiKeyId, period,
+      apiKeyId,
+      period,
       totalRequests: requests.length,
       successfulRequests: successful,
       failedRequests: failed,
@@ -323,7 +382,8 @@ export const publicAPIManager = {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10),
       errorBreakdown,
-      bandwidthMB: requests.reduce((s, r) => s + r.responseSizeBytes, 0) / (1024 * 1024),
+      bandwidthMB:
+        requests.reduce((s, r) => s + r.responseSizeBytes, 0) / (1024 * 1024),
     };
   },
 
@@ -335,10 +395,17 @@ export const publicAPIManager = {
     return true;
   },
 
-  dispatchWebhookEvent(apiKeyId: string, eventType: string, payload: Record<string, unknown>): APIWebhookEvent {
+  dispatchWebhookEvent(
+    apiKeyId: string,
+    eventType: string,
+    payload: Record<string, unknown>
+  ): APIWebhookEvent {
     const id = `wh_${apiKeyId}_${Date.now()}`;
     const event: APIWebhookEvent = {
-      id, apiKeyId, eventType, payload,
+      id,
+      apiKeyId,
+      eventType,
+      payload,
       deliveryAttempts: 0,
       lastDeliveryStatus: "pending",
       createdAt: new Date(),
@@ -351,11 +418,20 @@ export const publicAPIManager = {
     return event;
   },
 
-  getPlatformAPIStats(): { totalKeys: number; activeKeys: number; totalRequests: number; avgResponseTimeMs: number } {
-    const activeKeys = Array.from(_apiKeys.values()).filter(k => k.isActive).length;
-    const avgResponseTime = _apiRequests.length > 0
-      ? _apiRequests.reduce((s, r) => s + r.responseTimeMs, 0) / _apiRequests.length
-      : 0;
+  getPlatformAPIStats(): {
+    totalKeys: number;
+    activeKeys: number;
+    totalRequests: number;
+    avgResponseTimeMs: number;
+  } {
+    const activeKeys = Array.from(_apiKeys.values()).filter(
+      k => k.isActive
+    ).length;
+    const avgResponseTime =
+      _apiRequests.length > 0
+        ? _apiRequests.reduce((s, r) => s + r.responseTimeMs, 0) /
+          _apiRequests.length
+        : 0;
     return {
       totalKeys: _apiKeys.size,
       activeKeys,
@@ -379,7 +455,8 @@ export const sdkRegistry = {
       }
     }
     const release: SDKRelease = {
-      ...params, id,
+      ...params,
+      id,
       publishedAt: new Date(),
     };
     _sdkReleases.set(id, release);
@@ -387,8 +464,11 @@ export const sdkRegistry = {
   },
 
   getLatestRelease(sdkType: SDKRelease["sdkType"]): SDKRelease | null {
-    return Array.from(_sdkReleases.values())
-      .find(r => r.sdkType === sdkType && r.isLatest) ?? null;
+    return (
+      Array.from(_sdkReleases.values()).find(
+        r => r.sdkType === sdkType && r.isLatest
+      ) ?? null
+    );
   },
 
   getAllReleases(sdkType?: SDKRelease["sdkType"]): SDKRelease[] {
@@ -397,7 +477,12 @@ export const sdkRegistry = {
       .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
   },
 
-  recordInstallation(apiKeyId: string, sdkType: SDKRelease["sdkType"], version: string, platform: string): SDKInstallation {
+  recordInstallation(
+    apiKeyId: string,
+    sdkType: SDKRelease["sdkType"],
+    version: string,
+    platform: string
+  ): SDKInstallation {
     const key = `inst_${apiKeyId}_${sdkType}`;
     const existing = _sdkInstallations.get(key);
     if (existing) {
@@ -407,7 +492,11 @@ export const sdkRegistry = {
       return existing;
     }
     const installation: SDKInstallation = {
-      id: key, sdkType, version, apiKeyId, platform,
+      id: key,
+      sdkType,
+      version,
+      apiKeyId,
+      platform,
       firstSeenAt: new Date(),
       lastSeenAt: new Date(),
       requestCount: 1,
@@ -416,23 +505,36 @@ export const sdkRegistry = {
     return installation;
   },
 
-  getSDKAdoptionStats(): Record<SDKRelease["sdkType"], { installations: number; latestVersion: string }> {
-    const stats: Record<string, { installations: number; latestVersion: string }> = {};
+  getSDKAdoptionStats(): Record<
+    SDKRelease["sdkType"],
+    { installations: number; latestVersion: string }
+  > {
+    const stats: Record<
+      string,
+      { installations: number; latestVersion: string }
+    > = {};
     for (const inst of _sdkInstallations.values()) {
-      if (!stats[inst.sdkType]) stats[inst.sdkType] = { installations: 0, latestVersion: inst.version };
+      if (!stats[inst.sdkType])
+        stats[inst.sdkType] = { installations: 0, latestVersion: inst.version };
       stats[inst.sdkType].installations++;
     }
-    return stats as Record<SDKRelease["sdkType"], { installations: number; latestVersion: string }>;
+    return stats as Record<
+      SDKRelease["sdkType"],
+      { installations: number; latestVersion: string }
+    >;
   },
 };
 
 // ─── EXTERNAL INTEGRATION ENGINE ─────────────────────────────────────────────
 
 export const externalIntegrationEngine = {
-  connectIntegration(params: Omit<ExternalIntegration, "id" | "syncStatus" | "createdAt">): ExternalIntegration {
+  connectIntegration(
+    params: Omit<ExternalIntegration, "id" | "syncStatus" | "createdAt">
+  ): ExternalIntegration {
     const id = `int_${params.userId}_${params.platform}_${Date.now()}`;
     const integration: ExternalIntegration = {
-      ...params, id,
+      ...params,
+      id,
       syncStatus: "idle",
       createdAt: new Date(),
     };
@@ -454,19 +556,33 @@ export const externalIntegrationEngine = {
 
   getUserIntegrations(userId: number): ExternalIntegration[] {
     const ids = _integrationsByUser.get(userId) ?? new Set();
-    return Array.from(ids).map(id => _integrations.get(id)!).filter(Boolean);
+    return Array.from(ids)
+      .map(id => _integrations.get(id)!)
+      .filter(Boolean);
   },
 
-  getIntegrationByPlatform(userId: number, platform: ExternalIntegration["platform"]): ExternalIntegration | null {
+  getIntegrationByPlatform(
+    userId: number,
+    platform: ExternalIntegration["platform"]
+  ): ExternalIntegration | null {
     const integrations = this.getUserIntegrations(userId);
-    return integrations.find(i => i.platform === platform && i.syncEnabled) ?? null;
+    return (
+      integrations.find(i => i.platform === platform && i.syncEnabled) ?? null
+    );
   },
 
   // YouTube Sync
-  queueYouTubeSync(userId: number, integrationId: string, jobType: YouTubeSyncJob["jobType"]): YouTubeSyncJob {
+  queueYouTubeSync(
+    userId: number,
+    integrationId: string,
+    jobType: YouTubeSyncJob["jobType"]
+  ): YouTubeSyncJob {
     const id = `yt_${userId}_${Date.now()}`;
     const job: YouTubeSyncJob = {
-      id, userId, integrationId, jobType,
+      id,
+      userId,
+      integrationId,
+      jobType,
       status: "queued",
       itemsProcessed: 0,
       itemsTotal: 0,
@@ -490,10 +606,17 @@ export const externalIntegrationEngine = {
   },
 
   // Twitch Sync
-  queueTwitchSync(userId: number, integrationId: string, jobType: TwitchSyncJob["jobType"]): TwitchSyncJob {
+  queueTwitchSync(
+    userId: number,
+    integrationId: string,
+    jobType: TwitchSyncJob["jobType"]
+  ): TwitchSyncJob {
     const id = `tw_${userId}_${Date.now()}`;
     const job: TwitchSyncJob = {
-      id, userId, integrationId, jobType,
+      id,
+      userId,
+      integrationId,
+      jobType,
       status: "queued",
       itemsProcessed: 0,
       itemsTotal: 0,
@@ -517,10 +640,19 @@ export const externalIntegrationEngine = {
   },
 
   // Discord Sync
-  queueDiscordSync(userId: number, integrationId: string, guildId: string, jobType: DiscordSyncJob["jobType"]): DiscordSyncJob {
+  queueDiscordSync(
+    userId: number,
+    integrationId: string,
+    guildId: string,
+    jobType: DiscordSyncJob["jobType"]
+  ): DiscordSyncJob {
     const id = `dc_${userId}_${Date.now()}`;
     const job: DiscordSyncJob = {
-      id, userId, integrationId, guildId, jobType,
+      id,
+      userId,
+      integrationId,
+      guildId,
+      jobType,
       status: "queued",
       createdAt: new Date(),
     };
@@ -537,10 +669,17 @@ export const externalIntegrationEngine = {
   },
 
   // Coinbase Sync
-  queueCoinbaseSync(userId: number, integrationId: string, jobType: CoinbaseSyncJob["jobType"]): CoinbaseSyncJob {
+  queueCoinbaseSync(
+    userId: number,
+    integrationId: string,
+    jobType: CoinbaseSyncJob["jobType"]
+  ): CoinbaseSyncJob {
     const id = `cb_${userId}_${Date.now()}`;
     const job: CoinbaseSyncJob = {
-      id, userId, integrationId, jobType,
+      id,
+      userId,
+      integrationId,
+      jobType,
       status: "queued",
       createdAt: new Date(),
     };
@@ -557,10 +696,17 @@ export const externalIntegrationEngine = {
   },
 
   // OpenSea Sync
-  queueOpenSeaSync(userId: number, integrationId: string, jobType: OpenSeaSyncJob["jobType"]): OpenSeaSyncJob {
+  queueOpenSeaSync(
+    userId: number,
+    integrationId: string,
+    jobType: OpenSeaSyncJob["jobType"]
+  ): OpenSeaSyncJob {
     const id = `os_${userId}_${Date.now()}`;
     const job: OpenSeaSyncJob = {
-      id, userId, integrationId, jobType,
+      id,
+      userId,
+      integrationId,
+      jobType,
       status: "queued",
       itemsProcessed: 0,
       createdAt: new Date(),
@@ -579,7 +725,9 @@ export const externalIntegrationEngine = {
   },
 
   // Cross-Platform Posting
-  scheduleCrossPlatformPost(params: Omit<CrossPlatformPost, "id" | "createdAt">): CrossPlatformPost {
+  scheduleCrossPlatformPost(
+    params: Omit<CrossPlatformPost, "id" | "createdAt">
+  ): CrossPlatformPost {
     const id = `xp_${params.userId}_${Date.now()}`;
     const post: CrossPlatformPost = { ...params, id, createdAt: new Date() };
     _crossPlatformPosts.set(id, post);
@@ -598,7 +746,9 @@ export const externalIntegrationEngine = {
   },
 
   getUserCrossPlatformPosts(userId: number): CrossPlatformPost[] {
-    return Array.from(_crossPlatformPosts.values()).filter(p => p.userId === userId);
+    return Array.from(_crossPlatformPosts.values()).filter(
+      p => p.userId === userId
+    );
   },
 
   // Integration Health

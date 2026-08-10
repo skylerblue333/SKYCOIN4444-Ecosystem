@@ -52,7 +52,8 @@ export class VoiceAnalyticsSystem {
       cmdStats.failures++;
     }
     cmdStats.totalResponseTime += event.responseTime;
-    cmdStats.averageResponseTime = cmdStats.totalResponseTime / cmdStats.executions;
+    cmdStats.averageResponseTime =
+      cmdStats.totalResponseTime / cmdStats.executions;
     cmdStats.lastExecuted = event.timestamp;
 
     // Update user stats
@@ -70,8 +71,11 @@ export class VoiceAnalyticsSystem {
     const userStats = this.userStats.get(event.userId)!;
     userStats.commandsExecuted++;
     userStats.totalResponseTime += event.responseTime;
-    userStats.averageResponseTime = userStats.totalResponseTime / userStats.commandsExecuted;
-    userStats.successRate = (this.getSuccessfulCommands(event.userId) / userStats.commandsExecuted) * 100;
+    userStats.averageResponseTime =
+      userStats.totalResponseTime / userStats.commandsExecuted;
+    userStats.successRate =
+      (this.getSuccessfulCommands(event.userId) / userStats.commandsExecuted) *
+      100;
     userStats.lastActive = event.timestamp;
 
     // Keep only last 10000 events for memory efficiency
@@ -81,7 +85,7 @@ export class VoiceAnalyticsSystem {
   }
 
   private getSuccessfulCommands(userId: string): number {
-    return this.events.filter((e) => e.userId === userId && e.success).length;
+    return this.events.filter(e => e.userId === userId && e.success).length;
   }
 
   getCommandStats(commandId: string): any {
@@ -153,7 +157,8 @@ export class VoiceAnalyticsSystem {
       totalExecutions,
       totalSuccesses,
       totalFailures,
-      successRate: totalExecutions > 0 ? (totalSuccesses / totalExecutions) * 100 : 0,
+      successRate:
+        totalExecutions > 0 ? (totalSuccesses / totalExecutions) * 100 : 0,
       averageResponseTime: this.getAverageResponseTime(),
       topCommands: this.getTopCommands(5),
       mostFailedCommands: this.getMostFailedCommands(5),
@@ -164,14 +169,14 @@ export class VoiceAnalyticsSystem {
 
   getTimeSeriesData(commandId?: string, timeWindow: number = 3600000): any[] {
     const now = Date.now();
-    const filtered = this.events.filter((e) => {
+    const filtered = this.events.filter(e => {
       const inTimeWindow = e.timestamp >= now - timeWindow;
       const matchesCommand = !commandId || e.commandId === commandId;
       return inTimeWindow && matchesCommand;
     });
 
     const buckets = new Map<number, any>();
-    filtered.forEach((event) => {
+    filtered.forEach(event => {
       const bucketTime = Math.floor(event.timestamp / 60000) * 60000; // 1-minute buckets
       if (!buckets.has(bucketTime)) {
         buckets.set(bucketTime, {
@@ -191,12 +196,14 @@ export class VoiceAnalyticsSystem {
       }
     });
 
-    return Array.from(buckets.values()).sort((a, b) => a.timestamp - b.timestamp);
+    return Array.from(buckets.values()).sort(
+      (a, b) => a.timestamp - b.timestamp
+    );
   }
 
   getDeviceStats(): any {
     const devices = new Map<string, number>();
-    this.events.forEach((e) => {
+    this.events.forEach(e => {
       devices.set(e.device, (devices.get(e.device) || 0) + 1);
     });
 
@@ -209,7 +216,7 @@ export class VoiceAnalyticsSystem {
 
   getLanguageStats(): any {
     const languages = new Map<string, number>();
-    this.events.forEach((e) => {
+    this.events.forEach(e => {
       languages.set(e.language, (languages.get(e.language) || 0) + 1);
     });
 
@@ -223,7 +230,7 @@ export class VoiceAnalyticsSystem {
   clearOldEvents(ageMs: number = 86400000): number {
     const now = Date.now();
     const before = this.events.length;
-    this.events = this.events.filter((e) => now - e.timestamp < ageMs);
+    this.events = this.events.filter(e => now - e.timestamp < ageMs);
     return before - this.events.length;
   }
 }

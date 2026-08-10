@@ -1,11 +1,11 @@
 /**
  * ADVANCED AI ORCHESTRATOR
- * 
+ *
  * Coordinates multiple autonomous agents, optimizes their performance,
  * and creates emergent intelligence through agent collaboration.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // ============ AI ORCHESTRATION ENGINE ============
 
@@ -31,28 +31,46 @@ export interface AgentResponse {
 export class AdvancedAIOrchestrator {
   private taskQueue: AgentTask[] = [];
   private completedTasks: Map<string, AgentResponse[]> = new Map();
-  private agentPerformance: Map<string, { successRate: number; avgTime: number; totalCost: number }> = new Map();
+  private agentPerformance: Map<
+    string,
+    { successRate: number; avgTime: number; totalCost: number }
+  > = new Map();
 
   // ============ TASK ROUTING & OPTIMIZATION ============
 
   routeTaskToAgent(task: AgentTask, availableAgents: any[]): any {
     // Find best agent for task based on capabilities and performance
     const bestAgent = availableAgents
-      .filter(agent => this.hasRequiredCapabilities(agent, task.requiredCapabilities))
+      .filter(agent =>
+        this.hasRequiredCapabilities(agent, task.requiredCapabilities)
+      )
       .sort((a, b) => {
-        const aPerf = this.agentPerformance.get(a.id) || { successRate: 0, avgTime: Infinity, totalCost: Infinity };
-        const bPerf = this.agentPerformance.get(b.id) || { successRate: 0, avgTime: Infinity, totalCost: Infinity };
-        
+        const aPerf = this.agentPerformance.get(a.id) || {
+          successRate: 0,
+          avgTime: Infinity,
+          totalCost: Infinity,
+        };
+        const bPerf = this.agentPerformance.get(b.id) || {
+          successRate: 0,
+          avgTime: Infinity,
+          totalCost: Infinity,
+        };
+
         // Prioritize success rate, then speed, then cost
-        if (aPerf.successRate !== bPerf.successRate) return bPerf.successRate - aPerf.successRate;
-        if (aPerf.avgTime !== bPerf.avgTime) return aPerf.avgTime - bPerf.avgTime;
+        if (aPerf.successRate !== bPerf.successRate)
+          return bPerf.successRate - aPerf.successRate;
+        if (aPerf.avgTime !== bPerf.avgTime)
+          return aPerf.avgTime - bPerf.avgTime;
         return aPerf.totalCost - bPerf.totalCost;
       })[0];
 
     return bestAgent;
   }
 
-  private hasRequiredCapabilities(agent: any, requiredCapabilities: string[]): boolean {
+  private hasRequiredCapabilities(
+    agent: any,
+    requiredCapabilities: string[]
+  ): boolean {
     const agentCapabilities = agent.capabilities.map((c: any) => c.name);
     return requiredCapabilities.every(cap => agentCapabilities.includes(cap));
   }
@@ -69,28 +87,43 @@ export class AdvancedAIOrchestrator {
     }));
 
     const totalWeight = weightedResponses.reduce((sum, r) => sum + r.weight, 0);
-    
+
     return {
-      consensus: 'achieved',
+      consensus: "achieved",
       confidenceLevel: (totalWeight / responses.length).toFixed(2),
       agentCount: responses.length,
-      averageConfidence: (responses.reduce((sum, r) => sum + r.confidence, 0) / responses.length * 100).toFixed(1) + '%',
+      averageConfidence:
+        (
+          (responses.reduce((sum, r) => sum + r.confidence, 0) /
+            responses.length) *
+          100
+        ).toFixed(1) + "%",
       responses: responses,
     };
   }
 
   // ============ PERFORMANCE TRACKING ============
 
-  recordAgentPerformance(agentId: string, success: boolean, executionTime: number, cost: number): void {
-    const current = this.agentPerformance.get(agentId) || { successRate: 0, avgTime: 0, totalCost: 0 };
-    
+  recordAgentPerformance(
+    agentId: string,
+    success: boolean,
+    executionTime: number,
+    cost: number
+  ): void {
+    const current = this.agentPerformance.get(agentId) || {
+      successRate: 0,
+      avgTime: 0,
+      totalCost: 0,
+    };
+
     // Update success rate (exponential moving average)
     const alpha = 0.1;
-    const newSuccessRate = current.successRate * (1 - alpha) + (success ? 1 : 0) * alpha;
-    
+    const newSuccessRate =
+      current.successRate * (1 - alpha) + (success ? 1 : 0) * alpha;
+
     // Update average time
     const newAvgTime = current.avgTime * (1 - alpha) + executionTime * alpha;
-    
+
     // Update total cost
     const newTotalCost = current.totalCost + cost;
 
@@ -123,12 +156,12 @@ export class AdvancedAIOrchestrator {
         .slice(0, 3)
         .map(a => ({ id: a.id, name: a.name })),
 
-      systemHealth: 'optimal',
+      systemHealth: "optimal",
       recommendations: [
-        'Continue investing in top-performing agents',
-        'Provide additional training to underperforming agents',
-        'Increase agent collaboration for complex tasks',
-        'Monitor cost efficiency across agent network',
+        "Continue investing in top-performing agents",
+        "Provide additional training to underperforming agents",
+        "Increase agent collaboration for complex tasks",
+        "Monitor cost efficiency across agent network",
       ],
     };
 
@@ -160,19 +193,25 @@ export class AdvancedAIOrchestrator {
 
     return {
       allocation: Object.fromEntries(allocation),
-      optimizationScore: (allocation.size / agents.length * 100).toFixed(1) + '%',
+      optimizationScore:
+        ((allocation.size / agents.length) * 100).toFixed(1) + "%",
       tasksAllocated: sortedTasks.length,
       estimatedCompletionTime: this.estimateCompletionTime(allocation, agents),
     };
   }
 
-  private estimateCompletionTime(allocation: Map<string, AgentTask[]>, agents: any[]): string {
+  private estimateCompletionTime(
+    allocation: Map<string, AgentTask[]>,
+    agents: any[]
+  ): string {
     let maxTime = 0;
 
     allocation.forEach((tasks, agentId) => {
       const agent = agents.find(a => a.id === agentId);
       if (agent) {
-        const totalTime = tasks.reduce((sum, task) => sum + (task.complexity * 100), 0) + agent.responseTime;
+        const totalTime =
+          tasks.reduce((sum, task) => sum + task.complexity * 100, 0) +
+          agent.responseTime;
         maxTime = Math.max(maxTime, totalTime);
       }
     });
@@ -183,32 +222,55 @@ export class AdvancedAIOrchestrator {
   // ============ SYSTEM HEALTH & MONITORING ============
 
   getSystemHealth(agents: any[]): any {
-    const performances = agents.map(a => this.agentPerformance.get(a.id) || { successRate: 0, avgTime: 0, totalCost: 0 });
-    const avgSuccessRate = performances.reduce((sum, p) => sum + p.successRate, 0) / performances.length;
-    const avgResponseTime = performances.reduce((sum, p) => sum + p.avgTime, 0) / performances.length;
+    const performances = agents.map(
+      a =>
+        this.agentPerformance.get(a.id) || {
+          successRate: 0,
+          avgTime: 0,
+          totalCost: 0,
+        }
+    );
+    const avgSuccessRate =
+      performances.reduce((sum, p) => sum + p.successRate, 0) /
+      performances.length;
+    const avgResponseTime =
+      performances.reduce((sum, p) => sum + p.avgTime, 0) / performances.length;
     const totalCost = performances.reduce((sum, p) => sum + p.totalCost, 0);
 
     return {
-      status: avgSuccessRate > 0.9 ? 'healthy' : avgSuccessRate > 0.7 ? 'warning' : 'critical',
-      systemSuccessRate: (avgSuccessRate * 100).toFixed(1) + '%',
-      averageResponseTime: avgResponseTime.toFixed(0) + 'ms',
+      status:
+        avgSuccessRate > 0.9
+          ? "healthy"
+          : avgSuccessRate > 0.7
+            ? "warning"
+            : "critical",
+      systemSuccessRate: (avgSuccessRate * 100).toFixed(1) + "%",
+      averageResponseTime: avgResponseTime.toFixed(0) + "ms",
       totalOperatingCost: `$${totalCost.toLocaleString()}`,
       agentCount: agents.length,
-      recommendations: this.generateRecommendations(avgSuccessRate, avgResponseTime),
+      recommendations: this.generateRecommendations(
+        avgSuccessRate,
+        avgResponseTime
+      ),
     };
   }
 
-  private generateRecommendations(successRate: number, responseTime: number): string[] {
+  private generateRecommendations(
+    successRate: number,
+    responseTime: number
+  ): string[] {
     const recommendations: string[] = [];
 
     if (successRate < 0.85) {
-      recommendations.push('Improve agent training and accuracy');
+      recommendations.push("Improve agent training and accuracy");
     }
     if (responseTime > 500) {
-      recommendations.push('Optimize agent response time and latency');
+      recommendations.push("Optimize agent response time and latency");
     }
     if (successRate > 0.95 && responseTime < 200) {
-      recommendations.push('System performing optimally - maintain current configuration');
+      recommendations.push(
+        "System performing optimally - maintain current configuration"
+      );
     }
 
     return recommendations;

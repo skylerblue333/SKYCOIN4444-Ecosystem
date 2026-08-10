@@ -52,19 +52,38 @@ export function StatCard({
       onClick={onClick}
     >
       <div className="flex items-start justify-between mb-3">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          {label}
+        </span>
         {Icon && (
-          <div className={`w-8 h-8 rounded-lg border flex items-center justify-center ${colorClass}`}>
+          <div
+            className={`w-8 h-8 rounded-lg border flex items-center justify-center ${colorClass}`}
+          >
             <Icon className="w-4 h-4" />
           </div>
         )}
       </div>
       <div className="text-2xl font-bold text-foreground mb-1">{value}</div>
       {change !== undefined && (
-        <div className={`flex items-center gap-1 text-xs font-medium ${isPositive ? "text-success" : isNegative ? "text-destructive" : "text-muted-foreground"}`}>
-          {isPositive ? <TrendingUp className="w-3 h-3" /> : isNegative ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-          <span>{isPositive ? "+" : ""}{change}%</span>
-          {changeLabel && <span className="text-muted-foreground font-normal">{changeLabel}</span>}
+        <div
+          className={`flex items-center gap-1 text-xs font-medium ${isPositive ? "text-success" : isNegative ? "text-destructive" : "text-muted-foreground"}`}
+        >
+          {isPositive ? (
+            <TrendingUp className="w-3 h-3" />
+          ) : isNegative ? (
+            <TrendingDown className="w-3 h-3" />
+          ) : (
+            <Minus className="w-3 h-3" />
+          )}
+          <span>
+            {isPositive ? "+" : ""}
+            {change}%
+          </span>
+          {changeLabel && (
+            <span className="text-muted-foreground font-normal">
+              {changeLabel}
+            </span>
+          )}
         </div>
       )}
     </div>

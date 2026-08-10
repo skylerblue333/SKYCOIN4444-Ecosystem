@@ -1,6 +1,6 @@
 /**
  * Skycoin4444 Microservices Architecture
- * 
+ *
  * This file defines the microservices structure and communication patterns
  * for scaling Skycoin4444 to enterprise scale.
  */
@@ -23,120 +23,125 @@ export interface ServiceConfig {
 export const SERVICES: Record<string, ServiceConfig> = {
   // Core Services
   AUTH_SERVICE: {
-    name: 'auth-service',
+    name: "auth-service",
     port: 3001,
-    version: '1.0.0',
+    version: "1.0.0",
     dependencies: [],
-    database: 'auth-db',
-    cache: 'redis-auth',
-    healthCheck: '/health',
+    database: "auth-db",
+    cache: "redis-auth",
+    healthCheck: "/health",
   },
-  
+
   API_GATEWAY: {
-    name: 'api-gateway',
+    name: "api-gateway",
     port: 3000,
-    version: '1.0.0',
-    dependencies: ['auth-service', 'mining-service', 'trading-service', 'social-service'],
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: [
+      "auth-service",
+      "mining-service",
+      "trading-service",
+      "social-service",
+    ],
+    healthCheck: "/health",
   },
 
   // Domain Services
   MINING_SERVICE: {
-    name: 'mining-service',
+    name: "mining-service",
     port: 3010,
-    version: '1.0.0',
-    dependencies: ['auth-service', 'notification-service'],
-    database: 'mining-db',
-    cache: 'redis-mining',
-    messageQueue: 'mining-queue',
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: ["auth-service", "notification-service"],
+    database: "mining-db",
+    cache: "redis-mining",
+    messageQueue: "mining-queue",
+    healthCheck: "/health",
   },
 
   TRADING_SERVICE: {
-    name: 'trading-service',
+    name: "trading-service",
     port: 3011,
-    version: '1.0.0',
-    dependencies: ['auth-service', 'notification-service'],
-    database: 'trading-db',
-    cache: 'redis-trading',
-    messageQueue: 'trading-queue',
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: ["auth-service", "notification-service"],
+    database: "trading-db",
+    cache: "redis-trading",
+    messageQueue: "trading-queue",
+    healthCheck: "/health",
   },
 
   SOCIAL_SERVICE: {
-    name: 'social-service',
+    name: "social-service",
     port: 3012,
-    version: '1.0.0',
-    dependencies: ['auth-service', 'notification-service'],
-    database: 'social-db',
-    cache: 'redis-social',
-    messageQueue: 'social-queue',
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: ["auth-service", "notification-service"],
+    database: "social-db",
+    cache: "redis-social",
+    messageQueue: "social-queue",
+    healthCheck: "/health",
   },
 
   GAMING_SERVICE: {
-    name: 'gaming-service',
+    name: "gaming-service",
     port: 3013,
-    version: '1.0.0',
-    dependencies: ['auth-service', 'notification-service'],
-    database: 'gaming-db',
-    cache: 'redis-gaming',
-    messageQueue: 'gaming-queue',
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: ["auth-service", "notification-service"],
+    database: "gaming-db",
+    cache: "redis-gaming",
+    messageQueue: "gaming-queue",
+    healthCheck: "/health",
   },
 
   MARKETPLACE_SERVICE: {
-    name: 'marketplace-service',
+    name: "marketplace-service",
     port: 3014,
-    version: '1.0.0',
-    dependencies: ['auth-service', 'notification-service', 'payment-service'],
-    database: 'marketplace-db',
-    cache: 'redis-marketplace',
-    messageQueue: 'marketplace-queue',
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: ["auth-service", "notification-service", "payment-service"],
+    database: "marketplace-db",
+    cache: "redis-marketplace",
+    messageQueue: "marketplace-queue",
+    healthCheck: "/health",
   },
 
   GOVERNANCE_SERVICE: {
-    name: 'governance-service',
+    name: "governance-service",
     port: 3015,
-    version: '1.0.0',
-    dependencies: ['auth-service', 'notification-service'],
-    database: 'governance-db',
-    cache: 'redis-governance',
-    messageQueue: 'governance-queue',
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: ["auth-service", "notification-service"],
+    database: "governance-db",
+    cache: "redis-governance",
+    messageQueue: "governance-queue",
+    healthCheck: "/health",
   },
 
   // Support Services
   NOTIFICATION_SERVICE: {
-    name: 'notification-service',
+    name: "notification-service",
     port: 3020,
-    version: '1.0.0',
-    dependencies: ['auth-service'],
-    database: 'notification-db',
-    messageQueue: 'notification-queue',
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: ["auth-service"],
+    database: "notification-db",
+    messageQueue: "notification-queue",
+    healthCheck: "/health",
   },
 
   ANALYTICS_SERVICE: {
-    name: 'analytics-service',
+    name: "analytics-service",
     port: 3021,
-    version: '1.0.0',
-    dependencies: ['auth-service'],
-    database: 'analytics-db',
-    cache: 'redis-analytics',
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: ["auth-service"],
+    database: "analytics-db",
+    cache: "redis-analytics",
+    healthCheck: "/health",
   },
 
   PAYMENT_SERVICE: {
-    name: 'payment-service',
+    name: "payment-service",
     port: 3022,
-    version: '1.0.0',
-    dependencies: ['auth-service', 'notification-service'],
-    database: 'payment-db',
-    cache: 'redis-payment',
-    messageQueue: 'payment-queue',
-    healthCheck: '/health',
+    version: "1.0.0",
+    dependencies: ["auth-service", "notification-service"],
+    database: "payment-db",
+    cache: "redis-payment",
+    messageQueue: "payment-queue",
+    healthCheck: "/health",
   },
 };
 
@@ -149,7 +154,7 @@ export interface ServiceMessage {
   timestamp: number;
   source: string;
   destination: string;
-  type: 'command' | 'event' | 'query' | 'response';
+  type: "command" | "event" | "query" | "response";
   payload: any;
   traceId: string;
   spanId: string;
@@ -169,44 +174,44 @@ export interface ServiceEvent {
 // Event types across services
 export const DOMAIN_EVENTS = {
   // Mining events
-  MINING_STARTED: 'mining.started',
-  MINING_STOPPED: 'mining.stopped',
-  REWARD_EARNED: 'mining.reward_earned',
-  POOL_CONNECTED: 'mining.pool_connected',
-  POOL_DISCONNECTED: 'mining.pool_disconnected',
+  MINING_STARTED: "mining.started",
+  MINING_STOPPED: "mining.stopped",
+  REWARD_EARNED: "mining.reward_earned",
+  POOL_CONNECTED: "mining.pool_connected",
+  POOL_DISCONNECTED: "mining.pool_disconnected",
 
   // Trading events
-  ORDER_PLACED: 'trading.order_placed',
-  ORDER_FILLED: 'trading.order_filled',
-  ORDER_CANCELLED: 'trading.order_cancelled',
-  TRADE_EXECUTED: 'trading.trade_executed',
+  ORDER_PLACED: "trading.order_placed",
+  ORDER_FILLED: "trading.order_filled",
+  ORDER_CANCELLED: "trading.order_cancelled",
+  TRADE_EXECUTED: "trading.trade_executed",
 
   // Social events
-  POST_CREATED: 'social.post_created',
-  POST_LIKED: 'social.post_liked',
-  COMMENT_ADDED: 'social.comment_added',
-  USER_FOLLOWED: 'social.user_followed',
+  POST_CREATED: "social.post_created",
+  POST_LIKED: "social.post_liked",
+  COMMENT_ADDED: "social.comment_added",
+  USER_FOLLOWED: "social.user_followed",
 
   // Gaming events
-  GAME_STARTED: 'gaming.game_started',
-  GAME_COMPLETED: 'gaming.game_completed',
-  ACHIEVEMENT_UNLOCKED: 'gaming.achievement_unlocked',
-  REWARD_CLAIMED: 'gaming.reward_claimed',
+  GAME_STARTED: "gaming.game_started",
+  GAME_COMPLETED: "gaming.game_completed",
+  ACHIEVEMENT_UNLOCKED: "gaming.achievement_unlocked",
+  REWARD_CLAIMED: "gaming.reward_claimed",
 
   // Marketplace events
-  LISTING_CREATED: 'marketplace.listing_created',
-  PURCHASE_COMPLETED: 'marketplace.purchase_completed',
-  REVIEW_SUBMITTED: 'marketplace.review_submitted',
+  LISTING_CREATED: "marketplace.listing_created",
+  PURCHASE_COMPLETED: "marketplace.purchase_completed",
+  REVIEW_SUBMITTED: "marketplace.review_submitted",
 
   // Governance events
-  PROPOSAL_CREATED: 'governance.proposal_created',
-  VOTE_CAST: 'governance.vote_cast',
-  PROPOSAL_EXECUTED: 'governance.proposal_executed',
+  PROPOSAL_CREATED: "governance.proposal_created",
+  VOTE_CAST: "governance.vote_cast",
+  PROPOSAL_EXECUTED: "governance.proposal_executed",
 
   // User events
-  USER_REGISTERED: 'user.registered',
-  USER_UPDATED: 'user.updated',
-  USER_DELETED: 'user.deleted',
+  USER_REGISTERED: "user.registered",
+  USER_UPDATED: "user.updated",
+  USER_DELETED: "user.deleted",
 };
 
 // ============================================================================
@@ -215,7 +220,7 @@ export const DOMAIN_EVENTS = {
 
 export interface RouteConfig {
   path: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   service: string;
   version: string;
   rateLimit?: number;
@@ -225,34 +230,143 @@ export interface RouteConfig {
 
 export const API_ROUTES: RouteConfig[] = [
   // Mining routes
-  { path: '/mining/start', method: 'POST', service: 'mining-service', version: '1.0.0', requiresAuth: true },
-  { path: '/mining/stop', method: 'POST', service: 'mining-service', version: '1.0.0', requiresAuth: true },
-  { path: '/mining/status', method: 'GET', service: 'mining-service', version: '1.0.0', requiresAuth: true },
-  { path: '/mining/stats', method: 'GET', service: 'mining-service', version: '1.0.0', requiresAuth: true },
+  {
+    path: "/mining/start",
+    method: "POST",
+    service: "mining-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/mining/stop",
+    method: "POST",
+    service: "mining-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/mining/status",
+    method: "GET",
+    service: "mining-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/mining/stats",
+    method: "GET",
+    service: "mining-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
 
   // Trading routes
-  { path: '/trading/orders', method: 'GET', service: 'trading-service', version: '1.0.0', requiresAuth: true },
-  { path: '/trading/orders', method: 'POST', service: 'trading-service', version: '1.0.0', requiresAuth: true },
-  { path: '/trading/orders/:id', method: 'DELETE', service: 'trading-service', version: '1.0.0', requiresAuth: true },
+  {
+    path: "/trading/orders",
+    method: "GET",
+    service: "trading-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/trading/orders",
+    method: "POST",
+    service: "trading-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/trading/orders/:id",
+    method: "DELETE",
+    service: "trading-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
 
   // Social routes
-  { path: '/social/feed', method: 'GET', service: 'social-service', version: '1.0.0', requiresAuth: true },
-  { path: '/social/posts', method: 'POST', service: 'social-service', version: '1.0.0', requiresAuth: true },
-  { path: '/social/posts/:id/like', method: 'POST', service: 'social-service', version: '1.0.0', requiresAuth: true },
+  {
+    path: "/social/feed",
+    method: "GET",
+    service: "social-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/social/posts",
+    method: "POST",
+    service: "social-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/social/posts/:id/like",
+    method: "POST",
+    service: "social-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
 
   // Gaming routes
-  { path: '/gaming/games', method: 'GET', service: 'gaming-service', version: '1.0.0', requiresAuth: true },
-  { path: '/gaming/games/:id/start', method: 'POST', service: 'gaming-service', version: '1.0.0', requiresAuth: true },
+  {
+    path: "/gaming/games",
+    method: "GET",
+    service: "gaming-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/gaming/games/:id/start",
+    method: "POST",
+    service: "gaming-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
 
   // Marketplace routes
-  { path: '/marketplace/listings', method: 'GET', service: 'marketplace-service', version: '1.0.0', requiresAuth: false },
-  { path: '/marketplace/listings', method: 'POST', service: 'marketplace-service', version: '1.0.0', requiresAuth: true },
-  { path: '/marketplace/purchases', method: 'POST', service: 'marketplace-service', version: '1.0.0', requiresAuth: true },
+  {
+    path: "/marketplace/listings",
+    method: "GET",
+    service: "marketplace-service",
+    version: "1.0.0",
+    requiresAuth: false,
+  },
+  {
+    path: "/marketplace/listings",
+    method: "POST",
+    service: "marketplace-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/marketplace/purchases",
+    method: "POST",
+    service: "marketplace-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
 
   // Governance routes
-  { path: '/governance/proposals', method: 'GET', service: 'governance-service', version: '1.0.0', requiresAuth: true },
-  { path: '/governance/proposals', method: 'POST', service: 'governance-service', version: '1.0.0', requiresAuth: true, roles: ['admin'] },
-  { path: '/governance/proposals/:id/vote', method: 'POST', service: 'governance-service', version: '1.0.0', requiresAuth: true },
+  {
+    path: "/governance/proposals",
+    method: "GET",
+    service: "governance-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
+  {
+    path: "/governance/proposals",
+    method: "POST",
+    service: "governance-service",
+    version: "1.0.0",
+    requiresAuth: true,
+    roles: ["admin"],
+  },
+  {
+    path: "/governance/proposals/:id/vote",
+    method: "POST",
+    service: "governance-service",
+    version: "1.0.0",
+    requiresAuth: true,
+  },
 ];
 
 // ============================================================================
@@ -283,9 +397,9 @@ export interface ServiceInstance {
 // ============================================================================
 
 export enum CircuitBreakerState {
-  CLOSED = 'closed',
-  OPEN = 'open',
-  HALF_OPEN = 'half_open',
+  CLOSED = "closed",
+  OPEN = "open",
+  HALF_OPEN = "half_open",
 }
 
 export interface CircuitBreakerConfig {
@@ -309,7 +423,7 @@ export class CircuitBreaker {
         this.state = CircuitBreakerState.HALF_OPEN;
         this.successCount = 0;
       } else {
-        throw new Error('Circuit breaker is OPEN');
+        throw new Error("Circuit breaker is OPEN");
       }
     }
 
@@ -351,10 +465,10 @@ export class CircuitBreaker {
 // ============================================================================
 
 export enum LoadBalancingStrategy {
-  ROUND_ROBIN = 'round_robin',
-  LEAST_CONNECTIONS = 'least_connections',
-  RANDOM = 'random',
-  WEIGHTED = 'weighted',
+  ROUND_ROBIN = "round_robin",
+  LEAST_CONNECTIONS = "least_connections",
+  RANDOM = "random",
+  WEIGHTED = "weighted",
 }
 
 export class LoadBalancer {
@@ -368,7 +482,7 @@ export class LoadBalancer {
   selectInstance(): ServiceInstance {
     const healthyInstances = this.instances.filter(i => i.healthy);
     if (healthyInstances.length === 0) {
-      throw new Error('No healthy instances available');
+      throw new Error("No healthy instances available");
     }
 
     switch (this.strategy) {
@@ -461,29 +575,69 @@ export interface DeploymentConfig {
 }
 
 export const DEPLOYMENT_CONFIGS: Record<string, DeploymentConfig> = {
-  'mining-service': {
+  "mining-service": {
     replicas: 3,
-    resources: { cpu: '1000m', memory: '1Gi' },
-    autoscaling: { minReplicas: 3, maxReplicas: 10, targetCPU: 70, targetMemory: 80 },
-    healthCheck: { initialDelaySeconds: 10, periodSeconds: 10, timeoutSeconds: 5, failureThreshold: 3 },
+    resources: { cpu: "1000m", memory: "1Gi" },
+    autoscaling: {
+      minReplicas: 3,
+      maxReplicas: 10,
+      targetCPU: 70,
+      targetMemory: 80,
+    },
+    healthCheck: {
+      initialDelaySeconds: 10,
+      periodSeconds: 10,
+      timeoutSeconds: 5,
+      failureThreshold: 3,
+    },
   },
-  'trading-service': {
+  "trading-service": {
     replicas: 5,
-    resources: { cpu: '2000m', memory: '2Gi' },
-    autoscaling: { minReplicas: 5, maxReplicas: 20, targetCPU: 70, targetMemory: 80 },
-    healthCheck: { initialDelaySeconds: 10, periodSeconds: 10, timeoutSeconds: 5, failureThreshold: 3 },
+    resources: { cpu: "2000m", memory: "2Gi" },
+    autoscaling: {
+      minReplicas: 5,
+      maxReplicas: 20,
+      targetCPU: 70,
+      targetMemory: 80,
+    },
+    healthCheck: {
+      initialDelaySeconds: 10,
+      periodSeconds: 10,
+      timeoutSeconds: 5,
+      failureThreshold: 3,
+    },
   },
-  'social-service': {
+  "social-service": {
     replicas: 3,
-    resources: { cpu: '1000m', memory: '1Gi' },
-    autoscaling: { minReplicas: 3, maxReplicas: 15, targetCPU: 70, targetMemory: 80 },
-    healthCheck: { initialDelaySeconds: 10, periodSeconds: 10, timeoutSeconds: 5, failureThreshold: 3 },
+    resources: { cpu: "1000m", memory: "1Gi" },
+    autoscaling: {
+      minReplicas: 3,
+      maxReplicas: 15,
+      targetCPU: 70,
+      targetMemory: 80,
+    },
+    healthCheck: {
+      initialDelaySeconds: 10,
+      periodSeconds: 10,
+      timeoutSeconds: 5,
+      failureThreshold: 3,
+    },
   },
-  'gaming-service': {
+  "gaming-service": {
     replicas: 2,
-    resources: { cpu: '500m', memory: '512Mi' },
-    autoscaling: { minReplicas: 2, maxReplicas: 8, targetCPU: 70, targetMemory: 80 },
-    healthCheck: { initialDelaySeconds: 10, periodSeconds: 10, timeoutSeconds: 5, failureThreshold: 3 },
+    resources: { cpu: "500m", memory: "512Mi" },
+    autoscaling: {
+      minReplicas: 2,
+      maxReplicas: 8,
+      targetCPU: 70,
+      targetMemory: 80,
+    },
+    healthCheck: {
+      initialDelaySeconds: 10,
+      periodSeconds: 10,
+      timeoutSeconds: 5,
+      failureThreshold: 3,
+    },
   },
 };
 

@@ -80,7 +80,13 @@ import {
 export const phase31Router = router({
   // ── Passport ──────────────────────────────────────────────────────────────
   createPassport: protectedProcedure
-    .input(z.object({ displayName: z.string(), bio: z.string(), avatarUrl: z.string().optional() }))
+    .input(
+      z.object({
+        displayName: z.string(),
+        bio: z.string(),
+        avatarUrl: z.string().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       creatorPassportEngine.createPassport({ userId: ctx.user.id, ...input })
     ),
@@ -90,7 +96,19 @@ export const phase31Router = router({
   ),
 
   addVerificationMethod: protectedProcedure
-    .input(z.object({ method: z.enum(["email", "phone", "kyc", "social_oauth", "wallet_sign", "biometric", "government_id"]) }))
+    .input(
+      z.object({
+        method: z.enum([
+          "email",
+          "phone",
+          "kyc",
+          "social_oauth",
+          "wallet_sign",
+          "biometric",
+          "government_id",
+        ]),
+      })
+    )
     .mutation(({ ctx, input }) =>
       creatorPassportEngine.addVerificationMethod(ctx.user.id, input.method)
     ),
@@ -101,7 +119,9 @@ export const phase31Router = router({
       creatorPassportEngine.linkWallet(ctx.user.id, input.walletAddress)
     ),
 
-  getPassportStats: publicProcedure.query(() => creatorPassportEngine.getPassportStats()),
+  getPassportStats: publicProcedure.query(() =>
+    creatorPassportEngine.getPassportStats()
+  ),
 
   // ── Reputation ────────────────────────────────────────────────────────────
   getMyReputation: protectedProcedure.query(({ ctx }) =>
@@ -109,13 +129,15 @@ export const phase31Router = router({
   ),
 
   updateReputation: protectedProcedure
-    .input(z.object({
-      contentQuality: z.number().optional(),
-      communityStanding: z.number().optional(),
-      trustworthiness: z.number().optional(),
-      economicActivity: z.number().optional(),
-      governanceParticipation: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        contentQuality: z.number().optional(),
+        communityStanding: z.number().optional(),
+        trustworthiness: z.number().optional(),
+        economicActivity: z.number().optional(),
+        governanceParticipation: z.number().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       (reputationPassportEngine as any).createOrUpdate(ctx.user.id, input)
     ),
@@ -126,12 +148,14 @@ export const phase31Router = router({
 
   // ── Wallet Identity ───────────────────────────────────────────────────────
   linkWallet: protectedProcedure
-    .input(z.object({
-      walletAddress: z.string(),
-      chain: z.string(),
-      signatureHash: z.string(),
-      isPrimary: z.boolean().optional(),
-    }))
+    .input(
+      z.object({
+        walletAddress: z.string(),
+        chain: z.string(),
+        signatureHash: z.string(),
+        isPrimary: z.boolean().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       walletIdentityEngine.linkWallet({ userId: ctx.user.id, ...input })
     ),
@@ -148,12 +172,14 @@ export const phase31Router = router({
 
   // ── Social Identity ───────────────────────────────────────────────────────
   linkSocialPlatform: protectedProcedure
-    .input(z.object({
-      platform: z.string(),
-      platformUserId: z.string(),
-      platformUsername: z.string(),
-      followerCount: z.number().default(0),
-    }))
+    .input(
+      z.object({
+        platform: z.string(),
+        platformUserId: z.string(),
+        platformUsername: z.string(),
+        followerCount: z.number().default(0),
+      })
+    )
     .mutation(({ ctx, input }) =>
       socialIdentityEngine.linkSocial({ userId: ctx.user.id, ...input })
     ),
@@ -172,25 +198,29 @@ export const phase31Router = router({
   ),
 
   runSybilCheck: protectedProcedure
-    .input(z.object({
-      checkType: z.string(),
-      evidence: z.array(z.string()),
-      relatedUserIds: z.array(z.number()),
-    }))
+    .input(
+      z.object({
+        checkType: z.string(),
+        evidence: z.array(z.string()),
+        relatedUserIds: z.array(z.number()),
+      })
+    )
     .mutation(({ ctx, input }) =>
-      antiSybilEngine.runCheck({ userId: ctx.user.id, ...input as any })
+      antiSybilEngine.runCheck({ userId: ctx.user.id, ...(input as any) })
     ),
 
   getSybilStats: publicProcedure.query(() => antiSybilEngine.getSybilStats()),
 
   // ── Profile NFTs ──────────────────────────────────────────────────────────
   mintProfileNFT: protectedProcedure
-    .input(z.object({
-      name: z.string(),
-      description: z.string(),
-      imageUrl: z.string(),
-      rarity: z.enum(["common", "uncommon", "rare", "epic", "legendary"]),
-    }))
+    .input(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        imageUrl: z.string(),
+        rarity: z.enum(["common", "uncommon", "rare", "epic", "legendary"]),
+      })
+    )
     .mutation(({ ctx, input }) =>
       profileNFTEngine.mint({ userId: ctx.user.id, ...input })
     ),
@@ -221,7 +251,9 @@ export const phase31Router = router({
 
   verifyCredential: publicProcedure
     .input(z.object({ credentialId: z.string() }))
-    .query(({ input }) => trustCredentialEngine.verifyCredential(input.credentialId)),
+    .query(({ input }) =>
+      trustCredentialEngine.verifyCredential(input.credentialId)
+    ),
 
   // ── Proof of History ──────────────────────────────────────────────────────
   getMyProofHistory: protectedProcedure.query(({ ctx }) =>
@@ -241,14 +273,16 @@ export const phase31Router = router({
 export const phase32Router = router({
   // ── Storefront ────────────────────────────────────────────────────────────
   createStorefront: protectedProcedure
-    .input(z.object({
-      slug: z.string(),
-      name: z.string(),
-      description: z.string(),
-      currency: z.string().default("USD"),
-      logoUrl: z.string().optional(),
-      bannerUrl: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        slug: z.string(),
+        name: z.string(),
+        description: z.string(),
+        currency: z.string().default("USD"),
+        logoUrl: z.string().optional(),
+        bannerUrl: z.string().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       storefrontEngine.create({ creatorId: ctx.user.id, ...input })
     ),
@@ -263,20 +297,24 @@ export const phase32Router = router({
 
   setCustomDomain: protectedProcedure
     .input(z.object({ storefrontId: z.string(), domain: z.string() }))
-    .mutation(({ input }) => storefrontEngine.setCustomDomain(input.storefrontId, input.domain)),
+    .mutation(({ input }) =>
+      storefrontEngine.setCustomDomain(input.storefrontId, input.domain)
+    ),
 
   // ── Membership ────────────────────────────────────────────────────────────
   createMembershipTier: protectedProcedure
-    .input(z.object({
-      tier: z.enum(["supporter", "fan", "vip", "founding", "elite"]),
-      name: z.string(),
-      description: z.string(),
-      price: z.number(),
-      currency: z.string().default("USD"),
-      billingCycle: z.enum(["monthly", "annual", "lifetime"]),
-      perks: z.array(z.string()),
-      maxMembers: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        tier: z.enum(["supporter", "fan", "vip", "founding", "elite"]),
+        name: z.string(),
+        description: z.string(),
+        price: z.number(),
+        currency: z.string().default("USD"),
+        billingCycle: z.enum(["monthly", "annual", "lifetime"]),
+        perks: z.array(z.string()),
+        maxMembers: z.number().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       membershipEngine.createTier({ creatorId: ctx.user.id, ...input } as any)
     ),
@@ -289,7 +327,9 @@ export const phase32Router = router({
 
   cancelMembership: protectedProcedure
     .input(z.object({ subscriptionId: z.string() }))
-    .mutation(({ input }) => membershipEngine.cancelSubscription(input.subscriptionId)),
+    .mutation(({ input }) =>
+      membershipEngine.cancelSubscription(input.subscriptionId)
+    ),
 
   getMembershipStats: protectedProcedure.query(({ ctx }) =>
     membershipEngine.getMembershipStats(ctx.user.id)
@@ -297,31 +337,45 @@ export const phase32Router = router({
 
   // ── Token Economy ─────────────────────────────────────────────────────────
   createTokenEconomy: protectedProcedure
-    .input(z.object({
-      tokenSymbol: z.string(),
-      tokenName: z.string(),
-      economyType: z.enum(["reward", "governance", "utility", "access"]),
-      totalSupply: z.number(),
-      initialPrice: z.number(),
-    }))
+    .input(
+      z.object({
+        tokenSymbol: z.string(),
+        tokenName: z.string(),
+        economyType: z.enum(["reward", "governance", "utility", "access"]),
+        totalSupply: z.number(),
+        initialPrice: z.number(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       tokenEconomyEngine.createEconomy({ creatorId: ctx.user.id, ...input })
     ),
 
   distributeTokens: protectedProcedure
-    .input(z.object({ economyId: z.string(), recipientId: z.number(), amount: z.number() }))
+    .input(
+      z.object({
+        economyId: z.string(),
+        recipientId: z.number(),
+        amount: z.number(),
+      })
+    )
     .mutation(({ input }) =>
-      tokenEconomyEngine.distributeTokens(input.economyId, input.recipientId, input.amount)
+      tokenEconomyEngine.distributeTokens(
+        input.economyId,
+        input.recipientId,
+        input.amount
+      )
     ),
 
   // ── Revenue Share ─────────────────────────────────────────────────────────
   createRevenueShare: protectedProcedure
-    .input(z.object({
-      recipientId: z.number(),
-      role: z.string(),
-      sharePercentage: z.number(),
-      currency: z.string().default("USD"),
-    }))
+    .input(
+      z.object({
+        recipientId: z.number(),
+        role: z.string(),
+        sharePercentage: z.number(),
+        currency: z.string().default("USD"),
+      })
+    )
     .mutation(({ ctx, input }) =>
       revenueShareEngine.createShare({ creatorId: ctx.user.id, ...input })
     ),
@@ -334,13 +388,15 @@ export const phase32Router = router({
 
   // ── Payroll ───────────────────────────────────────────────────────────────
   addPayrollEntry: protectedProcedure
-    .input(z.object({
-      recipientId: z.number(),
-      role: z.string(),
-      amount: z.number(),
-      currency: z.string().default("USD"),
-      frequency: z.enum(["weekly", "biweekly", "monthly"]),
-    }))
+    .input(
+      z.object({
+        recipientId: z.number(),
+        role: z.string(),
+        amount: z.number(),
+        currency: z.string().default("USD"),
+        frequency: z.enum(["weekly", "biweekly", "monthly"]),
+      })
+    )
     .mutation(({ ctx, input }) =>
       payrollEngine.addEntry({ creatorId: ctx.user.id, ...input } as any)
     ),
@@ -355,23 +411,43 @@ export const phase32Router = router({
 
   // ── Treasury ──────────────────────────────────────────────────────────────
   depositToTreasury: protectedProcedure
-    .input(z.object({
-      amount: z.number(),
-      source: z.enum(["revenue", "investment", "grant", "other"]),
-      description: z.string(),
-    }))
+    .input(
+      z.object({
+        amount: z.number(),
+        source: z.enum(["revenue", "investment", "grant", "other"]),
+        description: z.string(),
+      })
+    )
     .mutation(({ ctx, input }) =>
-      creatorTreasuryEngine.deposit(ctx.user.id, input.amount, input.source as any, input.description)
+      creatorTreasuryEngine.deposit(
+        ctx.user.id,
+        input.amount,
+        input.source as any,
+        input.description
+      )
     ),
 
   withdrawFromTreasury: protectedProcedure
-    .input(z.object({
-      amount: z.number(),
-      category: z.enum(["payroll", "operations", "marketing", "development", "other"]),
-      description: z.string(),
-    }))
+    .input(
+      z.object({
+        amount: z.number(),
+        category: z.enum([
+          "payroll",
+          "operations",
+          "marketing",
+          "development",
+          "other",
+        ]),
+        description: z.string(),
+      })
+    )
     .mutation(({ ctx, input }) =>
-      creatorTreasuryEngine.withdraw(ctx.user.id, input.amount, input.category as any, input.description)
+      creatorTreasuryEngine.withdraw(
+        ctx.user.id,
+        input.amount,
+        input.category as any,
+        input.description
+      )
     ),
 
   getTreasury: protectedProcedure.query(({ ctx }) =>
@@ -380,12 +456,14 @@ export const phase32Router = router({
 
   // ── Affiliate Network ─────────────────────────────────────────────────────
   createAffiliateProgram: protectedProcedure
-    .input(z.object({
-      name: z.string(),
-      commissionRate: z.number(),
-      minPayout: z.number(),
-      maxTier: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        name: z.string(),
+        commissionRate: z.number(),
+        minPayout: z.number(),
+        maxTier: z.number().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       affiliateNetworkEngine.createProgram({ creatorId: ctx.user.id, ...input })
     ),
@@ -402,17 +480,22 @@ export const phase32Router = router({
 
   // ── Reward System ─────────────────────────────────────────────────────────
   createRewardSystem: protectedProcedure
-    .input(z.object({
-      name: z.string(),
-      description: z.string(),
-      rewardType: z.enum(["tokens", "badges", "access", "discount", "cash"]),
-      triggerAction: z.string(),
-      rewardAmount: z.number(),
-      totalBudget: z.number(),
-      maxRewardsPerUser: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        rewardType: z.enum(["tokens", "badges", "access", "discount", "cash"]),
+        triggerAction: z.string(),
+        rewardAmount: z.number(),
+        totalBudget: z.number(),
+        maxRewardsPerUser: z.number().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
-      rewardSystemEngine.createSystem({ creatorId: ctx.user.id, ...input } as any)
+      rewardSystemEngine.createSystem({
+        creatorId: ctx.user.id,
+        ...input,
+      } as any)
     ),
 });
 
@@ -423,31 +506,39 @@ export const phase32Router = router({
 export const phase33Router = router({
   // ── Storage Nodes ─────────────────────────────────────────────────────────
   registerStorageNode: protectedProcedure
-    .input(z.object({
-      nodeId: z.string(),
-      region: z.string(),
-      provider: z.enum(["ipfs", "arweave", "s3", "storj", "filecoin"]),
-      endpoint: z.string(),
-      capacityGB: z.number(),
-    }))
+    .input(
+      z.object({
+        nodeId: z.string(),
+        region: z.string(),
+        provider: z.enum(["ipfs", "arweave", "s3", "storj", "filecoin"]),
+        endpoint: z.string(),
+        capacityGB: z.number(),
+      })
+    )
     .mutation(({ input }) => storageNodeManager.registerNode(input as any)),
 
   getStorageNodes: publicProcedure
     .input(z.object({ region: z.string().optional() }))
     .query(({ input }) => (storageNodeManager as any).getNodes(input.region)),
 
-  getStorageHealth: publicProcedure.query(() => (storageNodeManager as any).getHealthSummary()),
+  getStorageHealth: publicProcedure.query(() =>
+    (storageNodeManager as any).getHealthSummary()
+  ),
 
   // ── Content Replication ───────────────────────────────────────────────────
   scheduleReplication: protectedProcedure
-    .input(z.object({
-      contentId: z.string(),
-      contentType: z.string(),
-      sourceNodeId: z.string(),
-      targetNodeIds: z.array(z.string()),
-      bytesTotal: z.number(),
-    }))
-    .mutation(({ input }) => contentReplicationEngine.scheduleReplication(input as any)),
+    .input(
+      z.object({
+        contentId: z.string(),
+        contentType: z.string(),
+        sourceNodeId: z.string(),
+        targetNodeIds: z.array(z.string()),
+        bytesTotal: z.number(),
+      })
+    )
+    .mutation(({ input }) =>
+      contentReplicationEngine.scheduleReplication(input as any)
+    ),
 
   getReplicationStats: publicProcedure.query(() =>
     contentReplicationEngine.getReplicationStats()
@@ -455,18 +546,22 @@ export const phase33Router = router({
 
   // ── Distributed Index ─────────────────────────────────────────────────────
   createIndexShard: protectedProcedure
-    .input(z.object({
-      indexType: z.enum(["content", "user", "community", "transaction"]),
-      shardKey: z.string(),
-      nodeId: z.string(),
-      recordCount: z.number(),
-      sizeBytes: z.number(),
-    }))
+    .input(
+      z.object({
+        indexType: z.enum(["content", "user", "community", "transaction"]),
+        shardKey: z.string(),
+        nodeId: z.string(),
+        recordCount: z.number(),
+        sizeBytes: z.number(),
+      })
+    )
     .mutation(({ input }) => distributedIndexEngine.createShard(input as any)),
 
   getIndexShards: publicProcedure
     .input(z.object({ indexType: z.string().optional() }))
-    .query(({ input }) => (distributedIndexEngine as any).getShards(input.indexType)),
+    .query(({ input }) =>
+      (distributedIndexEngine as any).getShards(input.indexType)
+    ),
 
   // ── Cross-Region ──────────────────────────────────────────────────────────
   getCrossRegionStatus: publicProcedure.query(() =>
@@ -475,14 +570,25 @@ export const phase33Router = router({
 
   // ── Decentralized Archives ────────────────────────────────────────────────
   createArchive: protectedProcedure
-    .input(z.object({
-      archiveType: z.enum(["full_profile", "content_library", "financial_history", "community_data", "custom"]),
-      sizeBytes: z.number(),
-      recordCount: z.number(),
-      isPublic: z.boolean().default(false),
-    }))
+    .input(
+      z.object({
+        archiveType: z.enum([
+          "full_profile",
+          "content_library",
+          "financial_history",
+          "community_data",
+          "custom",
+        ]),
+        sizeBytes: z.number(),
+        recordCount: z.number(),
+        isPublic: z.boolean().default(false),
+      })
+    )
     .mutation(({ ctx, input }) =>
-      decentralizedArchiveEngine.createArchive({ creatorId: ctx.user.id, ...input } as any)
+      decentralizedArchiveEngine.createArchive({
+        creatorId: ctx.user.id,
+        ...input,
+      } as any)
     ),
 
   getMyArchives: protectedProcedure.query(({ ctx }) =>
@@ -505,7 +611,9 @@ export const phase33Router = router({
   // ── Immutable Records ─────────────────────────────────────────────────────
   getModerationHistory: publicProcedure
     .input(z.object({ userId: z.number() }))
-    .query(({ input }) => (immutableModerationEngine as any).getUserHistory(input.userId)),
+    .query(({ input }) =>
+      (immutableModerationEngine as any).getUserHistory(input.userId)
+    ),
 
   getPayoutHistory: protectedProcedure.query(({ ctx }) =>
     (immutablePayoutEngine as any).getRecipientHistory(ctx.user.id)
@@ -517,7 +625,9 @@ export const phase33Router = router({
 
   getGovernanceVoteCount: publicProcedure
     .input(z.object({ proposalId: z.string() }))
-    .query(({ input }) => immutableGovernanceEngine.getVoteCount(input.proposalId)),
+    .query(({ input }) =>
+      immutableGovernanceEngine.getVoteCount(input.proposalId)
+    ),
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -527,41 +637,54 @@ export const phase33Router = router({
 export const phase34Router = router({
   // ── Job Market ────────────────────────────────────────────────────────────
   postJob: protectedProcedure
-    .input(z.object({
-      title: z.string(),
-      description: z.string(),
-      category: z.enum(["development", "design", "content", "marketing", "moderation", "other"]),
-      contractType: z.enum(["fixed_price", "hourly", "milestone"]),
-      budget: z.number(),
-      currency: z.string().default("USD"),
-      requiredSkills: z.array(z.string()),
-      experienceLevel: z.enum(["entry", "mid", "senior", "expert"]),
-      durationDays: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        title: z.string(),
+        description: z.string(),
+        category: z.enum([
+          "development",
+          "design",
+          "content",
+          "marketing",
+          "moderation",
+          "other",
+        ]),
+        contractType: z.enum(["fixed_price", "hourly", "milestone"]),
+        budget: z.number(),
+        currency: z.string().default("USD"),
+        requiredSkills: z.array(z.string()),
+        experienceLevel: z.enum(["entry", "mid", "senior", "expert"]),
+        durationDays: z.number().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       jobMarketEngine.postJob({ posterId: ctx.user.id, ...input })
     ),
 
   applyToJob: protectedProcedure
-    .input(z.object({
-      jobId: z.string(),
-      coverLetter: z.string(),
-      proposedBudget: z.number(),
-      proposedDuration: z.string(),
-      portfolioUrls: z.array(z.string()).optional(),
-    }))
+    .input(
+      z.object({
+        jobId: z.string(),
+        coverLetter: z.string(),
+        proposedBudget: z.number(),
+        proposedDuration: z.string(),
+        portfolioUrls: z.array(z.string()).optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       jobMarketEngine.applyToJob({ applicantId: ctx.user.id, ...input })
     ),
 
   searchJobs: publicProcedure
-    .input(z.object({
-      category: z.string().optional(),
-      minBudget: z.number().optional(),
-      maxBudget: z.number().optional(),
-      experienceLevel: z.string().optional(),
-      skills: z.array(z.string()).optional(),
-    }))
+    .input(
+      z.object({
+        category: z.string().optional(),
+        minBudget: z.number().optional(),
+        maxBudget: z.number().optional(),
+        experienceLevel: z.string().optional(),
+        skills: z.array(z.string()).optional(),
+      })
+    )
     .query(({ input }) => jobMarketEngine.searchJobs(input as any)),
 
   getJobDetails: publicProcedure
@@ -569,13 +692,15 @@ export const phase34Router = router({
     .query(({ input }) => (jobMarketEngine as any).getJob(input.jobId)),
 
   addMilestone: protectedProcedure
-    .input(z.object({
-      jobId: z.string(),
-      title: z.string(),
-      description: z.string(),
-      amount: z.number(),
-      dueDate: z.date(),
-    }))
+    .input(
+      z.object({
+        jobId: z.string(),
+        title: z.string(),
+        description: z.string(),
+        amount: z.number(),
+        dueDate: z.date(),
+      })
+    )
     .mutation(({ input }) => jobMarketEngine.addMilestone(input)),
 
   submitMilestone: protectedProcedure
@@ -586,20 +711,24 @@ export const phase34Router = router({
 
   approveMilestone: protectedProcedure
     .input(z.object({ milestoneId: z.string() }))
-    .mutation(({ input }) => jobMarketEngine.approveMilestone(input.milestoneId)),
+    .mutation(({ input }) =>
+      jobMarketEngine.approveMilestone(input.milestoneId)
+    ),
 
   // ── Bounty Board ──────────────────────────────────────────────────────────
   postBounty: protectedProcedure
-    .input(z.object({
-      title: z.string(),
-      description: z.string(),
-      category: z.string(),
-      reward: z.number(),
-      currency: z.string().default("USD"),
-      requirements: z.array(z.string()),
-      expiresAt: z.date(),
-      tags: z.array(z.string()).optional(),
-    }))
+    .input(
+      z.object({
+        title: z.string(),
+        description: z.string(),
+        category: z.string(),
+        reward: z.number(),
+        currency: z.string().default("USD"),
+        requirements: z.array(z.string()),
+        expiresAt: z.date(),
+        tags: z.array(z.string()).optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       bountyBoardEngine.postBounty({ posterId: ctx.user.id, ...input } as any)
     ),
@@ -617,36 +746,50 @@ export const phase34Router = router({
     ),
 
   getOpenBounties: publicProcedure
-    .input(z.object({ category: z.string().optional(), limit: z.number().default(50) }))
-    .query(({ input }) => bountyBoardEngine.getOpenBounties(input.category as any, input.limit)),
+    .input(
+      z.object({
+        category: z.string().optional(),
+        limit: z.number().default(50),
+      })
+    )
+    .query(({ input }) =>
+      bountyBoardEngine.getOpenBounties(input.category as any, input.limit)
+    ),
 
   // ── Grant System ──────────────────────────────────────────────────────────
   createGrantProgram: protectedProcedure
-    .input(z.object({
-      name: z.string(),
-      description: z.string(),
-      totalBudget: z.number(),
-      currency: z.string().default("USD"),
-      maxGrantAmount: z.number(),
-      minGrantAmount: z.number(),
-      eligibilityCriteria: z.array(z.string()),
-      categories: z.array(z.string()),
-      applicationDeadline: z.date(),
-    }))
+    .input(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        totalBudget: z.number(),
+        currency: z.string().default("USD"),
+        maxGrantAmount: z.number(),
+        minGrantAmount: z.number(),
+        eligibilityCriteria: z.array(z.string()),
+        categories: z.array(z.string()),
+        applicationDeadline: z.date(),
+      })
+    )
     .mutation(({ ctx, input }) =>
-      grantSystemEngine.createProgram({ organizationId: ctx.user.id, ...input } as any)
+      grantSystemEngine.createProgram({
+        organizationId: ctx.user.id,
+        ...input,
+      } as any)
     ),
 
   applyForGrant: protectedProcedure
-    .input(z.object({
-      programId: z.string(),
-      projectTitle: z.string(),
-      projectDescription: z.string(),
-      requestedAmount: z.number(),
-      milestones: z.array(z.string()),
-      teamSize: z.number(),
-      expectedImpact: z.string(),
-    }))
+    .input(
+      z.object({
+        programId: z.string(),
+        projectTitle: z.string(),
+        projectDescription: z.string(),
+        requestedAmount: z.number(),
+        milestones: z.array(z.string()),
+        teamSize: z.number(),
+        expectedImpact: z.string(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       grantSystemEngine.applyForGrant({ applicantId: ctx.user.id, ...input })
     ),
@@ -657,14 +800,16 @@ export const phase34Router = router({
 
   // ── DAO Funding ───────────────────────────────────────────────────────────
   createDaoPool: protectedProcedure
-    .input(z.object({
-      daoId: z.string(),
-      name: z.string(),
-      description: z.string(),
-      currency: z.string().default("SKYCOIN"),
-      votingThreshold: z.number(),
-      minContribution: z.number(),
-    }))
+    .input(
+      z.object({
+        daoId: z.string(),
+        name: z.string(),
+        description: z.string(),
+        currency: z.string().default("SKYCOIN"),
+        votingThreshold: z.number(),
+        minContribution: z.number(),
+      })
+    )
     .mutation(({ input }) => daoFundingEngine.createPool(input)),
 
   contributeToPool: protectedProcedure
@@ -674,27 +819,42 @@ export const phase34Router = router({
     ),
 
   proposeDaoDisbursal: protectedProcedure
-    .input(z.object({
-      poolId: z.string(),
-      title: z.string(),
-      description: z.string(),
-      requestedAmount: z.number(),
-      beneficiaryId: z.number(),
-      milestones: z.array(z.string()),
-    }))
+    .input(
+      z.object({
+        poolId: z.string(),
+        title: z.string(),
+        description: z.string(),
+        requestedAmount: z.number(),
+        beneficiaryId: z.number(),
+        milestones: z.array(z.string()),
+      })
+    )
     .mutation(({ ctx, input }) =>
       daoFundingEngine.proposeDisbursal({ proposerId: ctx.user.id, ...input })
     ),
 
   voteOnProposal: protectedProcedure
-    .input(z.object({ proposalId: z.string(), inFavor: z.boolean(), votingPower: z.number() }))
+    .input(
+      z.object({
+        proposalId: z.string(),
+        inFavor: z.boolean(),
+        votingPower: z.number(),
+      })
+    )
     .mutation(({ ctx, input }) =>
-      daoFundingEngine.vote(input.proposalId, ctx.user.id, input.inFavor, input.votingPower)
+      daoFundingEngine.vote(
+        input.proposalId,
+        ctx.user.id,
+        input.inFavor,
+        input.votingPower
+      )
     ),
 
   finalizeProposal: protectedProcedure
     .input(z.object({ proposalId: z.string() }))
-    .mutation(({ input }) => daoFundingEngine.finalizeProposal(input.proposalId)),
+    .mutation(({ input }) =>
+      daoFundingEngine.finalizeProposal(input.proposalId)
+    ),
 
   // ── Economic Reputation ───────────────────────────────────────────────────
   getMyEconomicReputation: protectedProcedure.query(({ ctx }) =>
@@ -702,20 +862,30 @@ export const phase34Router = router({
   ),
 
   endorseSkill: protectedProcedure
-    .input(z.object({
-      endorseeId: z.number(),
-      skill: z.string(),
-      category: z.string(),
-      rating: z.number().min(1).max(5),
-      comment: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        endorseeId: z.number(),
+        skill: z.string(),
+        category: z.string(),
+        rating: z.number().min(1).max(5),
+        comment: z.string().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
-      skillEndorsementEngine.endorse({ endorserId: ctx.user.id, ...input } as any)
+      skillEndorsementEngine.endorse({
+        endorserId: ctx.user.id,
+        ...input,
+      } as any)
     ),
 
   getSkillEndorsements: publicProcedure
     .input(z.object({ userId: z.number(), skill: z.string().optional() }))
-    .query(({ input }) => (skillEndorsementEngine as any).getUserEndorsements(input.userId, input.skill)),
+    .query(({ input }) =>
+      (skillEndorsementEngine as any).getUserEndorsements(
+        input.userId,
+        input.skill
+      )
+    ),
 
   getEconomicHealthSnapshot: publicProcedure.query(() =>
     economicHealthMonitor.captureSnapshot()
@@ -729,28 +899,40 @@ export const phase34Router = router({
 export const phase35Router = router({
   // ── Legacy Vault ──────────────────────────────────────────────────────────
   createVault: protectedProcedure
-    .input(z.object({
-      name: z.string(),
-      description: z.string(),
-      beneficiaryIds: z.array(z.number()),
-      trusteeIds: z.array(z.number()).optional(),
-      unlockConditions: z.array(z.string()).optional(),
-      isEncrypted: z.boolean().optional(),
-    }))
+    .input(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        beneficiaryIds: z.array(z.number()),
+        trusteeIds: z.array(z.number()).optional(),
+        unlockConditions: z.array(z.string()).optional(),
+        isEncrypted: z.boolean().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       legacyVaultEngine.createVault({ creatorId: ctx.user.id, ...input })
     ),
 
   addVaultContent: protectedProcedure
-    .input(z.object({
-      vaultId: z.string(),
-      contentType: z.enum(["message", "media", "document", "credentials", "wallet_keys", "nft", "token"]),
-      title: z.string(),
-      description: z.string(),
-      data: z.string().optional(),
-      value: z.number().optional(),
-      isEncrypted: z.boolean().optional(),
-    }))
+    .input(
+      z.object({
+        vaultId: z.string(),
+        contentType: z.enum([
+          "message",
+          "media",
+          "document",
+          "credentials",
+          "wallet_keys",
+          "nft",
+          "token",
+        ]),
+        title: z.string(),
+        description: z.string(),
+        data: z.string().optional(),
+        value: z.number().optional(),
+        isEncrypted: z.boolean().optional(),
+      })
+    )
     .mutation(({ input }) => legacyVaultEngine.addContent(input)),
 
   sealVault: protectedProcedure
@@ -765,31 +947,43 @@ export const phase35Router = router({
 
   // ── Digital Will ──────────────────────────────────────────────────────────
   createWill: protectedProcedure
-    .input(z.object({
-      title: z.string(),
-      instructions: z.string(),
-      executorId: z.number(),
-      witnessIds: z.array(z.number()),
-      triggerType: z.enum(["manual", "inactivity", "date", "oracle"]),
-      inactivityDays: z.number().optional(),
-      triggerDate: z.date().optional(),
-      triggerConditions: z.array(z.string()).optional(),
-    }))
+    .input(
+      z.object({
+        title: z.string(),
+        instructions: z.string(),
+        executorId: z.number(),
+        witnessIds: z.array(z.number()),
+        triggerType: z.enum(["manual", "inactivity", "date", "oracle"]),
+        inactivityDays: z.number().optional(),
+        triggerDate: z.date().optional(),
+        triggerConditions: z.array(z.string()).optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       digitalWillEngine.createWill({ creatorId: ctx.user.id, ...input })
     ),
 
   addWillAsset: protectedProcedure
-    .input(z.object({
-      willId: z.string(),
-      assetType: z.enum(["wallet", "content", "nft", "subscription", "revenue_stream", "community", "storefront"]),
-      assetId: z.string(),
-      description: z.string(),
-      estimatedValue: z.number(),
-      beneficiaryId: z.number(),
-      sharePercentage: z.number(),
-      transferInstructions: z.string(),
-    }))
+    .input(
+      z.object({
+        willId: z.string(),
+        assetType: z.enum([
+          "wallet",
+          "content",
+          "nft",
+          "subscription",
+          "revenue_stream",
+          "community",
+          "storefront",
+        ]),
+        assetId: z.string(),
+        description: z.string(),
+        estimatedValue: z.number(),
+        beneficiaryId: z.number(),
+        sharePercentage: z.number(),
+        transferInstructions: z.string(),
+      })
+    )
     .mutation(({ input }) => digitalWillEngine.addAsset(input)),
 
   activateWill: protectedProcedure
@@ -804,13 +998,30 @@ export const phase35Router = router({
 
   // ── Succession Planning ───────────────────────────────────────────────────
   createSuccessionPlan: protectedProcedure
-    .input(z.object({
-      successorId: z.number(),
-      role: z.enum(["full_successor", "content_manager", "financial_manager", "community_manager"]),
-      transferScope: z.array(z.enum(["wallet", "content", "nft", "subscription", "revenue_stream", "community", "storefront"])),
-      transitionPeriodDays: z.number(),
-      notes: z.string(),
-    }))
+    .input(
+      z.object({
+        successorId: z.number(),
+        role: z.enum([
+          "full_successor",
+          "content_manager",
+          "financial_manager",
+          "community_manager",
+        ]),
+        transferScope: z.array(
+          z.enum([
+            "wallet",
+            "content",
+            "nft",
+            "subscription",
+            "revenue_stream",
+            "community",
+            "storefront",
+          ])
+        ),
+        transitionPeriodDays: z.number(),
+        notes: z.string(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       successionPlanEngine.createPlan({ creatorId: ctx.user.id, ...input })
     ),
@@ -821,50 +1032,65 @@ export const phase35Router = router({
 
   // ── Memorial Profiles ─────────────────────────────────────────────────────
   createMemorial: protectedProcedure
-    .input(z.object({
-      userId: z.number(),
-      displayName: z.string(),
-      bio: z.string(),
-      profileImageUrl: z.string().optional(),
-      legacyMessage: z.string().optional(),
-      charityLink: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        userId: z.number(),
+        displayName: z.string(),
+        bio: z.string(),
+        profileImageUrl: z.string().optional(),
+        legacyMessage: z.string().optional(),
+        charityLink: z.string().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
-      memorialProfileEngine.createMemorial({ memorializedBy: ctx.user.id, ...input })
+      memorialProfileEngine.createMemorial({
+        memorializedBy: ctx.user.id,
+        ...input,
+      })
     ),
 
   addTribute: protectedProcedure
-    .input(z.object({
-      memorialId: z.string(),
-      message: z.string(),
-      mediaUrl: z.string().optional(),
-      isPublic: z.boolean().optional(),
-    }))
+    .input(
+      z.object({
+        memorialId: z.string(),
+        message: z.string(),
+        mediaUrl: z.string().optional(),
+        isPublic: z.boolean().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       memorialProfileEngine.addTribute({ authorId: ctx.user.id, ...input })
     ),
 
   visitMemorial: publicProcedure
     .input(z.object({ memorialId: z.string() }))
-    .mutation(({ input }) => memorialProfileEngine.visitMemorial(input.memorialId)),
+    .mutation(({ input }) =>
+      memorialProfileEngine.visitMemorial(input.memorialId)
+    ),
 
   getMemorialTributes: publicProcedure
     .input(z.object({ memorialId: z.string() }))
     .query(({ input }) => memorialProfileEngine.getTributes(input.memorialId)),
 
-  getMemorialStats: publicProcedure.query(() => memorialProfileEngine.getMemorialStats()),
+  getMemorialStats: publicProcedure.query(() =>
+    memorialProfileEngine.getMemorialStats()
+  ),
 
   // ── Legacy Content Scheduler ──────────────────────────────────────────────
   scheduleLegacyContent: protectedProcedure
-    .input(z.object({
-      title: z.string(),
-      content: z.string(),
-      mediaUrls: z.array(z.string()).optional(),
-      scheduledFor: z.date(),
-      targetAudience: z.enum(["all", "subscribers", "followers", "vip"]).optional(),
-      isPosthumous: z.boolean().optional(),
-      personalMessage: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        title: z.string(),
+        content: z.string(),
+        mediaUrls: z.array(z.string()).optional(),
+        scheduledFor: z.date(),
+        targetAudience: z
+          .enum(["all", "subscribers", "followers", "vip"])
+          .optional(),
+        isPosthumous: z.boolean().optional(),
+        personalMessage: z.string().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       legacyContentScheduler.schedule({ creatorId: ctx.user.id, ...input })
     ),
@@ -875,16 +1101,18 @@ export const phase35Router = router({
 
   // ── Immortality Tokens ────────────────────────────────────────────────────
   mintImmortalityToken: protectedProcedure
-    .input(z.object({
-      tier: z.enum(["bronze", "silver", "gold", "platinum", "eternal"]),
-      name: z.string(),
-      description: z.string(),
-      imageUrl: z.string(),
-      totalSupply: z.number(),
-      priceUSD: z.number(),
-      holderBenefits: z.array(z.string()),
-      royaltyPercent: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        tier: z.enum(["bronze", "silver", "gold", "platinum", "eternal"]),
+        name: z.string(),
+        description: z.string(),
+        imageUrl: z.string(),
+        totalSupply: z.number(),
+        priceUSD: z.number(),
+        holderBenefits: z.array(z.string()),
+        royaltyPercent: z.number().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       immortalityTokenEngine.mintToken({ creatorId: ctx.user.id, ...input })
     ),
@@ -892,7 +1120,11 @@ export const phase35Router = router({
   purchaseImmortalityToken: protectedProcedure
     .input(z.object({ tokenId: z.string(), purchasePrice: z.number() }))
     .mutation(({ ctx, input }) =>
-      immortalityTokenEngine.purchaseToken(input.tokenId, ctx.user.id, input.purchasePrice)
+      immortalityTokenEngine.purchaseToken(
+        input.tokenId,
+        ctx.user.id,
+        input.purchasePrice
+      )
     ),
 
   getMyImmortalityTokens: protectedProcedure.query(({ ctx }) =>
@@ -905,25 +1137,39 @@ export const phase35Router = router({
 
   // ── Cultural Preservation ─────────────────────────────────────────────────
   preserveCulturalRecord: protectedProcedure
-    .input(z.object({
-      recordType: z.enum(["milestone", "cultural_moment", "first_post", "viral_content", "community_founding", "award"]),
-      title: z.string(),
-      description: z.string(),
-      significance: z.enum(["local", "community", "platform", "global"]),
-      mediaUrls: z.array(z.string()).optional(),
-      isPublic: z.boolean().optional(),
-    }))
+    .input(
+      z.object({
+        recordType: z.enum([
+          "milestone",
+          "cultural_moment",
+          "first_post",
+          "viral_content",
+          "community_founding",
+          "award",
+        ]),
+        title: z.string(),
+        description: z.string(),
+        significance: z.enum(["local", "community", "platform", "global"]),
+        mediaUrls: z.array(z.string()).optional(),
+        isPublic: z.boolean().optional(),
+      })
+    )
     .mutation(({ ctx, input }) =>
       culturalPreservationEngine.preserve({ creatorId: ctx.user.id, ...input })
     ),
 
   getGlobalMilestones: publicProcedure
-    .input(z.object({
-      significance: z.enum(["local", "community", "platform", "global"]),
-      limit: z.number().default(50),
-    }))
+    .input(
+      z.object({
+        significance: z.enum(["local", "community", "platform", "global"]),
+        limit: z.number().default(50),
+      })
+    )
     .query(({ input }) =>
-      culturalPreservationEngine.getGlobalMilestones(input.significance, input.limit)
+      culturalPreservationEngine.getGlobalMilestones(
+        input.significance,
+        input.limit
+      )
     ),
 
   getCulturalStats: publicProcedure.query(() =>
@@ -933,7 +1179,9 @@ export const phase35Router = router({
   // ── Platform Memory ───────────────────────────────────────────────────────
   getMostSignificantMemories: publicProcedure
     .input(z.object({ limit: z.number().default(100) }))
-    .query(({ input }) => platformMemoryEngine.getMostSignificantMemories(input.limit)),
+    .query(({ input }) =>
+      platformMemoryEngine.getMostSignificantMemories(input.limit)
+    ),
 
   getPlatformMemoryStats: publicProcedure.query(() =>
     platformMemoryEngine.getPlatformMemoryStats()

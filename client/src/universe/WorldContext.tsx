@@ -14,7 +14,12 @@
  */
 import { createContext, useContext, ReactNode } from "react";
 import { trpc } from "@/lib/trpc";
-import type { SimEntity, FeedItem, TrendSignal, MarketSignal } from "../../../server/simulationEngine";
+import type {
+  SimEntity,
+  FeedItem,
+  TrendSignal,
+  MarketSignal,
+} from "../../../server/simulationEngine";
 
 interface WorldState {
   // Simulation
@@ -58,9 +63,7 @@ export function WorldProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <WorldContext.Provider value={value}>
-      {children}
-    </WorldContext.Provider>
+    <WorldContext.Provider value={value}>{children}</WorldContext.Provider>
   );
 }
 

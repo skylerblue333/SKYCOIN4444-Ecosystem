@@ -20,7 +20,7 @@ import { z } from "zod";
 import { router, protectedProcedure, adminProcedure } from "./_core/trpc.js";
 import { blockchainCustody, SUPPORTED_CHAINS } from "./blockchain-custody.js";
 
-const CHAIN_IDS = Object.values(SUPPORTED_CHAINS).map((c) => c.chainId);
+const CHAIN_IDS = Object.values(SUPPORTED_CHAINS).map(c => c.chainId);
 
 export const blockchainRouter = router({
   /**
@@ -42,12 +42,18 @@ export const blockchainRouter = router({
   registerWallet: protectedProcedure
     .input(
       z.object({
-        chain: z.enum(["ethereum", "polygon", "bsc", "base"]).default("ethereum"),
+        chain: z
+          .enum(["ethereum", "polygon", "bsc", "base"])
+          .default("ethereum"),
         label: z.string().max(64).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return blockchainCustody.registerWallet(ctx.user.id, input.chain, input.label);
+      return blockchainCustody.registerWallet(
+        ctx.user.id,
+        input.chain,
+        input.label
+      );
     }),
 
   /**
@@ -128,7 +134,10 @@ export const blockchainRouter = router({
   myTransactions: protectedProcedure
     .input(z.object({ limit: z.number().int().min(1).max(200).optional() }))
     .query(async ({ ctx, input }) => {
-      const txs = await blockchainCustody.getTransactionHistory(ctx.user.id, input.limit ?? 50);
+      const txs = await blockchainCustody.getTransactionHistory(
+        ctx.user.id,
+        input.limit ?? 50
+      );
       // Never expose signedTxHex to client
       return txs.map(({ signedTxHex: _stripped, ...tx }) => tx);
     }),
@@ -144,8 +153,16 @@ export const blockchainRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const balance = await blockchainCustody.getOnChainBalance(input.address, input.chainId);
-      return { address: input.address, chainId: input.chainId, balance, unit: "ETH" };
+      const balance = await blockchainCustody.getOnChainBalance(
+        input.address,
+        input.chainId
+      );
+      return {
+        address: input.address,
+        chainId: input.chainId,
+        balance,
+        unit: "ETH",
+      };
     }),
 
   /**
@@ -167,7 +184,11 @@ export const blockchainRouter = router({
         input.chainId,
         input.decimals ?? 18
       );
-      return { address: input.address, tokenContract: input.tokenContract, balance };
+      return {
+        address: input.address,
+        tokenContract: input.tokenContract,
+        balance,
+      };
     }),
 
   /**

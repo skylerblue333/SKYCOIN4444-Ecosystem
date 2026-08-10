@@ -25,7 +25,8 @@ export interface AnalyticsEvent {
   id: string;
   userId?: number;
   eventType: string;
-  category: "user_action" | "system" | "error" | "security" | "revenue" | "performance";
+  category:
+    "user_action" | "system" | "error" | "security" | "revenue" | "performance";
   properties: Record<string, any>;
   timestamp: Date;
   sessionId?: string;
@@ -68,7 +69,12 @@ export interface PerformanceMetrics {
 
 export interface AnomalyAlert {
   id: string;
-  type: "traffic_spike" | "error_surge" | "abuse_pattern" | "revenue_drop" | "security_breach";
+  type:
+    | "traffic_spike"
+    | "error_surge"
+    | "abuse_pattern"
+    | "revenue_drop"
+    | "security_breach";
   severity: "low" | "medium" | "high" | "critical";
   message: string;
   detectedAt: Date;
@@ -114,7 +120,13 @@ export interface PlatformHealthIndex {
     status: "healthy" | "degraded" | "critical";
     lastCheck: Date;
   }[];
-  incidents: { id: string; title: string; severity: string; startedAt: Date; resolvedAt?: Date }[];
+  incidents: {
+    id: string;
+    title: string;
+    severity: string;
+    startedAt: Date;
+    resolvedAt?: Date;
+  }[];
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -190,7 +202,9 @@ export class CohortAnalysisService {
     const cohorts: CohortData[] = [];
 
     for (let w = 0; w < weeks; w++) {
-      const weekStart = new Date(Date.now() - (w + 1) * 7 * 24 * 60 * 60 * 1000);
+      const weekStart = new Date(
+        Date.now() - (w + 1) * 7 * 24 * 60 * 60 * 1000
+      );
       const weekEnd = new Date(Date.now() - w * 7 * 24 * 60 * 60 * 1000);
 
       const [result] = await db
@@ -215,7 +229,15 @@ export class CohortAnalysisService {
       cohorts.push({
         cohortDate: weekStart.toISOString().split("T")[0],
         totalUsers,
-        retentionByDay: retentionByWeek.flatMap(r => [r, r - 2, r - 4, r - 5, r - 6, r - 7, r - 8]),
+        retentionByDay: retentionByWeek.flatMap(r => [
+          r,
+          r - 2,
+          r - 4,
+          r - 5,
+          r - 6,
+          r - 7,
+          r - 8,
+        ]),
         retentionByWeek,
         activationRate: Math.min(100, 60 + Math.random() * 20),
         churnRate: Math.max(0, 20 + Math.random() * 10),
@@ -225,7 +247,9 @@ export class CohortAnalysisService {
     return cohorts;
   }
 
-  async getDailyActiveUsers(days = 30): Promise<{ date: string; dau: number; wau: number; mau: number }[]> {
+  async getDailyActiveUsers(
+    days = 30
+  ): Promise<{ date: string; dau: number; wau: number; mau: number }[]> {
     const db = await getDb();
     if (!db) return [];
 
@@ -234,7 +258,8 @@ export class CohortAnalysisService {
       .from(schema.users);
 
     const total = totalUsers?.count || 0;
-    const results: { date: string; dau: number; wau: number; mau: number }[] = [];
+    const results: { date: string; dau: number; wau: number; mau: number }[] =
+      [];
 
     for (let d = days - 1; d >= 0; d--) {
       const date = new Date(Date.now() - d * 24 * 60 * 60 * 1000);
@@ -257,22 +282,39 @@ export class CohortAnalysisService {
 export class RevenueAnalyticsService {
   async getRevenueMetrics(): Promise<RevenueMetrics> {
     const db = await getDb();
-    if (!db) return { mrr: 0, arr: 0, arpu: 0, ltv: 0, revenueBySource: [], dailyRevenue: [], growthRate: 0, churnRevenue: 0, expansionRevenue: 0 };
+    if (!db)
+      return {
+        mrr: 0,
+        arr: 0,
+        arpu: 0,
+        ltv: 0,
+        revenueBySource: [],
+        dailyRevenue: [],
+        growthRate: 0,
+        churnRevenue: 0,
+        expansionRevenue: 0,
+      };
 
     // Calculate revenue from tips
     const [tipRevenue] = await db
-      .select({ total: sql<string>`COALESCE(SUM(CAST(${schema.tips.amount} AS DECIMAL(20,2))), 0)` })
+      .select({
+        total: sql<string>`COALESCE(SUM(CAST(${schema.tips.amount} AS DECIMAL(20,2))), 0)`,
+      })
       .from(schema.tips);
 
     // Calculate revenue from transactions (platform fees)
     const [txRevenue] = await db
-      .select({ total: sql<string>`COALESCE(SUM(ABS(CAST(${schema.transactions.amount} AS DECIMAL(20,2)))), 0)` })
+      .select({
+        total: sql<string>`COALESCE(SUM(ABS(CAST(${schema.transactions.amount} AS DECIMAL(20,2)))), 0)`,
+      })
       .from(schema.transactions)
       .where(eq(schema.transactions.type, "purchase"));
 
     // Calculate revenue from subscriptions
     const [subRevenue] = await db
-      .select({ total: sql<string>`COALESCE(SUM(CAST(${schema.creatorSubscriptions.price} AS DECIMAL(20,2))), 0)` })
+      .select({
+        total: sql<string>`COALESCE(SUM(CAST(${schema.creatorSubscriptions.price} AS DECIMAL(20,2))), 0)`,
+      })
       .from(schema.creatorSubscriptions)
       .where(eq(schema.creatorSubscriptions.status, "active"));
 
@@ -294,8 +336,16 @@ export class RevenueAnalyticsService {
       arpu: mrr / users,
       ltv: (mrr / users) * 24, // 24 month average lifetime
       revenueBySource: [
-        { source: "Tips (2.5% fee)", amount: totalTips * platformFeeRate, percent: 40 },
-        { source: "Marketplace (2.5% fee)", amount: totalTx * platformFeeRate, percent: 30 },
+        {
+          source: "Tips (2.5% fee)",
+          amount: totalTips * platformFeeRate,
+          percent: 40,
+        },
+        {
+          source: "Marketplace (2.5% fee)",
+          amount: totalTx * platformFeeRate,
+          percent: 30,
+        },
         { source: "Subscriptions", amount: totalSubs, percent: 20 },
         { source: "Premium Passes", amount: mrr * 0.1, percent: 10 },
       ],
@@ -337,8 +387,10 @@ export class PerformanceMonitoringService {
       p50ResponseTime: sorted[Math.floor(len * 0.5)] || 0,
       p95ResponseTime: sorted[Math.floor(len * 0.95)] || 0,
       p99ResponseTime: sorted[Math.floor(len * 0.99)] || 0,
-      errorRate: this.requestCount > 0 ? this.errorCount / this.requestCount : 0,
-      requestsPerSecond: this.requestCount / Math.max(1, (Date.now() - this.startTime) / 1000),
+      errorRate:
+        this.requestCount > 0 ? this.errorCount / this.requestCount : 0,
+      requestsPerSecond:
+        this.requestCount / Math.max(1, (Date.now() - this.startTime) / 1000),
       activeConnections: 0,
       memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024,
       cpuUsage: 0,
@@ -360,25 +412,40 @@ export class PerformanceMonitoringService {
 
 export class AnomalyDetectionService {
   private alerts: AnomalyAlert[] = [];
-  private baselineMetrics: Map<string, { mean: number; stdDev: number }> = new Map();
+  private baselineMetrics: Map<string, { mean: number; stdDev: number }> =
+    new Map();
 
   updateBaseline(metricName: string, values: number[]): void {
     if (values.length === 0) return;
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+    const variance =
+      values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      values.length;
     const stdDev = Math.sqrt(variance);
     this.baselineMetrics.set(metricName, { mean, stdDev });
   }
 
-  checkAnomaly(metricName: string, currentValue: number, threshold = 3): AnomalyAlert | null {
+  checkAnomaly(
+    metricName: string,
+    currentValue: number,
+    threshold = 3
+  ): AnomalyAlert | null {
     const baseline = this.baselineMetrics.get(metricName);
     if (!baseline) return null;
 
-    const zScore = Math.abs((currentValue - baseline.mean) / Math.max(0.001, baseline.stdDev));
+    const zScore = Math.abs(
+      (currentValue - baseline.mean) / Math.max(0.001, baseline.stdDev)
+    );
 
     if (zScore > threshold) {
       const severity: AnomalyAlert["severity"] =
-        zScore > 5 ? "critical" : zScore > 4 ? "high" : zScore > 3 ? "medium" : "low";
+        zScore > 5
+          ? "critical"
+          : zScore > 4
+            ? "high"
+            : zScore > 3
+              ? "medium"
+              : "low";
 
       const alert: AnomalyAlert = {
         id: `alert_${Date.now()}`,
@@ -398,10 +465,12 @@ export class AnomalyDetectionService {
   }
 
   private classifyAnomaly(metricName: string): AnomalyAlert["type"] {
-    if (metricName.includes("traffic") || metricName.includes("request")) return "traffic_spike";
+    if (metricName.includes("traffic") || metricName.includes("request"))
+      return "traffic_spike";
     if (metricName.includes("error")) return "error_surge";
     if (metricName.includes("revenue")) return "revenue_drop";
-    if (metricName.includes("login") || metricName.includes("auth")) return "security_breach";
+    if (metricName.includes("login") || metricName.includes("auth"))
+      return "security_breach";
     return "abuse_pattern";
   }
 
@@ -436,9 +505,13 @@ export class UserSegmentationService {
 
     // Whales: users with high token balances
     const [whales] = await db
-      .select({ count: sql<number>`COUNT(DISTINCT ${schema.tokenBalances.userId})` })
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${schema.tokenBalances.userId})`,
+      })
       .from(schema.tokenBalances)
-      .where(sql`CAST(${schema.tokenBalances.balance} AS DECIMAL(20,2)) > 10000`);
+      .where(
+        sql`CAST(${schema.tokenBalances.balance} AS DECIMAL(20,2)) > 10000`
+      );
 
     // Active creators: users with posts
     const [creators] = await db
@@ -447,12 +520,16 @@ export class UserSegmentationService {
 
     // Streamers
     const [streamers] = await db
-      .select({ count: sql<number>`COUNT(DISTINCT ${schema.streams.streamerId})` })
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${schema.streams.streamerId})`,
+      })
       .from(schema.streams);
 
     // Traders
     const [traders] = await db
-      .select({ count: sql<number>`COUNT(DISTINCT ${schema.transactions.userId})` })
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${schema.transactions.userId})`,
+      })
       .from(schema.transactions)
       .where(eq(schema.transactions.type, "swap"));
 
@@ -498,7 +575,10 @@ export class UserSegmentationService {
         name: "Lurkers",
         description: "Users with no posts, trades, or streams",
         criteria: [{ field: "activity_score", operator: "=", value: 0 }],
-        userCount: Math.max(0, total - (creators?.count || 0) - (traders?.count || 0)),
+        userCount: Math.max(
+          0,
+          total - (creators?.count || 0) - (traders?.count || 0)
+        ),
         avgRevenue: 0,
         avgEngagement: 10,
       },
@@ -515,11 +595,27 @@ export class FunnelAnalysisService {
     const db = await getDb();
     if (!db) return [];
 
-    const [totalUsers] = await db.select({ count: sql<number>`COUNT(*)` }).from(schema.users);
-    const [withPosts] = await db.select({ count: sql<number>`COUNT(DISTINCT ${schema.posts.authorId})` }).from(schema.posts);
-    const [withFollows] = await db.select({ count: sql<number>`COUNT(DISTINCT ${schema.follows.followerId})` }).from(schema.follows);
-    const [withTokens] = await db.select({ count: sql<number>`COUNT(DISTINCT ${schema.tokenBalances.userId})` }).from(schema.tokenBalances);
-    const [withStakes] = await db.select({ count: sql<number>`COUNT(DISTINCT ${schema.stakingPositions.userId})` }).from(schema.stakingPositions);
+    const [totalUsers] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(schema.users);
+    const [withPosts] = await db
+      .select({ count: sql<number>`COUNT(DISTINCT ${schema.posts.authorId})` })
+      .from(schema.posts);
+    const [withFollows] = await db
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${schema.follows.followerId})`,
+      })
+      .from(schema.follows);
+    const [withTokens] = await db
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${schema.tokenBalances.userId})`,
+      })
+      .from(schema.tokenBalances);
+    const [withStakes] = await db
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${schema.stakingPositions.userId})`,
+      })
+      .from(schema.stakingPositions);
 
     const total = totalUsers?.count || 1;
     const posted = withPosts?.count || 0;
@@ -528,11 +624,41 @@ export class FunnelAnalysisService {
     const staked = withStakes?.count || 0;
 
     const steps: FunnelStep[] = [
-      { name: "Sign Up", count: total, conversionRate: 100, dropoffRate: 0, avgTimeToNext: 0 },
-      { name: "First Follow", count: followed, conversionRate: (followed / total) * 100, dropoffRate: ((total - followed) / total) * 100, avgTimeToNext: 300 },
-      { name: "First Post", count: posted, conversionRate: (posted / total) * 100, dropoffRate: ((followed - posted) / Math.max(1, followed)) * 100, avgTimeToNext: 1800 },
-      { name: "Get Tokens", count: tokens, conversionRate: (tokens / total) * 100, dropoffRate: ((posted - tokens) / Math.max(1, posted)) * 100, avgTimeToNext: 3600 },
-      { name: "First Stake", count: staked, conversionRate: (staked / total) * 100, dropoffRate: ((tokens - staked) / Math.max(1, tokens)) * 100, avgTimeToNext: 86400 },
+      {
+        name: "Sign Up",
+        count: total,
+        conversionRate: 100,
+        dropoffRate: 0,
+        avgTimeToNext: 0,
+      },
+      {
+        name: "First Follow",
+        count: followed,
+        conversionRate: (followed / total) * 100,
+        dropoffRate: ((total - followed) / total) * 100,
+        avgTimeToNext: 300,
+      },
+      {
+        name: "First Post",
+        count: posted,
+        conversionRate: (posted / total) * 100,
+        dropoffRate: ((followed - posted) / Math.max(1, followed)) * 100,
+        avgTimeToNext: 1800,
+      },
+      {
+        name: "Get Tokens",
+        count: tokens,
+        conversionRate: (tokens / total) * 100,
+        dropoffRate: ((posted - tokens) / Math.max(1, posted)) * 100,
+        avgTimeToNext: 3600,
+      },
+      {
+        name: "First Stake",
+        count: staked,
+        conversionRate: (staked / total) * 100,
+        dropoffRate: ((tokens - staked) / Math.max(1, tokens)) * 100,
+        avgTimeToNext: 86400,
+      },
     ];
 
     return steps;
@@ -542,10 +668,18 @@ export class FunnelAnalysisService {
     const db = await getDb();
     if (!db) return [];
 
-    const [totalUsers] = await db.select({ count: sql<number>`COUNT(*)` }).from(schema.users);
-    const [viewedMarketplace] = await db.select({ count: sql<number>`COUNT(DISTINCT ${schema.tokenBalances.userId})` }).from(schema.tokenBalances);
+    const [totalUsers] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(schema.users);
+    const [viewedMarketplace] = await db
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${schema.tokenBalances.userId})`,
+      })
+      .from(schema.tokenBalances);
     const [madePurchase] = await db
-      .select({ count: sql<number>`COUNT(DISTINCT ${schema.transactions.userId})` })
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${schema.transactions.userId})`,
+      })
       .from(schema.transactions)
       .where(eq(schema.transactions.type, "purchase"));
 
@@ -554,9 +688,27 @@ export class FunnelAnalysisService {
     const purchased = madePurchase?.count || 0;
 
     return [
-      { name: "Active Users", count: total, conversionRate: 100, dropoffRate: 0, avgTimeToNext: 0 },
-      { name: "Viewed Marketplace", count: viewed, conversionRate: (viewed / total) * 100, dropoffRate: ((total - viewed) / total) * 100, avgTimeToNext: 600 },
-      { name: "Made Purchase", count: purchased, conversionRate: (purchased / total) * 100, dropoffRate: ((viewed - purchased) / Math.max(1, viewed)) * 100, avgTimeToNext: 7200 },
+      {
+        name: "Active Users",
+        count: total,
+        conversionRate: 100,
+        dropoffRate: 0,
+        avgTimeToNext: 0,
+      },
+      {
+        name: "Viewed Marketplace",
+        count: viewed,
+        conversionRate: (viewed / total) * 100,
+        dropoffRate: ((total - viewed) / total) * 100,
+        avgTimeToNext: 600,
+      },
+      {
+        name: "Made Purchase",
+        count: purchased,
+        conversionRate: (purchased / total) * 100,
+        dropoffRate: ((viewed - purchased) / Math.max(1, viewed)) * 100,
+        avgTimeToNext: 7200,
+      },
     ];
   }
 }
@@ -579,24 +731,43 @@ export class AuditLoggingService {
     });
 
     // Persist critical audit events
-    if (entry.action.includes("delete") || entry.action.includes("ban") || entry.action.includes("payout")) {
+    if (
+      entry.action.includes("delete") ||
+      entry.action.includes("ban") ||
+      entry.action.includes("payout")
+    ) {
       await db.insert(schema.platformMetrics).values({
         metric: `audit_${entry.action}`,
-        value: JSON.stringify({ actorId: entry.actorId, resource: entry.resource, resourceId: entry.resourceId }),
+        value: JSON.stringify({
+          actorId: entry.actorId,
+          resource: entry.resource,
+          resourceId: entry.resourceId,
+        }),
         category: "security",
       });
     }
   }
 
-  async getAuditLogs(filters?: { actorId?: number; action?: string; resource?: string; since?: Date }): Promise<AuditLog[]> {
+  async getAuditLogs(filters?: {
+    actorId?: number;
+    action?: string;
+    resource?: string;
+    since?: Date;
+  }): Promise<AuditLog[]> {
     let filtered = [...this.logs];
 
-    if (filters?.actorId) filtered = filtered.filter(l => l.actorId === filters.actorId);
-    if (filters?.action) filtered = filtered.filter(l => l.action.includes(filters.action!));
-    if (filters?.resource) filtered = filtered.filter(l => l.resource === filters.resource);
-    if (filters?.since) filtered = filtered.filter(l => l.timestamp >= filters.since!);
+    if (filters?.actorId)
+      filtered = filtered.filter(l => l.actorId === filters.actorId);
+    if (filters?.action)
+      filtered = filtered.filter(l => l.action.includes(filters.action!));
+    if (filters?.resource)
+      filtered = filtered.filter(l => l.resource === filters.resource);
+    if (filters?.since)
+      filtered = filtered.filter(l => l.timestamp >= filters.since!);
 
-    return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, 100);
+    return filtered
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 100);
   }
 }
 
@@ -609,15 +780,46 @@ export class PlatformHealthService {
     const db = await getDb();
 
     const components = [
-      { name: "Database", score: db ? 100 : 0, status: db ? "healthy" as const : "critical" as const, lastCheck: new Date() },
-      { name: "Authentication", score: 100, status: "healthy" as const, lastCheck: new Date() },
-      { name: "File Storage (S3)", score: 95, status: "healthy" as const, lastCheck: new Date() },
-      { name: "AI Services (LLM)", score: 90, status: "healthy" as const, lastCheck: new Date() },
-      { name: "Real-time (SSE)", score: 100, status: "healthy" as const, lastCheck: new Date() },
-      { name: "Notifications", score: 100, status: "healthy" as const, lastCheck: new Date() },
+      {
+        name: "Database",
+        score: db ? 100 : 0,
+        status: db ? ("healthy" as const) : ("critical" as const),
+        lastCheck: new Date(),
+      },
+      {
+        name: "Authentication",
+        score: 100,
+        status: "healthy" as const,
+        lastCheck: new Date(),
+      },
+      {
+        name: "File Storage (S3)",
+        score: 95,
+        status: "healthy" as const,
+        lastCheck: new Date(),
+      },
+      {
+        name: "AI Services (LLM)",
+        score: 90,
+        status: "healthy" as const,
+        lastCheck: new Date(),
+      },
+      {
+        name: "Real-time (SSE)",
+        score: 100,
+        status: "healthy" as const,
+        lastCheck: new Date(),
+      },
+      {
+        name: "Notifications",
+        score: 100,
+        status: "healthy" as const,
+        lastCheck: new Date(),
+      },
     ];
 
-    const overall = components.reduce((sum, c) => sum + c.score, 0) / components.length;
+    const overall =
+      components.reduce((sum, c) => sum + c.score, 0) / components.length;
 
     return {
       overall,

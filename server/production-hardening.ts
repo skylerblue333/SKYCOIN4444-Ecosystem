@@ -15,7 +15,7 @@ export const globalLimiter = rateLimit({
   message: "Too many requests, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.path === "/health", // Skip health checks
+  skip: req => req.path === "/health", // Skip health checks
 });
 
 export const strictLimiter = rateLimit({
@@ -27,7 +27,7 @@ export const strictLimiter = rateLimit({
 export const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
   max: 1000, // 1000 requests per minute
-  keyGenerator: (req) => (req as any).user?.id || req.ip,
+  keyGenerator: req => (req as any).user?.id || req.ip,
 });
 
 // 2. SECURITY HEADERS
@@ -108,15 +108,17 @@ export const requestLogger = (
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    console.log(JSON.stringify({
-      timestamp: new Date().toISOString(),
-      method: req.method,
-      path: req.path,
-      status: res.statusCode,
-      duration: `${duration}ms`,
-      ip: req.ip,
-      userId: (req as any).user?.id,
-    }));
+    console.log(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        path: req.path,
+        status: res.statusCode,
+        duration: `${duration}ms`,
+        ip: req.ip,
+        userId: (req as any).user?.id,
+      })
+    );
   });
 
   next();
@@ -137,13 +139,13 @@ export const validateInput = (schema: any) => {
 
 // 7. REDIS CACHING
 // Redis client initialization
-let redisClient: any = null;
+const redisClient: any = null;
 try {
   // Initialize Redis client if available
   // const redis = require('redis');
   // redisClient = redis.createClient();
 } catch (error) {
-  console.warn('Redis not available, caching disabled');
+  console.warn("Redis not available, caching disabled");
 }
 
 export const cacheMiddleware = (ttl: number = 300) => {
@@ -165,7 +167,9 @@ export const cacheMiddleware = (ttl: number = 300) => {
       const originalJson = res.json.bind(res);
       res.json = function (data: any) {
         try {
-          redisClient.setEx(key, ttl, JSON.stringify(data)).catch(console.error);
+          redisClient
+            .setEx(key, ttl, JSON.stringify(data))
+            .catch(console.error);
         } catch (error) {
           console.error("Cache set error:", error);
         }
@@ -233,7 +237,7 @@ export async function retryWithBackoff<T>(
     } catch (error) {
       if (attempt === maxRetries - 1) throw error;
       const delay = baseDelay * Math.pow(2, attempt);
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
   throw new Error("Max retries exceeded");

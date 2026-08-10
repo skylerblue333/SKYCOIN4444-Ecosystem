@@ -63,7 +63,7 @@ describe("Creator Growth Engine", () => {
     });
 
     it("should calculate referral commission at each level", () => {
-      const commissionRates = { level1: 0.10, level2: 0.05, level3: 0.02 };
+      const commissionRates = { level1: 0.1, level2: 0.05, level3: 0.02 };
       const saleAmount = 100;
 
       const l1Commission = saleAmount * commissionRates.level1;
@@ -87,7 +87,10 @@ describe("Creator Growth Engine", () => {
       const referralMap = new Map<number, number>();
       referralMap.set(2, 1); // 2 referred by 1
 
-      const wouldCreateCycle = (referrerId: number, newUserId: number): boolean => {
+      const wouldCreateCycle = (
+        referrerId: number,
+        newUserId: number
+      ): boolean => {
         let current = referrerId;
         while (referralMap.has(current)) {
           current = referralMap.get(current)!;
@@ -102,8 +105,11 @@ describe("Creator Growth Engine", () => {
 
     it("should track referral conversion rate", () => {
       const referrals = [
-        { converted: true }, { converted: true }, { converted: false },
-        { converted: true }, { converted: false },
+        { converted: true },
+        { converted: true },
+        { converted: false },
+        { converted: true },
+        { converted: false },
       ];
       const conversions = referrals.filter(r => r.converted).length;
       const rate = conversions / referrals.length;
@@ -123,15 +129,36 @@ describe("Creator Growth Engine", () => {
 
   describe("Sponsorship Matchmaking", () => {
     it("should match creator to sponsors by niche", () => {
-      const creator = { niche: "gaming", audienceSize: 50000, engagementRate: 0.05 };
+      const creator = {
+        niche: "gaming",
+        audienceSize: 50000,
+        engagementRate: 0.05,
+      };
       const sponsors = [
-        { id: "s1", targetNiche: "gaming", minAudience: 10000, maxBudget: 5000 },
-        { id: "s2", targetNiche: "fitness", minAudience: 5000, maxBudget: 3000 },
-        { id: "s3", targetNiche: "gaming", minAudience: 100000, maxBudget: 50000 },
+        {
+          id: "s1",
+          targetNiche: "gaming",
+          minAudience: 10000,
+          maxBudget: 5000,
+        },
+        {
+          id: "s2",
+          targetNiche: "fitness",
+          minAudience: 5000,
+          maxBudget: 3000,
+        },
+        {
+          id: "s3",
+          targetNiche: "gaming",
+          minAudience: 100000,
+          maxBudget: 50000,
+        },
       ];
 
-      const matches = sponsors.filter(s =>
-        s.targetNiche === creator.niche && creator.audienceSize >= s.minAudience
+      const matches = sponsors.filter(
+        s =>
+          s.targetNiche === creator.niche &&
+          creator.audienceSize >= s.minAudience
       );
 
       expect(matches.length).toBe(1);
@@ -157,10 +184,13 @@ describe("Creator Growth Engine", () => {
         { id: "s3", nicheMatch: 1.0, audienceMatch: 0.5, budgetMatch: 0.7 },
       ];
 
-      const scored = matches.map(m => ({
-        ...m,
-        score: m.nicheMatch * 0.4 + m.audienceMatch * 0.35 + m.budgetMatch * 0.25,
-      })).sort((a, b) => b.score - a.score);
+      const scored = matches
+        .map(m => ({
+          ...m,
+          score:
+            m.nicheMatch * 0.4 + m.audienceMatch * 0.35 + m.budgetMatch * 0.25,
+        }))
+        .sort((a, b) => b.score - a.score);
 
       expect(scored[0].id).toBe("s2"); // highest combined score
     });
@@ -202,7 +232,11 @@ describe("Creator Growth Engine", () => {
 
     it("should award achievement badge on milestone completion", () => {
       const badges: string[] = [];
-      const milestone = { name: "Rising Star", threshold: 1000, badge: "rising_star_badge" };
+      const milestone = {
+        name: "Rising Star",
+        threshold: 1000,
+        badge: "rising_star_badge",
+      };
       const followerCount = 1001;
 
       if (followerCount >= milestone.threshold) {
@@ -217,7 +251,8 @@ describe("Creator Growth Engine", () => {
       const nextMilestone = 10000;
       const prevMilestone = 1000;
 
-      const progress = (current - prevMilestone) / (nextMilestone - prevMilestone);
+      const progress =
+        (current - prevMilestone) / (nextMilestone - prevMilestone);
       expect(progress).toBeCloseTo(0.722, 2);
     });
 
@@ -247,7 +282,9 @@ describe("Creator Growth Engine", () => {
         status: "pending",
       };
 
-      expect(proposal.revenueShare.proposer + proposal.revenueShare.target).toBe(1.0);
+      expect(
+        proposal.revenueShare.proposer + proposal.revenueShare.target
+      ).toBe(1.0);
       expect(proposal.status).toBe("pending");
     });
 
@@ -270,7 +307,8 @@ describe("Creator Growth Engine", () => {
         revenue: 500,
       };
 
-      const engagementRate = (collabContent.likes + collabContent.shares) / collabContent.views;
+      const engagementRate =
+        (collabContent.likes + collabContent.shares) / collabContent.views;
       expect(engagementRate).toBe(0.1);
     });
   });
@@ -288,7 +326,10 @@ describe("Virality Engine", () => {
 
       const countDescendants = (nodeId: string): number => {
         const children = shares.get(nodeId) || [];
-        return children.length + children.reduce((sum, c) => sum + countDescendants(c), 0);
+        return (
+          children.length +
+          children.reduce((sum, c) => sum + countDescendants(c), 0)
+        );
       };
 
       expect(countDescendants("root")).toBe(5);
@@ -316,16 +357,30 @@ describe("Virality Engine", () => {
 
     it("should track share attribution chain", () => {
       const shareChain = [
-        { userId: 1001, platform: "twitter", timestamp: new Date("2024-01-01T10:00:00") },
-        { userId: 1002, platform: "instagram", timestamp: new Date("2024-01-01T10:30:00") },
-        { userId: 1003, platform: "tiktok", timestamp: new Date("2024-01-01T11:00:00") },
+        {
+          userId: 1001,
+          platform: "twitter",
+          timestamp: new Date("2024-01-01T10:00:00"),
+        },
+        {
+          userId: 1002,
+          platform: "instagram",
+          timestamp: new Date("2024-01-01T10:30:00"),
+        },
+        {
+          userId: 1003,
+          platform: "tiktok",
+          timestamp: new Date("2024-01-01T11:00:00"),
+        },
       ];
 
       expect(shareChain.length).toBe(3);
       expect(shareChain[0].userId).toBe(1001);
       // Verify chronological order
       for (let i = 1; i < shareChain.length; i++) {
-        expect(shareChain[i].timestamp > shareChain[i-1].timestamp).toBe(true);
+        expect(shareChain[i].timestamp > shareChain[i - 1].timestamp).toBe(
+          true
+        );
       }
     });
 
@@ -336,10 +391,12 @@ describe("Virality Engine", () => {
         { userId: 1003, shares: 30, reach: 15000 },
       ];
 
-      const scored = sharers.map(s => ({
-        ...s,
-        score: s.shares * 0.4 + (s.reach / 1000) * 0.6,
-      })).sort((a, b) => b.score - a.score);
+      const scored = sharers
+        .map(s => ({
+          ...s,
+          score: s.shares * 0.4 + (s.reach / 1000) * 0.6,
+        }))
+        .sort((a, b) => b.score - a.score);
 
       expect(scored[0].userId).toBe(1002); // highest combined score
     });
@@ -354,7 +411,11 @@ describe("Virality Engine", () => {
         creatorFollowers: 100000,
       };
 
-      const engagementRate = (earlySignals.first10MinLikes + earlySignals.first10MinShares + earlySignals.first10MinComments) / earlySignals.creatorFollowers;
+      const engagementRate =
+        (earlySignals.first10MinLikes +
+          earlySignals.first10MinShares +
+          earlySignals.first10MinComments) /
+        earlySignals.creatorFollowers;
       const viralProbability = Math.min(1, engagementRate * 10);
 
       expect(viralProbability).toBeCloseTo(0.073, 2);
@@ -392,13 +453,27 @@ describe("Virality Engine", () => {
 
     it("should detect coordinated inauthentic sharing", () => {
       const shares = [
-        { userId: 1001, timestamp: new Date("2024-01-01T10:00:00"), ip: "192.168.1.1" },
-        { userId: 1002, timestamp: new Date("2024-01-01T10:00:05"), ip: "192.168.1.1" },
-        { userId: 1003, timestamp: new Date("2024-01-01T10:00:10"), ip: "192.168.1.1" },
+        {
+          userId: 1001,
+          timestamp: new Date("2024-01-01T10:00:00"),
+          ip: "192.168.1.1",
+        },
+        {
+          userId: 1002,
+          timestamp: new Date("2024-01-01T10:00:05"),
+          ip: "192.168.1.1",
+        },
+        {
+          userId: 1003,
+          timestamp: new Date("2024-01-01T10:00:10"),
+          ip: "192.168.1.1",
+        },
       ];
 
       const sameIpCount = shares.filter(s => s.ip === "192.168.1.1").length;
-      const timeWindow = shares[shares.length - 1].timestamp.getTime() - shares[0].timestamp.getTime();
+      const timeWindow =
+        shares[shares.length - 1].timestamp.getTime() -
+        shares[0].timestamp.getTime();
 
       const isSuspicious = sameIpCount >= 3 && timeWindow < 60000; // 3+ from same IP in 1 min
       expect(isSuspicious).toBe(true);
@@ -427,7 +502,11 @@ describe("Virality Engine", () => {
 
   describe("Content Decay Models", () => {
     it("should apply exponential decay to content score", () => {
-      const decay = (score: number, ageHours: number, halfLifeHours: number): number => {
+      const decay = (
+        score: number,
+        ageHours: number,
+        halfLifeHours: number
+      ): number => {
         return score * Math.pow(0.5, ageHours / halfLifeHours);
       };
 
@@ -441,7 +520,8 @@ describe("Virality Engine", () => {
       const score = 1000;
       const ageHours = 24;
 
-      const decay = (halfLife: number) => score * Math.pow(0.5, ageHours / halfLife);
+      const decay = (halfLife: number) =>
+        score * Math.pow(0.5, ageHours / halfLife);
 
       expect(decay(halfLives.news)).toBeLessThan(decay(halfLives.post));
       expect(decay(halfLives.post)).toBeLessThan(decay(halfLives.video));
@@ -473,13 +553,19 @@ describe("Virality Engine", () => {
 describe("Community Economy Engine", () => {
   describe("Community Treasury", () => {
     it("should initialize treasury with zero balance", () => {
-      const treasury = { communityId: "comm_1", balance: 0, transactions: [] as unknown[] };
+      const treasury = {
+        communityId: "comm_1",
+        balance: 0,
+        transactions: [] as unknown[],
+      };
       expect(treasury.balance).toBe(0);
     });
 
     it("should deposit funds to treasury", () => {
       let balance = 0;
-      const deposit = (amount: number) => { balance += amount; };
+      const deposit = (amount: number) => {
+        balance += amount;
+      };
 
       deposit(100);
       deposit(50);
@@ -509,7 +595,10 @@ describe("Community Economy Engine", () => {
         { userId: 1003, contribution: 50 },
       ];
 
-      const totalContribution = contributors.reduce((sum, c) => sum + c.contribution, 0);
+      const totalContribution = contributors.reduce(
+        (sum, c) => sum + c.contribution,
+        0
+      );
       const rewardPool = 350;
 
       const rewards = contributors.map(c => ({
@@ -568,7 +657,10 @@ describe("Community Economy Engine", () => {
     });
 
     it("should reset daily quests at midnight UTC", () => {
-      const quest = { type: "daily", lastResetAt: new Date("2024-01-01T00:00:00Z") };
+      const quest = {
+        type: "daily",
+        lastResetAt: new Date("2024-01-01T00:00:00Z"),
+      };
       const now = new Date("2024-01-02T01:00:00Z");
       const needsReset = now.getTime() - quest.lastResetAt.getTime() > 86400000;
       expect(needsReset).toBe(true);
@@ -587,7 +679,8 @@ describe("Community Economy Engine", () => {
 
   describe("XP and Reputation Ladder", () => {
     it("should calculate level from XP correctly", () => {
-      const getLevel = (xp: number): number => Math.floor(Math.sqrt(xp / 100)) + 1;
+      const getLevel = (xp: number): number =>
+        Math.floor(Math.sqrt(xp / 100)) + 1;
 
       expect(getLevel(0)).toBe(1);
       expect(getLevel(100)).toBe(2);
@@ -597,7 +690,8 @@ describe("Community Economy Engine", () => {
     });
 
     it("should calculate XP needed for next level", () => {
-      const getXPForLevel = (level: number): number => Math.pow(level - 1, 2) * 100;
+      const getXPForLevel = (level: number): number =>
+        Math.pow(level - 1, 2) * 100;
 
       expect(getXPForLevel(1)).toBe(0);
       expect(getXPForLevel(2)).toBe(100);
@@ -618,7 +712,9 @@ describe("Community Economy Engine", () => {
       const currentXP = 1000;
       const inactiveDays = 30;
       const decayRate = 0.01; // 1% per day
-      const decayedXP = Math.round(currentXP * Math.pow(1 - decayRate, inactiveDays));
+      const decayedXP = Math.round(
+        currentXP * Math.pow(1 - decayRate, inactiveDays)
+      );
 
       expect(decayedXP).toBeLessThan(currentXP);
       expect(decayedXP).toBeGreaterThan(700); // not too aggressive
@@ -644,9 +740,9 @@ describe("Community Economy Engine", () => {
       const totalSupply = 1000000;
       const distribution = {
         founders: totalSupply * 0.15,
-        community: totalSupply * 0.60,
+        community: totalSupply * 0.6,
         treasury: totalSupply * 0.15,
-        advisors: totalSupply * 0.10,
+        advisors: totalSupply * 0.1,
       };
 
       const total = Object.values(distribution).reduce((sum, v) => sum + v, 0);
@@ -676,7 +772,7 @@ describe("Creator Marketplace Engine", () => {
 
     it("should calculate platform fee on service sale", () => {
       const salePrice = 150;
-      const platformFeeRate = 0.10; // 10%
+      const platformFeeRate = 0.1; // 10%
       const platformFee = salePrice * platformFeeRate;
       const sellerPayout = salePrice - platformFee;
 
@@ -718,7 +814,8 @@ describe("Creator Marketplace Engine", () => {
     it("should auto-release escrow after delivery window", () => {
       const deliveryDeadline = new Date(Date.now() - 86400000 * 8); // 8 days ago
       const autoReleaseAfterDays = 7;
-      const daysSinceDelivery = (Date.now() - deliveryDeadline.getTime()) / 86400000;
+      const daysSinceDelivery =
+        (Date.now() - deliveryDeadline.getTime()) / 86400000;
 
       const shouldAutoRelease = daysSinceDelivery >= autoReleaseAfterDays;
       expect(shouldAutoRelease).toBe(true);
@@ -744,7 +841,10 @@ describe("Creator Marketplace Engine", () => {
     it("should match freelancers to job by skills", () => {
       const job = { skills: ["video_editing", "color_grading"] };
       const freelancers = [
-        { id: 1001, skills: ["video_editing", "color_grading", "sound_design"] },
+        {
+          id: 1001,
+          skills: ["video_editing", "color_grading", "sound_design"],
+        },
         { id: 1002, skills: ["graphic_design", "illustration"] },
         { id: 1003, skills: ["video_editing"] },
       ];
@@ -759,17 +859,26 @@ describe("Creator Marketplace Engine", () => {
     });
 
     it("should rank freelancer matches by skill overlap", () => {
-      const job = { skills: ["video_editing", "color_grading", "sound_design"] };
+      const job = {
+        skills: ["video_editing", "color_grading", "sound_design"],
+      };
       const freelancers = [
         { id: 1001, skills: ["video_editing"] },
         { id: 1002, skills: ["video_editing", "color_grading"] },
-        { id: 1003, skills: ["video_editing", "color_grading", "sound_design"] },
+        {
+          id: 1003,
+          skills: ["video_editing", "color_grading", "sound_design"],
+        },
       ];
 
-      const ranked = freelancers.map(f => ({
-        ...f,
-        matchScore: f.skills.filter(s => job.skills.includes(s)).length / job.skills.length,
-      })).sort((a, b) => b.matchScore - a.matchScore);
+      const ranked = freelancers
+        .map(f => ({
+          ...f,
+          matchScore:
+            f.skills.filter(s => job.skills.includes(s)).length /
+            job.skills.length,
+        }))
+        .sort((a, b) => b.matchScore - a.matchScore);
 
       expect(ranked[0].id).toBe(1003); // perfect match
       expect(ranked[1].id).toBe(1002); // 2/3 match
@@ -796,7 +905,11 @@ describe("Creator Marketplace Engine", () => {
 
     it("should calculate creator eligibility for sponsorship", () => {
       const opportunity = { minFollowers: 50000, targetNiche: "gaming" };
-      const creator = { followers: 75000, niche: "gaming", engagementRate: 0.04 };
+      const creator = {
+        followers: 75000,
+        niche: "gaming",
+        engagementRate: 0.04,
+      };
 
       const isEligible =
         creator.followers >= opportunity.minFollowers &&
@@ -820,10 +933,19 @@ describe("Identity & Trust System", () => {
         wallet: true,
       };
 
-      const weights = { email: 0.1, phone: 0.15, governmentId: 0.4, socialMedia: 0.15, wallet: 0.2 };
-      const score = Object.entries(verifications).reduce((sum, [key, verified]) => {
-        return sum + (verified ? weights[key as keyof typeof weights] : 0);
-      }, 0);
+      const weights = {
+        email: 0.1,
+        phone: 0.15,
+        governmentId: 0.4,
+        socialMedia: 0.15,
+        wallet: 0.2,
+      };
+      const score = Object.entries(verifications).reduce(
+        (sum, [key, verified]) => {
+          return sum + (verified ? weights[key as keyof typeof weights] : 0);
+        },
+        0
+      );
 
       expect(score).toBeCloseTo(0.6, 2); // email + phone + social + wallet
     });
@@ -867,7 +989,10 @@ describe("Identity & Trust System", () => {
 
       const flags: string[] = [];
 
-      if (account.postCount > 20 && Date.now() - account.createdAt.getTime() < 86400000) {
+      if (
+        account.postCount > 20 &&
+        Date.now() - account.createdAt.getTime() < 86400000
+      ) {
         flags.push("high_post_velocity");
       }
       if (account.followingCount >= account.followerCount * 2) {
@@ -902,24 +1027,35 @@ describe("Identity & Trust System", () => {
     it("should penalize wallet for fraud flags", () => {
       const wallet = { baseScore: 80, fraudFlags: 3 };
       const penaltyPerFlag = 20;
-      const finalScore = Math.max(0, wallet.baseScore - wallet.fraudFlags * penaltyPerFlag);
+      const finalScore = Math.max(
+        0,
+        wallet.baseScore - wallet.fraudFlags * penaltyPerFlag
+      );
 
       expect(finalScore).toBe(20);
     });
 
     it("should track wallet transaction patterns for anomaly detection", () => {
       const transactions = [
-        { amount: 10 }, { amount: 12 }, { amount: 11 }, { amount: 9 },
+        { amount: 10 },
+        { amount: 12 },
+        { amount: 11 },
+        { amount: 9 },
         { amount: 500 }, // anomaly
       ];
 
       const amounts = transactions.map(t => t.amount);
       const avg = amounts.reduce((sum, a) => sum + a, 0) / amounts.length;
-      const stdDev = Math.sqrt(amounts.reduce((sum, a) => sum + Math.pow(a - avg, 2), 0) / amounts.length);
+      const stdDev = Math.sqrt(
+        amounts.reduce((sum, a) => sum + Math.pow(a - avg, 2), 0) /
+          amounts.length
+      );
 
       // Use IQR-based detection which is robust for small datasets
       // When outlier inflates std dev, IQR is more reliable
-      const clearAmounts = transactions.map(t => t.amount).sort((a, b) => a - b);
+      const clearAmounts = transactions
+        .map(t => t.amount)
+        .sort((a, b) => a - b);
       const q1 = clearAmounts[Math.floor(clearAmounts.length * 0.25)];
       const q3 = clearAmounts[Math.floor(clearAmounts.length * 0.75)];
       const iqr = q3 - q1;
@@ -936,7 +1072,8 @@ describe("Identity & Trust System", () => {
       const walletScore = 0.9;
       const behaviorScore = 0.7;
 
-      const compositeScore = identityScore * 0.4 + walletScore * 0.35 + behaviorScore * 0.25;
+      const compositeScore =
+        identityScore * 0.4 + walletScore * 0.35 + behaviorScore * 0.25;
       expect(compositeScore).toBeCloseTo(0.815, 2);
     });
 
@@ -944,7 +1081,10 @@ describe("Identity & Trust System", () => {
       const baseScore = 0.8;
       const reportCount = 5;
       const penaltyPerReport = 0.05;
-      const finalScore = Math.max(0, baseScore - reportCount * penaltyPerReport);
+      const finalScore = Math.max(
+        0,
+        baseScore - reportCount * penaltyPerReport
+      );
 
       expect(finalScore).toBe(0.55);
     });
@@ -977,7 +1117,10 @@ describe("Charity Network Effects", () => {
     });
 
     it("should upgrade tier on verification", () => {
-      const charity = { verificationStatus: "pending", verificationTier: "basic" };
+      const charity = {
+        verificationStatus: "pending",
+        verificationTier: "basic",
+      };
 
       // Simulate verification
       charity.verificationStatus = "verified";
@@ -993,9 +1136,14 @@ describe("Charity Network Effects", () => {
         { breakdownItems: 6, transactions: 25 },
       ];
 
-      const avgBreakdown = reports.reduce((sum, r) => sum + r.breakdownItems, 0) / reports.length;
-      const avgTransactions = reports.reduce((sum, r) => sum + r.transactions, 0) / reports.length;
-      const score = Math.min(100, Math.round(avgBreakdown * 5 + avgTransactions * 2));
+      const avgBreakdown =
+        reports.reduce((sum, r) => sum + r.breakdownItems, 0) / reports.length;
+      const avgTransactions =
+        reports.reduce((sum, r) => sum + r.transactions, 0) / reports.length;
+      const score = Math.min(
+        100,
+        Math.round(avgBreakdown * 5 + avgTransactions * 2)
+      );
 
       // 5.5 * 5 = 27.5, 22.5 * 2 = 45, total = 72.5, rounded = 73
       expect(score).toBe(73);
@@ -1005,13 +1153,17 @@ describe("Charity Network Effects", () => {
       const charities = [
         { name: "Save the Ocean", description: "Marine conservation" },
         { name: "Feed the Children", description: "Child nutrition programs" },
-        { name: "Ocean Cleanup Initiative", description: "Plastic removal from oceans" },
+        {
+          name: "Ocean Cleanup Initiative",
+          description: "Plastic removal from oceans",
+        },
       ];
 
       const query = "ocean";
-      const results = charities.filter(c =>
-        c.name.toLowerCase().includes(query) ||
-        c.description.toLowerCase().includes(query)
+      const results = charities.filter(
+        c =>
+          c.name.toLowerCase().includes(query) ||
+          c.description.toLowerCase().includes(query)
       );
 
       expect(results.length).toBe(2);
@@ -1047,7 +1199,9 @@ describe("Charity Network Effects", () => {
       // Re-rank - sort in place and update ranks on original objects
       // After donation: 1001=100, 1002=80, 1003=110
       participants.sort((a, b) => b.totalDonated - a.totalDonated);
-      participants.forEach((p, i) => { p.rank = i + 1; });
+      participants.forEach((p, i) => {
+        p.rank = i + 1;
+      });
 
       // 1003 now has 110, so rank 1; 1001 has 100, rank 2; 1002 has 80, rank 3
       expect(participants.find(p => p.userId === 1003)!.rank).toBe(1);
@@ -1129,7 +1283,11 @@ describe("Charity Network Effects", () => {
     });
 
     it("should allow claiming NFT reward once", () => {
-      const reward = { id: "reward_1", isClaimed: false, claimedAt: null as Date | null };
+      const reward = {
+        id: "reward_1",
+        isClaimed: false,
+        claimedAt: null as Date | null,
+      };
 
       // First claim
       reward.isClaimed = true;
@@ -1156,7 +1314,10 @@ describe("Charity Network Effects", () => {
         publishedAt: new Date(),
       };
 
-      const totalBreakdown = report.breakdown.reduce((sum, b) => sum + b.amount, 0);
+      const totalBreakdown = report.breakdown.reduce(
+        (sum, b) => sum + b.amount,
+        0
+      );
       expect(totalBreakdown).toBe(45000);
       expect(report.totalReceived - report.totalSpent).toBe(5000); // surplus
     });
@@ -1180,7 +1341,10 @@ describe("Charity Network Effects", () => {
     });
 
     it("should approve grant when votes threshold reached", () => {
-      const votes = Array.from({ length: 10 }, (_, i) => ({ userId: i + 1, approve: true }));
+      const votes = Array.from({ length: 10 }, (_, i) => ({
+        userId: i + 1,
+        approve: true,
+      }));
       const approvals = votes.filter(v => v.approve).length;
       const status = approvals >= 10 ? "approved" : "voting";
 
@@ -1210,9 +1374,10 @@ describe("Recommendation Intelligence", () => {
       const interests: Record<string, number> = { gaming: 0.5 };
       const skipWeight = -0.2;
 
-      interests["gaming"] = Math.max(-1, Math.min(1,
-        interests["gaming"] * 0.9 + skipWeight * 0.1
-      ));
+      interests["gaming"] = Math.max(
+        -1,
+        Math.min(1, interests["gaming"] * 0.9 + skipWeight * 0.1)
+      );
 
       expect(interests["gaming"]).toBeLessThan(0.5);
     });
@@ -1244,10 +1409,15 @@ describe("Recommendation Intelligence", () => {
         { id: "p3", recency: 0.7, engagement: 0.6, creatorAffinity: 0.4 },
       ];
 
-      const scored = items.map(item => ({
-        ...item,
-        score: item.recency * 0.15 + item.engagement * 0.25 + item.creatorAffinity * 0.20,
-      })).sort((a, b) => b.score - a.score);
+      const scored = items
+        .map(item => ({
+          ...item,
+          score:
+            item.recency * 0.15 +
+            item.engagement * 0.25 +
+            item.creatorAffinity * 0.2,
+        }))
+        .sort((a, b) => b.score - a.score);
 
       expect(scored[0].id).toBe("p2"); // highest combined
     });
@@ -1288,13 +1458,38 @@ describe("Recommendation Intelligence", () => {
   describe("Collaborative Filtering", () => {
     it("should find similar users by engagement patterns", () => {
       const userMatrix = new Map<number, Map<string, number>>();
-      userMatrix.set(1001, new Map([["p1", 1], ["p2", 1], ["p3", 0]]));
-      userMatrix.set(1002, new Map([["p1", 1], ["p2", 1], ["p4", 1]]));
-      userMatrix.set(1003, new Map([["p5", 1], ["p6", 1]]));
+      userMatrix.set(
+        1001,
+        new Map([
+          ["p1", 1],
+          ["p2", 1],
+          ["p3", 0],
+        ])
+      );
+      userMatrix.set(
+        1002,
+        new Map([
+          ["p1", 1],
+          ["p2", 1],
+          ["p4", 1],
+        ])
+      );
+      userMatrix.set(
+        1003,
+        new Map([
+          ["p5", 1],
+          ["p6", 1],
+        ])
+      );
 
-      const cosineSimilarity = (a: Map<string, number>, b: Map<string, number>): number => {
+      const cosineSimilarity = (
+        a: Map<string, number>,
+        b: Map<string, number>
+      ): number => {
         const keys = new Set([...a.keys(), ...b.keys()]);
-        let dot = 0, normA = 0, normB = 0;
+        let dot = 0,
+          normA = 0,
+          normB = 0;
         for (const k of keys) {
           const va = a.get(k) || 0;
           const vb = b.get(k) || 0;
@@ -1305,8 +1500,14 @@ describe("Recommendation Intelligence", () => {
         return normA && normB ? dot / (Math.sqrt(normA) * Math.sqrt(normB)) : 0;
       };
 
-      const sim1002 = cosineSimilarity(userMatrix.get(1001)!, userMatrix.get(1002)!);
-      const sim1003 = cosineSimilarity(userMatrix.get(1001)!, userMatrix.get(1003)!);
+      const sim1002 = cosineSimilarity(
+        userMatrix.get(1001)!,
+        userMatrix.get(1002)!
+      );
+      const sim1003 = cosineSimilarity(
+        userMatrix.get(1001)!,
+        userMatrix.get(1003)!
+      );
 
       expect(sim1002).toBeGreaterThan(sim1003);
     });
@@ -1315,7 +1516,9 @@ describe("Recommendation Intelligence", () => {
       const similarUser = { likedContent: ["p4", "p5", "p6"] };
       const currentUserSeen = new Set(["p4"]);
 
-      const recommendations = similarUser.likedContent.filter(c => !currentUserSeen.has(c));
+      const recommendations = similarUser.likedContent.filter(
+        c => !currentUserSeen.has(c)
+      );
       expect(recommendations).toContain("p5");
       expect(recommendations).toContain("p6");
       expect(recommendations).not.toContain("p4");
@@ -1340,20 +1543,29 @@ describe("Economic Intelligence Engine", () => {
     });
 
     it("should identify token purchase opportunity for NFT viewers", () => {
-      const user = { walletBalance: 5, recentActivity: ["nft_view", "nft_view"] };
-      const shouldPromptPurchase = user.walletBalance < 10 && user.recentActivity.includes("nft_view");
+      const user = {
+        walletBalance: 5,
+        recentActivity: ["nft_view", "nft_view"],
+      };
+      const shouldPromptPurchase =
+        user.walletBalance < 10 && user.recentActivity.includes("nft_view");
       expect(shouldPromptPurchase).toBe(true);
     });
 
     it("should rank opportunities by expected revenue", () => {
       const opportunities = [
         { type: "tip", estimatedRevenue: 5, confidence: 0.45 },
-        { type: "subscription_upsell", estimatedRevenue: 9.99, confidence: 0.75 },
-        { type: "token_purchase", estimatedRevenue: 25, confidence: 0.60 },
+        {
+          type: "subscription_upsell",
+          estimatedRevenue: 9.99,
+          confidence: 0.75,
+        },
+        { type: "token_purchase", estimatedRevenue: 25, confidence: 0.6 },
       ];
 
-      const ranked = opportunities.sort((a, b) =>
-        b.estimatedRevenue * b.confidence - a.estimatedRevenue * a.confidence
+      const ranked = opportunities.sort(
+        (a, b) =>
+          b.estimatedRevenue * b.confidence - a.estimatedRevenue * a.confidence
       );
 
       expect(ranked[0].type).toBe("token_purchase"); // 25 * 0.6 = 15
@@ -1423,7 +1635,11 @@ describe("Economic Intelligence Engine", () => {
     });
 
     it("should generate re-engagement triggers for at-risk users", () => {
-      const user = { riskLevel: "high", streakBroken: true, subscriptionStatus: "cancelled" };
+      const user = {
+        riskLevel: "high",
+        streakBroken: true,
+        subscriptionStatus: "cancelled",
+      };
       const triggers: string[] = [];
 
       if (user.riskLevel === "high" || user.riskLevel === "critical") {
@@ -1456,9 +1672,16 @@ describe("Economic Intelligence Engine", () => {
       };
 
       const socialScore = (dataPoints.positiveRatio - 0.5) * 2; // 0.4
-      const priceScore = Math.max(-1, Math.min(1, dataPoints.priceChange24h / 10)); // 0.5
+      const priceScore = Math.max(
+        -1,
+        Math.min(1, dataPoints.priceChange24h / 10)
+      ); // 0.5
       const whaleScore = dataPoints.whaleActivity === "buying" ? 0.5 : -0.5; // 0.5
-      const score = socialScore * 0.3 + priceScore * 0.25 + whaleScore * 0.25 + dataPoints.newsScore * 0.2;
+      const score =
+        socialScore * 0.3 +
+        priceScore * 0.25 +
+        whaleScore * 0.25 +
+        dataPoints.newsScore * 0.2;
 
       expect(score).toBeGreaterThan(0.2); // bullish
     });
@@ -1512,16 +1735,20 @@ describe("Economic Exploit Prevention", () => {
         { ip: "192.168.1.1", referredBy: 1001, createdAt: new Date() },
       ];
 
-      const sameIpCount = newAccounts.filter(a => a.ip === "192.168.1.1").length;
+      const sameIpCount = newAccounts.filter(
+        a => a.ip === "192.168.1.1"
+      ).length;
       const isFarming = sameIpCount >= 3;
       expect(isFarming).toBe(true);
     });
 
     it("should cap referral commissions to prevent pyramid exploitation", () => {
       const maxLevels = 3;
-      const commissionRates = [0.10, 0.05, 0.02];
+      const commissionRates = [0.1, 0.05, 0.02];
 
-      const totalCommission = commissionRates.slice(0, maxLevels).reduce((sum, r) => sum + r, 0);
+      const totalCommission = commissionRates
+        .slice(0, maxLevels)
+        .reduce((sum, r) => sum + r, 0);
       expect(totalCommission).toBe(0.17);
       expect(commissionRates.length).toBe(maxLevels);
     });
@@ -1535,8 +1762,8 @@ describe("Economic Exploit Prevention", () => {
         { questId: "q1", completedAt: new Date() },
       ];
 
-      const recentCompletions = completions.filter(c =>
-        Date.now() - c.completedAt.getTime() < 60000
+      const recentCompletions = completions.filter(
+        c => Date.now() - c.completedAt.getTime() < 60000
       );
 
       const isFarming = recentCompletions.length >= 3;
@@ -1575,7 +1802,8 @@ describe("Economic Exploit Prevention", () => {
     it("should enforce withdrawal cooldown period", () => {
       const lastWithdrawal = new Date(Date.now() - 3600000); // 1 hour ago
       const cooldownHours = 24;
-      const hoursSinceLastWithdrawal = (Date.now() - lastWithdrawal.getTime()) / 3600000;
+      const hoursSinceLastWithdrawal =
+        (Date.now() - lastWithdrawal.getTime()) / 3600000;
 
       const canWithdraw = hoursSinceLastWithdrawal >= cooldownHours;
       expect(canWithdraw).toBe(false);

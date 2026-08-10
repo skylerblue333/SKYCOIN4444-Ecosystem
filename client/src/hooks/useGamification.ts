@@ -32,7 +32,9 @@ export interface Badge {
   earnedAt: number;
 }
 
-const LEVEL_THRESHOLDS = [0, 100, 250, 500, 1000, 1500, 2500, 4000, 6000, 10000];
+const LEVEL_THRESHOLDS = [
+  0, 100, 250, 500, 1000, 1500, 2500, 4000, 6000, 10000,
+];
 
 const ACHIEVEMENTS = [
   {
@@ -106,7 +108,11 @@ export function useGamification() {
     xp: 0,
     level: 1,
     streak: 0,
-    achievements: ACHIEVEMENTS.map(a => ({ ...a, progress: 0, unlockedAt: undefined })),
+    achievements: ACHIEVEMENTS.map(a => ({
+      ...a,
+      progress: 0,
+      unlockedAt: undefined,
+    })),
     badges: [],
     totalCoins: 0,
     dailyBonus: 0,
@@ -121,7 +127,10 @@ export function useGamification() {
       let leveledUp = false;
 
       // Check for level up
-      while (newLevel < LEVEL_THRESHOLDS.length && newXp >= LEVEL_THRESHOLDS[newLevel]) {
+      while (
+        newLevel < LEVEL_THRESHOLDS.length &&
+        newXp >= LEVEL_THRESHOLDS[newLevel]
+      ) {
         newLevel++;
         leveledUp = true;
       }
@@ -134,7 +143,8 @@ export function useGamification() {
         ...prev,
         xp: newXp,
         level: newLevel,
-        nextLevelXp: LEVEL_THRESHOLDS[Math.min(newLevel, LEVEL_THRESHOLDS.length - 1)],
+        nextLevelXp:
+          LEVEL_THRESHOLDS[Math.min(newLevel, LEVEL_THRESHOLDS.length - 1)],
       };
     });
 
@@ -171,33 +181,36 @@ export function useGamification() {
   }, []);
 
   // Update achievement progress
-  const updateAchievementProgress = useCallback((achievementId: string, progress: number) => {
-    setState(prev => {
-      const achievement = prev.achievements.find(a => a.id === achievementId);
-      if (!achievement || achievement.unlockedAt) return prev;
+  const updateAchievementProgress = useCallback(
+    (achievementId: string, progress: number) => {
+      setState(prev => {
+        const achievement = prev.achievements.find(a => a.id === achievementId);
+        if (!achievement || achievement.unlockedAt) return prev;
 
-      const newProgress = Math.min(progress, achievement.maxProgress);
-      const newAchievements = prev.achievements.map(a =>
-        a.id === achievementId ? { ...a, progress: newProgress } : a
-      );
+        const newProgress = Math.min(progress, achievement.maxProgress);
+        const newAchievements = prev.achievements.map(a =>
+          a.id === achievementId ? { ...a, progress: newProgress } : a
+        );
 
-      // Check if achievement should be unlocked
-      if (newProgress >= achievement.maxProgress) {
+        // Check if achievement should be unlocked
+        if (newProgress >= achievement.maxProgress) {
+          return {
+            ...prev,
+            achievements: newAchievements.map(a =>
+              a.id === achievementId ? { ...a, unlockedAt: Date.now() } : a
+            ),
+            xp: prev.xp + achievement.xpReward,
+          };
+        }
+
         return {
           ...prev,
-          achievements: newAchievements.map(a =>
-            a.id === achievementId ? { ...a, unlockedAt: Date.now() } : a
-          ),
-          xp: prev.xp + achievement.xpReward,
+          achievements: newAchievements,
         };
-      }
-
-      return {
-        ...prev,
-        achievements: newAchievements,
-      };
-    });
-  }, []);
+      });
+    },
+    []
+  );
 
   // Earn badge
   const earnBadge = useCallback((badge: Badge) => {
@@ -233,14 +246,18 @@ export function useGamification() {
       totalCoins: prev.totalCoins + bonus,
       streak: prev.streak + 1,
     }));
-    toast.success(`🎁 Daily Bonus: +${bonus} SKY4 (Streak: ${state.streak + 1})`);
+    toast.success(
+      `🎁 Daily Bonus: +${bonus} SKY4 (Streak: ${state.streak + 1})`
+    );
   }, [state.streak]);
 
   // Get level progress percentage
   const getLevelProgress = useCallback(() => {
     const currentThreshold = LEVEL_THRESHOLDS[state.level - 1] || 0;
     const nextThreshold = state.nextLevelXp;
-    const progress = ((state.xp - currentThreshold) / (nextThreshold - currentThreshold)) * 100;
+    const progress =
+      ((state.xp - currentThreshold) / (nextThreshold - currentThreshold)) *
+      100;
     return Math.min(100, Math.max(0, progress));
   }, [state.xp, state.level, state.nextLevelXp]);
 

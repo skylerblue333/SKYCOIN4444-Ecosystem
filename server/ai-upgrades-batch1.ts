@@ -4,7 +4,12 @@ import { z } from "zod";
 export const aiUpgradesRouter = router({
   // Multi-model orchestration
   invokeMultiModel: protectedProcedure
-    .input(z.object({ prompt: z.string(), models: z.array(z.string()).default(["gpt4", "claude", "llama"]) }))
+    .input(
+      z.object({
+        prompt: z.string(),
+        models: z.array(z.string()).default(["gpt4", "claude", "llama"]),
+      })
+    )
     .mutation(async ({ input }) => {
       return {
         responses: {
@@ -27,7 +32,7 @@ export const aiUpgradesRouter = router({
         thoughts.push({
           step: i + 1,
           reasoning: `Step ${i + 1} of analysis...`,
-          confidence: 0.8 + (i * 0.04),
+          confidence: 0.8 + i * 0.04,
         });
       }
       return {
@@ -39,7 +44,9 @@ export const aiUpgradesRouter = router({
 
   // Real-time learning
   learnFromContext: protectedProcedure
-    .input(z.object({ userId: z.string(), context: z.record(z.string(), z.any()) }))
+    .input(
+      z.object({ userId: z.string(), context: z.record(z.string(), z.any()) })
+    )
     .mutation(async ({ input }) => {
       return {
         learned: true,
@@ -56,7 +63,7 @@ export const aiUpgradesRouter = router({
       return {
         results: Array.from({ length: input.topK }, (_, i) => ({
           id: `result-${i}`,
-          relevance: 1 - (i * 0.08),
+          relevance: 1 - i * 0.08,
           content: `Semantically relevant result ${i + 1}`,
         })),
         searchTime: Math.random() * 200 + 50,
@@ -70,7 +77,7 @@ export const aiUpgradesRouter = router({
       return {
         retrieved: Array.from({ length: input.documents }, (_, i) => ({
           id: `doc-${i}`,
-          relevance: 1 - (i * 0.15),
+          relevance: 1 - i * 0.15,
           excerpt: `Relevant document excerpt ${i + 1}...`,
         })),
         generated: "Answer generated from retrieved documents",
@@ -97,7 +104,11 @@ export const aiUpgradesRouter = router({
       return {
         original: input.prompt,
         optimized: "Improved prompt with better structure...",
-        improvements: ["Added context", "Clarified intent", "Structured output"],
+        improvements: [
+          "Added context",
+          "Clarified intent",
+          "Structured output",
+        ],
         expectedQualityGain: "25%",
       };
     }),
@@ -154,12 +165,18 @@ export const aiUpgradesRouter = router({
 
   // Error recovery
   recoverFromError: protectedProcedure
-    .input(z.object({ itemId: z.string(), metadata: z.record(z.string(), z.any()) }))
+    .input(
+      z.object({ itemId: z.string(), metadata: z.record(z.string(), z.any()) })
+    )
     .mutation(async ({ input }) => {
       return {
         recovered: true,
         newAttempt: "Retrying with adjusted parameters...",
-        adjustments: ["Reduced complexity", "Increased timeout", "Alternative model"],
+        adjustments: [
+          "Reduced complexity",
+          "Increased timeout",
+          "Alternative model",
+        ],
       };
     }),
 
@@ -170,7 +187,9 @@ export const aiUpgradesRouter = router({
       return {
         tokens: Math.ceil(input.text.split(" ").length * 1.3),
         model: input.model,
-        estimatedCost: (Math.ceil(input.text.split(" ").length * 1.3) * 0.00003).toFixed(6),
+        estimatedCost: (
+          Math.ceil(input.text.split(" ").length * 1.3) * 0.00003
+        ).toFixed(6),
       };
     }),
 

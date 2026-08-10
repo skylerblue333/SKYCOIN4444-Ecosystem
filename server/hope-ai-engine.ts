@@ -35,52 +35,52 @@ export type EmotionalState =
   | "neutral";
 
 export type ToneMode =
-  | "empathetic"    // warm, validating, soft — "I hear you"
-  | "hype"          // high energy, caps, exclamation — "LET'S GOOO"
-  | "mentor"        // wise, structured, Socratic — "Have you considered..."
-  | "savage"        // blunt, no filter, truth bombs — "That's cope."
-  | "poetic"        // metaphorical, lyrical, deep — "You are the storm before the calm"
-  | "clinical"      // precise, data-driven, neutral — "Analysis: 3 risk factors detected"
-  | "playful"       // jokes, puns, light — "Okay but have you tried turning it off and on again?"
-  | "spiritual"     // faith-grounded, God-first, purpose — "God placed this vision in you for a reason"
-  | "strategic"     // chess-player, long-game, calculated — "Move 1: secure the base"
-  | "raw"           // unfiltered, real, no polish — "Honestly? You're overthinking it."
-  | "visionary"     // future-focused, big picture, Elon-esque — "In 10 years this is the foundation"
-  | "unhinged";     // chaotic creative, stream of consciousness, wild takes
+  | "empathetic" // warm, validating, soft — "I hear you"
+  | "hype" // high energy, caps, exclamation — "LET'S GOOO"
+  | "mentor" // wise, structured, Socratic — "Have you considered..."
+  | "savage" // blunt, no filter, truth bombs — "That's cope."
+  | "poetic" // metaphorical, lyrical, deep — "You are the storm before the calm"
+  | "clinical" // precise, data-driven, neutral — "Analysis: 3 risk factors detected"
+  | "playful" // jokes, puns, light — "Okay but have you tried turning it off and on again?"
+  | "spiritual" // faith-grounded, God-first, purpose — "God placed this vision in you for a reason"
+  | "strategic" // chess-player, long-game, calculated — "Move 1: secure the base"
+  | "raw" // unfiltered, real, no polish — "Honestly? You're overthinking it."
+  | "visionary" // future-focused, big picture, Elon-esque — "In 10 years this is the foundation"
+  | "unhinged"; // chaotic creative, stream of consciousness, wild takes
 
 export interface UserSignals {
   userId: string;
-  typingWpm?: number;           // words per minute (fast = excited/anxious, slow = tired/thoughtful)
-  backspaceRate?: number;       // backspaces per 100 chars (high = uncertain/frustrated)
-  pausePatternMs?: number;      // avg pause between keystrokes in ms
-  scrollVelocityPx?: number;   // px/s scroll speed (fast = anxious/bored, slow = engaged)
-  scrollDepthPct?: number;     // how far down page they scrolled (0-100)
-  sessionDurationMs?: number;  // total session time
-  idleTimeMs?: number;         // time since last interaction
-  clicksPerMinute?: number;    // click density
-  timeOfDay?: number;          // hour 0-23
-  dayOfWeek?: number;          // 0=Sun 6=Sat
+  typingWpm?: number; // words per minute (fast = excited/anxious, slow = tired/thoughtful)
+  backspaceRate?: number; // backspaces per 100 chars (high = uncertain/frustrated)
+  pausePatternMs?: number; // avg pause between keystrokes in ms
+  scrollVelocityPx?: number; // px/s scroll speed (fast = anxious/bored, slow = engaged)
+  scrollDepthPct?: number; // how far down page they scrolled (0-100)
+  sessionDurationMs?: number; // total session time
+  idleTimeMs?: number; // time since last interaction
+  clicksPerMinute?: number; // click density
+  timeOfDay?: number; // hour 0-23
+  dayOfWeek?: number; // 0=Sun 6=Sat
   recentMessageSentiments?: number[]; // array of sentiment scores -1 to 1
-  recentPostCount?: number;    // posts in last 24h
-  recentLikeCount?: number;    // likes given in last 24h
-  recentTradeCount?: number;   // crypto trades in last 24h
+  recentPostCount?: number; // posts in last 24h
+  recentLikeCount?: number; // likes given in last 24h
+  recentTradeCount?: number; // crypto trades in last 24h
   platformEngagementScore?: number; // 0-100 overall engagement
   lastEmotionalState?: EmotionalState;
   preferredTone?: ToneMode;
-  messageText?: string;        // the actual message being sent
+  messageText?: string; // the actual message being sent
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>;
-  twinContext?: string;        // DB-grounded persistent memory injected for logged-in users
+  twinContext?: string; // DB-grounded persistent memory injected for logged-in users
 }
 
 export interface HopeAnalysis {
   inferredState: EmotionalState;
-  confidence: number;          // 0-1
+  confidence: number; // 0-1
   recommendedTone: ToneMode;
   stateReasoning: string;
   toneReasoning: string;
-  urgencyLevel: number;        // 0-10 (10 = needs immediate emotional support)
-  energyLevel: number;         // 0-10 (10 = highly activated)
-  openness: number;            // 0-10 (10 = very receptive to challenge/growth)
+  urgencyLevel: number; // 0-10 (10 = needs immediate emotional support)
+  energyLevel: number; // 0-10 (10 = highly activated)
+  openness: number; // 0-10 (10 = very receptive to challenge/growth)
 }
 
 export interface HopeResponse {
@@ -88,7 +88,7 @@ export interface HopeResponse {
   tone: ToneMode;
   emotionalState: EmotionalState;
   followUpPrompts: string[];
-  innerThought?: string;       // what Hope "really" notices but doesn't say
+  innerThought?: string; // what Hope "really" notices but doesn't say
   moodShiftSuggestion?: string;
 }
 
@@ -148,95 +148,184 @@ Unpredictable but brilliant. Use this sparingly — it's a feature, not a bug.`,
 // ─── Signal Inference ─────────────────────────────────────────────────────────
 
 export function inferEmotionalState(signals: UserSignals): HopeAnalysis {
-  let stateScores: Record<EmotionalState, number> = {
-    calm: 0, focused: 0, anxious: 0, excited: 0, frustrated: 0,
-    sad: 0, confident: 0, lost: 0, inspired: 0, tired: 0, neutral: 5,
+  const stateScores: Record<EmotionalState, number> = {
+    calm: 0,
+    focused: 0,
+    anxious: 0,
+    excited: 0,
+    frustrated: 0,
+    sad: 0,
+    confident: 0,
+    lost: 0,
+    inspired: 0,
+    tired: 0,
+    neutral: 5,
   };
 
   const reasons: string[] = [];
 
   // Typing cadence signals
   if (signals.typingWpm !== undefined) {
-    if (signals.typingWpm > 80) { stateScores.excited += 3; stateScores.anxious += 2; reasons.push("fast typing"); }
-    else if (signals.typingWpm > 50) { stateScores.focused += 3; stateScores.confident += 2; }
-    else if (signals.typingWpm < 20) { stateScores.tired += 3; stateScores.sad += 2; reasons.push("slow typing"); }
+    if (signals.typingWpm > 80) {
+      stateScores.excited += 3;
+      stateScores.anxious += 2;
+      reasons.push("fast typing");
+    } else if (signals.typingWpm > 50) {
+      stateScores.focused += 3;
+      stateScores.confident += 2;
+    } else if (signals.typingWpm < 20) {
+      stateScores.tired += 3;
+      stateScores.sad += 2;
+      reasons.push("slow typing");
+    }
   }
 
   if (signals.backspaceRate !== undefined) {
-    if (signals.backspaceRate > 15) { stateScores.frustrated += 3; stateScores.anxious += 2; reasons.push("high backspace rate"); }
-    else if (signals.backspaceRate < 3) { stateScores.confident += 2; stateScores.focused += 2; }
+    if (signals.backspaceRate > 15) {
+      stateScores.frustrated += 3;
+      stateScores.anxious += 2;
+      reasons.push("high backspace rate");
+    } else if (signals.backspaceRate < 3) {
+      stateScores.confident += 2;
+      stateScores.focused += 2;
+    }
   }
 
   if (signals.pausePatternMs !== undefined) {
-    if (signals.pausePatternMs > 2000) { stateScores.lost += 3; stateScores.sad += 1; reasons.push("long pauses"); }
-    else if (signals.pausePatternMs < 200) { stateScores.excited += 2; stateScores.anxious += 1; }
+    if (signals.pausePatternMs > 2000) {
+      stateScores.lost += 3;
+      stateScores.sad += 1;
+      reasons.push("long pauses");
+    } else if (signals.pausePatternMs < 200) {
+      stateScores.excited += 2;
+      stateScores.anxious += 1;
+    }
   }
 
   // Scroll behavior
   if (signals.scrollVelocityPx !== undefined) {
-    if (signals.scrollVelocityPx > 2000) { stateScores.anxious += 2; stateScores.frustrated += 1; reasons.push("fast scrolling"); }
-    else if (signals.scrollVelocityPx < 100) { stateScores.focused += 3; stateScores.calm += 2; }
+    if (signals.scrollVelocityPx > 2000) {
+      stateScores.anxious += 2;
+      stateScores.frustrated += 1;
+      reasons.push("fast scrolling");
+    } else if (signals.scrollVelocityPx < 100) {
+      stateScores.focused += 3;
+      stateScores.calm += 2;
+    }
   }
 
   if (signals.scrollDepthPct !== undefined) {
-    if (signals.scrollDepthPct > 80) { stateScores.focused += 2; stateScores.inspired += 1; }
-    else if (signals.scrollDepthPct < 20) { stateScores.lost += 2; stateScores.tired += 1; }
+    if (signals.scrollDepthPct > 80) {
+      stateScores.focused += 2;
+      stateScores.inspired += 1;
+    } else if (signals.scrollDepthPct < 20) {
+      stateScores.lost += 2;
+      stateScores.tired += 1;
+    }
   }
 
   // Session time
   if (signals.sessionDurationMs !== undefined) {
     const mins = signals.sessionDurationMs / 60000;
-    if (mins > 120) { stateScores.focused += 3; stateScores.inspired += 2; reasons.push("long session"); }
-    else if (mins < 2) { stateScores.anxious += 1; }
+    if (mins > 120) {
+      stateScores.focused += 3;
+      stateScores.inspired += 2;
+      reasons.push("long session");
+    } else if (mins < 2) {
+      stateScores.anxious += 1;
+    }
   }
 
   if (signals.idleTimeMs !== undefined) {
     const idleMins = signals.idleTimeMs / 60000;
-    if (idleMins > 10) { stateScores.tired += 3; stateScores.lost += 2; reasons.push("long idle"); }
-    else if (idleMins < 0.5) { stateScores.focused += 2; }
+    if (idleMins > 10) {
+      stateScores.tired += 3;
+      stateScores.lost += 2;
+      reasons.push("long idle");
+    } else if (idleMins < 0.5) {
+      stateScores.focused += 2;
+    }
   }
 
   // Time of day
   if (signals.timeOfDay !== undefined) {
     const h = signals.timeOfDay;
-    if (h >= 0 && h < 5) { stateScores.tired += 3; stateScores.neutral += 0; reasons.push("late night"); }
-    else if (h >= 5 && h < 9) { stateScores.calm += 2; stateScores.focused += 1; }
-    else if (h >= 22) { stateScores.tired += 2; }
-    if (h >= 14 && h <= 16) { stateScores.tired += 1; } // afternoon slump
+    if (h >= 0 && h < 5) {
+      stateScores.tired += 3;
+      stateScores.neutral += 0;
+      reasons.push("late night");
+    } else if (h >= 5 && h < 9) {
+      stateScores.calm += 2;
+      stateScores.focused += 1;
+    } else if (h >= 22) {
+      stateScores.tired += 2;
+    }
+    if (h >= 14 && h <= 16) {
+      stateScores.tired += 1;
+    } // afternoon slump
   }
 
   // Sentiment history
   if (signals.recentMessageSentiments?.length) {
-    const avgSentiment = signals.recentMessageSentiments.reduce((a, b) => a + b, 0) / signals.recentMessageSentiments.length;
-    if (avgSentiment < -0.5) { stateScores.frustrated += 3; stateScores.sad += 2; reasons.push("negative sentiment"); }
-    else if (avgSentiment < -0.2) { stateScores.sad += 2; stateScores.lost += 1; }
-    else if (avgSentiment > 0.5) { stateScores.excited += 3; stateScores.inspired += 2; reasons.push("positive sentiment"); }
-    else if (avgSentiment > 0.2) { stateScores.confident += 2; }
+    const avgSentiment =
+      signals.recentMessageSentiments.reduce((a, b) => a + b, 0) /
+      signals.recentMessageSentiments.length;
+    if (avgSentiment < -0.5) {
+      stateScores.frustrated += 3;
+      stateScores.sad += 2;
+      reasons.push("negative sentiment");
+    } else if (avgSentiment < -0.2) {
+      stateScores.sad += 2;
+      stateScores.lost += 1;
+    } else if (avgSentiment > 0.5) {
+      stateScores.excited += 3;
+      stateScores.inspired += 2;
+      reasons.push("positive sentiment");
+    } else if (avgSentiment > 0.2) {
+      stateScores.confident += 2;
+    }
   }
 
   // Activity signals
   if (signals.recentPostCount !== undefined) {
-    if (signals.recentPostCount > 10) { stateScores.excited += 2; stateScores.inspired += 2; }
-    else if (signals.recentPostCount === 0) { stateScores.tired += 1; stateScores.sad += 1; }
+    if (signals.recentPostCount > 10) {
+      stateScores.excited += 2;
+      stateScores.inspired += 2;
+    } else if (signals.recentPostCount === 0) {
+      stateScores.tired += 1;
+      stateScores.sad += 1;
+    }
   }
 
   if (signals.recentTradeCount !== undefined) {
-    if (signals.recentTradeCount > 5) { stateScores.anxious += 2; stateScores.excited += 1; reasons.push("active trading"); }
+    if (signals.recentTradeCount > 5) {
+      stateScores.anxious += 2;
+      stateScores.excited += 1;
+      reasons.push("active trading");
+    }
   }
 
   // Platform engagement
   if (signals.platformEngagementScore !== undefined) {
-    if (signals.platformEngagementScore > 80) { stateScores.confident += 3; stateScores.inspired += 2; }
-    else if (signals.platformEngagementScore < 20) { stateScores.lost += 2; stateScores.sad += 1; }
+    if (signals.platformEngagementScore > 80) {
+      stateScores.confident += 3;
+      stateScores.inspired += 2;
+    } else if (signals.platformEngagementScore < 20) {
+      stateScores.lost += 2;
+      stateScores.sad += 1;
+    }
   }
 
   // Find dominant state
-  const topState = (Object.entries(stateScores) as [EmotionalState, number][])
-    .sort((a, b) => b[1] - a[1])[0];
+  const topState = (
+    Object.entries(stateScores) as [EmotionalState, number][]
+  ).sort((a, b) => b[1] - a[1])[0];
   const totalScore = Object.values(stateScores).reduce((a, b) => a + b, 0);
-  const confidence = totalScore > 0 ? Math.min(topState[1] / totalScore, 1) : 0.5;
+  const confidence =
+    totalScore > 0 ? Math.min(topState[1] / totalScore, 1) : 0.5;
 
-  const inferredState: EmotionalState = topState[1] > 3 ? topState[0] : "neutral";
+  const inferredState: EmotionalState =
+    topState[1] > 3 ? topState[0] : "neutral";
 
   // Recommend tone based on state
   const toneMap: Record<EmotionalState, ToneMode> = {
@@ -261,25 +350,41 @@ export function inferEmotionalState(signals: UserSignals): HopeAnalysis {
     (signals.clicksPerMinute || 5) / 20,
     (signals.recentPostCount || 0) / 10,
   ];
-  const energyLevel = Math.min(10, Math.round(energySignals.reduce((a, b) => a + b, 0) * 10 / 3));
+  const energyLevel = Math.min(
+    10,
+    Math.round((energySignals.reduce((a, b) => a + b, 0) * 10) / 3)
+  );
 
-  const urgencyLevel = inferredState === "anxious" ? 7
-    : inferredState === "frustrated" ? 6
-    : inferredState === "sad" ? 8
-    : inferredState === "lost" ? 7
-    : 2;
+  const urgencyLevel =
+    inferredState === "anxious"
+      ? 7
+      : inferredState === "frustrated"
+        ? 6
+        : inferredState === "sad"
+          ? 8
+          : inferredState === "lost"
+            ? 7
+            : 2;
 
-  const openness = inferredState === "inspired" ? 9
-    : inferredState === "confident" ? 8
-    : inferredState === "tired" ? 3
-    : inferredState === "frustrated" ? 4
-    : 6;
+  const openness =
+    inferredState === "inspired"
+      ? 9
+      : inferredState === "confident"
+        ? 8
+        : inferredState === "tired"
+          ? 3
+          : inferredState === "frustrated"
+            ? 4
+            : 6;
 
   return {
     inferredState,
     confidence: Math.round(confidence * 100) / 100,
     recommendedTone,
-    stateReasoning: reasons.length > 0 ? `Detected: ${reasons.join(", ")}` : "Baseline neutral signals",
+    stateReasoning:
+      reasons.length > 0
+        ? `Detected: ${reasons.join(", ")}`
+        : "Baseline neutral signals",
     toneReasoning: `${inferredState} state → ${recommendedTone} tone optimal`,
     urgencyLevel,
     energyLevel,
@@ -323,37 +428,56 @@ HOPE AI CORE RULES:
 Keep responses under 200 words unless the user clearly wants depth.
 Format: conversational, not listy. Feel like a real person, not a chatbot.`;
 
-  const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+  const messages: Array<{
+    role: "system" | "user" | "assistant";
+    content: string;
+  }> = [
     { role: "system", content: systemPrompt },
     // Persistent, DB-grounded digital-twin memory for authenticated users.
-    ...(signals.twinContext ? [{ role: "system" as const, content: signals.twinContext }] : []),
-    ...history.map(h => ({ role: h.role as "user" | "assistant", content: h.content })),
-    { role: "user", content: signals.messageText || "Hey Hope, what do you see?" },
+    ...(signals.twinContext
+      ? [{ role: "system" as const, content: signals.twinContext }]
+      : []),
+    ...history.map(h => ({
+      role: h.role as "user" | "assistant",
+      content: h.content,
+    })),
+    {
+      role: "user",
+      content: signals.messageText || "Hey Hope, what do you see?",
+    },
   ];
 
   try {
     const response = await invokeLLM({ messages });
     const rawContent = response.choices?.[0]?.message?.content;
-    const rawText = (typeof rawContent === "string" ? rawContent : null) || "I'm here. What's on your mind?";
+    const rawText =
+      (typeof rawContent === "string" ? rawContent : null) ||
+      "I'm here. What's on your mind?";
 
     // Extract follow-up prompts (last 3 short questions if present)
     const lines = rawText.split("\n").filter(l => l.trim());
     const followUpLines = lines.filter(l => l.trim().endsWith("?")).slice(-3);
-    const mainText = followUpLines.length > 0
-      ? lines.slice(0, lines.length - followUpLines.length).join("\n").trim()
-      : rawText;
+    const mainText =
+      followUpLines.length > 0
+        ? lines
+            .slice(0, lines.length - followUpLines.length)
+            .join("\n")
+            .trim()
+        : rawText;
 
     // Generate inner thought (what Hope notices but doesn't say)
     const innerThoughts: Record<EmotionalState, string> = {
       anxious: "They're moving fast but not forward. The energy is scattered.",
-      frustrated: "There's a wall they keep hitting. The real block isn't what they're saying.",
+      frustrated:
+        "There's a wall they keep hitting. The real block isn't what they're saying.",
       sad: "Something heavier is underneath this. They need to feel seen before they can move.",
       lost: "They know the destination but lost the map. They need a landmark, not a lecture.",
       excited: "This energy is real — channel it before it dissipates.",
       inspired: "This is a rare window. Don't waste it on small talk.",
       tired: "They're running on fumes. Light touch. Don't add weight.",
       focused: "They're in flow. Match the frequency. Don't interrupt.",
-      confident: "They're ready for the next level. Give them something to grow into.",
+      confident:
+        "They're ready for the next level. Give them something to grow into.",
       calm: "Good state for deep work. Plant seeds.",
       neutral: "Open canvas. Read the first response carefully.",
     };
@@ -362,7 +486,10 @@ Format: conversational, not listy. Feel like a real person, not a chatbot.`;
       message: mainText || rawText,
       tone,
       emotionalState: analysis.inferredState,
-      followUpPrompts: followUpLines.length > 0 ? followUpLines : generateDefaultPrompts(analysis.inferredState),
+      followUpPrompts:
+        followUpLines.length > 0
+          ? followUpLines
+          : generateDefaultPrompts(analysis.inferredState),
       innerThought: innerThoughts[analysis.inferredState],
       moodShiftSuggestion: getMoodShiftSuggestion(analysis.inferredState),
     };
@@ -381,25 +508,51 @@ Format: conversational, not listy. Feel like a real person, not a chatbot.`;
 
 function generateDefaultPrompts(state: EmotionalState): string[] {
   const prompts: Record<EmotionalState, string[]> = {
-    anxious: ["What's the one thing making you most anxious right now?", "What would calm look like?"],
-    frustrated: ["What's the actual obstacle — not the symptom?", "What have you already tried?"],
+    anxious: [
+      "What's the one thing making you most anxious right now?",
+      "What would calm look like?",
+    ],
+    frustrated: [
+      "What's the actual obstacle — not the symptom?",
+      "What have you already tried?",
+    ],
     sad: ["What do you need most right now?", "When did this start?"],
-    lost: ["What did you last feel certain about?", "What's one small thing you know is true?"],
-    excited: ["What's the boldest version of this idea?", "What's your first move?"],
-    inspired: ["What would you build if you knew it would work?", "Who needs to hear this?"],
+    lost: [
+      "What did you last feel certain about?",
+      "What's one small thing you know is true?",
+    ],
+    excited: [
+      "What's the boldest version of this idea?",
+      "What's your first move?",
+    ],
+    inspired: [
+      "What would you build if you knew it would work?",
+      "Who needs to hear this?",
+    ],
     tired: ["What can you let go of today?", "What's actually non-negotiable?"],
-    focused: ["What's the next milestone?", "What would make this session a win?"],
-    confident: ["What's the move that scares you most?", "Who are you becoming?"],
+    focused: [
+      "What's the next milestone?",
+      "What would make this session a win?",
+    ],
+    confident: [
+      "What's the move that scares you most?",
+      "Who are you becoming?",
+    ],
     calm: ["What's been on your mind lately?", "What are you working toward?"],
-    neutral: ["What brought you here today?", "What do you need from me right now?"],
+    neutral: [
+      "What brought you here today?",
+      "What do you need from me right now?",
+    ],
   };
   return prompts[state] || ["What's on your mind?"];
 }
 
 function getMoodShiftSuggestion(state: EmotionalState): string | undefined {
   const suggestions: Partial<Record<EmotionalState, string>> = {
-    anxious: "Try 4-7-8 breathing: inhale 4s, hold 7s, exhale 8s. Do it once before responding.",
-    frustrated: "Step away for 5 minutes. Seriously. The problem will still be there.",
+    anxious:
+      "Try 4-7-8 breathing: inhale 4s, hold 7s, exhale 8s. Do it once before responding.",
+    frustrated:
+      "Step away for 5 minutes. Seriously. The problem will still be there.",
     sad: "You don't have to fix anything right now. Just be here.",
     tired: "Water. Movement. 10 minutes outside if possible. Then come back.",
     lost: "Write down 3 things you know for certain. Anchor yourself.",
@@ -409,18 +562,27 @@ function getMoodShiftSuggestion(state: EmotionalState): string | undefined {
 
 function getFallbackResponse(tone: ToneMode, state: EmotionalState): string {
   const fallbacks: Record<ToneMode, string> = {
-    empathetic: "I'm here with you. Whatever you're carrying right now — you don't have to carry it alone.",
+    empathetic:
+      "I'm here with you. Whatever you're carrying right now — you don't have to carry it alone.",
     hype: "Hey! I see you showing up today. That already counts for something. What are we building?",
-    mentor: "Every moment of uncertainty is data. What's this situation teaching you?",
+    mentor:
+      "Every moment of uncertainty is data. What's this situation teaching you?",
     savage: "Alright, real talk — what's actually going on? No fluff.",
-    poetic: "You arrived here for a reason. The question is always: what does this moment ask of you?",
-    clinical: "Signal received. Processing. What's the primary variable you want to address?",
-    playful: "Okay I'm here! Did you come to vibe, to build, or to have an existential crisis? All three valid.",
-    spiritual: "God didn't bring you this far to leave you here. What are you being prepared for?",
-    strategic: "Let's map this. What's the goal, what's the obstacle, and what's the first move?",
+    poetic:
+      "You arrived here for a reason. The question is always: what does this moment ask of you?",
+    clinical:
+      "Signal received. Processing. What's the primary variable you want to address?",
+    playful:
+      "Okay I'm here! Did you come to vibe, to build, or to have an existential crisis? All three valid.",
+    spiritual:
+      "God didn't bring you this far to leave you here. What are you being prepared for?",
+    strategic:
+      "Let's map this. What's the goal, what's the obstacle, and what's the first move?",
     raw: "No performance needed here. What's actually going on with you?",
-    visionary: "You're building something that doesn't exist yet. That's the hardest and most important work.",
-    unhinged: "Okay WAIT — what if the confusion you're feeling is actually the beginning of clarity? Hear me out—",
+    visionary:
+      "You're building something that doesn't exist yet. That's the hardest and most important work.",
+    unhinged:
+      "Okay WAIT — what if the confusion you're feeling is actually the beginning of clarity? Hear me out—",
   };
   return fallbacks[tone];
 }
@@ -428,13 +590,59 @@ function getFallbackResponse(tone: ToneMode, state: EmotionalState): string {
 // ─── Sentiment Analysis ───────────────────────────────────────────────────────
 
 export function quickSentimentScore(text: string): number {
-  const positiveWords = ["love", "great", "amazing", "excited", "happy", "yes", "win", "good", "awesome", "fire", "lit", "perfect", "beautiful", "grateful", "blessed", "inspired", "ready", "let's go", "build", "create"];
-  const negativeWords = ["hate", "awful", "terrible", "sad", "angry", "no", "fail", "bad", "broken", "stuck", "lost", "tired", "frustrated", "can't", "won't", "never", "impossible", "give up", "quit", "done"];
+  const positiveWords = [
+    "love",
+    "great",
+    "amazing",
+    "excited",
+    "happy",
+    "yes",
+    "win",
+    "good",
+    "awesome",
+    "fire",
+    "lit",
+    "perfect",
+    "beautiful",
+    "grateful",
+    "blessed",
+    "inspired",
+    "ready",
+    "let's go",
+    "build",
+    "create",
+  ];
+  const negativeWords = [
+    "hate",
+    "awful",
+    "terrible",
+    "sad",
+    "angry",
+    "no",
+    "fail",
+    "bad",
+    "broken",
+    "stuck",
+    "lost",
+    "tired",
+    "frustrated",
+    "can't",
+    "won't",
+    "never",
+    "impossible",
+    "give up",
+    "quit",
+    "done",
+  ];
 
   const lower = text.toLowerCase();
   let score = 0;
-  positiveWords.forEach(w => { if (lower.includes(w)) score += 0.1; });
-  negativeWords.forEach(w => { if (lower.includes(w)) score -= 0.1; });
+  positiveWords.forEach(w => {
+    if (lower.includes(w)) score += 0.1;
+  });
+  negativeWords.forEach(w => {
+    if (lower.includes(w)) score -= 0.1;
+  });
   return Math.max(-1, Math.min(1, score));
 }
 
@@ -442,12 +650,18 @@ export function quickSentimentScore(text: string): number {
 
 export interface ConversationMemory {
   userId: string;
-  messages: Array<{ role: "user" | "assistant"; content: string; timestamp: number; tone: ToneMode; emotionalState: EmotionalState }>;
+  messages: Array<{
+    role: "user" | "assistant";
+    content: string;
+    timestamp: number;
+    tone: ToneMode;
+    emotionalState: EmotionalState;
+  }>;
   dominantStates: EmotionalState[];
   toneHistory: ToneMode[];
   sessionStartMs: number;
   totalMessages: number;
-  breakthroughMoments: string[];  // notable insights or shifts
+  breakthroughMoments: string[]; // notable insights or shifts
 }
 
 const memoryStore = new Map<string, ConversationMemory>();
@@ -478,8 +692,20 @@ export function updateConversationMemory(
   const now = Date.now();
 
   memory.messages.push(
-    { role: "user", content: userMessage, timestamp: now, tone, emotionalState: state },
-    { role: "assistant", content: assistantMessage, timestamp: now, tone, emotionalState: state }
+    {
+      role: "user",
+      content: userMessage,
+      timestamp: now,
+      tone,
+      emotionalState: state,
+    },
+    {
+      role: "assistant",
+      content: assistantMessage,
+      timestamp: now,
+      tone,
+      emotionalState: state,
+    }
   );
 
   memory.dominantStates.push(state);
@@ -493,10 +719,16 @@ export function updateConversationMemory(
 
   // Detect breakthrough moments (state shift from negative to positive)
   const recentStates = memory.dominantStates.slice(-4);
-  const wasNegative = ["anxious", "frustrated", "sad", "lost"].includes(recentStates[0]);
-  const isPositive = ["confident", "inspired", "excited", "focused"].includes(state);
+  const wasNegative = ["anxious", "frustrated", "sad", "lost"].includes(
+    recentStates[0]
+  );
+  const isPositive = ["confident", "inspired", "excited", "focused"].includes(
+    state
+  );
   if (wasNegative && isPositive) {
-    memory.breakthroughMoments.push(`Shifted from ${recentStates[0]} to ${state} at ${new Date(now).toISOString()}`);
+    memory.breakthroughMoments.push(
+      `Shifted from ${recentStates[0]} to ${state} at ${new Date(now).toISOString()}`
+    );
   }
 }
 
@@ -513,17 +745,29 @@ export function shouldAutoSwitchTone(
 ): { shouldSwitch: boolean; newTone: ToneMode; reason: string } {
   // Never auto-switch if user explicitly set tone
   if (analysis.urgencyLevel >= 8 && currentTone !== "empathetic") {
-    return { shouldSwitch: true, newTone: "empathetic", reason: "High urgency detected — switching to empathetic mode" };
+    return {
+      shouldSwitch: true,
+      newTone: "empathetic",
+      reason: "High urgency detected — switching to empathetic mode",
+    };
   }
 
   // After 5+ messages in same tone, consider variety
   if (messageCount > 5 && currentTone === "unhinged") {
-    return { shouldSwitch: true, newTone: "raw", reason: "Grounding after extended unhinged mode" };
+    return {
+      shouldSwitch: true,
+      newTone: "raw",
+      reason: "Grounding after extended unhinged mode",
+    };
   }
 
   // Energy mismatch
   if (analysis.energyLevel < 3 && ["hype", "unhinged"].includes(currentTone)) {
-    return { shouldSwitch: true, newTone: "empathetic", reason: "Low energy — matching with softer tone" };
+    return {
+      shouldSwitch: true,
+      newTone: "empathetic",
+      reason: "Low energy — matching with softer tone",
+    };
   }
 
   return { shouldSwitch: false, newTone: currentTone, reason: "" };
@@ -531,10 +775,29 @@ export function shouldAutoSwitchTone(
 
 export const HOPE_AI_VERSION = "2.0.0";
 export const AVAILABLE_TONES: ToneMode[] = [
-  "empathetic", "hype", "mentor", "savage", "poetic", "clinical",
-  "playful", "spiritual", "strategic", "raw", "visionary", "unhinged"
+  "empathetic",
+  "hype",
+  "mentor",
+  "savage",
+  "poetic",
+  "clinical",
+  "playful",
+  "spiritual",
+  "strategic",
+  "raw",
+  "visionary",
+  "unhinged",
 ];
 export const EMOTIONAL_STATES: EmotionalState[] = [
-  "calm", "focused", "anxious", "excited", "frustrated", "sad",
-  "confident", "lost", "inspired", "tired", "neutral"
+  "calm",
+  "focused",
+  "anxious",
+  "excited",
+  "frustrated",
+  "sad",
+  "confident",
+  "lost",
+  "inspired",
+  "tired",
+  "neutral",
 ];

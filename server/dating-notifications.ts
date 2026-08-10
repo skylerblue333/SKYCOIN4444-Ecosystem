@@ -1,12 +1,18 @@
-import { Router } from 'express';
-import { db } from './db';
-import { datingNotifications, datingMatches, datingMessages, users } from '../drizzle/schema';
-import { eq, desc, count } from 'drizzle-orm';
+import { Router } from "express";
+import { db } from "./db";
+import {
+  datingNotifications,
+  datingMatches,
+  datingMessages,
+  users,
+} from "../drizzle/schema";
+import { eq, desc, count } from "drizzle-orm";
 
 const router = Router();
 
 // WebSocket notification types
-export type NotificationType = 'match' | 'message' | 'superlike' | 'like' | 'profile_view' | 'message_read';
+export type NotificationType =
+  "match" | "message" | "superlike" | "like" | "profile_view" | "message_read";
 
 export interface DatingNotification {
   id: string;
@@ -59,10 +65,10 @@ export async function createNotification(
 }
 
 // Get user notifications
-router.get('/api/dating/notifications', async (req: any, res) => {
+router.get("/api/dating/notifications", async (req: any, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     const notifications = await db
       .select()
@@ -73,16 +79,16 @@ router.get('/api/dating/notifications', async (req: any, res) => {
 
     res.json(notifications);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch notifications' });
+    res.status(500).json({ error: "Failed to fetch notifications" });
   }
 });
 
 // Mark notification as read
-router.patch('/api/dating/notifications/:id/read', async (req: any, res) => {
+router.patch("/api/dating/notifications/:id/read", async (req: any, res) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     await db
       .update(datingNotifications)
@@ -91,49 +97,50 @@ router.patch('/api/dating/notifications/:id/read', async (req: any, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update notification' });
+    res.status(500).json({ error: "Failed to update notification" });
   }
 });
 
 // Mark all as read
-router.patch('/api/dating/notifications/mark-all-read', async (req: any, res) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+router.patch(
+  "/api/dating/notifications/mark-all-read",
+  async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    await db
-      .update(datingNotifications)
-      .set({ read: true })
-      .where(eq(datingNotifications.userId, userId));
+      await db
+        .update(datingNotifications)
+        .set({ read: true })
+        .where(eq(datingNotifications.userId, userId));
 
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update notifications' });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update notifications" });
+    }
   }
-});
+);
 
 // Delete notification
-router.delete('/api/dating/notifications/:id', async (req: any, res) => {
+router.delete("/api/dating/notifications/:id", async (req: any, res) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    await db
-      .delete(datingNotifications)
-      .where(eq(datingNotifications.id, id));
+    await db.delete(datingNotifications).where(eq(datingNotifications.id, id));
 
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete notification' });
+    res.status(500).json({ error: "Failed to delete notification" });
   }
 });
 
 // Get unread count
-router.get('/api/dating/notifications/unread/count', async (req: any, res) => {
+router.get("/api/dating/notifications/unread/count", async (req: any, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     const notifications = await db
       .select()
@@ -142,15 +149,15 @@ router.get('/api/dating/notifications/unread/count', async (req: any, res) => {
 
     res.json({ unreadCount: notifications.length });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get unread count' });
+    res.status(500).json({ error: "Failed to get unread count" });
   }
 });
 
 // Get notification preferences
-router.get('/api/dating/notifications/preferences', async (req: any, res) => {
+router.get("/api/dating/notifications/preferences", async (req: any, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     // TODO: Fetch from database
     const preferences = {
@@ -167,15 +174,15 @@ router.get('/api/dating/notifications/preferences', async (req: any, res) => {
 
     res.json(preferences);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get preferences' });
+    res.status(500).json({ error: "Failed to get preferences" });
   }
 });
 
 // Update notification preferences
-router.patch('/api/dating/notifications/preferences', async (req: any, res) => {
+router.patch("/api/dating/notifications/preferences", async (req: any, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     const { preferences } = req.body;
 
@@ -183,7 +190,7 @@ router.patch('/api/dating/notifications/preferences', async (req: any, res) => {
 
     res.json({ success: true, preferences });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update preferences' });
+    res.status(500).json({ error: "Failed to update preferences" });
   }
 });
 
@@ -207,49 +214,76 @@ export function unregisterWebSocketClient(userId: string, ws: any) {
   }
 }
 
-export function broadcastNotification(userId: string, notification: DatingNotification) {
+export function broadcastNotification(
+  userId: string,
+  notification: DatingNotification
+) {
   const clients = wsClients.get(userId);
   if (clients) {
-    clients.forEach((ws) => {
-      if (ws.readyState === 1) { // WebSocket.OPEN
-        ws.send(JSON.stringify({
-          type: 'notification',
-          data: notification,
-        }));
+    clients.forEach(ws => {
+      if (ws.readyState === 1) {
+        // WebSocket.OPEN
+        ws.send(
+          JSON.stringify({
+            type: "notification",
+            data: notification,
+          })
+        );
       }
     });
   }
 }
 
 // Trigger notifications for different events
-export async function notifyMatch(user1Id: string, user2Id: string, matchId: string) {
-  const [user1] = await db.select().from(users).where(eq(users.id, user1Id)).limit(1);
-  const [user2] = await db.select().from(users).where(eq(users.id, user2Id)).limit(1);
+export async function notifyMatch(
+  user1Id: string,
+  user2Id: string,
+  matchId: string
+) {
+  const [user1] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, user1Id))
+    .limit(1);
+  const [user2] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, user2Id))
+    .limit(1);
 
   if (user1 && user2) {
-    await createNotification(user1Id, 'match', user2Id, {
+    await createNotification(user1Id, "match", user2Id, {
       matchId,
-      title: '🎉 New Match!',
-      content: `You matched with ${user2.displayName || 'someone'}!`,
+      title: "🎉 New Match!",
+      content: `You matched with ${user2.displayName || "someone"}!`,
       actionUrl: `/dating/messages/${matchId}`,
     });
 
-    await createNotification(user2Id, 'match', user1Id, {
+    await createNotification(user2Id, "match", user1Id, {
       matchId,
-      title: '🎉 New Match!',
-      content: `You matched with ${user1.displayName || 'someone'}!`,
+      title: "🎉 New Match!",
+      content: `You matched with ${user1.displayName || "someone"}!`,
       actionUrl: `/dating/messages/${matchId}`,
     });
   }
 }
 
-export async function notifyMessage(recipientId: string, senderId: string, messageId: string, content: string) {
-  const [sender] = await db.select().from(users).where(eq(users.id, senderId)).limit(1);
+export async function notifyMessage(
+  recipientId: string,
+  senderId: string,
+  messageId: string,
+  content: string
+) {
+  const [sender] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, senderId))
+    .limit(1);
 
   if (sender) {
-    await createNotification(recipientId, 'message', senderId, {
+    await createNotification(recipientId, "message", senderId, {
       messageId,
-      title: `💬 Message from ${sender.displayName || 'someone'}`,
+      title: `💬 Message from ${sender.displayName || "someone"}`,
       content: content.substring(0, 100),
       actionUrl: `/dating/messages`,
     });
@@ -257,36 +291,48 @@ export async function notifyMessage(recipientId: string, senderId: string, messa
 }
 
 export async function notifySuperlike(recipientId: string, senderId: string) {
-  const [sender] = await db.select().from(users).where(eq(users.id, senderId)).limit(1);
+  const [sender] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, senderId))
+    .limit(1);
 
   if (sender) {
-    await createNotification(recipientId, 'superlike', senderId, {
-      title: '⭐ Super Like!',
-      content: `${sender.displayName || 'Someone'} super liked you!`,
+    await createNotification(recipientId, "superlike", senderId, {
+      title: "⭐ Super Like!",
+      content: `${sender.displayName || "Someone"} super liked you!`,
       actionUrl: `/dating`,
     });
   }
 }
 
 export async function notifyLike(recipientId: string, senderId: string) {
-  const [sender] = await db.select().from(users).where(eq(users.id, senderId)).limit(1);
+  const [sender] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, senderId))
+    .limit(1);
 
   if (sender) {
-    await createNotification(recipientId, 'like', senderId, {
-      title: '❤️ New Like',
-      content: `${sender.displayName || 'Someone'} liked you!`,
+    await createNotification(recipientId, "like", senderId, {
+      title: "❤️ New Like",
+      content: `${sender.displayName || "Someone"} liked you!`,
       actionUrl: `/dating`,
     });
   }
 }
 
 export async function notifyProfileView(recipientId: string, viewerId: string) {
-  const [viewer] = await db.select().from(users).where(eq(users.id, viewerId)).limit(1);
+  const [viewer] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, viewerId))
+    .limit(1);
 
   if (viewer) {
-    await createNotification(recipientId, 'profile_view', viewerId, {
-      title: '👀 Profile View',
-      content: `${viewer.displayName || 'Someone'} viewed your profile!`,
+    await createNotification(recipientId, "profile_view", viewerId, {
+      title: "👀 Profile View",
+      content: `${viewer.displayName || "Someone"} viewed your profile!`,
       actionUrl: `/dating`,
     });
   }

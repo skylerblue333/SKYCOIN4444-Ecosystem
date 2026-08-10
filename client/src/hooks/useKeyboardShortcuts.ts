@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react';
-import { useLocation } from 'wouter';
+import { useEffect, useCallback } from "react";
+import { useLocation } from "wouter";
 
 export interface KeyboardShortcut {
   key: string;
@@ -17,131 +17,131 @@ export const useKeyboardShortcuts = () => {
   const shortcuts: KeyboardShortcut[] = [
     // Service shortcuts (Cmd/Ctrl + 1-6)
     {
-      key: '1',
+      key: "1",
       metaKey: true,
-      action: () => navigate('/mining'),
-      description: 'Go to Mining',
+      action: () => navigate("/mining"),
+      description: "Go to Mining",
     },
     {
-      key: '2',
+      key: "2",
       metaKey: true,
-      action: () => navigate('/trading'),
-      description: 'Go to Trading',
+      action: () => navigate("/trading"),
+      description: "Go to Trading",
     },
     {
-      key: '3',
+      key: "3",
       metaKey: true,
-      action: () => navigate('/social'),
-      description: 'Go to Social',
+      action: () => navigate("/social"),
+      description: "Go to Social",
     },
     {
-      key: '4',
+      key: "4",
       metaKey: true,
-      action: () => navigate('/gaming'),
-      description: 'Go to Gaming',
+      action: () => navigate("/gaming"),
+      description: "Go to Gaming",
     },
     {
-      key: '5',
+      key: "5",
       metaKey: true,
-      action: () => navigate('/marketplace'),
-      description: 'Go to Marketplace',
+      action: () => navigate("/marketplace"),
+      description: "Go to Marketplace",
     },
     {
-      key: '6',
+      key: "6",
       metaKey: true,
-      action: () => navigate('/governance'),
-      description: 'Go to Governance',
+      action: () => navigate("/governance"),
+      description: "Go to Governance",
     },
 
     // Global shortcuts
     {
-      key: 'k',
+      key: "k",
       metaKey: true,
       action: () => {
-        const event = new CustomEvent('open-command-palette');
+        const event = new CustomEvent("open-command-palette");
         window.dispatchEvent(event);
       },
-      description: 'Open Command Palette',
+      description: "Open Command Palette",
     },
     {
-      key: '/',
+      key: "/",
       metaKey: true,
       action: () => {
-        const event = new CustomEvent('focus-search');
+        const event = new CustomEvent("focus-search");
         window.dispatchEvent(event);
       },
-      description: 'Focus Search',
+      description: "Focus Search",
     },
     {
-      key: 'h',
+      key: "h",
       metaKey: true,
-      action: () => navigate('/'),
-      description: 'Go to Home',
+      action: () => navigate("/"),
+      description: "Go to Home",
     },
     {
-      key: 'p',
+      key: "p",
       metaKey: true,
-      action: () => navigate('/profile'),
-      description: 'Go to Profile',
+      action: () => navigate("/profile"),
+      description: "Go to Profile",
     },
     {
-      key: 's',
+      key: "s",
       metaKey: true,
-      action: () => navigate('/settings'),
-      description: 'Go to Settings',
+      action: () => navigate("/settings"),
+      description: "Go to Settings",
     },
 
     // Navigation shortcuts
     {
-      key: 'ArrowLeft',
+      key: "ArrowLeft",
       altKey: true,
       action: () => window.history.back(),
-      description: 'Go Back',
+      description: "Go Back",
     },
     {
-      key: 'ArrowRight',
+      key: "ArrowRight",
       altKey: true,
       action: () => window.history.forward(),
-      description: 'Go Forward',
+      description: "Go Forward",
     },
 
     // Action shortcuts
     {
-      key: 'n',
+      key: "n",
       metaKey: true,
       action: () => {
-        const event = new CustomEvent('new-item');
+        const event = new CustomEvent("new-item");
         window.dispatchEvent(event);
       },
-      description: 'New Item',
+      description: "New Item",
     },
     {
-      key: 'e',
+      key: "e",
       metaKey: true,
       action: () => {
-        const event = new CustomEvent('edit-item');
+        const event = new CustomEvent("edit-item");
         window.dispatchEvent(event);
       },
-      description: 'Edit Item',
+      description: "Edit Item",
     },
     {
-      key: 'd',
+      key: "d",
       metaKey: true,
       action: () => {
-        const event = new CustomEvent('delete-item');
+        const event = new CustomEvent("delete-item");
         window.dispatchEvent(event);
       },
-      description: 'Delete Item',
+      description: "Delete Item",
     },
 
     // Help
     {
-      key: '?',
+      key: "?",
       action: () => {
-        const event = new CustomEvent('show-help');
+        const event = new CustomEvent("show-help");
         window.dispatchEvent(event);
       },
-      description: 'Show Help',
+      description: "Show Help",
     },
   ];
 
@@ -157,7 +157,9 @@ export const useKeyboardShortcuts = () => {
 
       for (const shortcut of shortcuts) {
         const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase();
-        const ctrlMatch = (event.ctrlKey || event.metaKey) === (shortcut.ctrlKey || shortcut.metaKey);
+        const ctrlMatch =
+          (event.ctrlKey || event.metaKey) ===
+          (shortcut.ctrlKey || shortcut.metaKey);
         const shiftMatch = event.shiftKey === (shortcut.shiftKey || false);
         const altMatch = event.altKey === (shortcut.altKey || false);
 
@@ -172,8 +174,8 @@ export const useKeyboardShortcuts = () => {
   );
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
   return shortcuts;

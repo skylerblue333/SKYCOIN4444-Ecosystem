@@ -28,7 +28,9 @@ export class CompetitorTracker {
   private competitors: Map<string, Competitor> = new Map();
   private marketGaps: MarketGap[] = [];
 
-  async addCompetitor(competitor: Omit<Competitor, 'lastUpdated'>): Promise<Competitor> {
+  async addCompetitor(
+    competitor: Omit<Competitor, "lastUpdated">
+  ): Promise<Competitor> {
     const full: Competitor = {
       ...competitor,
       lastUpdated: new Date(),
@@ -50,9 +52,11 @@ export class CompetitorTracker {
     return {
       timestamp: new Date(),
       totalCompetitors: competitors.length,
-      averageMarketShare: competitors.length > 0 
-        ? competitors.reduce((sum, c) => sum + c.marketShare, 0) / competitors.length 
-        : 0,
+      averageMarketShare:
+        competitors.length > 0
+          ? competitors.reduce((sum, c) => sum + c.marketShare, 0) /
+            competitors.length
+          : 0,
       topCompetitors: competitors
         .sort((a, b) => b.marketShare - a.marketShare)
         .slice(0, 5),
@@ -78,9 +82,11 @@ export class CompetitorTracker {
         pricing: c.pricing,
         features: c.features.length,
       })),
-      averagePrice: competitors.length > 0
-        ? competitors.reduce((sum, c) => sum + c.pricing, 0) / competitors.length
-        : 0,
+      averagePrice:
+        competitors.length > 0
+          ? competitors.reduce((sum, c) => sum + c.pricing, 0) /
+            competitors.length
+          : 0,
       priceRange: {
         min: Math.min(...competitors.map(c => c.pricing)),
         max: Math.max(...competitors.map(c => c.pricing)),
@@ -95,8 +101,14 @@ export class CompetitorTracker {
 
     const opportunities = Array.from(allFeatures).map(feature => ({
       feature,
-      adoptionRate: (competitors.filter(c => c.features.includes(feature)).length / competitors.length) * 100,
-      potentialDifferentiator: (competitors.filter(c => c.features.includes(feature)).length / competitors.length) < 0.5,
+      adoptionRate:
+        (competitors.filter(c => c.features.includes(feature)).length /
+          competitors.length) *
+        100,
+      potentialDifferentiator:
+        competitors.filter(c => c.features.includes(feature)).length /
+          competitors.length <
+        0.5,
     }));
 
     return opportunities.filter(o => o.potentialDifferentiator);
@@ -104,12 +116,17 @@ export class CompetitorTracker {
 
   private analyzeTrends(competitors: Competitor[]): any {
     return {
-      marketConcentration: competitors.length > 0 ? Math.max(...competitors.map(c => c.marketShare)) : 0,
-      averageFeatureCount: competitors.length > 0
-        ? competitors.reduce((sum, c) => sum + c.features.length, 0) / competitors.length
-        : 0,
-      pricePointTrend: 'stable',
-      emergingTrends: ['AI integration', 'Real-time analytics', 'Mobile-first'],
+      marketConcentration:
+        competitors.length > 0
+          ? Math.max(...competitors.map(c => c.marketShare))
+          : 0,
+      averageFeatureCount:
+        competitors.length > 0
+          ? competitors.reduce((sum, c) => sum + c.features.length, 0) /
+            competitors.length
+          : 0,
+      pricePointTrend: "stable",
+      emergingTrends: ["AI integration", "Real-time analytics", "Mobile-first"],
     };
   }
 }

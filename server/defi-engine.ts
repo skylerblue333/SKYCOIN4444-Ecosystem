@@ -152,7 +152,11 @@ export class SwapEngine {
     });
   }
 
-  getQuote(inputToken: string, outputToken: string, inputAmount: number): SwapQuote {
+  getQuote(
+    inputToken: string,
+    outputToken: string,
+    inputAmount: number
+  ): SwapQuote {
     const poolId = this.findPool(inputToken, outputToken);
     const pool = this.pools.get(poolId);
 
@@ -167,7 +171,8 @@ export class SwapEngine {
 
     // Constant product formula: x * y = k
     const inputWithFee = inputAmount * (1 - this.SWAP_FEE);
-    const outputAmount = (reserveOut * inputWithFee) / (reserveIn + inputWithFee);
+    const outputAmount =
+      (reserveOut * inputWithFee) / (reserveIn + inputWithFee);
 
     // Price impact
     const spotPrice = reserveOut / reserveIn;
@@ -191,7 +196,11 @@ export class SwapEngine {
     };
   }
 
-  private getMultiHopQuote(inputToken: string, outputToken: string, inputAmount: number): SwapQuote {
+  private getMultiHopQuote(
+    inputToken: string,
+    outputToken: string,
+    inputAmount: number
+  ): SwapQuote {
     // Route through SKY444 as intermediate
     const hop1 = this.getQuote(inputToken, "SKY444", inputAmount);
     const hop2 = this.getQuote("SKY444", outputToken, hop1.outputAmount);
@@ -210,13 +219,18 @@ export class SwapEngine {
     };
   }
 
-  async executeSwap(userId: number, inputToken: string, outputToken: string, inputAmount: number): Promise<{ success: boolean; txId: string; quote: SwapQuote }> {
+  async executeSwap(
+    userId: number,
+    inputToken: string,
+    outputToken: string,
+    inputAmount: number
+  ): Promise<{ success: boolean; txId: string; quote: SwapQuote }> {
     const quote = this.getQuote(inputToken, outputToken, inputAmount);
     const db = await getDb();
 
     if (db) {
       // Record the transaction
-            await db.insert(schema.transactions).values({
+      await db.insert(schema.transactions).values({
         userId,
         type: "swap",
         amount: String(-inputAmount),
@@ -282,7 +296,12 @@ export class LiquidityPoolService {
     this.swapEngine = swapEngine;
   }
 
-  async addLiquidity(userId: number, poolId: string, amountA: number, amountB: number): Promise<{ lpTokens: number; share: number }> {
+  async addLiquidity(
+    userId: number,
+    poolId: string,
+    amountA: number,
+    amountB: number
+  ): Promise<{ lpTokens: number; share: number }> {
     const pool = this.swapEngine.getPool(poolId);
     if (!pool) throw new Error("Pool not found");
 
@@ -312,7 +331,11 @@ export class LiquidityPoolService {
     return { lpTokens, share: share * 100 };
   }
 
-  async removeLiquidity(userId: number, poolId: string, lpTokens: number): Promise<{ amountA: number; amountB: number }> {
+  async removeLiquidity(
+    userId: number,
+    poolId: string,
+    lpTokens: number
+  ): Promise<{ amountA: number; amountB: number }> {
     const pool = this.swapEngine.getPool(poolId);
     if (!pool) throw new Error("Pool not found");
 
@@ -347,7 +370,11 @@ export class YieldFarmingService {
   private positions: Map<string, FarmingPosition[]> = new Map();
   private readonly BASE_REWARD_RATE = 0.001; // 0.1% per day base
 
-  async stake(userId: number, poolId: string, lpTokens: number): Promise<FarmingPosition> {
+  async stake(
+    userId: number,
+    poolId: string,
+    lpTokens: number
+  ): Promise<FarmingPosition> {
     const position: FarmingPosition = {
       poolId,
       userId,
@@ -366,7 +393,10 @@ export class YieldFarmingService {
     return position;
   }
 
-  async unstake(userId: number, poolId: string): Promise<{ lpTokens: number; rewards: number }> {
+  async unstake(
+    userId: number,
+    poolId: string
+  ): Promise<{ lpTokens: number; rewards: number }> {
     const key = `${userId}_${poolId}`;
     const positions = this.positions.get(key) || [];
 
@@ -374,8 +404,13 @@ export class YieldFarmingService {
     let totalRewards = 0;
 
     for (const pos of positions) {
-      const daysStaked = (Date.now() - pos.stakedAt.getTime()) / (24 * 60 * 60 * 1000);
-      const rewards = pos.lpTokensStaked * this.BASE_REWARD_RATE * daysStaked * pos.multiplier;
+      const daysStaked =
+        (Date.now() - pos.stakedAt.getTime()) / (24 * 60 * 60 * 1000);
+      const rewards =
+        pos.lpTokensStaked *
+        this.BASE_REWARD_RATE *
+        daysStaked *
+        pos.multiplier;
       totalLp += pos.lpTokensStaked;
       totalRewards += rewards + pos.rewardsEarned;
     }
@@ -401,8 +436,13 @@ export class YieldFarmingService {
 
     let totalRewards = 0;
     for (const pos of positions) {
-      const daysStaked = (Date.now() - pos.stakedAt.getTime()) / (24 * 60 * 60 * 1000);
-      totalRewards += pos.lpTokensStaked * this.BASE_REWARD_RATE * daysStaked * pos.multiplier;
+      const daysStaked =
+        (Date.now() - pos.stakedAt.getTime()) / (24 * 60 * 60 * 1000);
+      totalRewards +=
+        pos.lpTokensStaked *
+        this.BASE_REWARD_RATE *
+        daysStaked *
+        pos.multiplier;
       pos.rewardsEarned = 0;
       pos.stakedAt = new Date(); // Reset reward accumulation
     }
@@ -493,20 +533,26 @@ export class TokenVestingService {
   }
 
   getTotalLocked(): number {
-    return this.VESTING_SCHEDULES.reduce((sum, s) => sum + (s.totalAmount - s.releasedAmount), 0);
+    return this.VESTING_SCHEDULES.reduce(
+      (sum, s) => sum + (s.totalAmount - s.releasedAmount),
+      0
+    );
   }
 
   getTotalReleased(): number {
     return this.VESTING_SCHEDULES.reduce((sum, s) => sum + s.releasedAmount, 0);
   }
 
-  getUpcomingReleases(days = 30): { schedule: VestingSchedule; daysUntil: number }[] {
+  getUpcomingReleases(
+    days = 30
+  ): { schedule: VestingSchedule; daysUntil: number }[] {
     const cutoff = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    return this.VESTING_SCHEDULES
-      .filter(s => s.nextRelease <= cutoff)
+    return this.VESTING_SCHEDULES.filter(s => s.nextRelease <= cutoff)
       .map(s => ({
         schedule: s,
-        daysUntil: Math.ceil((s.nextRelease.getTime() - Date.now()) / (24 * 60 * 60 * 1000)),
+        daysUntil: Math.ceil(
+          (s.nextRelease.getTime() - Date.now()) / (24 * 60 * 60 * 1000)
+        ),
       }))
       .sort((a, b) => a.daysUntil - b.daysUntil);
   }
@@ -535,7 +581,9 @@ export class TokenomicsService {
 
     if (db) {
       const [staked] = await db
-        .select({ total: sql<string>`COALESCE(SUM(CAST(${schema.stakingPositions.amount} AS DECIMAL(20,2))), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(CAST(${schema.stakingPositions.amount} AS DECIMAL(20,2))), 0)`,
+        })
         .from(schema.stakingPositions)
         .where(eq(schema.stakingPositions.status, "active"));
 
@@ -543,7 +591,9 @@ export class TokenomicsService {
 
       // Get burned tokens from transactions
       const [burned] = await db
-        .select({ total: sql<string>`COALESCE(SUM(ABS(CAST(${schema.transactions.amount} AS DECIMAL(20,2)))), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(ABS(CAST(${schema.transactions.amount} AS DECIMAL(20,2)))), 0)`,
+        })
         .from(schema.transactions)
         .where(eq(schema.transactions.type, "transfer")); // Burns recorded as transfers to null
 
@@ -616,8 +666,13 @@ export class PriceOracle {
   getVWAP(periods = 24): number {
     const recent = this.priceHistory.slice(-periods);
     const totalVolume = recent.reduce((sum, p) => sum + p.volume, 0);
-    const volumeWeightedPrice = recent.reduce((sum, p) => sum + p.close * p.volume, 0);
-    return totalVolume > 0 ? volumeWeightedPrice / totalVolume : this.currentPrice;
+    const volumeWeightedPrice = recent.reduce(
+      (sum, p) => sum + p.close * p.volume,
+      0
+    );
+    return totalVolume > 0
+      ? volumeWeightedPrice / totalVolume
+      : this.currentPrice;
   }
 
   getPriceHistory(days = 30): PricePoint[] {
@@ -649,12 +704,20 @@ export class WhaleMonitoringService {
   private readonly MAJOR_THRESHOLD = 500000;
   private readonly MASSIVE_THRESHOLD = 2000000;
 
-  async checkTransaction(amount: number, type: WhaleAlert["type"], from?: string, to?: string): Promise<WhaleAlert | null> {
+  async checkTransaction(
+    amount: number,
+    type: WhaleAlert["type"],
+    from?: string,
+    to?: string
+  ): Promise<WhaleAlert | null> {
     if (amount < this.NOTABLE_THRESHOLD) return null;
 
     const significance: WhaleAlert["significance"] =
-      amount >= this.MASSIVE_THRESHOLD ? "massive" :
-      amount >= this.MAJOR_THRESHOLD ? "major" : "notable";
+      amount >= this.MASSIVE_THRESHOLD
+        ? "massive"
+        : amount >= this.MAJOR_THRESHOLD
+          ? "major"
+          : "notable";
 
     const alert: WhaleAlert = {
       id: `whale_${Date.now()}`,
@@ -681,7 +744,9 @@ export class WhaleMonitoringService {
     return this.alerts.slice(-limit).reverse();
   }
 
-  async getWhaleWallets(): Promise<{ userId: number; balance: number; rank: number }[]> {
+  async getWhaleWallets(): Promise<
+    { userId: number; balance: number; rank: number }[]
+  > {
     const db = await getDb();
     if (!db) return [];
 
@@ -692,7 +757,9 @@ export class WhaleMonitoringService {
       })
       .from(schema.tokenBalances)
       .where(eq(schema.tokenBalances.token, "SKY444"))
-      .orderBy(desc(sql`CAST(${schema.tokenBalances.balance} AS DECIMAL(20,2))`))
+      .orderBy(
+        desc(sql`CAST(${schema.tokenBalances.balance} AS DECIMAL(20,2))`)
+      )
       .limit(20);
 
     return whales.map((w, i) => ({
@@ -709,9 +776,13 @@ export class WhaleMonitoringService {
 
 export class TokenBurnService {
   private totalBurned = 0;
-  private burnHistory: { amount: number; reason: string; timestamp: Date }[] = [];
+  private burnHistory: { amount: number; reason: string; timestamp: Date }[] =
+    [];
 
-  async burn(amount: number, reason: string): Promise<{ success: boolean; totalBurned: number }> {
+  async burn(
+    amount: number,
+    reason: string
+  ): Promise<{ success: boolean; totalBurned: number }> {
     const db = await getDb();
     if (!db) return { success: false, totalBurned: this.totalBurned };
 
@@ -753,7 +824,10 @@ export class TokenBurnService {
 // ═══════════════════════════════════════════════════════════════
 
 export class GovernanceVotingPower {
-  async calculateVotingPower(userId: number): Promise<{ total: number; breakdown: { source: string; power: number }[] }> {
+  async calculateVotingPower(userId: number): Promise<{
+    total: number;
+    breakdown: { source: string; power: number }[];
+  }> {
     const db = await getDb();
     if (!db) return { total: 0, breakdown: [] };
 
@@ -772,7 +846,9 @@ export class GovernanceVotingPower {
 
     // Staked tokens (1.5x voting power)
     const [staked] = await db
-      .select({ total: sql<string>`COALESCE(SUM(CAST(${schema.stakingPositions.amount} AS DECIMAL(20,2))), 0)` })
+      .select({
+        total: sql<string>`COALESCE(SUM(CAST(${schema.stakingPositions.amount} AS DECIMAL(20,2))), 0)`,
+      })
       .from(schema.stakingPositions)
       .where(
         and(

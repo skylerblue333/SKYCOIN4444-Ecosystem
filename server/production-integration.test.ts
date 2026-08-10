@@ -48,12 +48,20 @@ import {
 // ─── Test: Stripe Adapter ─────────────────────────────────────────────────────
 describe("Stripe Adapter", () => {
   it("creates a customer and returns a customerId", async () => {
-    const result = await stripeAdapter.createCustomer({ email: "test@example.com", name: "Test User", userId: 9001 });
+    const result = await stripeAdapter.createCustomer({
+      email: "test@example.com",
+      name: "Test User",
+      userId: 9001,
+    });
     expect(result.customerId).toMatch(/^cus_/);
   });
 
   it("retrieves a previously created customer", async () => {
-    await stripeAdapter.createCustomer({ email: "retrieve@example.com", name: "Retrieve User", userId: 9002 });
+    await stripeAdapter.createCustomer({
+      email: "retrieve@example.com",
+      name: "Retrieve User",
+      userId: 9002,
+    });
     const found = await stripeAdapter.getCustomer(9002);
     expect(found).not.toBeNull();
     expect(found!.customerId).toMatch(/^cus_/);
@@ -72,24 +80,47 @@ describe("Stripe Adapter", () => {
   });
 
   it("is idempotent — same key returns same charge", async () => {
-    const first = await stripeAdapter.charge({ amountCents: 500, currency: "USD", description: "Test", idempotencyKey: "idem_001" });
-    const second = await stripeAdapter.charge({ amountCents: 500, currency: "USD", description: "Test", idempotencyKey: "idem_001" });
+    const first = await stripeAdapter.charge({
+      amountCents: 500,
+      currency: "USD",
+      description: "Test",
+      idempotencyKey: "idem_001",
+    });
+    const second = await stripeAdapter.charge({
+      amountCents: 500,
+      currency: "USD",
+      description: "Test",
+      idempotencyKey: "idem_001",
+    });
     expect(first.chargeId).toBe(second.chargeId);
   });
 
   it("rejects charges below minimum amount", async () => {
-    await expect(stripeAdapter.charge({ amountCents: 10, currency: "USD", description: "Too small", idempotencyKey: "small_001" })).rejects.toThrow();
+    await expect(
+      stripeAdapter.charge({
+        amountCents: 10,
+        currency: "USD",
+        description: "Too small",
+        idempotencyKey: "small_001",
+      })
+    ).rejects.toThrow();
   });
 
   it("creates a subscription", async () => {
-    const result = await stripeAdapter.createSubscription({ customerId: "cus_test", priceId: "price_pro" });
+    const result = await stripeAdapter.createSubscription({
+      customerId: "cus_test",
+      priceId: "price_pro",
+    });
     expect(result.subscriptionId).toMatch(/^sub_/);
     expect(result.status).toBe("active");
     expect(result.currentPeriodEnd).toBeInstanceOf(Date);
   });
 
   it("cancels a subscription", async () => {
-    const sub = await stripeAdapter.createSubscription({ customerId: "cus_test", priceId: "price_basic" });
+    const sub = await stripeAdapter.createSubscription({
+      customerId: "cus_test",
+      priceId: "price_basic",
+    });
     const canceled = await stripeAdapter.cancelSubscription(sub.subscriptionId);
     expect(canceled.status).toBe("canceled");
   });
@@ -97,38 +128,65 @@ describe("Stripe Adapter", () => {
   it("verifies a webhook signature", () => {
     const secret = "whsec_test_secret";
     const payload = JSON.stringify({ type: "payment_intent.succeeded" });
-    const hmac = require("crypto").createHmac("sha256", secret).update(payload).digest("hex");
+    const hmac = require("crypto")
+      .createHmac("sha256", secret)
+      .update(payload)
+      .digest("hex");
     const valid = stripeAdapter.verifyWebhook(payload, `v1=${hmac}`, secret);
     expect(valid).toBe(true);
   });
 
   it("rejects invalid webhook signatures", () => {
-    const valid = stripeAdapter.verifyWebhook("payload", "v1=invalidsig", "secret");
+    const valid = stripeAdapter.verifyWebhook(
+      "payload",
+      "v1=invalidsig",
+      "secret"
+    );
     expect(valid).toBe(false);
   });
 
   it("creates a payout", async () => {
-    const result = await stripeAdapter.createPayout({ accountId: "acct_test", amountCents: 5000, currency: "USD", description: "Creator payout" });
+    const result = await stripeAdapter.createPayout({
+      accountId: "acct_test",
+      amountCents: 5000,
+      currency: "USD",
+      description: "Creator payout",
+    });
     expect(result.payoutId).toMatch(/^po_/);
     expect(result.status).toBe("pending");
   });
 
   it("rejects payouts below minimum", async () => {
-    await expect(stripeAdapter.createPayout({ accountId: "acct_test", amountCents: 50, currency: "USD", description: "Too small" })).rejects.toThrow();
+    await expect(
+      stripeAdapter.createPayout({
+        accountId: "acct_test",
+        amountCents: 50,
+        currency: "USD",
+        description: "Too small",
+      })
+    ).rejects.toThrow();
   });
 });
 
 // ─── Test: S3 Adapter ─────────────────────────────────────────────────────────
 describe("S3 Adapter", () => {
   it("generates a presigned upload URL", async () => {
-    const result = await s3Adapter.getPresignedUploadUrl({ key: "media/test.jpg", contentType: "image/jpeg", sizeBytes: 1024 });
+    const result = await s3Adapter.getPresignedUploadUrl({
+      key: "media/test.jpg",
+      contentType: "image/jpeg",
+      sizeBytes: 1024,
+    });
     expect(result.uploadUrl).toContain("s3");
     expect(result.key).toBe("media/test.jpg");
     expect(result.expiresAt).toBeInstanceOf(Date);
   });
 
   it("confirms an upload and stores metadata", async () => {
-    const result = await s3Adapter.confirmUpload("media/confirmed.jpg", 2048, "image/jpeg");
+    const result = await s3Adapter.confirmUpload(
+      "media/confirmed.jpg",
+      2048,
+      "image/jpeg"
+    );
     expect(result.key).toBe("media/confirmed.jpg");
     expect(result.url).toContain("confirmed.jpg");
     expect(result.etag).toBeTruthy();
@@ -212,7 +270,10 @@ describe("CSRF Protection", () => {
 
   it("rejects an invalid token", () => {
     csrfProtection.generateToken("session_003");
-    const valid = csrfProtection.validateToken("session_003", "invalid_token_here");
+    const valid = csrfProtection.validateToken(
+      "session_003",
+      "invalid_token_here"
+    );
     expect(valid).toBe(false);
   });
 
@@ -227,7 +288,9 @@ describe("CSRF Protection", () => {
 // ─── Test: Input Validator ────────────────────────────────────────────────────
 describe("Input Validator", () => {
   it("strips XSS from text", () => {
-    const result = inputValidator.sanitizeText("<script>alert('xss')</script>Hello");
+    const result = inputValidator.sanitizeText(
+      "<script>alert('xss')</script>Hello"
+    );
     expect(result).not.toContain("<script>");
     expect(result).toContain("Hello");
   });
@@ -245,7 +308,11 @@ describe("Input Validator", () => {
   });
 
   it("validates EVM wallet addresses", () => {
-    expect(inputValidator.isValidWalletAddress("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")).toBe(true);
+    expect(
+      inputValidator.isValidWalletAddress(
+        "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+      )
+    ).toBe(true);
     expect(inputValidator.isValidWalletAddress("0xinvalid")).toBe(false);
   });
 
@@ -256,7 +323,9 @@ describe("Input Validator", () => {
   });
 
   it("detects SQL injection attempts", () => {
-    expect(inputValidator.detectSQLInjection("'; DROP TABLE users; --")).toBe(true);
+    expect(inputValidator.detectSQLInjection("'; DROP TABLE users; --")).toBe(
+      true
+    );
     expect(inputValidator.detectSQLInjection("normal text")).toBe(false);
   });
 
@@ -266,7 +335,10 @@ describe("Input Validator", () => {
   });
 
   it("validates and sanitizes with threat reporting", () => {
-    const result = inputValidator.validateAndSanitize("<script>xss</script>Hello", { checkSQLi: true });
+    const result = inputValidator.validateAndSanitize(
+      "<script>xss</script>Hello",
+      { checkSQLi: true }
+    );
     expect(result.threats).toContain("xss");
     expect(result.safe).not.toContain("<script>");
   });
@@ -279,19 +351,44 @@ describe("Fraud Detector", () => {
   });
 
   it("accumulates fraud score from signals", () => {
-    fraudDetector.recordSignal({ userId: 88002, signalType: "suspicious_login", severity: "medium", details: {} });
+    fraudDetector.recordSignal({
+      userId: 88002,
+      signalType: "suspicious_login",
+      severity: "medium",
+      details: {},
+    });
     expect(fraudDetector.getUserScore(88002)).toBe(15);
   });
 
   it("identifies high-risk users at score >= 60", () => {
-    fraudDetector.recordSignal({ userId: 88003, signalType: "fraud_1", severity: "critical", details: {} });
-    fraudDetector.recordSignal({ userId: 88003, signalType: "fraud_2", severity: "high", details: {} });
+    fraudDetector.recordSignal({
+      userId: 88003,
+      signalType: "fraud_1",
+      severity: "critical",
+      details: {},
+    });
+    fraudDetector.recordSignal({
+      userId: 88003,
+      signalType: "fraud_2",
+      severity: "high",
+      details: {},
+    });
     expect(fraudDetector.isHighRisk(88003)).toBe(true);
   });
 
   it("blocks payments for high-risk users", () => {
-    fraudDetector.recordSignal({ userId: 88004, signalType: "fraud_1", severity: "critical", details: {} });
-    fraudDetector.recordSignal({ userId: 88004, signalType: "fraud_2", severity: "high", details: {} });
+    fraudDetector.recordSignal({
+      userId: 88004,
+      signalType: "fraud_1",
+      severity: "critical",
+      details: {},
+    });
+    fraudDetector.recordSignal({
+      userId: 88004,
+      signalType: "fraud_2",
+      severity: "high",
+      details: {},
+    });
     const result = fraudDetector.checkPayment(88004, 1000, "1.2.3.4");
     expect(result.allowed).toBe(false);
   });
@@ -303,7 +400,12 @@ describe("Fraud Detector", () => {
 
   it("caps fraud score at 100", () => {
     for (let i = 0; i < 5; i++) {
-      fraudDetector.recordSignal({ userId: 88006, signalType: `fraud_${i}`, severity: "critical", details: {} });
+      fraudDetector.recordSignal({
+        userId: 88006,
+        signalType: `fraud_${i}`,
+        severity: "critical",
+        details: {},
+      });
     }
     expect(fraudDetector.getUserScore(88006)).toBeLessThanOrEqual(100);
   });
@@ -355,7 +457,9 @@ describe("Social Graph Layer", () => {
     const userId = 1011;
     socialGraphLayer.recordEngagement(userId, "like");
     socialGraphLayer.recordEngagement(userId, "share");
-    expect(socialGraphLayer.getOrCreate(userId).reputationScore).toBeGreaterThan(0);
+    expect(
+      socialGraphLayer.getOrCreate(userId).reputationScore
+    ).toBeGreaterThan(0);
   });
 
   it("returns followers and following lists", () => {
@@ -372,14 +476,23 @@ describe("Social Graph Layer", () => {
 // ─── Test: Content Layer ──────────────────────────────────────────────────────
 describe("Content Layer", () => {
   it("registers content and increments author post count", () => {
-    const node = contentLayer.register({ contentId: "post_001", contentType: "post", authorId: 2001, tags: ["crypto", "web3"] });
+    const node = contentLayer.register({
+      contentId: "post_001",
+      contentType: "post",
+      authorId: 2001,
+      tags: ["crypto", "web3"],
+    });
     expect(node.contentId).toBe("post_001");
     expect(node.authorId).toBe(2001);
     expect(node.likesCount).toBe(0);
   });
 
   it("records likes and updates engagement score", () => {
-    contentLayer.register({ contentId: "post_002", contentType: "post", authorId: 2002 });
+    contentLayer.register({
+      contentId: "post_002",
+      contentType: "post",
+      authorId: 2002,
+    });
     contentLayer.recordLike("post_002", 2003);
     contentLayer.recordLike("post_002", 2004);
     const content = (contentLayer as any)._contentLayer?.get("post_002");
@@ -388,20 +501,35 @@ describe("Content Layer", () => {
   });
 
   it("records views and calculates engagement rate", () => {
-    contentLayer.register({ contentId: "post_003", contentType: "post", authorId: 2005 });
+    contentLayer.register({
+      contentId: "post_003",
+      contentType: "post",
+      authorId: 2005,
+    });
     for (let i = 0; i < 100; i++) contentLayer.recordView("post_003", 2000 + i);
     for (let i = 0; i < 10; i++) contentLayer.recordLike("post_003", 3000 + i);
   });
 
   it("auto-flags content after 5 reports", () => {
-    contentLayer.register({ contentId: "post_flag_001", contentType: "post", authorId: 2006 });
-    for (let i = 0; i < 5; i++) contentLayer.flagForModeration("post_flag_001", "spam");
+    contentLayer.register({
+      contentId: "post_flag_001",
+      contentType: "post",
+      authorId: 2006,
+    });
+    for (let i = 0; i < 5; i++)
+      contentLayer.flagForModeration("post_flag_001", "spam");
   });
 
   it("records revenue and propagates to creator earnings", () => {
-    contentLayer.register({ contentId: "post_rev_001", contentType: "post", authorId: 2007 });
+    contentLayer.register({
+      contentId: "post_rev_001",
+      contentType: "post",
+      authorId: 2007,
+    });
     contentLayer.recordRevenue("post_rev_001", 5000);
-    expect(socialGraphLayer.getOrCreate(2007).totalEarningsCents).toBeGreaterThan(0);
+    expect(
+      socialGraphLayer.getOrCreate(2007).totalEarningsCents
+    ).toBeGreaterThan(0);
   });
 });
 
@@ -414,9 +542,14 @@ describe("Economy Layer", () => {
   });
 
   it("processes a subscription payment with fee deduction", () => {
-    const tx = economyLayer.processSubscriptionPayment(3002, 3003, 999, "ch_test_001");
+    const tx = economyLayer.processSubscriptionPayment(
+      3002,
+      3003,
+      999,
+      "ch_test_001"
+    );
     expect(tx.status).toBe("completed");
-    expect(tx.feeCents).toBe(Math.round(999 * 0.10));
+    expect(tx.feeCents).toBe(Math.round(999 * 0.1));
     expect(tx.netCents).toBe(999 - tx.feeCents);
   });
 
@@ -727,34 +860,54 @@ describe("Subscription Ledger", () => {
 // ─── Test: Payout Ledger ──────────────────────────────────────────────────────
 describe("Payout Ledger", () => {
   it("records an earning with platform fee deduction", () => {
-    const earning = payoutLedger.recordEarning({ creatorId: 11001, source: "subscription", grossAmountCents: 1000 });
-    expect(earning.platformFeeCents).toBe(Math.round(1000 * 0.10));
+    const earning = payoutLedger.recordEarning({
+      creatorId: 11001,
+      source: "subscription",
+      grossAmountCents: 1000,
+    });
+    expect(earning.platformFeeCents).toBe(Math.round(1000 * 0.1));
     expect(earning.netAmountCents).toBe(1000 - earning.platformFeeCents);
     expect(earning.status).toBe("pending");
   });
 
   it("holds earnings for 7 days before making available", () => {
-    const earning = payoutLedger.recordEarning({ creatorId: 11002, source: "tip", grossAmountCents: 500 });
+    const earning = payoutLedger.recordEarning({
+      creatorId: 11002,
+      source: "tip",
+      grossAmountCents: 500,
+    });
     expect(earning.status).toBe("pending");
     // Balance should be 0 while pending
     expect(payoutLedger.getAvailableBalance(11002)).toBe(0);
   });
 
   it("shows pending balance for held earnings", () => {
-    payoutLedger.recordEarning({ creatorId: 11003, source: "nft_sale", grossAmountCents: 2000 });
+    payoutLedger.recordEarning({
+      creatorId: 11003,
+      source: "nft_sale",
+      grossAmountCents: 2000,
+    });
     const pending = payoutLedger.getPendingBalance(11003);
     expect(pending).toBeGreaterThan(0);
   });
 
   it("rejects payout requests below minimum", async () => {
-    payoutLedger.recordEarning({ creatorId: 11004, source: "tip", grossAmountCents: 100 });
+    payoutLedger.recordEarning({
+      creatorId: 11004,
+      source: "tip",
+      grossAmountCents: 100,
+    });
     const result = await payoutLedger.requestPayout(11004, "acct_test");
     expect(result.success).toBe(false);
     expect(result.reason).toContain("Minimum payout");
   });
 
   it("generates a creator statement", () => {
-    payoutLedger.recordEarning({ creatorId: 11005, source: "subscription", grossAmountCents: 999 });
+    payoutLedger.recordEarning({
+      creatorId: 11005,
+      source: "subscription",
+      grossAmountCents: 999,
+    });
     const statement = payoutLedger.getCreatorStatement(11005);
     expect(statement.earnings.length).toBeGreaterThan(0);
     expect(statement.pendingBalance).toBeGreaterThan(0);
@@ -782,7 +935,10 @@ describe("Ad Revenue Engine", () => {
       budgetCents: 50000,
       cpmCents: 1000,
     });
-    const impression = adRevenueEngine.recordImpression({ adId: campaign.id, publisherId: 12003 });
+    const impression = adRevenueEngine.recordImpression({
+      adId: campaign.id,
+      publisherId: 12003,
+    });
     expect(impression).not.toBeNull();
     expect(impression!.revenueCents).toBe(1); // 1000 / 1000
   });
@@ -796,7 +952,10 @@ describe("Ad Revenue Engine", () => {
     });
     adRevenueEngine.recordImpression({ adId: campaign.id, publisherId: 12005 });
     adRevenueEngine.recordImpression({ adId: campaign.id, publisherId: 12005 });
-    const third = adRevenueEngine.recordImpression({ adId: campaign.id, publisherId: 12005 });
+    const third = adRevenueEngine.recordImpression({
+      adId: campaign.id,
+      publisherId: 12005,
+    });
     expect(third).toBeNull();
   });
 
@@ -807,7 +966,10 @@ describe("Ad Revenue Engine", () => {
       budgetCents: 100000,
       cpmCents: 500,
     });
-    const impression = adRevenueEngine.recordImpression({ adId: campaign.id, publisherId: 12007 });
+    const impression = adRevenueEngine.recordImpression({
+      adId: campaign.id,
+      publisherId: 12007,
+    });
     if (impression) {
       adRevenueEngine.recordClick(impression.id);
       adRevenueEngine.recordConversion(impression.id);
@@ -821,9 +983,15 @@ describe("Ad Revenue Engine", () => {
 // ─── Test: Affiliate Engine ───────────────────────────────────────────────────
 describe("Affiliate Engine", () => {
   it("creates an affiliate link", () => {
-    const link = affiliateEngine.createLink(13001, "https://example.com/product", "prod_001");
+    const link = affiliateEngine.createLink(
+      13001,
+      "https://example.com/product",
+      "prod_001"
+    );
     expect(link.id).toMatch(/^aff_/);
-    expect(link.commissionPercent).toBe(affiliateEngine.DEFAULT_COMMISSION_PERCENT);
+    expect(link.commissionPercent).toBe(
+      affiliateEngine.DEFAULT_COMMISSION_PERCENT
+    );
   });
 
   it("tracks clicks on affiliate links", () => {
@@ -837,7 +1005,9 @@ describe("Affiliate Engine", () => {
   it("records a conversion and calculates commission", () => {
     const link = affiliateEngine.createLink(13003, "https://example.com/sale");
     const result = affiliateEngine.recordConversion(link.id, 10000);
-    expect(result.commissionCents).toBe(Math.round(10000 * affiliateEngine.DEFAULT_COMMISSION_PERCENT));
+    expect(result.commissionCents).toBe(
+      Math.round(10000 * affiliateEngine.DEFAULT_COMMISSION_PERCENT)
+    );
   });
 
   it("calculates conversion rate", () => {
@@ -853,14 +1023,21 @@ describe("Affiliate Engine", () => {
 // ─── Test: A/B Testing Framework ─────────────────────────────────────────────
 describe("A/B Testing Framework", () => {
   it("creates and starts an experiment", () => {
-    const exp = abTestingFramework.createExperiment("exp_001", "Feed Algorithm Test", ["control", "variant_a", "variant_b"]);
+    const exp = abTestingFramework.createExperiment(
+      "exp_001",
+      "Feed Algorithm Test",
+      ["control", "variant_a", "variant_b"]
+    );
     expect(exp.status).toBe("draft");
     const started = abTestingFramework.startExperiment("exp_001");
     expect(started).toBe(true);
   });
 
   it("assigns users deterministically", () => {
-    abTestingFramework.createExperiment("exp_002", "Button Color Test", ["blue", "green"]);
+    abTestingFramework.createExperiment("exp_002", "Button Color Test", [
+      "blue",
+      "green",
+    ]);
     abTestingFramework.startExperiment("exp_002");
     const v1 = abTestingFramework.assignUser("exp_002", 20001);
     const v2 = abTestingFramework.assignUser("exp_002", 20001);
@@ -868,7 +1045,10 @@ describe("A/B Testing Framework", () => {
   });
 
   it("records metrics per variant", () => {
-    abTestingFramework.createExperiment("exp_003", "Onboarding Flow", ["old", "new"]);
+    abTestingFramework.createExperiment("exp_003", "Onboarding Flow", [
+      "old",
+      "new",
+    ]);
     abTestingFramework.startExperiment("exp_003");
     const variant = abTestingFramework.assignUser("exp_003", 20002);
     if (variant) {
@@ -880,9 +1060,15 @@ describe("A/B Testing Framework", () => {
   });
 
   it("concludes an experiment with a winner", () => {
-    abTestingFramework.createExperiment("exp_004", "Pricing Test", ["control", "discount"]);
+    abTestingFramework.createExperiment("exp_004", "Pricing Test", [
+      "control",
+      "discount",
+    ]);
     abTestingFramework.startExperiment("exp_004");
-    const concluded = abTestingFramework.concludeExperiment("exp_004", "discount");
+    const concluded = abTestingFramework.concludeExperiment(
+      "exp_004",
+      "discount"
+    );
     expect(concluded).toBe(true);
   });
 });
@@ -958,7 +1144,13 @@ describe("Health Checker", () => {
 // ─── Test: Audit Logger ───────────────────────────────────────────────────────
 describe("Audit Logger", () => {
   it("records audit entries", () => {
-    auditLogger.log({ service: "test", action: "test_action", metadata: { key: "value" }, success: true, durationMs: 5 });
+    auditLogger.log({
+      service: "test",
+      action: "test_action",
+      metadata: { key: "value" },
+      success: true,
+      durationMs: 5,
+    });
     const recent = auditLogger.getRecentLogs(10);
     expect(recent.length).toBeGreaterThan(0);
     const last = recent[recent.length - 1]!;
@@ -967,7 +1159,14 @@ describe("Audit Logger", () => {
   });
 
   it("filters logs by actor", () => {
-    auditLogger.log({ service: "test", action: "actor_action", actorId: 99999, metadata: {}, success: true, durationMs: 1 });
+    auditLogger.log({
+      service: "test",
+      action: "actor_action",
+      actorId: 99999,
+      metadata: {},
+      success: true,
+      durationMs: 1,
+    });
     const logs = auditLogger.getLogsByActor(99999);
     expect(logs.length).toBeGreaterThan(0);
     expect(logs.every(l => l.actorId === 99999)).toBe(true);
@@ -996,13 +1195,21 @@ describe("Realtime Adapter", () => {
 
   it("pushes a notification and marks as delivered for online users", async () => {
     realtimeAdapter.registerConnection(50003, "conn_notif");
-    const result = await realtimeAdapter.push({ type: "test_event", recipientId: 50003, data: { msg: "hello" } });
+    const result = await realtimeAdapter.push({
+      type: "test_event",
+      recipientId: 50003,
+      data: { msg: "hello" },
+    });
     expect(result.delivered).toBe(true);
     expect(result.queued).toBe(false);
   });
 
   it("queues notifications for offline users", async () => {
-    const result = await realtimeAdapter.push({ type: "test_event", recipientId: 99998, data: { msg: "queued" } });
+    const result = await realtimeAdapter.push({
+      type: "test_event",
+      recipientId: 99998,
+      data: { msg: "queued" },
+    });
     expect(result.delivered).toBe(false);
     expect(result.queued).toBe(true);
     const pending = realtimeAdapter.getPendingNotifications(99998);
@@ -1010,7 +1217,11 @@ describe("Realtime Adapter", () => {
   });
 
   it("marks notifications as delivered", async () => {
-    await realtimeAdapter.push({ type: "test_event", recipientId: 99997, data: {} });
+    await realtimeAdapter.push({
+      type: "test_event",
+      recipientId: 99997,
+      data: {},
+    });
     const pending = realtimeAdapter.getPendingNotifications(99997);
     if (pending.length > 0) {
       const marked = realtimeAdapter.markDelivered(pending[0]!.id);
@@ -1029,14 +1240,26 @@ describe("Platform Fee Engine", () => {
       currency: "USD",
       actorId: 70001,
     });
-    expect(record.feePercent).toBe(0.10);
-    expect(record.feeAmountCents).toBe(Math.round(999 * 0.10));
+    expect(record.feePercent).toBe(0.1);
+    expect(record.feeAmountCents).toBe(Math.round(999 * 0.1));
     expect(record.netAmountCents).toBe(999 - record.feeAmountCents);
   });
 
   it("tracks total revenue across transaction types", () => {
-    platformFeeEngine.record({ transactionId: "tx_fee_002", transactionType: "tip", grossAmountCents: 500, currency: "USD", actorId: 70002 });
-    platformFeeEngine.record({ transactionId: "tx_fee_003", transactionType: "nft_sale", grossAmountCents: 10000, currency: "USD", actorId: 70003 });
+    platformFeeEngine.record({
+      transactionId: "tx_fee_002",
+      transactionType: "tip",
+      grossAmountCents: 500,
+      currency: "USD",
+      actorId: 70002,
+    });
+    platformFeeEngine.record({
+      transactionId: "tx_fee_003",
+      transactionType: "nft_sale",
+      grossAmountCents: 10000,
+      currency: "USD",
+      actorId: 70003,
+    });
     const total = platformFeeEngine.getTotalRevenue();
     expect(total).toBeGreaterThan(0);
   });

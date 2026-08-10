@@ -3,32 +3,111 @@
  * Dynamic pricing, fee routing, treasury accumulation, profit sharing, yield distribution
  */
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure, adminProcedure } from "./_core/trpc";
+import {
+  router,
+  publicProcedure,
+  protectedProcedure,
+  adminProcedure,
+} from "./_core/trpc";
 import { getDb } from "./db";
 import { invokeLLM } from "./_core/llm";
 
 // ─── FEE SCHEDULE ─────────────────────────────────────────────────────────────
 export const FEE_SCHEDULE = {
-  marketplace_sale:    { rate: 0.025, label: "Marketplace Sale", treasury: 0.4, creator: 0.4, stakers: 0.2 },
-  nft_mint:            { rate: 0.05,  label: "NFT Mint",         treasury: 0.5, creator: 0.3, stakers: 0.2 },
-  nft_trade:           { rate: 0.025, label: "NFT Trade",        treasury: 0.4, creator: 0.4, stakers: 0.2 },
-  token_swap:          { rate: 0.003, label: "Token Swap",       treasury: 0.5, creator: 0.0, stakers: 0.5 },
-  stream_gift:         { rate: 0.1,   label: "Stream Gift",      treasury: 0.1, creator: 0.7, stakers: 0.2 },
-  subscription:        { rate: 0.15,  label: "Subscription",     treasury: 0.2, creator: 0.6, stakers: 0.2 },
-  premium_post:        { rate: 0.1,   label: "Premium Post",     treasury: 0.2, creator: 0.6, stakers: 0.2 },
-  tournament_entry:    { rate: 0.05,  label: "Tournament Entry", treasury: 0.3, creator: 0.0, stakers: 0.3, prize_pool: 0.4 },
-  course_purchase:     { rate: 0.15,  label: "Course Purchase",  treasury: 0.2, creator: 0.6, stakers: 0.2 },
-  charity_donation:    { rate: 0.02,  label: "Charity Donation", treasury: 0.5, creator: 0.0, stakers: 0.0, charity: 0.5 },
-  ai_service:          { rate: 0.05,  label: "AI Service",       treasury: 0.6, creator: 0.0, stakers: 0.4 },
-  advertising:         { rate: 0.2,   label: "Advertising",      treasury: 0.3, creator: 0.5, stakers: 0.2 },
+  marketplace_sale: {
+    rate: 0.025,
+    label: "Marketplace Sale",
+    treasury: 0.4,
+    creator: 0.4,
+    stakers: 0.2,
+  },
+  nft_mint: {
+    rate: 0.05,
+    label: "NFT Mint",
+    treasury: 0.5,
+    creator: 0.3,
+    stakers: 0.2,
+  },
+  nft_trade: {
+    rate: 0.025,
+    label: "NFT Trade",
+    treasury: 0.4,
+    creator: 0.4,
+    stakers: 0.2,
+  },
+  token_swap: {
+    rate: 0.003,
+    label: "Token Swap",
+    treasury: 0.5,
+    creator: 0.0,
+    stakers: 0.5,
+  },
+  stream_gift: {
+    rate: 0.1,
+    label: "Stream Gift",
+    treasury: 0.1,
+    creator: 0.7,
+    stakers: 0.2,
+  },
+  subscription: {
+    rate: 0.15,
+    label: "Subscription",
+    treasury: 0.2,
+    creator: 0.6,
+    stakers: 0.2,
+  },
+  premium_post: {
+    rate: 0.1,
+    label: "Premium Post",
+    treasury: 0.2,
+    creator: 0.6,
+    stakers: 0.2,
+  },
+  tournament_entry: {
+    rate: 0.05,
+    label: "Tournament Entry",
+    treasury: 0.3,
+    creator: 0.0,
+    stakers: 0.3,
+    prize_pool: 0.4,
+  },
+  course_purchase: {
+    rate: 0.15,
+    label: "Course Purchase",
+    treasury: 0.2,
+    creator: 0.6,
+    stakers: 0.2,
+  },
+  charity_donation: {
+    rate: 0.02,
+    label: "Charity Donation",
+    treasury: 0.5,
+    creator: 0.0,
+    stakers: 0.0,
+    charity: 0.5,
+  },
+  ai_service: {
+    rate: 0.05,
+    label: "AI Service",
+    treasury: 0.6,
+    creator: 0.0,
+    stakers: 0.4,
+  },
+  advertising: {
+    rate: 0.2,
+    label: "Advertising",
+    treasury: 0.3,
+    creator: 0.5,
+    stakers: 0.2,
+  },
 };
 
 // ─── DYNAMIC PRICING FACTORS ──────────────────────────────────────────────────
 const DEMAND_MULTIPLIERS = {
-  low:    0.8,
+  low: 0.8,
   normal: 1.0,
-  high:   1.2,
-  surge:  1.5,
+  high: 1.2,
+  surge: 1.5,
 };
 
 async function ensureCoinEconomicsTables() {
@@ -86,7 +165,9 @@ async function ensureCoinEconomicsTables() {
   // Seed treasury if empty
   const rows = await db.execute(`SELECT COUNT(*) as cnt FROM coin_treasury`);
   if ((rows as any).rows?.[0]?.cnt === 0) {
-    await db.execute(`INSERT INTO coin_treasury (balance, total_accumulated, total_distributed, updated_at) VALUES (0, 0, 0, ${Date.now()})`);
+    await db.execute(
+      `INSERT INTO coin_treasury (balance, total_accumulated, total_distributed, updated_at) VALUES (0, 0, 0, ${Date.now()})`
+    );
   }
 }
 
@@ -101,8 +182,11 @@ export const coinEconomicsRouter = router({
         const rows = await db.execute(
           `SELECT demand_level FROM coin_price_history WHERE token = 'SKY444' ORDER BY recorded_at DESC LIMIT 1`
         );
-        demandLevel = ((rows as any).rows?.[0]?.demand_level ?? "normal") as keyof typeof DEMAND_MULTIPLIERS;
-      } catch { /* use default */ }
+        demandLevel = ((rows as any).rows?.[0]?.demand_level ??
+          "normal") as keyof typeof DEMAND_MULTIPLIERS;
+      } catch {
+        /* use default */
+      }
     }
     const multiplier = DEMAND_MULTIPLIERS[demandLevel];
     return {
@@ -118,8 +202,10 @@ export const coinEconomicsRouter = router({
           treasury: fee.treasury,
           creator: fee.creator,
           stakers: fee.stakers,
-          ...(("prize_pool" in fee) ? { prize_pool: (fee as any).prize_pool } : {}),
-          ...(("charity" in fee) ? { charity: (fee as any).charity } : {}),
+          ...("prize_pool" in fee
+            ? { prize_pool: (fee as any).prize_pool }
+            : {}),
+          ...("charity" in fee ? { charity: (fee as any).charity } : {}),
         },
       })),
     };
@@ -129,7 +215,13 @@ export const coinEconomicsRouter = router({
   getTreasury: publicProcedure.query(async () => {
     await ensureCoinEconomicsTables();
     const db = await getDb();
-    if (!db) return { balance: 0, totalAccumulated: 0, totalDistributed: 0, lastDistribution: null };
+    if (!db)
+      return {
+        balance: 0,
+        totalAccumulated: 0,
+        totalDistributed: 0,
+        lastDistribution: null,
+      };
     try {
       const rows = await db.execute(`SELECT * FROM coin_treasury LIMIT 1`);
       const t = (rows as any).rows?.[0] ?? {};
@@ -142,31 +234,41 @@ export const coinEconomicsRouter = router({
         balance: parseFloat(t.balance ?? "0"),
         totalAccumulated: parseFloat(t.total_accumulated ?? "0"),
         totalDistributed: parseFloat(t.total_distributed ?? "0"),
-        lastDistribution: t.last_distribution ? parseInt(t.last_distribution) : null,
+        lastDistribution: t.last_distribution
+          ? parseInt(t.last_distribution)
+          : null,
         revenue30d: parseFloat(fee30.total_30d ?? "0"),
         treasuryInflow30d: parseFloat(fee30.treasury_30d ?? "0"),
         feeEvents30d: parseInt(fee30.events_30d ?? "0"),
       };
     } catch {
-      return { balance: 0, totalAccumulated: 0, totalDistributed: 0, lastDistribution: null };
+      return {
+        balance: 0,
+        totalAccumulated: 0,
+        totalDistributed: 0,
+        lastDistribution: null,
+      };
     }
   }),
 
   // Record a fee event (called internally by other routers)
   recordFeeEvent: protectedProcedure
-    .input(z.object({
-      eventType: z.string(),
-      grossAmount: z.number(),
-      creatorId: z.number().optional(),
-      referenceId: z.string().optional(),
-      token: z.string().default("SKY444"),
-    }))
+    .input(
+      z.object({
+        eventType: z.string(),
+        grossAmount: z.number(),
+        creatorId: z.number().optional(),
+        referenceId: z.string().optional(),
+        token: z.string().default("SKY444"),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       await ensureCoinEconomicsTables();
       const db = await getDb();
       if (!db) return { success: false };
 
-      const feeConfig = FEE_SCHEDULE[input.eventType as keyof typeof FEE_SCHEDULE];
+      const feeConfig =
+        FEE_SCHEDULE[input.eventType as keyof typeof FEE_SCHEDULE];
       if (!feeConfig) return { success: false, error: "Unknown event type" };
 
       const feeAmount = input.grossAmount * feeConfig.rate;
@@ -187,13 +289,28 @@ export const coinEconomicsRouter = router({
       // Credit creator if applicable
       if (creatorShare > 0 && input.creatorId) {
         try {
-          const { upsertTokenBalance, createTransaction } = await import("./db");
+          const { upsertTokenBalance, createTransaction } =
+            await import("./db");
           await upsertTokenBalance(input.creatorId, input.token, creatorShare);
-          await createTransaction({ userId: input.creatorId, token: input.token, amount: creatorShare, type: "credit", description: `Creator revenue: ${feeConfig.label}` });
-        } catch { /* ignore */ }
+          await createTransaction({
+            userId: input.creatorId,
+            token: input.token,
+            amount: creatorShare,
+            type: "credit",
+            description: `Creator revenue: ${feeConfig.label}`,
+          });
+        } catch {
+          /* ignore */
+        }
       }
 
-      return { success: true, feeAmount, treasuryShare, creatorShare, stakerShare };
+      return {
+        success: true,
+        feeAmount,
+        treasuryShare,
+        creatorShare,
+        stakerShare,
+      };
     }),
 
   // Get fee revenue analytics
@@ -202,7 +319,12 @@ export const coinEconomicsRouter = router({
     .query(async ({ input }) => {
       await ensureCoinEconomicsTables();
       const db = await getDb();
-      if (!db) return { byType: [], dailyRevenue: [], totals: { fees: 0, treasury: 0, creators: 0, stakers: 0 } };
+      if (!db)
+        return {
+          byType: [],
+          dailyRevenue: [],
+          totals: { fees: 0, treasury: 0, creators: 0, stakers: 0 },
+        };
       try {
         const since = Date.now() - input.days * 24 * 60 * 60 * 1000;
         const byType = await db.execute(
@@ -232,7 +354,11 @@ export const coinEconomicsRouter = router({
           dailyRevenue: [],
         };
       } catch {
-        return { byType: [], dailyRevenue: [], totals: { fees: 0, treasury: 0, creators: 0, stakers: 0 } };
+        return {
+          byType: [],
+          dailyRevenue: [],
+          totals: { fees: 0, treasury: 0, creators: 0, stakers: 0 },
+        };
       }
     }),
 
@@ -249,19 +375,33 @@ export const coinEconomicsRouter = router({
           `SELECT user_id, amount FROM staking_positions WHERE status = 'active' ORDER BY amount DESC`
         );
         const rows = (stakers as any).rows ?? [];
-        if (rows.length === 0) return { success: false, error: "No active stakers" };
+        if (rows.length === 0)
+          return { success: false, error: "No active stakers" };
 
-        const totalStaked = rows.reduce((sum: number, r: any) => sum + parseFloat(r.amount ?? "0"), 0);
+        const totalStaked = rows.reduce(
+          (sum: number, r: any) => sum + parseFloat(r.amount ?? "0"),
+          0
+        );
         let distributed = 0;
         for (const staker of rows) {
-          const share = (parseFloat(staker.amount ?? "0") / totalStaked) * input.amount;
+          const share =
+            (parseFloat(staker.amount ?? "0") / totalStaked) * input.amount;
           if (share < 0.001) continue;
           try {
-            const { upsertTokenBalance, createTransaction } = await import("./db");
+            const { upsertTokenBalance, createTransaction } =
+              await import("./db");
             await upsertTokenBalance(staker.user_id, "SKY444", share);
-            await createTransaction({ userId: staker.user_id, token: "SKY444", amount: share, type: "credit", description: `Staking profit distribution epoch ${input.epoch}` });
+            await createTransaction({
+              userId: staker.user_id,
+              token: "SKY444",
+              amount: share,
+              type: "credit",
+              description: `Staking profit distribution epoch ${input.epoch}`,
+            });
             distributed += share;
-          } catch { /* ignore individual failures */ }
+          } catch {
+            /* ignore individual failures */
+          }
         }
         // Record distribution
         await db.execute(
@@ -280,13 +420,19 @@ export const coinEconomicsRouter = router({
 
   // AI-powered price prediction
   getPricePrediction: publicProcedure
-    .input(z.object({ token: z.string().default("SKY444"), horizon: z.enum(["1d", "7d", "30d", "90d"]).default("30d") }))
+    .input(
+      z.object({
+        token: z.string().default("SKY444"),
+        horizon: z.enum(["1d", "7d", "30d", "90d"]).default("30d"),
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
           {
             role: "system",
-            content: "You are a crypto price analyst. Provide concise, data-driven price analysis. Always include specific price targets.",
+            content:
+              "You are a crypto price analyst. Provide concise, data-driven price analysis. Always include specific price targets.",
           },
           {
             role: "user",
@@ -295,7 +441,8 @@ export const coinEconomicsRouter = router({
         ],
       });
       return {
-        prediction: response.choices?.[0]?.message?.content ?? "Prediction unavailable",
+        prediction:
+          response.choices?.[0]?.message?.content ?? "Prediction unavailable",
         token: input.token,
         horizon: input.horizon,
         currentPrice: 0.012,
@@ -321,19 +468,29 @@ export const coinEconomicsRouter = router({
         participants: parseInt(r.participants ?? "0"),
         createdAt: parseInt(r.created_at ?? "0"),
       }));
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   }),
 
   // Get my earnings from platform fees
   getMyEarnings: protectedProcedure.query(async ({ ctx }) => {
     await ensureCoinEconomicsTables();
     const db = await getDb();
-    if (!db) return { creatorEarnings: 0, stakerEarnings: 0, totalEarnings: 0, breakdown: [] };
+    if (!db)
+      return {
+        creatorEarnings: 0,
+        stakerEarnings: 0,
+        totalEarnings: 0,
+        breakdown: [],
+      };
     try {
       const creatorRows = await db.execute(
         `SELECT COALESCE(SUM(creator_share), 0) as total FROM coin_fee_events WHERE creator_id = ${ctx.user.id}`
       );
-      const creatorEarnings = parseFloat((creatorRows as any).rows?.[0]?.total ?? "0");
+      const creatorEarnings = parseFloat(
+        (creatorRows as any).rows?.[0]?.total ?? "0"
+      );
       return {
         creatorEarnings,
         stakerEarnings: 0, // From distribution history
@@ -341,7 +498,12 @@ export const coinEconomicsRouter = router({
         breakdown: [],
       };
     } catch {
-      return { creatorEarnings: 0, stakerEarnings: 0, totalEarnings: 0, breakdown: [] };
+      return {
+        creatorEarnings: 0,
+        stakerEarnings: 0,
+        totalEarnings: 0,
+        breakdown: [],
+      };
     }
   }),
 });

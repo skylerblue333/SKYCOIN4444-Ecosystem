@@ -9,10 +9,15 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 type AppTheme = "dark" | "light" | "cyber";
 
-const THEMES: { id: AppTheme; label: string; icon: typeof Sun; preview: string }[] = [
-  { id: "dark",  label: "Dark",  icon: Moon, preview: "bg-zinc-900" },
-  { id: "light", label: "Light", icon: Sun,  preview: "bg-zinc-100" },
-  { id: "cyber", label: "Cyber", icon: Zap,  preview: "bg-violet-950" },
+const THEMES: {
+  id: AppTheme;
+  label: string;
+  icon: typeof Sun;
+  preview: string;
+}[] = [
+  { id: "dark", label: "Dark", icon: Moon, preview: "bg-zinc-900" },
+  { id: "light", label: "Light", icon: Sun, preview: "bg-zinc-100" },
+  { id: "cyber", label: "Cyber", icon: Zap, preview: "bg-violet-950" },
 ];
 
 /** Apply cyber accent on top of the dark class already managed by ThemeContext */
@@ -35,7 +40,10 @@ export function ThemeSwitcher({ compact = false }: ThemeSwitcherProps) {
   const { theme, toggleTheme, switchable } = useTheme();
 
   // Read extended theme (cyber) from localStorage
-  const storedExt = typeof window !== "undefined" ? localStorage.getItem("app-theme-ext") : null;
+  const storedExt =
+    typeof window !== "undefined"
+      ? localStorage.getItem("app-theme-ext")
+      : null;
   const isCyber = storedExt === "cyber";
 
   // Sync cyber accent on mount
@@ -66,7 +74,7 @@ export function ThemeSwitcher({ compact = false }: ThemeSwitcherProps) {
   if (compact) {
     return (
       <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-        {THEMES.map((th) => {
+        {THEMES.map(th => {
           const Icon = th.icon;
           return (
             <button
@@ -89,7 +97,7 @@ export function ThemeSwitcher({ compact = false }: ThemeSwitcherProps) {
 
   return (
     <div className="flex gap-2">
-      {THEMES.map((th) => {
+      {THEMES.map(th => {
         const Icon = th.icon;
         return (
           <button
@@ -101,7 +109,9 @@ export function ThemeSwitcher({ compact = false }: ThemeSwitcherProps) {
                 : "border-border hover:border-muted-foreground/50"
             }`}
           >
-            <div className={`w-8 h-8 rounded-full ${th.preview} border border-border`} />
+            <div
+              className={`w-8 h-8 rounded-full ${th.preview} border border-border`}
+            />
             <div className="flex items-center gap-1">
               <Icon className="w-3.5 h-3.5" />
               <span className="text-xs font-medium">{th.label}</span>
@@ -129,6 +139,8 @@ export function applyTheme(t: AppTheme) {
     root.classList.add("dark");
     root.style.removeProperty("--primary");
   }
-  try { localStorage.setItem("app-theme", t); } catch {}
+  try {
+    localStorage.setItem("app-theme", t);
+  } catch {}
   window.dispatchEvent(new CustomEvent("theme-change", { detail: t }));
 }

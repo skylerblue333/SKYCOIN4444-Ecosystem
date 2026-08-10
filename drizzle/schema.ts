@@ -1,5 +1,13 @@
-
-import { mysqlTable, varchar, text, int, float, boolean, timestamp, primaryKey } from "drizzle-orm/mysql-core";
+import {
+  mysqlTable,
+  varchar,
+  text,
+  int,
+  float,
+  boolean,
+  timestamp,
+  primaryKey,
+} from "drizzle-orm/mysql-core";
 import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 
@@ -14,6 +22,12 @@ export const users = mysqlTable("users", {
   balance: float("balance").default(0),
   role: varchar("role", { length: 255 }).default("user"), // admin | user
   verified: boolean("verified").default(false),
+  openId: varchar("open_id", { length: 255 }).unique(),
+  xp: int("xp").default(0), // Legacy compatibility
+  level: int("xp").default(1), // Legacy alias
+  displayName: varchar("name", { length: 255 }), // Legacy alias
+  lastSignedIn: timestamp("last_signed_in"),
+  loginMethod: varchar("login_method", { length: 255 }),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
@@ -26,6 +40,10 @@ export const posts = mysqlTable("posts", {
   media: varchar("media", { length: 255 }),
   likes: int("likes").default(0),
   comments: int("comments").default(0),
+  authorId: varchar("author_id", { length: 255 }), // Legacy compatibility
+  likeCount: int("likes").default(0), // Legacy alias
+  commentCount: int("comments").default(0), // Legacy alias
+  expiresAt: timestamp("updated_at"), // Legacy alias
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
@@ -64,7 +82,9 @@ export const products = mysqlTable("products", {
 export const orders = mysqlTable("orders", {
   id: varchar("id", { length: 255 }).primaryKey(),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
-  productId: varchar("product_id", { length: 255 }).references(() => products.id),
+  productId: varchar("product_id", { length: 255 }).references(
+    () => products.id
+  ),
   quantity: int("quantity"),
   total: float("total"),
   status: varchar("status", { length: 255 }), // pending | shipped | delivered | cancelled
@@ -75,13 +95,18 @@ export const orders = mysqlTable("orders", {
 // ============ STREAMS TABLE ============
 export const streams = mysqlTable("streams", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  streamerId: varchar("streamer_id", { length: 255 }).references(() => users.id),
+  streamerId: varchar("streamer_id", { length: 255 }).references(
+    () => users.id
+  ),
   title: varchar("title", { length: 255 }),
   description: varchar("description", { length: 255 }),
   status: varchar("status", { length: 255 }), // live | ended | scheduled
   viewers: int("viewers").default(0),
+  viewerCount: int("viewers").default(0), // Legacy alias
   hlsUrl: varchar("hls_url", { length: 255 }),
   archiveUrl: varchar("archive_url", { length: 255 }),
+  category: varchar("description", { length: 255 }), // Legacy alias
+  startedAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`), // Legacy alias
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -110,8 +135,70 @@ export const wallets = mysqlTable("wallets", {
 // ============ FOLLOWS TABLE ============
 export const follows = mysqlTable("follows", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  followerId: varchar("follower_id", { length: 255 }).references(() => users.id),
-  followingId: varchar("following_id", { length: 255 }).references(() => users.id),
+  followerId: varchar("follower_id", { length: 255 }).references(
+    () => users.id
+  ),
+  followingId: varchar("following_id", { length: 255 }).references(
+    () => users.id
+  ),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const communities = mysqlTable("communities", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: varchar("name", { length: 255 }),
+  description: text("description"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const communityMembers = mysqlTable("community_members", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  communityId: varchar("community_id", { length: 255 }).references(() => communities.id),
+  userId: varchar("user_id", { length: 255 }).references(() => users.id),
+  role: varchar("role", { length: 255 }).default("member"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const channels = mysqlTable("channels", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: varchar("name", { length: 255 }),
+  communityId: varchar("community_id", { length: 255 }).references(() => communities.id),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const stakingPositions = mysqlTable("staking_positions", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }).references(() => users.id),
+  amount: float("amount"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const marketplaceListings = mysqlTable("marketplace_listings", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  title: varchar("title", { length: 255 }),
+  price: float("price"),
+  sellerId: varchar("seller_id", { length: 255 }).references(() => users.id),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const charityProjects = mysqlTable("charity_projects", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: varchar("name", { length: 255 }),
+  goal: float("goal"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const tournaments = mysqlTable("tournaments", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: varchar("name", { length: 255 }),
+  prizePool: float("prize_pool"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const subscriptions = mysqlTable("subscriptions", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }).references(() => users.id),
+  plan: varchar("plan", { length: 255 }),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -120,6 +207,7 @@ export const notifications = mysqlTable("notifications", {
   id: varchar("id", { length: 255 }).primaryKey(),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
   type: varchar("type", { length: 255 }), // like | comment | follow | message | order
+  title: varchar("content", { length: 255 }), // Legacy alias
   content: varchar("content", { length: 255 }),
   read: boolean("read").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -129,7 +217,9 @@ export const notifications = mysqlTable("notifications", {
 export const messages = mysqlTable("messages", {
   id: varchar("id", { length: 255 }).primaryKey(),
   senderId: varchar("sender_id", { length: 255 }).references(() => users.id),
-  recipientId: varchar("recipient_id", { length: 255 }).references(() => users.id),
+  recipientId: varchar("recipient_id", { length: 255 }).references(
+    () => users.id
+  ),
   content: varchar("content", { length: 255 }),
   read: boolean("read").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -138,7 +228,9 @@ export const messages = mysqlTable("messages", {
 // ============ REVIEWS TABLE ============
 export const reviews = mysqlTable("reviews", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  productId: varchar("product_id", { length: 255 }).references(() => products.id),
+  productId: varchar("product_id", { length: 255 }).references(
+    () => products.id
+  ),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
   rating: int("rating"), // 1-5
   comment: varchar("comment", { length: 255 }),
@@ -160,7 +252,6 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
   likes: many(likes),
 }));
 
-
 // ============ AUDIT LEDGER TABLE ============
 export const auditLedger = mysqlTable("audit_ledger", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -174,12 +265,14 @@ export const auditLedger = mysqlTable("audit_ledger", {
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
-
 // ============ TOKEN BALANCES TABLE ============
 export const tokenBalances = mysqlTable("token_balances", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   tokenSymbol: varchar("token_symbol", { length: 255 }).notNull(), // BTC, ETH, SOL, DOGE, SKY444
+  token: varchar("token_symbol", { length: 255 }), // Legacy alias
   balance: float("balance").default(0),
   lockedBalance: float("locked_balance").default(0),
   stakedBalance: float("staked_balance").default(0),
@@ -189,24 +282,29 @@ export const tokenBalances = mysqlTable("token_balances", {
 // ============ USER BEHAVIOR SIGNALS TABLE ============
 export const userBehaviorSignals = mysqlTable("user_behavior_signals", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   signalType: varchar("signal_type", { length: 255 }).notNull(), // login | purchase | post | comment | follow | etc
   value: float("value").default(0),
   metadata: varchar("metadata", { length: 255 }),
+  recordedAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`), // Legacy alias
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
-
 
 // ============ DATING SYSTEM TABLES ============
 export const datingProfiles = mysqlTable("dating_profiles", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   bio: varchar("bio", { length: 255 }),
   photos: varchar("photos", { length: 255 }), // JSON array
   interests: varchar("interests", { length: 255 }), // JSON array
   location: varchar("location", { length: 255 }),
   age: int("age"),
   gender: varchar("gender", { length: 255 }),
+  occupation: varchar("location", { length: 255 }), // Legacy alias
   lookingFor: varchar("looking_for", { length: 255 }),
   verified: boolean("verified").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -214,24 +312,36 @@ export const datingProfiles = mysqlTable("dating_profiles", {
 
 export const datingMatches = mysqlTable("dating_matches", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId1: varchar("user_id_1", { length: 255 }).references(() => users.id).notNull(),
-  userId2: varchar("user_id_2", { length: 255 }).references(() => users.id).notNull(),
+  userId1: varchar("user_id_1", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
+  userId2: varchar("user_id_2", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   status: varchar("status", { length: 255 }).default("pending"), // pending | matched | rejected
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const datingLikes = mysqlTable("dating_likes", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
-  likedUserId: varchar("liked_user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
+  likedUserId: varchar("liked_user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   type: varchar("type", { length: 255 }).default("like"), // like | superlike
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const datingMessages = mysqlTable("dating_messages", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  matchId: varchar("match_id", { length: 255 }).references(() => datingMatches.id).notNull(),
-  senderId: varchar("sender_id", { length: 255 }).references(() => users.id).notNull(),
+  matchId: varchar("match_id", { length: 255 })
+    .references(() => datingMatches.id)
+    .notNull(),
+  senderId: varchar("sender_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   content: varchar("content", { length: 255 }).notNull(),
   read: boolean("read").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -239,7 +349,9 @@ export const datingMessages = mysqlTable("dating_messages", {
 
 export const datingSubscriptions = mysqlTable("dating_subscriptions", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   tier: varchar("tier", { length: 255 }).default("free"), // free | premium | vip
   expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -247,7 +359,9 @@ export const datingSubscriptions = mysqlTable("dating_subscriptions", {
 
 export const datingPreferences = mysqlTable("dating_preferences", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   minAge: int("min_age").default(18),
   maxAge: int("max_age").default(65),
   maxDistance: int("max_distance").default(50),
@@ -257,7 +371,9 @@ export const datingPreferences = mysqlTable("dating_preferences", {
 
 export const datingNotifications = mysqlTable("dating_notifications", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   type: varchar("type", { length: 255 }).notNull(), // match | message | like
   relatedUserId: varchar("related_user_id", { length: 255 }),
   read: boolean("read").default(false),
@@ -266,16 +382,24 @@ export const datingNotifications = mysqlTable("dating_notifications", {
 
 export const datingBlocks = mysqlTable("dating_blocks", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
-  blockedUserId: varchar("blocked_user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
+  blockedUserId: varchar("blocked_user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   reason: varchar("reason", { length: 255 }),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const datingReports = mysqlTable("dating_reports", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  reporterId: varchar("reporter_id", { length: 255 }).references(() => users.id).notNull(),
-  reportedUserId: varchar("reported_user_id", { length: 255 }).references(() => users.id).notNull(),
+  reporterId: varchar("reporter_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
+  reportedUserId: varchar("reported_user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   reason: varchar("reason", { length: 255 }).notNull(),
   status: varchar("status", { length: 255 }).default("pending"), // pending | reviewed | resolved
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -303,7 +427,9 @@ export const rateLimitBuckets = mysqlTable("rate_limit_buckets", {
 // ============ WALLET & TRANSACTION TABLES ============
 export const walletTransactions = mysqlTable("wallet_transactions", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  walletId: varchar("wallet_id", { length: 255 }).references(() => wallets.id).notNull(),
+  walletId: varchar("wallet_id", { length: 255 })
+    .references(() => wallets.id)
+    .notNull(),
   type: varchar("type", { length: 255 }).notNull(), // deposit | withdrawal | transfer | swap
   amount: float("amount").notNull(),
   fee: float("fee").default(0),
@@ -314,7 +440,9 @@ export const walletTransactions = mysqlTable("wallet_transactions", {
 
 export const walletAuditLog = mysqlTable("wallet_audit_log", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  walletId: varchar("wallet_id", { length: 255 }).references(() => wallets.id).notNull(),
+  walletId: varchar("wallet_id", { length: 255 })
+    .references(() => wallets.id)
+    .notNull(),
   action: varchar("action", { length: 255 }).notNull(),
   details: varchar("details", { length: 255 }),
   ipAddress: varchar("ip_address", { length: 255 }),
@@ -323,7 +451,9 @@ export const walletAuditLog = mysqlTable("wallet_audit_log", {
 
 export const custodyWallets = mysqlTable("custody_wallets", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   provider: varchar("provider", { length: 255 }).notNull(), // coinbase | kraken | etc
   externalId: varchar("external_id", { length: 255 }).notNull(),
   balance: float("balance").default(0),
@@ -332,7 +462,9 @@ export const custodyWallets = mysqlTable("custody_wallets", {
 
 export const onChainTransactions = mysqlTable("on_chain_transactions", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   blockchain: varchar("blockchain", { length: 255 }).notNull(), // ethereum | solana | bitcoin
   txHash: varchar("tx_hash", { length: 255 }).notNull(),
   fromAddress: varchar("from_address", { length: 255 }),
@@ -357,6 +489,7 @@ export const tokenMarketState = mysqlTable("token_market_state", {
 export const tokenEmissionCaps = mysqlTable("token_emission_caps", {
   id: varchar("id", { length: 255 }).primaryKey(),
   tokenSymbol: varchar("token_symbol", { length: 255 }).notNull(),
+  token: varchar("token_symbol", { length: 255 }), // Legacy alias
   maxEmission: float("max_emission"),
   currentEmission: float("current_emission"),
   emissionRate: float("emission_rate"),
@@ -365,7 +498,9 @@ export const tokenEmissionCaps = mysqlTable("token_emission_caps", {
 
 export const userArchetypes = mysqlTable("user_archetypes", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   archetype: varchar("archetype", { length: 255 }).notNull(), // trader | hodler | miner | creator | etc
   score: float("score").default(0),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
@@ -374,7 +509,9 @@ export const userArchetypes = mysqlTable("user_archetypes", {
 // ============ GOVERNANCE & MODERATION TABLES ============
 export const governanceProposals = mysqlTable("governance_proposals", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  proposerId: varchar("proposer_id", { length: 255 }).references(() => users.id).notNull(),
+  proposerId: varchar("proposer_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   title: varchar("title", { length: 255 }).notNull(),
   description: varchar("description", { length: 255 }),
   status: varchar("status", { length: 255 }).default("active"), // active | passed | failed | executed
@@ -386,8 +523,12 @@ export const governanceProposals = mysqlTable("governance_proposals", {
 
 export const governanceVotes = mysqlTable("governance_votes", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  proposalId: varchar("proposal_id", { length: 255 }).references(() => governanceProposals.id).notNull(),
-  voterId: varchar("voter_id", { length: 255 }).references(() => users.id).notNull(),
+  proposalId: varchar("proposal_id", { length: 255 })
+    .references(() => governanceProposals.id)
+    .notNull(),
+  voterId: varchar("voter_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
   vote: varchar("vote", { length: 255 }).notNull(), // for | against
   weight: float("weight").default(1),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -395,8 +536,12 @@ export const governanceVotes = mysqlTable("governance_votes", {
 
 export const moderationLogs = mysqlTable("moderation_logs", {
   id: varchar("id", { length: 255 }).primaryKey(),
-  moderatorId: varchar("moderator_id", { length: 255 }).references(() => users.id),
-  targetUserId: varchar("target_user_id", { length: 255 }).references(() => users.id),
+  moderatorId: varchar("moderator_id", { length: 255 }).references(
+    () => users.id
+  ),
+  targetUserId: varchar("target_user_id", { length: 255 }).references(
+    () => users.id
+  ),
   action: varchar("action", { length: 255 }).notNull(), // warn | mute | ban | delete
   reason: varchar("reason", { length: 255 }),
   duration: int("duration"), // in seconds, null for permanent

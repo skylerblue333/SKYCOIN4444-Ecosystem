@@ -3,7 +3,9 @@ import { TrendingUp, Hash, Flame } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export function TrendingHashtags() {
-  const { data: trends } = trpc.feed.trends.useQuery(undefined, { staleTime: 60_000 });
+  const { data: trends } = trpc.feed.trends.useQuery(undefined, {
+    staleTime: 60_000,
+  });
 
   const fallback = [
     { hashtag: "#skycoin4444", mentions: 4444 },
@@ -26,7 +28,10 @@ export function TrendingHashtags() {
       </div>
       <div className="space-y-2">
         {items.map((item, i) => (
-          <Link key={i} href={`/search?q=${encodeURIComponent((item as any).hashtag)}`}>
+          <Link
+            key={i}
+            href={`/search?q=${encodeURIComponent((item as any).hashtag)}`}
+          >
             <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
               <div className="flex items-center gap-2">
                 {i < 3 ? (

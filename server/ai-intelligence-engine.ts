@@ -52,7 +52,8 @@ function computeFeedScore(post: {
   const views = post.viewsCount || 1;
 
   // Engagement rate (interactions / views)
-  const engagementRate = (likes + comments * 2 + shares * 3) / Math.max(views, 1);
+  const engagementRate =
+    (likes + comments * 2 + shares * 3) / Math.max(views, 1);
 
   // Virality score
   const viralityScore = Math.log1p(likes + comments * 2 + shares * 4);
@@ -71,17 +72,68 @@ function computeFeedScore(post: {
   const length = post.contentLength || 100;
   const lengthScore = length < 20 ? 0.8 : length > 2000 ? 0.9 : 1.0;
 
-  const rawScore = viralityScore * engagementRate * followBoost * trendingBoost * mediaBoost * cryptoBoost * lengthScore;
+  const rawScore =
+    viralityScore *
+    engagementRate *
+    followBoost *
+    trendingBoost *
+    mediaBoost *
+    cryptoBoost *
+    lengthScore;
   return clamp(rawScore * decayFactor * 100, 0, 1000);
 }
 
 /** Detect trending topics from a list of recent post texts */
-function detectTrendingTopics(texts: string[]): Array<{ topic: string; count: number; momentum: number }> {
+function detectTrendingTopics(
+  texts: string[]
+): Array<{ topic: string; count: number; momentum: number }> {
   const wordFreq: Record<string, number> = {};
-  const stopWords = new Set(["the", "a", "an", "is", "it", "in", "on", "at", "to", "for", "of", "and", "or", "but", "with", "this", "that", "i", "you", "we", "they", "be", "are", "was", "were", "have", "has", "had", "do", "does", "did", "will", "would", "could", "should", "may", "might", "can"]);
+  const stopWords = new Set([
+    "the",
+    "a",
+    "an",
+    "is",
+    "it",
+    "in",
+    "on",
+    "at",
+    "to",
+    "for",
+    "of",
+    "and",
+    "or",
+    "but",
+    "with",
+    "this",
+    "that",
+    "i",
+    "you",
+    "we",
+    "they",
+    "be",
+    "are",
+    "was",
+    "were",
+    "have",
+    "has",
+    "had",
+    "do",
+    "does",
+    "did",
+    "will",
+    "would",
+    "could",
+    "should",
+    "may",
+    "might",
+    "can",
+  ]);
 
   for (const text of texts) {
-    const words = text.toLowerCase().replace(/[^a-z0-9#$\s]/g, " ").split(/\s+/);
+    const words = text
+      .toLowerCase()
+      .replace(/[^a-z0-9#$\s]/g, " ")
+      .split(/\s+/);
     for (const word of words) {
       if (word.length > 2 && !stopWords.has(word)) {
         wordFreq[word] = (wordFreq[word] || 0) + 1;
@@ -96,7 +148,7 @@ function detectTrendingTopics(texts: string[]): Array<{ topic: string; count: nu
     .map(([topic, count]) => ({
       topic,
       count,
-      momentum: clamp(count / texts.length * 100, 0, 100),
+      momentum: clamp((count / texts.length) * 100, 0, 100),
     }));
 }
 
@@ -105,21 +157,27 @@ function detectTrendingTopics(texts: string[]): Array<{ topic: string; count: nu
 export const aiIntelligenceRouter = router({
   // Score a batch of posts for feed ranking
   rankFeedBatch: protectedProcedure
-    .input(z.object({
-      posts: z.array(z.object({
-        id: z.number(),
-        likesCount: z.number().default(0),
-        commentsCount: z.number().default(0),
-        sharesCount: z.number().optional(),
-        viewsCount: z.number().optional(),
-        createdAt: z.string(),
-        isFollowing: z.boolean().optional(),
-        isTrending: z.boolean().optional(),
-        hasMedia: z.boolean().optional(),
-        hasCrypto: z.boolean().optional(),
-        contentLength: z.number().optional(),
-      })).max(200),
-    }))
+    .input(
+      z.object({
+        posts: z
+          .array(
+            z.object({
+              id: z.number(),
+              likesCount: z.number().default(0),
+              commentsCount: z.number().default(0),
+              sharesCount: z.number().optional(),
+              viewsCount: z.number().optional(),
+              createdAt: z.string(),
+              isFollowing: z.boolean().optional(),
+              isTrending: z.boolean().optional(),
+              hasMedia: z.boolean().optional(),
+              hasCrypto: z.boolean().optional(),
+              contentLength: z.number().optional(),
+            })
+          )
+          .max(200),
+      })
+    )
     .query(({ input }) => {
       const scored = input.posts.map(post => ({
         id: post.id,
@@ -131,10 +189,12 @@ export const aiIntelligenceRouter = router({
 
   // Detect trending topics from recent posts
   detectTrending: publicProcedure
-    .input(z.object({
-      texts: z.array(z.string().max(500)).max(500),
-      limit: z.number().min(1).max(50).default(10),
-    }))
+    .input(
+      z.object({
+        texts: z.array(z.string().max(500)).max(500),
+        limit: z.number().min(1).max(50).default(10),
+      })
+    )
     .query(({ input }) => {
       const topics = detectTrendingTopics(input.texts);
       return topics.slice(0, input.limit);
@@ -142,11 +202,15 @@ export const aiIntelligenceRouter = router({
 
   // AI-powered content suggestions for a user
   getContentSuggestions: protectedProcedure
-    .input(z.object({
-      userInterests: z.array(z.string()).max(20).optional(),
-      recentActivity: z.string().max(1000).optional(),
-      suggestionType: z.enum(["post", "follow", "explore", "hashtag", "community"]).default("post"),
-    }))
+    .input(
+      z.object({
+        userInterests: z.array(z.string()).max(20).optional(),
+        recentActivity: z.string().max(1000).optional(),
+        suggestionType: z
+          .enum(["post", "follow", "explore", "hashtag", "community"])
+          .default("post"),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const prompt = {
         post: `Generate 5 engaging post ideas for a Web3/crypto social platform user. Their interests: ${input.userInterests?.join(", ") || "crypto, DeFi, NFTs"}. Recent activity: ${input.recentActivity || "browsing the feed"}. Return a JSON array of {title, content, hashtags} objects.`,
@@ -158,7 +222,11 @@ export const aiIntelligenceRouter = router({
 
       const response = await invokeLLM({
         messages: [
-          { role: "system", content: "You are a Web3 social platform AI that generates personalized content suggestions. Always respond with valid JSON." },
+          {
+            role: "system",
+            content:
+              "You are a Web3 social platform AI that generates personalized content suggestions. Always respond with valid JSON.",
+          },
           { role: "user", content: prompt[input.suggestionType] },
         ],
         response_format: { type: "json_object" } as any,
@@ -168,7 +236,9 @@ export const aiIntelligenceRouter = router({
       let suggestions: unknown[] = [];
       try {
         const parsed = JSON.parse(typeof content === "string" ? content : "{}");
-        suggestions = Array.isArray(parsed) ? parsed : (parsed.suggestions || parsed.items || parsed.data || []);
+        suggestions = Array.isArray(parsed)
+          ? parsed
+          : parsed.suggestions || parsed.items || parsed.data || [];
       } catch {
         suggestions = [];
       }
@@ -178,16 +248,21 @@ export const aiIntelligenceRouter = router({
 
   // Smart search with semantic understanding
   semanticSearch: publicProcedure
-    .input(z.object({
-      query: z.string().min(1).max(500),
-      context: z.enum(["posts", "users", "communities", "tokens", "nfts", "all"]).default("all"),
-    }))
+    .input(
+      z.object({
+        query: z.string().min(1).max(500),
+        context: z
+          .enum(["posts", "users", "communities", "tokens", "nfts", "all"])
+          .default("all"),
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
           {
             role: "system",
-            content: "You are a semantic search engine for a Web3 social platform. Parse the user's search intent and return structured search parameters as JSON.",
+            content:
+              "You are a semantic search engine for a Web3 social platform. Parse the user's search intent and return structured search parameters as JSON.",
           },
           {
             role: "user",
@@ -212,7 +287,13 @@ Return JSON with:
       try {
         parsed = JSON.parse(typeof content === "string" ? content : "{}");
       } catch {
-        parsed = { intent: input.query, keywords: [input.query], filters: {}, expandedTerms: [], suggestedQueries: [] };
+        parsed = {
+          intent: input.query,
+          keywords: [input.query],
+          filters: {},
+          expandedTerms: [],
+          suggestedQueries: [],
+        };
       }
 
       return { query: input.query, parsed, timestamp: new Date() };
@@ -220,18 +301,21 @@ Return JSON with:
 
   // Predict engagement for a post before publishing
   predictEngagement: protectedProcedure
-    .input(z.object({
-      content: z.string().min(1).max(5000),
-      hasMedia: z.boolean().default(false),
-      hashtags: z.array(z.string()).max(30).optional(),
-      postTime: z.string().optional(), // ISO datetime
-    }))
+    .input(
+      z.object({
+        content: z.string().min(1).max(5000),
+        hasMedia: z.boolean().default(false),
+        hashtags: z.array(z.string()).max(30).optional(),
+        postTime: z.string().optional(), // ISO datetime
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
           {
             role: "system",
-            content: "You are a social media engagement prediction AI for a Web3 platform. Analyze posts and predict their performance. Respond with JSON.",
+            content:
+              "You are a social media engagement prediction AI for a Web3 platform. Analyze posts and predict their performance. Respond with JSON.",
           },
           {
             role: "user",
@@ -264,7 +348,12 @@ Return JSON:
       try {
         prediction = JSON.parse(typeof content === "string" ? content : "{}");
       } catch {
-        prediction = { engagementScore: 50, viralProbability: 10, strengths: [], improvements: [] };
+        prediction = {
+          engagementScore: 50,
+          viralProbability: 10,
+          strengths: [],
+          improvements: [],
+        };
       }
 
       return { prediction, content: input.content };
@@ -272,16 +361,21 @@ Return JSON:
 
   // Content quality scoring
   scoreContent: protectedProcedure
-    .input(z.object({
-      content: z.string().min(1).max(10000),
-      contentType: z.enum(["post", "comment", "article", "stream_title", "bio"]).default("post"),
-    }))
+    .input(
+      z.object({
+        content: z.string().min(1).max(10000),
+        contentType: z
+          .enum(["post", "comment", "article", "stream_title", "bio"])
+          .default("post"),
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
           {
             role: "system",
-            content: "You are a content quality AI for a Web3 social platform. Score content on multiple dimensions. Respond with JSON.",
+            content:
+              "You are a content quality AI for a Web3 social platform. Score content on multiple dimensions. Respond with JSON.",
           },
           {
             role: "user",
@@ -314,7 +408,14 @@ Return JSON:
       try {
         score = JSON.parse(typeof content === "string" ? content : "{}");
       } catch {
-        score = { overallScore: 70, dimensions: {}, issues: [], suggestions: [], sentiment: "neutral", topics: [] };
+        score = {
+          overallScore: 70,
+          dimensions: {},
+          issues: [],
+          suggestions: [],
+          sentiment: "neutral",
+          topics: [],
+        };
       }
 
       return { score, contentType: input.contentType };
@@ -322,21 +423,24 @@ Return JSON:
 
   // Creator growth insights
   creatorInsights: protectedProcedure
-    .input(z.object({
-      followerCount: z.number().default(0),
-      postCount: z.number().default(0),
-      avgLikes: z.number().default(0),
-      avgComments: z.number().default(0),
-      topCategories: z.array(z.string()).max(10).optional(),
-      revenueMonthly: z.number().default(0),
-      growthRate: z.number().default(0), // % per month
-    }))
+    .input(
+      z.object({
+        followerCount: z.number().default(0),
+        postCount: z.number().default(0),
+        avgLikes: z.number().default(0),
+        avgComments: z.number().default(0),
+        topCategories: z.array(z.string()).max(10).optional(),
+        revenueMonthly: z.number().default(0),
+        growthRate: z.number().default(0), // % per month
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
           {
             role: "system",
-            content: "You are a creator growth AI advisor for a Web3 social platform. Provide actionable growth insights. Respond with JSON.",
+            content:
+              "You are a creator growth AI advisor for a Web3 social platform. Provide actionable growth insights. Respond with JSON.",
           },
           {
             role: "user",
@@ -371,7 +475,12 @@ Return JSON:
       try {
         insights = JSON.parse(typeof content === "string" ? content : "{}");
       } catch {
-        insights = { growthScore: 50, topRecommendations: [], contentStrategy: "", monetizationTips: [] };
+        insights = {
+          growthScore: 50,
+          topRecommendations: [],
+          contentStrategy: "",
+          monetizationTips: [],
+        };
       }
 
       return { insights };
@@ -384,25 +493,31 @@ Return JSON:
 
     try {
       // Quick health metrics from DB
-      const [userCount] = await db.execute("SELECT COUNT(*) as count FROM users") as any[];
-      const [postCount] = await db.execute("SELECT COUNT(*) as count FROM posts") as any[];
-      const [activeToday] = await db.execute(
+      const [userCount] = (await db.execute(
+        "SELECT COUNT(*) as count FROM users"
+      )) as any[];
+      const [postCount] = (await db.execute(
+        "SELECT COUNT(*) as count FROM posts"
+      )) as any[];
+      const [activeToday] = (await db.execute(
         "SELECT COUNT(*) as count FROM users WHERE updated_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)"
-      ) as any[];
+      )) as any[];
 
       const users = (userCount as any[])[0]?.count || 0;
       const posts = (postCount as any[])[0]?.count || 0;
       const active = (activeToday as any[])[0]?.count || 0;
 
       const healthScore = clamp(
-        (Math.min(users, 1000) / 10) +
-        (Math.min(posts, 5000) / 50) +
-        (Math.min(active, 100) / 1),
-        0, 100
+        Math.min(users, 1000) / 10 +
+          Math.min(posts, 5000) / 50 +
+          Math.min(active, 100) / 1,
+        0,
+        100
       );
 
       return {
-        status: healthScore > 70 ? "healthy" : healthScore > 40 ? "growing" : "early",
+        status:
+          healthScore > 70 ? "healthy" : healthScore > 40 ? "growing" : "early",
         healthScore: Math.round(healthScore),
         metrics: {
           totalUsers: users,
@@ -413,22 +528,30 @@ Return JSON:
         timestamp: new Date(),
       };
     } catch {
-      return { status: "healthy", healthScore: 85, metrics: {}, timestamp: new Date() };
+      return {
+        status: "healthy",
+        healthScore: 85,
+        metrics: {},
+        timestamp: new Date(),
+      };
     }
   }),
 
   // Smart hashtag suggestions
   suggestHashtags: publicProcedure
-    .input(z.object({
-      content: z.string().min(1).max(5000),
-      count: z.number().min(1).max(30).default(10),
-    }))
+    .input(
+      z.object({
+        content: z.string().min(1).max(5000),
+        count: z.number().min(1).max(30).default(10),
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
           {
             role: "system",
-            content: "You are a hashtag suggestion AI for a Web3 social platform. Generate relevant, trending hashtags. Respond with JSON.",
+            content:
+              "You are a hashtag suggestion AI for a Web3 social platform. Generate relevant, trending hashtags. Respond with JSON.",
           },
           {
             role: "user",
@@ -455,17 +578,20 @@ Return JSON: {"hashtags": ["#tag1", "#tag2", ...], "categories": {"tag": "catego
 
   // User intent prediction (what will they do next?)
   predictIntent: protectedProcedure
-    .input(z.object({
-      recentActions: z.array(z.string()).max(20),
-      currentPage: z.string().optional(),
-      sessionDuration: z.number().optional(), // minutes
-    }))
+    .input(
+      z.object({
+        recentActions: z.array(z.string()).max(20),
+        currentPage: z.string().optional(),
+        sessionDuration: z.number().optional(), // minutes
+      })
+    )
     .mutation(async ({ input }) => {
       const response = await invokeLLM({
         messages: [
           {
             role: "system",
-            content: "You are a user behavior prediction AI for a Web3 social platform. Predict what the user will do next and what they need. Respond with JSON.",
+            content:
+              "You are a user behavior prediction AI for a Web3 social platform. Predict what the user will do next and what they need. Respond with JSON.",
           },
           {
             role: "user",
@@ -493,7 +619,11 @@ Return JSON:
       try {
         prediction = JSON.parse(typeof content === "string" ? content : "{}");
       } catch {
-        prediction = { predictedNextAction: "browse feed", recommendedFeatures: [], engagementRisk: "low" };
+        prediction = {
+          predictedNextAction: "browse feed",
+          recommendedFeatures: [],
+          engagementRisk: "low",
+        };
       }
 
       return { prediction };

@@ -63,7 +63,10 @@ export function getAllMarketPrices(): MarketPrice[] {
   return Object.values(marketData);
 }
 
-export function updateMarketPrice(pair: string, priceUpdate: Partial<MarketPrice>) {
+export function updateMarketPrice(
+  pair: string,
+  priceUpdate: Partial<MarketPrice>
+) {
   if (marketData[pair]) {
     marketData[pair] = {
       ...marketData[pair],
@@ -76,7 +79,7 @@ export function updateMarketPrice(pair: string, priceUpdate: Partial<MarketPrice
 // Simulate price updates every 5 seconds
 export function startPriceSimulation() {
   setInterval(() => {
-    Object.keys(marketData).forEach((pair) => {
+    Object.keys(marketData).forEach(pair => {
       const data = marketData[pair];
       const volatility = (Math.random() - 0.5) * 0.02; // ±1% volatility
       const newPrice = data.price * (1 + volatility);
@@ -122,7 +125,10 @@ export async function executeMarketOrder(
 
     const [baseCurrency] = pair.split("/");
     if (side === "sell" && (balances[baseCurrency] || 0) < amount) {
-      return { success: false, message: `Insufficient ${baseCurrency} balance` };
+      return {
+        success: false,
+        message: `Insufficient ${baseCurrency} balance`,
+      };
     }
 
     // Execute trade
@@ -228,7 +234,9 @@ export async function executeStopOrder(
 }
 
 // ─── PORTFOLIO CALCULATION ──────────────────────────────────────────────
-export function calculatePortfolioValue(balances: Record<string, number>): number {
+export function calculatePortfolioValue(
+  balances: Record<string, number>
+): number {
   let totalUSD = balances["USD"] || 0;
 
   Object.entries(balances).forEach(([currency, amount]) => {
@@ -246,14 +254,22 @@ export function calculatePortfolioValue(balances: Record<string, number>): numbe
 // ─── RISK MANAGEMENT ────────────────────────────────────────────────────
 export interface RiskMetrics {
   totalValue: number;
-  allocation: Record<string, { amount: number; percentage: number; value: number }>;
+  allocation: Record<
+    string,
+    { amount: number; percentage: number; value: number }
+  >;
   largestPosition: { currency: string; percentage: number };
   diversification: number; // 0-1 score
 }
 
-export function calculateRiskMetrics(balances: Record<string, number>): RiskMetrics {
+export function calculateRiskMetrics(
+  balances: Record<string, number>
+): RiskMetrics {
   const totalValue = calculatePortfolioValue(balances);
-  const allocation: Record<string, { amount: number; percentage: number; value: number }> = {};
+  const allocation: Record<
+    string,
+    { amount: number; percentage: number; value: number }
+  > = {};
   let largestPercentage = 0;
   let largestCurrency = "USD";
 
@@ -275,13 +291,19 @@ export function calculateRiskMetrics(balances: Record<string, number>): RiskMetr
 
   // Diversification score: 1 = perfectly diversified, 0 = concentrated
   const numAssets = Object.keys(balances).length;
-  const herfindahl = Object.values(allocation).reduce((sum, a) => sum + (a.percentage / 100) ** 2, 0);
+  const herfindahl = Object.values(allocation).reduce(
+    (sum, a) => sum + (a.percentage / 100) ** 2,
+    0
+  );
   const diversification = 1 - Math.min(herfindahl, 1);
 
   return {
     totalValue,
     allocation,
-    largestPosition: { currency: largestCurrency, percentage: largestPercentage },
+    largestPosition: {
+      currency: largestCurrency,
+      percentage: largestPercentage,
+    },
     diversification,
   };
 }

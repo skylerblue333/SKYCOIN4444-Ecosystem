@@ -1,8 +1,8 @@
-import sharp from 'sharp';
-import { storagePut } from './storage';
-import { db } from './db';
-import { datingProfiles } from '../drizzle/schema';
-import { eq } from 'drizzle-orm';
+import sharp from "sharp";
+import { storagePut } from "./storage";
+import { db } from "./db";
+import { datingProfiles } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 interface PhotoUploadOptions {
   userId: number;
@@ -39,13 +39,15 @@ export async function optimizePhoto(
   const quality = options.quality || DEFAULT_QUALITY;
 
   if (file.length > MAX_FILE_SIZE) {
-    throw new Error(`File size exceeds maximum of ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+    throw new Error(
+      `File size exceeds maximum of ${MAX_FILE_SIZE / 1024 / 1024}MB`
+    );
   }
 
   try {
     const optimized = await sharp(file)
       .resize(maxWidth, maxHeight, {
-        fit: 'inside',
+        fit: "inside",
         withoutEnlargement: true,
       })
       .jpeg({ quality, progressive: true })
@@ -53,8 +55,8 @@ export async function optimizePhoto(
 
     return optimized;
   } catch (error) {
-    console.error('[Photo Optimization] Error:', error);
-    throw new Error('Failed to optimize photo');
+    console.error("[Photo Optimization] Error:", error);
+    throw new Error("Failed to optimize photo");
   }
 }
 
@@ -72,14 +74,18 @@ export async function uploadProfilePhoto(
 
   try {
     // Optimize the photo
-    const optimized = await optimizePhoto(file, { maxWidth, maxHeight, quality });
+    const optimized = await optimizePhoto(file, {
+      maxWidth,
+      maxHeight,
+      quality,
+    });
 
     // Get image metadata
     const metadata = await sharp(optimized).metadata();
 
     // Upload to storage
     const fileKey = `dating/profiles/${userId}/${Date.now()}-${fileName}`;
-    const { url, key } = await storagePut(fileKey, optimized, 'image/jpeg');
+    const { url, key } = await storagePut(fileKey, optimized, "image/jpeg");
 
     return {
       url,
@@ -89,7 +95,7 @@ export async function uploadProfilePhoto(
       size: optimized.length,
     };
   } catch (error) {
-    console.error('[Photo Upload] Error:', error);
+    console.error("[Photo Upload] Error:", error);
     throw error;
   }
 }
@@ -101,16 +107,16 @@ export async function createThumbnail(
   try {
     const thumbnail = await sharp(file)
       .resize(size, size, {
-        fit: 'cover',
-        position: 'center',
+        fit: "cover",
+        position: "center",
       })
       .jpeg({ quality: 80 })
       .toBuffer();
 
     return thumbnail;
   } catch (error) {
-    console.error('[Thumbnail Creation] Error:', error);
-    throw new Error('Failed to create thumbnail');
+    console.error("[Thumbnail Creation] Error:", error);
+    throw new Error("Failed to create thumbnail");
   }
 }
 
@@ -132,7 +138,7 @@ export async function uploadProfilePhotoWithThumbnail(
     const { url: thumbUrl, key: thumbKey } = await storagePut(
       thumbnailFileKey,
       thumbnailBuffer,
-      'image/jpeg'
+      "image/jpeg"
     );
 
     return {
@@ -146,7 +152,7 @@ export async function uploadProfilePhotoWithThumbnail(
       },
     };
   } catch (error) {
-    console.error('[Photo Upload with Thumbnail] Error:', error);
+    console.error("[Photo Upload with Thumbnail] Error:", error);
     throw error;
   }
 }
@@ -157,7 +163,7 @@ export async function deleteProfilePhoto(photoKey: string): Promise<void> {
     // For now, we just remove the reference from the database
     console.log(`[Photo Deletion] Marked for deletion: ${photoKey}`);
   } catch (error) {
-    console.error('[Photo Deletion] Error:', error);
+    console.error("[Photo Deletion] Error:", error);
     throw error;
   }
 }
@@ -180,7 +186,7 @@ export async function validatePhotoFile(file: Buffer): Promise<{
     if (!metadata.width || !metadata.height) {
       return {
         isValid: false,
-        error: 'Invalid image dimensions',
+        error: "Invalid image dimensions",
       };
     }
 
@@ -189,7 +195,8 @@ export async function validatePhotoFile(file: Buffer): Promise<{
     if (aspectRatio < 0.5 || aspectRatio > 2.0) {
       return {
         isValid: false,
-        error: 'Image aspect ratio is too extreme (must be between 0.5 and 2.0)',
+        error:
+          "Image aspect ratio is too extreme (must be between 0.5 and 2.0)",
       };
     }
 
@@ -198,10 +205,10 @@ export async function validatePhotoFile(file: Buffer): Promise<{
       dimensions: { width: metadata.width, height: metadata.height },
     };
   } catch (error) {
-    console.error('[Photo Validation] Error:', error);
+    console.error("[Photo Validation] Error:", error);
     return {
       isValid: false,
-      error: 'Failed to validate image',
+      error: "Failed to validate image",
     };
   }
 }
@@ -221,7 +228,7 @@ export async function reorderProfilePhotos(
 
     console.log(`[Photo Reorder] Updated photo order for user ${userId}`);
   } catch (error) {
-    console.error('[Photo Reorder] Error:', error);
+    console.error("[Photo Reorder] Error:", error);
     throw error;
   }
 }

@@ -1,6 +1,6 @@
 /**
  * Security Module — Rate Limiting, Input Sanitization, Trust Scoring
- * 
+ *
  * This module provides production-grade security middleware:
  * - In-memory rate limiter (per-IP and per-user)
  * - Input sanitization (XSS prevention, SQL injection prevention)
@@ -22,21 +22,24 @@ interface RateLimitEntry {
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
 // Clean up expired entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  const keysToDelete: string[] = [];
-  rateLimitStore.forEach((entry, key) => {
-    if (entry.resetAt < now) {
-      keysToDelete.push(key);
-    }
-  });
-  keysToDelete.forEach(key => rateLimitStore.delete(key));
-}, 5 * 60 * 1000);
+setInterval(
+  () => {
+    const now = Date.now();
+    const keysToDelete: string[] = [];
+    rateLimitStore.forEach((entry, key) => {
+      if (entry.resetAt < now) {
+        keysToDelete.push(key);
+      }
+    });
+    keysToDelete.forEach(key => rateLimitStore.delete(key));
+  },
+  5 * 60 * 1000
+);
 
 interface RateLimitOptions {
-  windowMs: number;  // Time window in milliseconds
-  maxRequests: number;  // Max requests per window
-  keyPrefix?: string;  // Prefix for the rate limit key
+  windowMs: number; // Time window in milliseconds
+  maxRequests: number; // Max requests per window
+  keyPrefix?: string; // Prefix for the rate limit key
 }
 
 export function rateLimit(options: RateLimitOptions) {
@@ -105,7 +108,10 @@ export function sanitizeSqlInput(input: string): string {
   return input
     .replace(/(['";])/g, "")
     .replace(/(--)|(\/\*)|(\*\/)/g, "")
-    .replace(/(union\s+select|drop\s+table|insert\s+into|delete\s+from|update\s+.*\s+set)/gi, "");
+    .replace(
+      /(union\s+select|drop\s+table|insert\s+into|delete\s+from|update\s+.*\s+set)/gi,
+      ""
+    );
 }
 
 /**
@@ -188,11 +194,14 @@ export function calculateTrustScore(factors: TrustFactors): number {
  * Get rate limit tier based on trust score.
  * Higher trust = more generous limits.
  */
-export function getRateLimitTier(trustScore: number): { windowMs: number; maxRequests: number } {
-  if (trustScore >= 80) return { windowMs: 60000, maxRequests: 120 };  // Trusted
-  if (trustScore >= 50) return { windowMs: 60000, maxRequests: 60 };   // Normal
-  if (trustScore >= 20) return { windowMs: 60000, maxRequests: 30 };   // New
-  return { windowMs: 60000, maxRequests: 15 };                          // Untrusted
+export function getRateLimitTier(trustScore: number): {
+  windowMs: number;
+  maxRequests: number;
+} {
+  if (trustScore >= 80) return { windowMs: 60000, maxRequests: 120 }; // Trusted
+  if (trustScore >= 50) return { windowMs: 60000, maxRequests: 60 }; // Normal
+  if (trustScore >= 20) return { windowMs: 60000, maxRequests: 30 }; // New
+  return { windowMs: 60000, maxRequests: 15 }; // Untrusted
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -210,7 +219,10 @@ export function securityHeaders() {
     // Referrer policy
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     // Permissions policy
-    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    res.setHeader(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=()"
+    );
     next();
   };
 }
@@ -238,9 +250,15 @@ export function validatePayloadSize(maxBytes: number) {
 /**
  * Log suspicious activity for monitoring.
  */
-export function logSuspiciousActivity(userId: string | null, action: string, details: string) {
+export function logSuspiciousActivity(
+  userId: string | null,
+  action: string,
+  details: string
+) {
   const timestamp = new Date().toISOString();
-  console.warn(`[SECURITY] ${timestamp} | user=${userId || "anonymous"} | action=${action} | ${details}`);
+  console.warn(
+    `[SECURITY] ${timestamp} | user=${userId || "anonymous"} | action=${action} | ${details}`
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -337,9 +355,15 @@ const _ipRepStore = new Map<string, IPReputation>();
 const _honeypotHits = new Map<string, number>();
 const _spamFP = new Map<string, number>();
 const _fraudByUser = new Map<number, FraudSignal[]>();
-const _csrfTokens = new Map<string, { token: string; createdAt: number; used: boolean }>();
+const _csrfTokens = new Map<
+  string,
+  { token: string; createdAt: number; used: boolean }
+>();
 const _sessionFP = new Map<string, string>();
-const _credStuffing = new Map<string, { attempts: number; lastAttempt: number }>();
+const _credStuffing = new Map<
+  string,
+  { attempts: number; lastAttempt: number }
+>();
 const _behaviorProfiles = new Map<string, BehaviorProfile>();
 const _trustScoresV2 = new Map<number, TrustScoreV2>();
 let _lastAuditHash = "genesis";
@@ -348,21 +372,41 @@ let _lastAuditHash = "genesis";
 
 setInterval(() => {
   const now = Date.now();
-  _behaviorProfiles.forEach((p, k) => { if (now - p.lastSeen > 30 * 60_000) _behaviorProfiles.delete(k); });
-  _credStuffing.forEach((d, k) => { if (now - d.lastAttempt > 60 * 60_000) _credStuffing.delete(k); });
-  _csrfTokens.forEach((t, k) => { if (now - t.createdAt > 2 * 60 * 60_000) _csrfTokens.delete(k); });
+  _behaviorProfiles.forEach((p, k) => {
+    if (now - p.lastSeen > 30 * 60_000) _behaviorProfiles.delete(k);
+  });
+  _credStuffing.forEach((d, k) => {
+    if (now - d.lastAttempt > 60 * 60_000) _credStuffing.delete(k);
+  });
+  _csrfTokens.forEach((t, k) => {
+    if (now - t.createdAt > 2 * 60 * 60_000) _csrfTokens.delete(k);
+  });
 }, 10 * 60_000);
 
 // ─── Honeypot Endpoints ───────────────────────────────────────
 
 const HONEYPOT_ENDPOINTS = new Set([
-  "/.env", "/wp-admin", "/phpmyadmin", "/admin.php", "/.git/config",
-  "/backup.sql", "/config.json", "/api/admin/debug", "/api/internal/config",
-  "/.htaccess", "/server-status", "/actuator", "/actuator/env",
+  "/.env",
+  "/wp-admin",
+  "/phpmyadmin",
+  "/admin.php",
+  "/.git/config",
+  "/backup.sql",
+  "/config.json",
+  "/api/admin/debug",
+  "/api/internal/config",
+  "/.htaccess",
+  "/server-status",
+  "/actuator",
+  "/actuator/env",
 ]);
 
 const HONEYPOT_FIELDS = new Set([
-  "phone_number_extra", "website_url_hidden", "confirm_email_2", "bot_trap", "zip_code_verify",
+  "phone_number_extra",
+  "website_url_hidden",
+  "confirm_email_2",
+  "bot_trap",
+  "zip_code_verify",
 ]);
 
 // ─── Bot Detection Patterns ───────────────────────────────────
@@ -390,9 +434,16 @@ const SPAM_CONTENT_PATTERNS = [
 ];
 
 const SPAM_KEYWORDS = new Set([
-  "airdrop scam", "rug pull", "send btc", "send eth", "send usdt",
-  "double your crypto", "investment opportunity", "guaranteed returns",
-  "dm me for profit", "join my group",
+  "airdrop scam",
+  "rug pull",
+  "send btc",
+  "send eth",
+  "send usdt",
+  "double your crypto",
+  "investment opportunity",
+  "guaranteed returns",
+  "dm me for profit",
+  "join my group",
 ]);
 
 // ═══════════════════════════════════════════════════════════════
@@ -411,14 +462,21 @@ export function recordSecurityEvent(
   _securityEvents.push(full);
   if (_securityEvents.length > 50_000) _securityEvents.splice(0, 5_000);
   if (full.severity === "critical") {
-    console.error(`[SECURITY CRITICAL] ${full.type} from ${full.ip}`, full.metadata);
+    console.error(
+      `[SECURITY CRITICAL] ${full.type} from ${full.ip}`,
+      full.metadata
+    );
   }
   return full;
 }
 
 export function getSecurityEvents(f?: {
-  type?: string; severity?: string; userId?: number;
-  since?: number; limit?: number; resolved?: boolean;
+  type?: string;
+  severity?: string;
+  userId?: number;
+  since?: number;
+  limit?: number;
+  resolved?: boolean;
 }): SecurityEvent[] {
   let r = _securityEvents;
   if (f?.type) r = r.filter(e => e.type === f.type);
@@ -438,13 +496,17 @@ export function resolveSecurityEvent(id: string): boolean {
 
 export function getSecurityStats() {
   const byType = new Map<string, number>();
-  _securityEvents.forEach(e => byType.set(e.type, (byType.get(e.type) || 0) + 1));
+  _securityEvents.forEach(e =>
+    byType.set(e.type, (byType.get(e.type) || 0) + 1)
+  );
   const topThreats = Array.from(byType.entries())
     .map(([type, count]) => ({ type, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
   let totalFraud = 0;
-  _fraudByUser.forEach(s => { totalFraud += s.length; });
+  _fraudByUser.forEach(s => {
+    totalFraud += s.length;
+  });
   return {
     blockedIPs: _blockedIPs.size,
     securityEvents: {
@@ -462,7 +524,9 @@ export function getSecurityStats() {
 // IMMUTABLE AUDIT LOG
 // ═══════════════════════════════════════════════════════════════
 
-export function writeAuditLog(entry: Omit<AuditEntry, "id" | "hash" | "previousHash">): AuditEntry {
+export function writeAuditLog(
+  entry: Omit<AuditEntry, "id" | "hash" | "previousHash">
+): AuditEntry {
   const content = JSON.stringify({ ...entry, previousHash: _lastAuditHash });
   const hash = crypto.createHash("sha256").update(content).digest("hex");
   const full: AuditEntry = {
@@ -478,7 +542,11 @@ export function writeAuditLog(entry: Omit<AuditEntry, "id" | "hash" | "previousH
 }
 
 export function getAuditLog(f?: {
-  userId?: number; action?: string; outcome?: string; since?: number; limit?: number;
+  userId?: number;
+  action?: string;
+  outcome?: string;
+  since?: number;
+  limit?: number;
 }): AuditEntry[] {
   let r = _auditLog;
   if (f?.userId !== undefined) r = r.filter(e => e.userId === f.userId);
@@ -504,7 +572,19 @@ export function verifyAuditChain(): { valid: boolean; brokenAt?: string } {
 export function getIPReputation(ip: string): IPReputation {
   let r = _ipRepStore.get(ip);
   if (!r) {
-    r = { ip, score: 0, isProxy: false, isVPN: false, isTor: false, isDatacenter: false, blocklisted: false, blocklistSources: [], lastChecked: Date.now(), requestCount: 0, violationCount: 0 };
+    r = {
+      ip,
+      score: 0,
+      isProxy: false,
+      isVPN: false,
+      isTor: false,
+      isDatacenter: false,
+      blocklisted: false,
+      blocklistSources: [],
+      lastChecked: Date.now(),
+      requestCount: 0,
+      violationCount: 0,
+    };
     _ipRepStore.set(ip, r);
   }
   r.requestCount++;
@@ -516,13 +596,21 @@ export function blockIPv2(ip: string, reason: string): void {
   const r = getIPReputation(ip);
   r.blocklisted = true;
   r.score = Math.min(100, r.score + 50);
-  recordSecurityEvent({ type: "ip_blocked", severity: "high", ip, metadata: { reason } });
+  recordSecurityEvent({
+    type: "ip_blocked",
+    severity: "high",
+    ip,
+    metadata: { reason },
+  });
 }
 
 export function unblockIPv2(ip: string): void {
   _blockedIPs.delete(ip);
   const r = _ipRepStore.get(ip);
-  if (r) { r.blocklisted = false; r.score = Math.max(0, r.score - 50); }
+  if (r) {
+    r.blocklisted = false;
+    r.score = Math.max(0, r.score - 50);
+  }
 }
 
 export function isIPBlockedV2(ip: string): boolean {
@@ -540,14 +628,26 @@ export function checkHoneypot(req: Request): boolean {
     _honeypotHits.set(ip, hits);
     if (hits >= 2) {
       _blockedIPs.add(ip);
-      recordSecurityEvent({ type: "honeypot_triggered", severity: "critical", ip, endpoint: req.path, metadata: { hits } });
+      recordSecurityEvent({
+        type: "honeypot_triggered",
+        severity: "critical",
+        ip,
+        endpoint: req.path,
+        metadata: { hits },
+      });
     }
     return true;
   }
   if (req.body) {
     for (const field of HONEYPOT_FIELDS) {
       if (req.body[field] !== undefined && req.body[field] !== "") {
-        recordSecurityEvent({ type: "bot_detected", severity: "high", ip, endpoint: req.path, metadata: { honeypotField: field } });
+        recordSecurityEvent({
+          type: "bot_detected",
+          severity: "high",
+          ip,
+          endpoint: req.path,
+          metadata: { honeypotField: field },
+        });
         return true;
       }
     }
@@ -559,29 +659,56 @@ export function checkHoneypot(req: Request): boolean {
 // ANTI-SPAM ENGINE
 // ═══════════════════════════════════════════════════════════════
 
-export function analyzeSpam(content: string, userId?: number): {
-  isSpam: boolean; confidence: number; reasons: string[];
+export function analyzeSpam(
+  content: string,
+  userId?: number
+): {
+  isSpam: boolean;
+  confidence: number;
+  reasons: string[];
 } {
   const reasons: string[] = [];
   let score = 0;
   for (const p of SPAM_CONTENT_PATTERNS) {
-    if (p.test(content)) { score += 25; reasons.push("Spam pattern matched"); }
+    if (p.test(content)) {
+      score += 25;
+      reasons.push("Spam pattern matched");
+    }
   }
   const lower = content.toLowerCase();
   for (const kw of SPAM_KEYWORDS) {
-    if (lower.includes(kw)) { score += 20; reasons.push(`Spam keyword: "${kw}"`); }
+    if (lower.includes(kw)) {
+      score += 20;
+      reasons.push(`Spam keyword: "${kw}"`);
+    }
   }
-  const fp = crypto.createHash("md5").update(content.trim().toLowerCase().replace(/\s+/g, " ")).digest("hex");
+  const fp = crypto
+    .createHash("md5")
+    .update(content.trim().toLowerCase().replace(/\s+/g, " "))
+    .digest("hex");
   const fpc = (_spamFP.get(fp) || 0) + 1;
   _spamFP.set(fp, fpc);
-  if (fpc > 3) { score += 30 * Math.min(fpc - 3, 3); reasons.push(`Duplicate content (${fpc}x)`); }
-  const upperRatio = (content.match(/[A-Z]/g) || []).length / Math.max(content.length, 1);
-  if (upperRatio > 0.7 && content.length > 20) { score += 15; reasons.push("Excessive caps"); }
+  if (fpc > 3) {
+    score += 30 * Math.min(fpc - 3, 3);
+    reasons.push(`Duplicate content (${fpc}x)`);
+  }
+  const upperRatio =
+    (content.match(/[A-Z]/g) || []).length / Math.max(content.length, 1);
+  if (upperRatio > 0.7 && content.length > 20) {
+    score += 15;
+    reasons.push("Excessive caps");
+  }
   const emojiCount = (content.match(/[\u{1F300}-\u{1F9FF}]/gu) || []).length;
-  if (emojiCount > 20) { score += 10; reasons.push(`Emoji spam (${emojiCount})`); }
+  if (emojiCount > 20) {
+    score += 10;
+    reasons.push(`Emoji spam (${emojiCount})`);
+  }
   if (userId) {
     const profile = _behaviorProfiles.get(`user:${userId}`);
-    if (profile && profile.requestCount > 50) { score += 15; reasons.push("High velocity user"); }
+    if (profile && profile.requestCount > 50) {
+      score += 15;
+      reasons.push("High velocity user");
+    }
   }
   return { isSpam: score >= 50, confidence: Math.min(score, 100), reasons };
 }
@@ -591,27 +718,64 @@ export function analyzeSpam(content: string, userId?: number): {
 // ═══════════════════════════════════════════════════════════════
 
 export function detectBotV2(req: Request): {
-  isBot: boolean; isMaliciousBot: boolean; confidence: number; signals: string[];
+  isBot: boolean;
+  isMaliciousBot: boolean;
+  confidence: number;
+  signals: string[];
 } {
   const ua = req.headers["user-agent"] || "";
   const signals: string[] = [];
   let score = 0;
   if (LEGIT_BOT_PATTERNS.some(p => p.test(ua))) {
-    return { isBot: true, isMaliciousBot: false, confidence: 90, signals: ["Legitimate crawler"] };
+    return {
+      isBot: true,
+      isMaliciousBot: false,
+      confidence: 90,
+      signals: ["Legitimate crawler"],
+    };
   }
-  if (BOT_UA_PATTERNS.some(p => p.test(ua))) { score += 70; signals.push("Bot-like user agent"); }
-  if (!req.headers["accept-language"]) { score += 15; signals.push("No Accept-Language"); }
-  if (!req.headers["accept-encoding"]) { score += 10; signals.push("No Accept-Encoding"); }
-  if (!req.headers["accept"]) { score += 10; signals.push("No Accept header"); }
-  if (!ua) { score += 40; signals.push("Missing User-Agent"); }
-  if (ua.length < 10) { score += 20; signals.push("Suspiciously short UA"); }
+  if (BOT_UA_PATTERNS.some(p => p.test(ua))) {
+    score += 70;
+    signals.push("Bot-like user agent");
+  }
+  if (!req.headers["accept-language"]) {
+    score += 15;
+    signals.push("No Accept-Language");
+  }
+  if (!req.headers["accept-encoding"]) {
+    score += 10;
+    signals.push("No Accept-Encoding");
+  }
+  if (!req.headers["accept"]) {
+    score += 10;
+    signals.push("No Accept header");
+  }
+  if (!ua) {
+    score += 40;
+    signals.push("Missing User-Agent");
+  }
+  if (ua.length < 10) {
+    score += 20;
+    signals.push("Suspiciously short UA");
+  }
   const ip = getClientIPv2(req);
   const profile = _behaviorProfiles.get(`ip:${ip}`);
   if (profile) {
-    if (profile.avgTimeBetweenRequests < 50) { score += 30; signals.push("Inhuman request speed"); }
-    if (profile.uniqueEndpoints.size > 100 && profile.requestCount < 200) { score += 20; signals.push("Endpoint scanning pattern"); }
+    if (profile.avgTimeBetweenRequests < 50) {
+      score += 30;
+      signals.push("Inhuman request speed");
+    }
+    if (profile.uniqueEndpoints.size > 100 && profile.requestCount < 200) {
+      score += 20;
+      signals.push("Endpoint scanning pattern");
+    }
   }
-  return { isBot: score >= 40, isMaliciousBot: score >= 60, confidence: Math.min(score, 100), signals };
+  return {
+    isBot: score >= 40,
+    isMaliciousBot: score >= 60,
+    confidence: Math.min(score, 100),
+    signals,
+  };
 }
 
 export function updateBehaviorProfile(req: Request, userId?: number): void {
@@ -620,11 +784,24 @@ export function updateBehaviorProfile(req: Request, userId?: number): void {
   const now = Date.now();
   let profile = _behaviorProfiles.get(key);
   if (!profile) {
-    profile = { userId, ip, requestCount: 0, uniqueEndpoints: new Set(), avgTimeBetweenRequests: 0, suspicionScore: 0, firstSeen: now, lastSeen: now, flags: [] };
+    profile = {
+      userId,
+      ip,
+      requestCount: 0,
+      uniqueEndpoints: new Set(),
+      avgTimeBetweenRequests: 0,
+      suspicionScore: 0,
+      firstSeen: now,
+      lastSeen: now,
+      flags: [],
+    };
     _behaviorProfiles.set(key, profile);
   }
   const timeSince = now - profile.lastSeen;
-  profile.avgTimeBetweenRequests = profile.requestCount === 0 ? timeSince : (profile.avgTimeBetweenRequests * 0.9 + timeSince * 0.1);
+  profile.avgTimeBetweenRequests =
+    profile.requestCount === 0
+      ? timeSince
+      : profile.avgTimeBetweenRequests * 0.9 + timeSince * 0.1;
   profile.requestCount++;
   profile.uniqueEndpoints.add(req.path);
   profile.lastSeen = now;
@@ -635,49 +812,98 @@ export function updateBehaviorProfile(req: Request, userId?: number): void {
 // ═══════════════════════════════════════════════════════════════
 
 export function assessFraudRisk(params: {
-  userId?: number; ip: string; action: string; amount?: number; metadata?: Record<string, unknown>;
+  userId?: number;
+  ip: string;
+  action: string;
+  amount?: number;
+  metadata?: Record<string, unknown>;
 }): FraudAssessment {
   const signals: FraudSignal[] = [];
   let riskScore = 0;
   const ipRep = getIPReputation(params.ip);
   if (ipRep.score > 50) {
-    signals.push({ type: "bad_ip", severity: ipRep.score / 100, description: "High-risk IP address", evidence: { ipScore: ipRep.score }, timestamp: Date.now() });
+    signals.push({
+      type: "bad_ip",
+      severity: ipRep.score / 100,
+      description: "High-risk IP address",
+      evidence: { ipScore: ipRep.score },
+      timestamp: Date.now(),
+    });
     riskScore += ipRep.score * 0.3;
   }
   if (params.amount !== undefined) {
     if (params.amount > 10_000) {
-      signals.push({ type: "large_amount", severity: 0.5, description: "Large transaction amount", evidence: { amount: params.amount }, timestamp: Date.now() });
+      signals.push({
+        type: "large_amount",
+        severity: 0.5,
+        description: "Large transaction amount",
+        evidence: { amount: params.amount },
+        timestamp: Date.now(),
+      });
       riskScore += 15;
     }
     if (params.amount > 100_000) {
-      signals.push({ type: "very_large_amount", severity: 0.8, description: "Very large transaction", evidence: { amount: params.amount }, timestamp: Date.now() });
+      signals.push({
+        type: "very_large_amount",
+        severity: 0.8,
+        description: "Very large transaction",
+        evidence: { amount: params.amount },
+        timestamp: Date.now(),
+      });
       riskScore += 25;
     }
   }
   if (params.userId) {
     const existing = _fraudByUser.get(params.userId) || [];
-    const recentSwaps = existing.filter(s => s.type === "swap" && Date.now() - s.timestamp < 60_000);
+    const recentSwaps = existing.filter(
+      s => s.type === "swap" && Date.now() - s.timestamp < 60_000
+    );
     if (params.action === "swap" && recentSwaps.length > 5) {
-      signals.push({ type: "wash_trading", severity: 0.9, description: "Wash trading pattern detected", evidence: { recentSwaps: recentSwaps.length }, timestamp: Date.now() });
+      signals.push({
+        type: "wash_trading",
+        severity: 0.9,
+        description: "Wash trading pattern detected",
+        evidence: { recentSwaps: recentSwaps.length },
+        timestamp: Date.now(),
+      });
       riskScore += 40;
-      recordSecurityEvent({ type: "wash_trading", severity: "critical", ip: params.ip, userId: params.userId, metadata: {} });
+      recordSecurityEvent({
+        type: "wash_trading",
+        severity: "critical",
+        ip: params.ip,
+        userId: params.userId,
+        metadata: {},
+      });
     }
-    if (signals.length > 0) _fraudByUser.set(params.userId, [...existing, ...signals].slice(-100));
+    if (signals.length > 0)
+      _fraudByUser.set(params.userId, [...existing, ...signals].slice(-100));
   }
   const finalScore = Math.min(100, riskScore);
   let recommendation: FraudAssessment["recommendation"] = "allow";
   if (finalScore >= 80) recommendation = "block";
   else if (finalScore >= 60) recommendation = "review";
   else if (finalScore >= 40) recommendation = "challenge";
-  return { userId: params.userId, ip: params.ip, riskScore: finalScore, signals, recommendation, timestamp: Date.now() };
+  return {
+    userId: params.userId,
+    ip: params.ip,
+    riskScore: finalScore,
+    signals,
+    recommendation,
+    timestamp: Date.now(),
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════
 // CREDENTIAL STUFFING DETECTION
 // ═══════════════════════════════════════════════════════════════
 
-export function trackLoginAttempt(ip: string, username: string, success: boolean): {
-  blocked: boolean; reason?: string;
+export function trackLoginAttempt(
+  ip: string,
+  username: string,
+  success: boolean
+): {
+  blocked: boolean;
+  reason?: string;
 } {
   const key = `${ip}:${username}`;
   const t = _credStuffing.get(key) || { attempts: 0, lastAttempt: 0 };
@@ -687,11 +913,21 @@ export function trackLoginAttempt(ip: string, username: string, success: boolean
     _credStuffing.set(key, t);
     if (t.attempts >= 10) {
       blockIPv2(ip, "Credential stuffing");
-      recordSecurityEvent({ type: "credential_stuffing", severity: "critical", ip, metadata: { username, attempts: t.attempts } });
+      recordSecurityEvent({
+        type: "credential_stuffing",
+        severity: "critical",
+        ip,
+        metadata: { username, attempts: t.attempts },
+      });
       return { blocked: true, reason: "Too many failed login attempts" };
     }
     if (t.attempts >= 5) {
-      recordSecurityEvent({ type: "brute_force", severity: "high", ip, metadata: { username, attempts: t.attempts } });
+      recordSecurityEvent({
+        type: "brute_force",
+        severity: "high",
+        ip,
+        metadata: { username, attempts: t.attempts },
+      });
     }
   } else {
     _credStuffing.delete(key);
@@ -712,8 +948,14 @@ export function generateCSRFToken(sessionId: string): string {
 export function validateCSRFToken(sessionId: string, token: string): boolean {
   const s = _csrfTokens.get(sessionId);
   if (!s || s.used) return false;
-  if (Date.now() - s.createdAt > 2 * 60 * 60_000) { _csrfTokens.delete(sessionId); return false; }
-  const valid = crypto.timingSafeEqual(Buffer.from(s.token), Buffer.from(token));
+  if (Date.now() - s.createdAt > 2 * 60 * 60_000) {
+    _csrfTokens.delete(sessionId);
+    return false;
+  }
+  const valid = crypto.timingSafeEqual(
+    Buffer.from(s.token),
+    Buffer.from(token)
+  );
   if (valid) s.used = true;
   return valid;
 }
@@ -723,20 +965,37 @@ export function validateCSRFToken(sessionId: string, token: string): boolean {
 // ═══════════════════════════════════════════════════════════════
 
 export function generateSessionFingerprint(req: Request): string {
-  return crypto.createHash("sha256").update([
-    req.headers["user-agent"] || "",
-    req.headers["accept-language"] || "",
-    req.headers["accept-encoding"] || "",
-    getClientIPv2(req),
-  ].join("|")).digest("hex").slice(0, 16);
+  return crypto
+    .createHash("sha256")
+    .update(
+      [
+        req.headers["user-agent"] || "",
+        req.headers["accept-language"] || "",
+        req.headers["accept-encoding"] || "",
+        getClientIPv2(req),
+      ].join("|")
+    )
+    .digest("hex")
+    .slice(0, 16);
 }
 
-export function validateSessionFingerprint(sessionId: string, req: Request): boolean {
+export function validateSessionFingerprint(
+  sessionId: string,
+  req: Request
+): boolean {
   const current = generateSessionFingerprint(req);
   const stored = _sessionFP.get(sessionId);
-  if (!stored) { _sessionFP.set(sessionId, current); return true; }
+  if (!stored) {
+    _sessionFP.set(sessionId, current);
+    return true;
+  }
   if (stored !== current) {
-    recordSecurityEvent({ type: "session_hijack", severity: "critical", ip: getClientIPv2(req), metadata: { sessionId } });
+    recordSecurityEvent({
+      type: "session_hijack",
+      severity: "critical",
+      ip: getClientIPv2(req),
+      metadata: { sessionId },
+    });
     return false;
   }
   return true;
@@ -747,10 +1006,22 @@ export function validateSessionFingerprint(sessionId: string, req: Request): boo
 // ═══════════════════════════════════════════════════════════════
 
 export function getTrustScoreV2(userId: number): TrustScoreV2 {
-  return _trustScoresV2.get(userId) || { userId, score: 100, tier: "new", flags: [], lastUpdated: Date.now() };
+  return (
+    _trustScoresV2.get(userId) || {
+      userId,
+      score: 100,
+      tier: "new",
+      flags: [],
+      lastUpdated: Date.now(),
+    }
+  );
 }
 
-export function updateTrustScoreV2(userId: number, delta: number, reason: string): TrustScoreV2 {
+export function updateTrustScoreV2(
+  userId: number,
+  delta: number,
+  reason: string
+): TrustScoreV2 {
   const trust = getTrustScoreV2(userId);
   trust.score = Math.max(0, Math.min(1000, trust.score + delta));
   trust.tier = trustTierFromScore(trust.score);
@@ -775,13 +1046,26 @@ function trustTierFromScore(score: number): TrustScoreV2["tier"] {
 }
 
 export const TrustSignalWeights = {
-  emailVerified: 50, phoneVerified: 75, kycCompleted: 150,
-  firstPost: 10, firstFollow: 5, receivedTip: 20, sentTip: 15,
-  accountAge30d: 30, accountAge90d: 50, accountAge365d: 100,
-  premiumSubscriber: 80, creatorVerified: 100, stakingActive: 40,
-  nftHolder: 25, governanceVoter: 20,
-  spamReport: -50, fraudFlag: -150, chargebackFiled: -200,
-  contentRemoved: -30, accountSuspended: -300,
+  emailVerified: 50,
+  phoneVerified: 75,
+  kycCompleted: 150,
+  firstPost: 10,
+  firstFollow: 5,
+  receivedTip: 20,
+  sentTip: 15,
+  accountAge30d: 30,
+  accountAge90d: 50,
+  accountAge365d: 100,
+  premiumSubscriber: 80,
+  creatorVerified: 100,
+  stakingActive: 40,
+  nftHolder: 25,
+  governanceVoter: 20,
+  spamReport: -50,
+  fraudFlag: -150,
+  chargebackFiled: -200,
+  contentRemoved: -30,
+  accountSuspended: -300,
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -791,19 +1075,36 @@ export const TrustSignalWeights = {
 export function securityMiddleware() {
   return (req: Request, res: Response, next: NextFunction) => {
     const ip = getClientIPv2(req);
-    if (isIPBlockedV2(ip)) { res.status(403).json({ error: "Access denied", code: "IP_BLOCKED" }); return; }
-    if (checkHoneypot(req)) { res.status(404).json({ error: "Not found" }); return; }
+    if (isIPBlockedV2(ip)) {
+      res.status(403).json({ error: "Access denied", code: "IP_BLOCKED" });
+      return;
+    }
+    if (checkHoneypot(req)) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
     const botResult = detectBotV2(req);
     if (botResult.isMaliciousBot) {
-      recordSecurityEvent({ type: "bot_detected", severity: "high", ip, endpoint: req.path, userAgent: req.headers["user-agent"] as string, metadata: { signals: botResult.signals } });
-      res.status(403).json({ error: "Access denied", code: "BOT_DETECTED" }); return;
+      recordSecurityEvent({
+        type: "bot_detected",
+        severity: "high",
+        ip,
+        endpoint: req.path,
+        userAgent: req.headers["user-agent"] as string,
+        metadata: { signals: botResult.signals },
+      });
+      res.status(403).json({ error: "Access denied", code: "BOT_DETECTED" });
+      return;
     }
     updateBehaviorProfile(req);
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("X-XSS-Protection", "1; mode=block");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    res.setHeader(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=()"
+    );
     next();
   };
 }
@@ -826,14 +1127,23 @@ export function generateSecureToken(length = 32): string {
 }
 
 export function generateOTP(digits = 6): string {
-  return crypto.randomInt(0, Math.pow(10, digits)).toString().padStart(digits, "0");
+  return crypto
+    .randomInt(0, Math.pow(10, digits))
+    .toString()
+    .padStart(digits, "0");
 }
 
 export function maskPII(data: string): string {
   return data
-    .replace(/([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, (_, u, d) => `${u.slice(0, 2)}***@${d}`)
+    .replace(
+      /([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+      (_, u, d) => `${u.slice(0, 2)}***@${d}`
+    )
     .replace(/\+?[\d\s\-().]{10,}/g, "***-***-****")
-    .replace(/\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, "****-****-****-****")
+    .replace(
+      /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g,
+      "****-****-****-****"
+    )
     .replace(/\b\d{3}-\d{2}-\d{4}\b/g, "***-**-****");
 }
 
@@ -841,27 +1151,44 @@ export function isValidUsername(username: string): boolean {
   return /^[a-zA-Z0-9_.-]{3,30}$/.test(username);
 }
 
-export function isStrongPassword(password: string): { valid: boolean; reasons: string[] } {
+export function isStrongPassword(password: string): {
+  valid: boolean;
+  reasons: string[];
+} {
   const reasons: string[] = [];
   if (password.length < 8) reasons.push("At least 8 characters required");
   if (!/[A-Z]/.test(password)) reasons.push("Uppercase letter required");
   if (!/[a-z]/.test(password)) reasons.push("Lowercase letter required");
   if (!/\d/.test(password)) reasons.push("Number required");
-  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) reasons.push("Special character required");
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password))
+    reasons.push("Special character required");
   return { valid: reasons.length === 0, reasons };
 }
 
-export function hashPasswordV2(password: string, salt?: string): { hash: string; salt: string } {
+export function hashPasswordV2(
+  password: string,
+  salt?: string
+): { hash: string; salt: string } {
   const s = salt || crypto.randomBytes(16).toString("hex");
-  return { hash: crypto.pbkdf2Sync(password, s, 100_000, 64, "sha512").toString("hex"), salt: s };
+  return {
+    hash: crypto.pbkdf2Sync(password, s, 100_000, 64, "sha512").toString("hex"),
+    salt: s,
+  };
 }
 
-export function verifyPasswordV2(password: string, hash: string, salt: string): boolean {
+export function verifyPasswordV2(
+  password: string,
+  hash: string,
+  salt: string
+): boolean {
   const { hash: computed } = hashPasswordV2(password, salt);
   return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(hash));
 }
 
-export function sanitizeInput(input: string): { clean: string; threats: string[] } {
+export function sanitizeInput(input: string): {
+  clean: string;
+  threats: string[];
+} {
   const threats: string[] = [];
   let clean = input;
   const xssPatterns = [
@@ -872,46 +1199,92 @@ export function sanitizeInput(input: string): { clean: string; threats: string[]
     /document\.cookie/gi,
   ];
   for (const p of xssPatterns) {
-    if (p.test(clean)) { threats.push("XSS attempt"); clean = clean.replace(p, "[REMOVED]"); }
+    if (p.test(clean)) {
+      threats.push("XSS attempt");
+      clean = clean.replace(p, "[REMOVED]");
+    }
   }
   return { clean, threats };
 }
 
-export function validateAndSanitize(input: unknown, maxLength = 10_000): string {
+export function validateAndSanitize(
+  input: unknown,
+  maxLength = 10_000
+): string {
   if (typeof input !== "string") return "";
   const { clean } = sanitizeInput(input.slice(0, maxLength));
   return clean;
 }
 
 export function isValidURL(url: string): boolean {
-  try { new URL(url); return true; } catch { return false; }
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // Rate limit check helper (non-middleware version)
-export function checkRateLimit(key: string, configName = "default"): {
-  allowed: boolean; remaining: number; resetAt: number; retryAfter?: number;
+export function checkRateLimit(
+  key: string,
+  configName = "default"
+): {
+  allowed: boolean;
+  remaining: number;
+  resetAt: number;
+  retryAfter?: number;
 } {
-  const configs: Record<string, { windowMs: number; maxRequests: number; blockDurationMs: number }> = {
-    default:        { windowMs: 60_000,      maxRequests: 100, blockDurationMs: 60_000 },
-    auth:           { windowMs: 15 * 60_000, maxRequests: 10,  blockDurationMs: 30 * 60_000 },
-    post_create:    { windowMs: 60_000,      maxRequests: 20,  blockDurationMs: 5 * 60_000 },
-    tip:            { windowMs: 60_000,      maxRequests: 30,  blockDurationMs: 5 * 60_000 },
-    mining:         { windowMs: 10_000,      maxRequests: 5,   blockDurationMs: 30_000 },
-    swap:           { windowMs: 60_000,      maxRequests: 20,  blockDurationMs: 5 * 60_000 },
-    dm:             { windowMs: 60_000,      maxRequests: 50,  blockDurationMs: 2 * 60_000 },
-    password_reset: { windowMs: 60 * 60_000, maxRequests: 3,   blockDurationMs: 60 * 60_000 },
+  const configs: Record<
+    string,
+    { windowMs: number; maxRequests: number; blockDurationMs: number }
+  > = {
+    default: { windowMs: 60_000, maxRequests: 100, blockDurationMs: 60_000 },
+    auth: {
+      windowMs: 15 * 60_000,
+      maxRequests: 10,
+      blockDurationMs: 30 * 60_000,
+    },
+    post_create: {
+      windowMs: 60_000,
+      maxRequests: 20,
+      blockDurationMs: 5 * 60_000,
+    },
+    tip: { windowMs: 60_000, maxRequests: 30, blockDurationMs: 5 * 60_000 },
+    mining: { windowMs: 10_000, maxRequests: 5, blockDurationMs: 30_000 },
+    swap: { windowMs: 60_000, maxRequests: 20, blockDurationMs: 5 * 60_000 },
+    dm: { windowMs: 60_000, maxRequests: 50, blockDurationMs: 2 * 60_000 },
+    password_reset: {
+      windowMs: 60 * 60_000,
+      maxRequests: 3,
+      blockDurationMs: 60 * 60_000,
+    },
   };
   const config = configs[configName] || configs.default;
   const now = Date.now();
   const storeKey = `v2:${configName}:${key}`;
-  let entry = rateLimitStore.get(storeKey) as { count: number; resetAt: number } | undefined;
+  const entry = rateLimitStore.get(storeKey) as
+    { count: number; resetAt: number } | undefined;
   if (!entry || entry.resetAt < now) {
     rateLimitStore.set(storeKey, { count: 1, resetAt: now + config.windowMs });
-    return { allowed: true, remaining: config.maxRequests - 1, resetAt: now + config.windowMs };
+    return {
+      allowed: true,
+      remaining: config.maxRequests - 1,
+      resetAt: now + config.windowMs,
+    };
   }
   if (entry.count >= config.maxRequests) {
-    return { allowed: false, remaining: 0, resetAt: entry.resetAt, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+    return {
+      allowed: false,
+      remaining: 0,
+      resetAt: entry.resetAt,
+      retryAfter: Math.ceil((entry.resetAt - now) / 1000),
+    };
   }
   entry.count++;
-  return { allowed: true, remaining: config.maxRequests - entry.count, resetAt: entry.resetAt };
+  return {
+    allowed: true,
+    remaining: config.maxRequests - entry.count,
+    resetAt: entry.resetAt,
+  };
 }

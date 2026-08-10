@@ -115,7 +115,8 @@ const ANOMALY_Z_SCORE_THRESHOLD = 3.0;
  * In a real application, this would be a dedicated vector database.
  */
 class InMemoryVectorStore<T> {
-  private vectors: Map<string, { embedding: VectorEmbedding; data: T }> = new Map();
+  private vectors: Map<string, { embedding: VectorEmbedding; data: T }> =
+    new Map();
 
   public add(id: string, embedding: VectorEmbedding, data: T): void {
     this.vectors.set(id, { embedding, data });
@@ -125,7 +126,10 @@ class InMemoryVectorStore<T> {
     return this.vectors.get(id);
   }
 
-  public search(queryEmbedding: VectorEmbedding, topK: number): VectorSearchResult<T>[] {
+  public search(
+    queryEmbedding: VectorEmbedding,
+    topK: number
+  ): VectorSearchResult<T>[] {
     const results: VectorSearchResult<T>[] = [];
     for (const [id, { embedding, data }] of this.vectors.entries()) {
       const score = this.cosineSimilarity(queryEmbedding, embedding);
@@ -134,9 +138,14 @@ class InMemoryVectorStore<T> {
     return results.sort((a, b) => b.score - a.score).slice(0, topK);
   }
 
-  private cosineSimilarity(vec1: VectorEmbedding, vec2: VectorEmbedding): number {
+  private cosineSimilarity(
+    vec1: VectorEmbedding,
+    vec2: VectorEmbedding
+  ): number {
     if (vec1.length !== vec2.length) {
-      throw new Error("Vectors must have the same dimensions for cosine similarity.");
+      throw new Error(
+        "Vectors must have the same dimensions for cosine similarity."
+      );
     }
     let dotProduct = 0;
     let magnitude1 = 0;
@@ -165,13 +174,21 @@ class UserBehaviorTracker {
     this.events.push(event);
   }
 
-  public getEventsForUser(userId: string, sinceTimestamp?: number): UserBehaviorEvent[] {
-    return this.events.filter(event =>
-      event.userId === userId && (sinceTimestamp ? event.timestamp >= sinceTimestamp : true)
+  public getEventsForUser(
+    userId: string,
+    sinceTimestamp?: number
+  ): UserBehaviorEvent[] {
+    return this.events.filter(
+      event =>
+        event.userId === userId &&
+        (sinceTimestamp ? event.timestamp >= sinceTimestamp : true)
     );
   }
 
-  public getRecentInteractions(userId: string, days: number = TREND_WINDOW_DAYS): string[] {
+  public getRecentInteractions(
+    userId: string,
+    days: number = TREND_WINDOW_DAYS
+  ): string[] {
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
     const recentEvents = this.getEventsForUser(userId, cutoff);
     const itemIds = new Set<string>();
@@ -201,16 +218,30 @@ export class VectorAIMLEngine {
    * @param config Optional embedding configuration.
    * @returns A promise that resolves to the vector embedding.
    */
-  public async generateEmbedding(text: string, config?: EmbeddingConfig): Promise<VectorEmbedding> {
+  public async generateEmbedding(
+    text: string,
+    config?: EmbeddingConfig
+  ): Promise<VectorEmbedding> {
     const model = config?.model || DEFAULT_EMBEDDING_MODEL;
     const dimensions = config?.dimensions || VECTOR_DIMENSIONS;
 
     // Simulate LLM call for embedding generation
-    await invokeLLM({ messages: [{ role: "user", content: `Generate a ${dimensions}-dimensional vector embedding for the following text: "${text}"` }], model });
+    await invokeLLM({
+      messages: [
+        {
+          role: "user",
+          content: `Generate a ${dimensions}-dimensional vector embedding for the following text: "${text}"`,
+        },
+      ],
+      model,
+    });
 
     // In a real scenario, invokeLLM would return the actual embedding.
     // For this simulation, we generate a random vector.
-    const embedding: VectorEmbedding = Array.from({ length: dimensions }, () => Math.random() * 2 - 1);
+    const embedding: VectorEmbedding = Array.from(
+      { length: dimensions },
+      () => Math.random() * 2 - 1
+    );
     return embedding;
   }
 
@@ -220,11 +251,17 @@ export class VectorAIMLEngine {
    * @param topK The number of top results to return.
    * @returns A promise that resolves to a list of search results.
    */
-  public async vectorSimilaritySearch<T>(queryEmbedding: VectorEmbedding, topK: number = 5): Promise<VectorSearchResult<T>[]> {
+  public async vectorSimilaritySearch<T>(
+    queryEmbedding: VectorEmbedding,
+    topK: number = 5
+  ): Promise<VectorSearchResult<T>[]> {
     // Assuming the embeddingStore holds relevant data for search
     // The type T would be inferred from how the store is used.
     // For this example, we\'ll cast it to KnowledgeChunk for consistency.
-    return this.embeddingStore.search(queryEmbedding, topK) as VectorSearchResult<T>[];
+    return this.embeddingStore.search(
+      queryEmbedding,
+      topK
+    ) as VectorSearchResult<T>[];
   }
 
   /**
@@ -245,12 +282,23 @@ export class VectorAIMLEngine {
    * @param config Optional inference configuration.
    * @returns A promise that resolves to the inference result.
    */
-  public async mlModelInference(input: string, config?: InferenceConfig): Promise<string> {
+  public async mlModelInference(
+    input: string,
+    config?: InferenceConfig
+  ): Promise<string> {
     const model = config?.modelId || DEFAULT_INFERENCE_MODEL;
     const temperature = config?.temperature || 0.7;
     const maxTokens = config?.maxTokens || 200;
 
-    const inferenceResult = await invokeLLM({ messages: [{ role: "user", content: `Perform inference on the following input: "${input}"` }], model });
+    const inferenceResult = await invokeLLM({
+      messages: [
+        {
+          role: "user",
+          content: `Perform inference on the following input: "${input}"`,
+        },
+      ],
+      model,
+    });
     return String(inferenceResult.choices[0]?.message?.content || "").trim();
   }
 
@@ -260,9 +308,15 @@ export class VectorAIMLEngine {
    * @param knowledgeBaseIds Optional IDs of knowledge bases to search.
    * @returns A promise that resolves to the generated response.
    */
-  public async retrievalAugmentedGeneration(query: string, knowledgeBaseIds?: string[]): Promise<string> {
+  public async retrievalAugmentedGeneration(
+    query: string,
+    knowledgeBaseIds?: string[]
+  ): Promise<string> {
     const queryEmbedding = await this.generateEmbedding(query);
-    const relevantChunks = await this.vectorSimilaritySearch<KnowledgeChunk>(queryEmbedding, MAX_RAG_CHUNKS);
+    const relevantChunks = await this.vectorSimilaritySearch<KnowledgeChunk>(
+      queryEmbedding,
+      MAX_RAG_CHUNKS
+    );
 
     const context = relevantChunks
       .filter(result => result.score > SIMILARITY_THRESHOLD)
@@ -275,7 +329,10 @@ export class VectorAIMLEngine {
 
     const prompt = `Based on the following context, answer the question:\n\nContext:\n${context}\n\nQuestion: "${query}"`;
 
-    return this.mlModelInference(prompt, { modelId: DEFAULT_INFERENCE_MODEL, temperature: 0.5 });
+    return this.mlModelInference(prompt, {
+      modelId: DEFAULT_INFERENCE_MODEL,
+      temperature: 0.5,
+    });
   }
 
   /**
@@ -284,10 +341,18 @@ export class VectorAIMLEngine {
    * @param topK The number of top results to return.
    * @returns A promise that resolves to a list of relevant knowledge chunks.
    */
-  public async semanticSearch(query: string, topK: number = 5): Promise<KnowledgeChunk[]> {
+  public async semanticSearch(
+    query: string,
+    topK: number = 5
+  ): Promise<KnowledgeChunk[]> {
     const queryEmbedding = await this.generateEmbedding(query);
-    const results = await this.vectorSimilaritySearch<KnowledgeChunk>(queryEmbedding, topK);
-    return results.filter(result => result.score > SIMILARITY_THRESHOLD).map(result => result.data);
+    const results = await this.vectorSimilaritySearch<KnowledgeChunk>(
+      queryEmbedding,
+      topK
+    );
+    return results
+      .filter(result => result.score > SIMILARITY_THRESHOLD)
+      .map(result => result.data);
   }
 
   /**
@@ -296,8 +361,12 @@ export class VectorAIMLEngine {
    * @param count The number of recommendations to generate.
    * @returns A promise that resolves to a list of recommended items.
    */
-  public async getContentRecommendations(userId: string, count: number = 10): Promise<RecommendationItem[]> {
-    const recentInteractions = this.userBehaviorTracker.getRecentInteractions(userId);
+  public async getContentRecommendations(
+    userId: string,
+    count: number = 10
+  ): Promise<RecommendationItem[]> {
+    const recentInteractions =
+      this.userBehaviorTracker.getRecentInteractions(userId);
 
     if (recentInteractions.length === 0) {
       // Fallback to popular items or general recommendations if no recent interactions
@@ -310,11 +379,26 @@ export class VectorAIMLEngine {
     // In a real system, this would search a catalog of all available items
     // For simulation, we\'ll just return some dummy recommendations based on similarity to user profile
     const dummyCatalogItems: KnowledgeChunk[] = [
-      { id: "item-A", content: "Article about blockchain technology and DeFi." },
-      { id: "item-B", content: "News on AI advancements and machine learning models." },
-      { id: "item-C", content: "Tutorial on smart contract development with Solidity." },
-      { id: "item-D", content: "Report on global economic trends and cryptocurrency markets." },
-      { id: "item-E", content: "Deep dive into vector databases and their applications." },
+      {
+        id: "item-A",
+        content: "Article about blockchain technology and DeFi.",
+      },
+      {
+        id: "item-B",
+        content: "News on AI advancements and machine learning models.",
+      },
+      {
+        id: "item-C",
+        content: "Tutorial on smart contract development with Solidity.",
+      },
+      {
+        id: "item-D",
+        content: "Report on global economic trends and cryptocurrency markets.",
+      },
+      {
+        id: "item-E",
+        content: "Deep dive into vector databases and their applications.",
+      },
     ];
 
     for (const item of dummyCatalogItems) {
@@ -324,9 +408,14 @@ export class VectorAIMLEngine {
       this.embeddingStore.add(item.id, item.embedding, item);
     }
 
-    const similarItems = await this.vectorSimilaritySearch<KnowledgeChunk>(userProfileEmbedding, count * 2);
+    const similarItems = await this.vectorSimilaritySearch<KnowledgeChunk>(
+      userProfileEmbedding,
+      count * 2
+    );
     const recommendations: RecommendationItem[] = similarItems
-      .filter(result => result.score > 0.5 && !recentInteractions.includes(result.id))
+      .filter(
+        result => result.score > 0.5 && !recentInteractions.includes(result.id)
+      )
       .slice(0, count)
       .map(result => ({ itemId: result.id, score: result.score }));
 
@@ -338,7 +427,7 @@ export class VectorAIMLEngine {
     const popularItems = [
       { itemId: "popular-1", score: 0.95 },
       { itemId: "popular-2", score: 0.92 },
-      { itemId: "popular-3", score: 0.90 },
+      { itemId: "popular-3", score: 0.9 },
       { itemId: "popular-4", score: 0.88 },
       { itemId: "popular-5", score: 0.85 },
     ];
@@ -359,7 +448,10 @@ export class VectorAIMLEngine {
    * @param forecastSteps The number of future steps to forecast.
    * @returns A promise that resolves to an array of predicted values.
    */
-  public async predictTrends(dataSeries: number[], forecastSteps: number): Promise<number[]> {
+  public async predictTrends(
+    dataSeries: number[],
+    forecastSteps: number
+  ): Promise<number[]> {
     // This is a simplified trend prediction using a basic moving average or linear regression idea.
     // In a real scenario, this would involve more sophisticated time series models.
     if (dataSeries.length < 5) {
@@ -369,10 +461,12 @@ export class VectorAIMLEngine {
 
     const lastN = Math.min(dataSeries.length, 10);
     const recentData = dataSeries.slice(-lastN);
-    const averageChange = recentData.reduce((sum, val, i, arr) => {
-      if (i > 0) return sum + (val - arr[i - 1]);
-      return sum;
-    }, 0) / (recentData.length - 1);
+    const averageChange =
+      recentData.reduce((sum, val, i, arr) => {
+        if (i > 0) return sum + (val - arr[i - 1]);
+        return sum;
+      }, 0) /
+      (recentData.length - 1);
 
     const predictions: number[] = [];
     let lastValue = dataSeries[dataSeries.length - 1];
@@ -389,17 +483,31 @@ export class VectorAIMLEngine {
    * @param currentValue The current value to check for anomaly.
    * @returns Anomaly detection result.
    */
-  public detectAnomaly(dataSeries: number[], currentValue: number): AnomalyResult {
+  public detectAnomaly(
+    dataSeries: number[],
+    currentValue: number
+  ): AnomalyResult {
     if (dataSeries.length < 2) {
-      return { isAnomaly: false, score: 0, threshold: ANOMALY_Z_SCORE_THRESHOLD };
+      return {
+        isAnomaly: false,
+        score: 0,
+        threshold: ANOMALY_Z_SCORE_THRESHOLD,
+      };
     }
 
-    const mean = dataSeries.reduce((sum, val) => sum + val, 0) / dataSeries.length;
-    const variance = dataSeries.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / dataSeries.length;
+    const mean =
+      dataSeries.reduce((sum, val) => sum + val, 0) / dataSeries.length;
+    const variance =
+      dataSeries.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      dataSeries.length;
     const stdDev = Math.sqrt(variance);
 
     if (stdDev === 0) {
-      return { isAnomaly: false, score: 0, threshold: ANOMALY_Z_SCORE_THRESHOLD };
+      return {
+        isAnomaly: false,
+        score: 0,
+        threshold: ANOMALY_Z_SCORE_THRESHOLD,
+      };
     }
 
     const zScore = Math.abs((currentValue - mean) / stdDev);
@@ -419,7 +527,10 @@ export class VectorAIMLEngine {
    * @param k The number of clusters.
    * @returns A promise that resolves to an array of cluster results for each data point.
    */
-  public async performClustering(dataPoints: VectorEmbedding[], k: number): Promise<ClusterResult[]> {
+  public async performClustering(
+    dataPoints: VectorEmbedding[],
+    k: number
+  ): Promise<ClusterResult[]> {
     // This is a highly simplified K-Means like clustering simulation.
     // In a real system, this would involve a robust clustering algorithm.
     if (dataPoints.length === 0 || k <= 0) {
@@ -445,14 +556,22 @@ export class VectorAIMLEngine {
       }
       // Confidence is inverse of distance, normalized
       const confidence = 1 / (1 + minDistance); // Simple inverse for confidence
-      assignments.push({ clusterId: assignedClusterId, confidence: confidence });
+      assignments.push({
+        clusterId: assignedClusterId,
+        confidence: confidence,
+      });
     }
     return assignments;
   }
 
-  private euclideanDistance(vec1: VectorEmbedding, vec2: VectorEmbedding): number {
+  private euclideanDistance(
+    vec1: VectorEmbedding,
+    vec2: VectorEmbedding
+  ): number {
     if (vec1.length !== vec2.length) {
-      throw new Error("Vectors must have the same dimensions for Euclidean distance.");
+      throw new Error(
+        "Vectors must have the same dimensions for Euclidean distance."
+      );
     }
     let sumOfSquares = 0;
     for (let i = 0; i < vec1.length; i++) {
@@ -467,7 +586,10 @@ export class VectorAIMLEngine {
    * @param classes An array of possible class labels.
    * @returns A promise that resolves to the classification result.
    */
-  public async performClassification(dataPoint: VectorEmbedding, classes: string[]): Promise<ClassificationResult> {
+  public async performClassification(
+    dataPoint: VectorEmbedding,
+    classes: string[]
+  ): Promise<ClassificationResult> {
     // This is a simplified classification simulation using LLM inference.
     // In a real system, this would involve a trained classification model.
     if (classes.length === 0) {
@@ -476,7 +598,10 @@ export class VectorAIMLEngine {
 
     const prompt = `Classify the following data point (represented as a vector: [${dataPoint.join(", ")}]) into one of these categories: ${classes.join(", ")}. Provide only the most likely category name and a confidence score between 0 and 1. Example: "category_name, 0.85".`;
 
-    const llmResponse = await this.mlModelInference(prompt, { modelId: DEFAULT_INFERENCE_MODEL, temperature: 0.3 });
+    const llmResponse = await this.mlModelInference(prompt, {
+      modelId: DEFAULT_INFERENCE_MODEL,
+      temperature: 0.3,
+    });
 
     const [label, probabilityStr] = llmResponse.split(",").map(s => s.trim());
     const probability = parseFloat(probabilityStr);
@@ -507,7 +632,8 @@ export class VectorAIMLEngine {
    */
   private calculateStandardDeviation(data: number[], mean: number): number {
     if (data.length < 2) return 0;
-    const variance = data.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / data.length;
+    const variance =
+      data.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / data.length;
     return Math.sqrt(variance);
   }
 
@@ -518,7 +644,11 @@ export class VectorAIMLEngine {
    * @param maxIterations Maximum iterations for clustering.
    * @returns A promise that resolves to an array of cluster results for each data point.
    */
-  public async performAdvancedClustering(dataPoints: VectorEmbedding[], k: number, maxIterations: number = 10): Promise<ClusterResult[]> {
+  public async performAdvancedClustering(
+    dataPoints: VectorEmbedding[],
+    k: number,
+    maxIterations: number = 10
+  ): Promise<ClusterResult[]> {
     if (dataPoints.length === 0 || k <= 0) {
       return [];
     }
@@ -530,7 +660,7 @@ export class VectorAIMLEngine {
     }
 
     let assignments: ClusterResult[] = [];
-    for (let iter = 0; iter = maxIterations; iter++) {
+    for (let iter = 0; (iter = maxIterations); iter++) {
       // Assign data points to the closest centroid
       const newAssignments: ClusterResult[] = [];
       const clusters: Map<string, VectorEmbedding[]> = new Map();
@@ -545,7 +675,10 @@ export class VectorAIMLEngine {
             assignedClusterId = `cluster-${i + 1}`;
           }
         }
-        newAssignments.push({ clusterId: assignedClusterId, confidence: 1 / (1 + minDistance) });
+        newAssignments.push({
+          clusterId: assignedClusterId,
+          confidence: 1 / (1 + minDistance),
+        });
         if (!clusters.has(assignedClusterId)) {
           clusters.set(assignedClusterId, []);
         }
@@ -567,7 +700,9 @@ export class VectorAIMLEngine {
           newCentroids.push(newCentroid);
         } else {
           // If a cluster becomes empty, re-initialize its centroid randomly
-          newCentroids.push(dataPoints[Math.floor(Math.random() * dataPoints.length)]);
+          newCentroids.push(
+            dataPoints[Math.floor(Math.random() * dataPoints.length)]
+          );
           changed = true;
         }
       }
@@ -594,7 +729,11 @@ export class VectorAIMLEngine {
     return centroid.map(val => val / vectors.length);
   }
 
-  private areVectorsEqual(vec1: VectorEmbedding, vec2: VectorEmbedding, tolerance: number = 1e-6): boolean {
+  private areVectorsEqual(
+    vec1: VectorEmbedding,
+    vec2: VectorEmbedding,
+    tolerance: number = 1e-6
+  ): boolean {
     if (vec1.length !== vec2.length) {
       return false;
     }
@@ -613,22 +752,42 @@ export class VectorAIMLEngine {
    * @param topK The number of top labels to return.
    * @returns A promise that resolves to a list of classification results.
    */
-  public async performMultiLabelClassification(dataPoint: VectorEmbedding, possibleLabels: string[], topK: number = 3): Promise<ClassificationResult[]> {
+  public async performMultiLabelClassification(
+    dataPoint: VectorEmbedding,
+    possibleLabels: string[],
+    topK: number = 3
+  ): Promise<ClassificationResult[]> {
     if (possibleLabels.length === 0) {
       return [];
     }
 
     const prompt = `Given the data point (vector: [${dataPoint.join(", ")}]), identify the top ${topK} most relevant labels from the following list: ${possibleLabels.join(", ")}. For each, provide a confidence score between 0 and 1. Format as a JSON array of objects: [{ "label": "label_name", "probability": 0.XX }, ...].`;
 
-    const llmResponse = await this.mlModelInference(prompt, { modelId: DEFAULT_INFERENCE_MODEL, temperature: 0.4, maxTokens: 300 });
+    const llmResponse = await this.mlModelInference(prompt, {
+      modelId: DEFAULT_INFERENCE_MODEL,
+      temperature: 0.4,
+      maxTokens: 300,
+    });
 
     try {
       const results: ClassificationResult[] = JSON.parse(llmResponse);
-      return results.filter(r => typeof r.label === 'string' && typeof r.probability === 'number' && r.probability >= 0 && r.probability <= 1);
+      return results.filter(
+        r =>
+          typeof r.label === "string" &&
+          typeof r.probability === "number" &&
+          r.probability >= 0 &&
+          r.probability <= 1
+      );
     } catch (e) {
-      console.error("Failed to parse multi-label classification response from LLM:", e);
+      console.error(
+        "Failed to parse multi-label classification response from LLM:",
+        e
+      );
       // Fallback to a single classification if parsing fails
-      const singleResult = await this.performClassification(dataPoint, possibleLabels);
+      const singleResult = await this.performClassification(
+        dataPoint,
+        possibleLabels
+      );
       return [singleResult];
     }
   }
@@ -639,7 +798,10 @@ export class VectorAIMLEngine {
    * @param numberOfSegments The desired number of user segments.
    * @returns A promise that resolves to a mapping of userId to their assigned segment.
    */
-  public async modelUserBehaviorSegments(userEvents: UserBehaviorEvent[], numberOfSegments: number): Promise<Map<string, string>> {
+  public async modelUserBehaviorSegments(
+    userEvents: UserBehaviorEvent[],
+    numberOfSegments: number
+  ): Promise<Map<string, string>> {
     if (userEvents.length === 0 || numberOfSegments <= 0) {
       return new Map();
     }
@@ -673,15 +835,23 @@ export class VectorAIMLEngine {
 
     if (dataPoints.length < numberOfSegments) {
       // Not enough distinct users for the requested number of segments
-      console.warn("Not enough distinct users for the requested number of segments. Reducing segments.");
+      console.warn(
+        "Not enough distinct users for the requested number of segments. Reducing segments."
+      );
       numberOfSegments = dataPoints.length > 0 ? dataPoints.length : 1;
     }
 
-    const clusteringResults = await this.performAdvancedClustering(dataPoints, numberOfSegments);
+    const clusteringResults = await this.performAdvancedClustering(
+      dataPoints,
+      numberOfSegments
+    );
 
     const userSegments: Map<string, string> = new Map();
     userIds.forEach((userId, index) => {
-      userSegments.set(userId, clusteringResults[index]?.clusterId || "unassigned");
+      userSegments.set(
+        userId,
+        clusteringResults[index]?.clusterId || "unassigned"
+      );
     });
 
     return userSegments;

@@ -6,8 +6,21 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getLoginUrl } from "@/const";
 import {
-  Sprout, Rocket, Coins, TrendingUp, Clock, Shield, Zap, Lock,
-  ArrowUpRight, Flame, Droplets, Layers, Star, Users, Loader2
+  Sprout,
+  Rocket,
+  Coins,
+  TrendingUp,
+  Clock,
+  Shield,
+  Zap,
+  Lock,
+  ArrowUpRight,
+  Flame,
+  Droplets,
+  Layers,
+  Star,
+  Users,
+  Loader2,
 } from "lucide-react";
 
 const FARMING_POOLS = [
@@ -73,7 +86,8 @@ const LAUNCHPAD_PROJECTS = [
     id: "launch-1",
     name: "ShadowAI Protocol",
     ticker: "SHAI",
-    description: "Decentralized AI inference network built on the SKYCOIN4444 ecosystem. Enables permissionless access to LLMs via token-gated compute.",
+    description:
+      "Decentralized AI inference network built on the SKYCOIN4444 ecosystem. Enables permissionless access to LLMs via token-gated compute.",
     raised: 2400000,
     target: 3000000,
     participants: 1847,
@@ -87,7 +101,8 @@ const LAUNCHPAD_PROJECTS = [
     id: "launch-2",
     name: "CyberVault Finance",
     ticker: "CVF",
-    description: "Next-gen DeFi vault aggregator with auto-compounding strategies and MEV protection. Optimized for SKY444 holders.",
+    description:
+      "Next-gen DeFi vault aggregator with auto-compounding strategies and MEV protection. Optimized for SKY444 holders.",
     raised: 1800000,
     target: 2000000,
     participants: 2341,
@@ -101,7 +116,8 @@ const LAUNCHPAD_PROJECTS = [
     id: "launch-3",
     name: "NeonPlay Games",
     ticker: "NEON",
-    description: "AAA-quality blockchain gaming studio. First title: 'Shadow Arena' — a cyberpunk battle royale with NFT characters and SKY444 prize pools.",
+    description:
+      "AAA-quality blockchain gaming studio. First title: 'Shadow Arena' — a cyberpunk battle royale with NFT characters and SKY444 prize pools.",
     raised: 5000000,
     target: 5000000,
     participants: 4892,
@@ -113,7 +129,7 @@ const LAUNCHPAD_PROJECTS = [
   },
 ];
 
-function FarmCard({ pool }: { pool: typeof FARMING_POOLS[0] }) {
+function FarmCard({ pool }: { pool: (typeof FARMING_POOLS)[0] }) {
   const { isAuthenticated } = useAuth();
 
   return (
@@ -131,22 +147,30 @@ function FarmCard({ pool }: { pool: typeof FARMING_POOLS[0] }) {
         </div>
         <div>
           <h3 className="font-bold">{pool.name}</h3>
-          <span className="text-xs text-muted-foreground">{pool.rewards} Rewards</span>
+          <span className="text-xs text-muted-foreground">
+            {pool.rewards} Rewards
+          </span>
         </div>
       </div>
 
       <div className="space-y-2.5 mb-5">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">APY</span>
-          <span className="font-mono font-bold text-purple-400">{pool.apy}%</span>
+          <span className="font-mono font-bold text-purple-400">
+            {pool.apy}%
+          </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">TVL</span>
-          <span className="font-mono font-medium">${(pool.tvl / 1e6).toFixed(1)}M</span>
+          <span className="font-mono font-medium">
+            ${(pool.tvl / 1e6).toFixed(1)}M
+          </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Multiplier</span>
-          <Badge variant="outline" className="text-[10px] font-mono">{pool.multiplier}</Badge>
+          <Badge variant="outline" className="text-[10px] font-mono">
+            {pool.multiplier}
+          </Badge>
         </div>
       </div>
 
@@ -161,51 +185,80 @@ function FarmCard({ pool }: { pool: typeof FARMING_POOLS[0] }) {
         </div>
       ) : (
         <a href={getLoginUrl()} className="block">
-          <Button variant="outline" className="w-full text-sm">Sign In to Farm</Button>
+          <Button variant="outline" className="w-full text-sm">
+            Sign In to Farm
+          </Button>
         </a>
       )}
     </div>
   );
 }
 
-function LaunchpadCard({ project }: { project: typeof LAUNCHPAD_PROJECTS[0] }) {
+function LaunchpadCard({
+  project,
+}: {
+  project: (typeof LAUNCHPAD_PROJECTS)[0];
+}) {
   const { isAuthenticated } = useAuth();
   const progress = (project.raised / project.target) * 100;
   const isCompleted = project.status === "completed";
 
   return (
-    <div className={`p-6 rounded-xl border ${isCompleted ? "border-purple-500/20 bg-purple-600/5" : "border-border/50 bg-card/80"} backdrop-blur`}>
+    <div
+      className={`p-6 rounded-xl border ${isCompleted ? "border-purple-500/20 bg-purple-600/5" : "border-border/50 bg-card/80"} backdrop-blur`}
+    >
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-lg font-bold">{project.name}</h3>
-            <Badge variant="outline" className="font-mono text-[10px]">${project.ticker}</Badge>
+            <Badge variant="outline" className="font-mono text-[10px]">
+              ${project.ticker}
+            </Badge>
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {project.description}
+          </p>
         </div>
-        <Badge className={
-          isCompleted ? "bg-purple-600/10 text-purple-400 border-purple-500/30" :
-          "bg-primary/10 text-primary border-primary/30"
-        }>
+        <Badge
+          className={
+            isCompleted
+              ? "bg-purple-600/10 text-purple-400 border-purple-500/30"
+              : "bg-primary/10 text-primary border-primary/30"
+          }
+        >
           {isCompleted ? "Completed" : "Upcoming"}
         </Badge>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div>
-          <span className="text-[10px] text-muted-foreground block">Raised</span>
-          <span className="text-sm font-mono font-bold">${(project.raised / 1e6).toFixed(1)}M</span>
+          <span className="text-[10px] text-muted-foreground block">
+            Raised
+          </span>
+          <span className="text-sm font-mono font-bold">
+            ${(project.raised / 1e6).toFixed(1)}M
+          </span>
         </div>
         <div>
-          <span className="text-[10px] text-muted-foreground block">Target</span>
-          <span className="text-sm font-mono">${(project.target / 1e6).toFixed(1)}M</span>
+          <span className="text-[10px] text-muted-foreground block">
+            Target
+          </span>
+          <span className="text-sm font-mono">
+            ${(project.target / 1e6).toFixed(1)}M
+          </span>
         </div>
         <div>
-          <span className="text-[10px] text-muted-foreground block">Participants</span>
-          <span className="text-sm font-mono">{project.participants.toLocaleString()}</span>
+          <span className="text-[10px] text-muted-foreground block">
+            Participants
+          </span>
+          <span className="text-sm font-mono">
+            {project.participants.toLocaleString()}
+          </span>
         </div>
         <div>
-          <span className="text-[10px] text-muted-foreground block">Min Allocation</span>
+          <span className="text-[10px] text-muted-foreground block">
+            Min Allocation
+          </span>
           <span className="text-sm font-mono">{project.allocation}</span>
         </div>
       </div>
@@ -226,20 +279,28 @@ function LaunchpadCard({ project }: { project: typeof LAUNCHPAD_PROJECTS[0] }) {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {project.startDate}</span>
-          <span className="flex items-center gap-1"><Layers className="w-3 h-3" /> {project.chain}</span>
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3" /> {project.startDate}
+          </span>
+          <span className="flex items-center gap-1">
+            <Layers className="w-3 h-3" /> {project.chain}
+          </span>
         </div>
-        {!isCompleted && (
-          isAuthenticated ? (
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold">
+        {!isCompleted &&
+          (isAuthenticated ? (
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold"
+            >
               <Rocket className="w-3 h-3 mr-1" /> Join IDO
             </Button>
           ) : (
             <a href={getLoginUrl()}>
-              <Button size="sm" variant="outline" className="text-xs">Sign In</Button>
+              <Button size="sm" variant="outline" className="text-xs">
+                Sign In
+              </Button>
             </a>
-          )
-        )}
+          ))}
       </div>
     </div>
   );
@@ -250,8 +311,12 @@ export default function Farming() {
   const { data: tokenMetrics } = trpc.token.metrics.useQuery();
   const { data: stakingPools } = trpc.staking.pools.useQuery();
   const realTotalStaked = tokenMetrics?.totalStaked || 0;
-  const totalTVL = realTotalStaked > 0 ? realTotalStaked : FARMING_POOLS.reduce((sum, p) => sum + p.tvl, 0);
-  const avgAPY = FARMING_POOLS.reduce((sum, p) => sum + p.apy, 0) / FARMING_POOLS.length;
+  const totalTVL =
+    realTotalStaked > 0
+      ? realTotalStaked
+      : FARMING_POOLS.reduce((sum, p) => sum + p.tvl, 0);
+  const avgAPY =
+    FARMING_POOLS.reduce((sum, p) => sum + p.apy, 0) / FARMING_POOLS.length;
 
   return (
     <div className="min-h-screen">
@@ -262,33 +327,50 @@ export default function Farming() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-600/5 mb-6">
               <Sprout className="h-3 w-3 text-purple-400" />
-              <span className="text-xs font-mono text-purple-400">DEFI FARMING</span>
+              <span className="text-xs font-mono text-purple-400">
+                DEFI FARMING
+              </span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Farming & <span className="text-primary">Launchpad</span>
             </h1>
             <p className="text-lg text-muted-foreground">
-              Provide liquidity, earn yield, and get early access to the hottest new projects in the SKYCOIN4444 ecosystem.
+              Provide liquidity, earn yield, and get early access to the hottest
+              new projects in the SKYCOIN4444 ecosystem.
             </p>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
             <div className="p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur text-center">
-              <div className="text-2xl font-bold font-mono text-primary">${(totalTVL / 1e6).toFixed(0)}M</div>
-              <div className="text-xs text-muted-foreground mt-1">Total Value Locked</div>
+              <div className="text-2xl font-bold font-mono text-primary">
+                ${(totalTVL / 1e6).toFixed(0)}M
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Total Value Locked
+              </div>
             </div>
             <div className="p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur text-center">
-              <div className="text-2xl font-bold font-mono text-purple-400">{avgAPY.toFixed(1)}%</div>
+              <div className="text-2xl font-bold font-mono text-purple-400">
+                {avgAPY.toFixed(1)}%
+              </div>
               <div className="text-xs text-muted-foreground mt-1">Avg APY</div>
             </div>
             <div className="p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur text-center">
-              <div className="text-2xl font-bold font-mono text-[oklch(0.7_0.2_280)]">{FARMING_POOLS.length}</div>
-              <div className="text-xs text-muted-foreground mt-1">Active Farms</div>
+              <div className="text-2xl font-bold font-mono text-[oklch(0.7_0.2_280)]">
+                {FARMING_POOLS.length}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Active Farms
+              </div>
             </div>
             <div className="p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur text-center">
-              <div className="text-2xl font-bold font-mono text-[oklch(0.7_0.2_60)]">{LAUNCHPAD_PROJECTS.filter(p => p.status === "upcoming").length}</div>
-              <div className="text-xs text-muted-foreground mt-1">Upcoming IDOs</div>
+              <div className="text-2xl font-bold font-mono text-[oklch(0.7_0.2_60)]">
+                {LAUNCHPAD_PROJECTS.filter(p => p.status === "upcoming").length}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Upcoming IDOs
+              </div>
             </div>
           </div>
         </div>
@@ -312,8 +394,13 @@ export default function Farming() {
               <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 mb-6 flex items-start gap-3">
                 <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
-                  <h4 className="text-sm font-semibold mb-0.5">Audited Smart Contracts</h4>
-                  <p className="text-xs text-muted-foreground">All farming pools are secured by audited contracts. Impermanent loss protection available on select pools.</p>
+                  <h4 className="text-sm font-semibold mb-0.5">
+                    Audited Smart Contracts
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    All farming pools are secured by audited contracts.
+                    Impermanent loss protection available on select pools.
+                  </p>
                 </div>
               </div>
 
@@ -325,18 +412,43 @@ export default function Farming() {
 
               {/* How it works */}
               <div className="mt-12">
-                <h3 className="text-xl font-bold mb-6">How Yield Farming Works</h3>
+                <h3 className="text-xl font-bold mb-6">
+                  How Yield Farming Works
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {[
-                    { icon: Coins, title: "1. Provide Liquidity", desc: "Add token pairs to a liquidity pool" },
-                    { icon: Lock, title: "2. Stake LP Tokens", desc: "Stake your LP tokens in the farm" },
-                    { icon: Sprout, title: "3. Earn Rewards", desc: "Accumulate SKY444 rewards over time" },
-                    { icon: TrendingUp, title: "4. Compound", desc: "Re-stake rewards for exponential growth" },
+                    {
+                      icon: Coins,
+                      title: "1. Provide Liquidity",
+                      desc: "Add token pairs to a liquidity pool",
+                    },
+                    {
+                      icon: Lock,
+                      title: "2. Stake LP Tokens",
+                      desc: "Stake your LP tokens in the farm",
+                    },
+                    {
+                      icon: Sprout,
+                      title: "3. Earn Rewards",
+                      desc: "Accumulate SKY444 rewards over time",
+                    },
+                    {
+                      icon: TrendingUp,
+                      title: "4. Compound",
+                      desc: "Re-stake rewards for exponential growth",
+                    },
                   ].map((step, i) => (
-                    <div key={i} className="p-4 rounded-xl border border-border/50 bg-card/80 text-center">
+                    <div
+                      key={i}
+                      className="p-4 rounded-xl border border-border/50 bg-card/80 text-center"
+                    >
                       <step.icon className="w-8 h-8 text-primary mx-auto mb-2" />
-                      <h4 className="text-sm font-semibold mb-1">{step.title}</h4>
-                      <p className="text-xs text-muted-foreground">{step.desc}</p>
+                      <h4 className="text-sm font-semibold mb-1">
+                        {step.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {step.desc}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -348,24 +460,63 @@ export default function Farming() {
               <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 mb-6 flex items-start gap-3">
                 <Star className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
-                  <h4 className="text-sm font-semibold mb-0.5">SKY444 Launchpad</h4>
-                  <p className="text-xs text-muted-foreground">Get early access to vetted projects. Hold SKY444 tokens to qualify for IDO allocations. Higher tier = larger allocation.</p>
+                  <h4 className="text-sm font-semibold mb-0.5">
+                    SKY444 Launchpad
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Get early access to vetted projects. Hold SKY444 tokens to
+                    qualify for IDO allocations. Higher tier = larger
+                    allocation.
+                  </p>
                 </div>
               </div>
 
               {/* Tier system */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 {[
-                  { tier: "Bronze", min: "500 SKY444", multiplier: "1x", color: "text-orange-400 border-orange-500/30" },
-                  { tier: "Silver", min: "5,000 SKY444", multiplier: "3x", color: "text-gray-300 border-gray-400/30" },
-                  { tier: "Gold", min: "25,000 SKY444", multiplier: "5x", color: "text-yellow-400 border-yellow-500/30" },
-                  { tier: "Diamond", min: "100,000 SKY444", multiplier: "10x", color: "text-primary border-primary/30" },
+                  {
+                    tier: "Bronze",
+                    min: "500 SKY444",
+                    multiplier: "1x",
+                    color: "text-orange-400 border-orange-500/30",
+                  },
+                  {
+                    tier: "Silver",
+                    min: "5,000 SKY444",
+                    multiplier: "3x",
+                    color: "text-gray-300 border-gray-400/30",
+                  },
+                  {
+                    tier: "Gold",
+                    min: "25,000 SKY444",
+                    multiplier: "5x",
+                    color: "text-yellow-400 border-yellow-500/30",
+                  },
+                  {
+                    tier: "Diamond",
+                    min: "100,000 SKY444",
+                    multiplier: "10x",
+                    color: "text-primary border-primary/30",
+                  },
                 ].map((t, i) => (
-                  <div key={i} className={`p-4 rounded-xl border ${t.color} bg-card/80 text-center`}>
-                    <div className={`text-sm font-bold ${t.color.split(" ")[0]}`}>{t.tier}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{t.min}</div>
-                    <div className="text-lg font-mono font-bold mt-2">{t.multiplier}</div>
-                    <div className="text-[10px] text-muted-foreground">allocation</div>
+                  <div
+                    key={i}
+                    className={`p-4 rounded-xl border ${t.color} bg-card/80 text-center`}
+                  >
+                    <div
+                      className={`text-sm font-bold ${t.color.split(" ")[0]}`}
+                    >
+                      {t.tier}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {t.min}
+                    </div>
+                    <div className="text-lg font-mono font-bold mt-2">
+                      {t.multiplier}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">
+                      allocation
+                    </div>
                   </div>
                 ))}
               </div>

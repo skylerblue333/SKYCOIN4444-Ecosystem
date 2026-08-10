@@ -37,7 +37,11 @@ export interface PropagationTree {
   totalReach: number;
   maxDepth: number;
   sharesByDepth: Record<number, number>;
-  topAmplifiers: { userId: number; sharesGenerated: number; reachGenerated: number }[];
+  topAmplifiers: {
+    userId: number;
+    sharesGenerated: number;
+    reachGenerated: number;
+  }[];
   platformBreakdown: Record<string, number>;
   timeToFirstShare: number; // seconds
   timeToViral: number | null; // seconds to reach viral threshold, null if not viral
@@ -110,17 +114,17 @@ export interface SpreadHeatmap {
 // ─── DECAY MODEL CONSTANTS ────────────────────────────────────────────────────
 
 const CONTENT_HALF_LIVES: Record<string, number> = {
-  post: 6,         // 6 hours
-  reel: 24,        // 24 hours
+  post: 6, // 6 hours
+  reel: 24, // 24 hours
   stream_clip: 48, // 48 hours
-  nft: 168,        // 1 week
+  nft: 168, // 1 week
   community_post: 12,
 };
 
 const VIRAL_THRESHOLDS = {
-  warming: 10,    // 10 shares/min
-  trending: 50,   // 50 shares/min
-  viral: 200,     // 200 shares/min
+  warming: 10, // 10 shares/min
+  trending: 50, // 50 shares/min
+  viral: 200, // 200 shares/min
   mega_viral: 1000, // 1000 shares/min
 };
 
@@ -141,7 +145,9 @@ export class ShareGraphService {
     parentShareId?: string;
     audienceReached?: number;
   }): Promise<ShareEvent> {
-    const parentShare = params.parentShareId ? this.shareIndex.get(params.parentShareId) : undefined;
+    const parentShare = params.parentShareId
+      ? this.shareIndex.get(params.parentShareId)
+      : undefined;
     const depth = parentShare ? parentShare.depth + 1 : 0;
 
     const event: ShareEvent = {
@@ -155,7 +161,8 @@ export class ShareGraphService {
       parentShareId: params.parentShareId,
       depth,
       timestamp: new Date(),
-      audienceReached: params.audienceReached || this.estimateAudienceReach(params.sharerId),
+      audienceReached:
+        params.audienceReached || this.estimateAudienceReach(params.sharerId),
     };
 
     const existing = this.shares.get(params.contentId) || [];
@@ -207,14 +214,20 @@ export class ShareGraphService {
       amplifierStats.set(share.sharerId, amp);
 
       if (share.sharedToPlatform) {
-        platformBreakdown[share.sharedToPlatform] = (platformBreakdown[share.sharedToPlatform] || 0) + 1;
+        platformBreakdown[share.sharedToPlatform] =
+          (platformBreakdown[share.sharedToPlatform] || 0) + 1;
       } else {
-        platformBreakdown["internal"] = (platformBreakdown["internal"] || 0) + 1;
+        platformBreakdown["internal"] =
+          (platformBreakdown["internal"] || 0) + 1;
       }
     }
 
     const topAmplifiers = Array.from(amplifierStats.entries())
-      .map(([userId, stats]) => ({ userId, sharesGenerated: stats.shares, reachGenerated: stats.reach }))
+      .map(([userId, stats]) => ({
+        userId,
+        sharesGenerated: stats.shares,
+        reachGenerated: stats.reach,
+      }))
       .sort((a, b) => b.reachGenerated - a.reachGenerated)
       .slice(0, 10);
 
@@ -223,16 +236,22 @@ export class ShareGraphService {
 
     // Calculate share velocity (shares per minute in peak window)
     const now = Date.now();
-    const recentShares = shares.filter(s => now - s.timestamp.getTime() < 60000);
+    const recentShares = shares.filter(
+      s => now - s.timestamp.getTime() < 60000
+    );
     const shareVelocity = recentShares.length;
 
     // Check if viral threshold was reached
     const peakVelocity = this.calculatePeakVelocity(shares);
-    const timeToViral = peakVelocity >= VIRAL_THRESHOLDS.viral
-      ? this.findTimeToThreshold(shares, VIRAL_THRESHOLDS.viral)
-      : null;
+    const timeToViral =
+      peakVelocity >= VIRAL_THRESHOLDS.viral
+        ? this.findTimeToThreshold(shares, VIRAL_THRESHOLDS.viral)
+        : null;
 
-    const viralityScore = Math.min(100, (peakVelocity / VIRAL_THRESHOLDS.viral) * 100);
+    const viralityScore = Math.min(
+      100,
+      (peakVelocity / VIRAL_THRESHOLDS.viral) * 100
+    );
 
     return {
       contentId,
@@ -257,7 +276,11 @@ export class ShareGraphService {
     let maxShares = 0;
     for (let i = 0; i < shares.length; i++) {
       const windowEnd = shares[i].timestamp.getTime() + 60000;
-      const inWindow = shares.filter(s => s.timestamp.getTime() >= shares[i].timestamp.getTime() && s.timestamp.getTime() <= windowEnd);
+      const inWindow = shares.filter(
+        s =>
+          s.timestamp.getTime() >= shares[i].timestamp.getTime() &&
+          s.timestamp.getTime() <= windowEnd
+      );
       maxShares = Math.max(maxShares, inWindow.length);
     }
     return maxShares;
@@ -270,7 +293,11 @@ export class ShareGraphService {
 
     for (let i = 0; i < shares.length; i++) {
       const windowEnd = shares[i].timestamp.getTime() + 60000;
-      const inWindow = shares.filter(s => s.timestamp.getTime() >= shares[i].timestamp.getTime() && s.timestamp.getTime() <= windowEnd);
+      const inWindow = shares.filter(
+        s =>
+          s.timestamp.getTime() >= shares[i].timestamp.getTime() &&
+          s.timestamp.getTime() <= windowEnd
+      );
       if (inWindow.length >= threshold) {
         return Math.floor((shares[i].timestamp.getTime() - firstTime) / 1000);
       }
@@ -284,7 +311,9 @@ export class ShareGraphService {
 
   getRecentShares(contentId: string, windowMs = 3600000): ShareEvent[] {
     const cutoff = Date.now() - windowMs;
-    return (this.shares.get(contentId) || []).filter(s => s.timestamp.getTime() > cutoff);
+    return (this.shares.get(contentId) || []).filter(
+      s => s.timestamp.getTime() > cutoff
+    );
   }
 }
 
@@ -292,7 +321,10 @@ export class ShareGraphService {
 
 export class ViralityScoreService {
   private scores = new Map<string, ViralityScore>();
-  private engagementHistory = new Map<string, { timestamp: Date; count: number }[]>();
+  private engagementHistory = new Map<
+    string,
+    { timestamp: Date; count: number }[]
+  >();
 
   recordEngagement(contentId: string, engagementCount: number): void {
     const history = this.engagementHistory.get(contentId) || [];
@@ -302,7 +334,10 @@ export class ViralityScoreService {
     this.engagementHistory.set(contentId, history);
   }
 
-  calculateScore(contentId: string, shareGraph: ShareGraphService): ViralityScore {
+  calculateScore(
+    contentId: string,
+    shareGraph: ShareGraphService
+  ): ViralityScore {
     const recentShares = shareGraph.getRecentShares(contentId, 3600000); // last hour
     const veryRecentShares = shareGraph.getRecentShares(contentId, 300000); // last 5 min
 
@@ -314,14 +349,24 @@ export class ViralityScoreService {
     const acceleration = velocity - olderVelocity;
 
     // Reach multiplier (average audience per share)
-    const totalReach = recentShares.reduce((sum, s) => sum + s.audienceReached, 0);
-    const reachMultiplier = recentShares.length > 0 ? totalReach / recentShares.length : 0;
+    const totalReach = recentShares.reduce(
+      (sum, s) => sum + s.audienceReached,
+      0
+    );
+    const reachMultiplier =
+      recentShares.length > 0 ? totalReach / recentShares.length : 0;
 
     // Score calculation
-    const velocityScore = Math.min(50, (velocity / VIRAL_THRESHOLDS.viral) * 50);
+    const velocityScore = Math.min(
+      50,
+      (velocity / VIRAL_THRESHOLDS.viral) * 50
+    );
     const accelerationScore = Math.min(20, Math.max(0, acceleration * 2));
     const reachScore = Math.min(20, (reachMultiplier / 10000) * 20);
-    const depthScore = Math.min(10, (shareGraph.buildPropagationTree(contentId) as any).maxDepth || 0 * 2);
+    const depthScore = Math.min(
+      10,
+      (shareGraph.buildPropagationTree(contentId) as any).maxDepth || 0 * 2
+    );
 
     const score = velocityScore + accelerationScore + reachScore + depthScore;
 
@@ -334,10 +379,14 @@ export class ViralityScoreService {
     const signals: string[] = [];
     if (velocity > olderVelocity * 2) signals.push("Accelerating rapidly");
     if (reachMultiplier > 5000) signals.push("High-reach amplifiers sharing");
-    if (recentShares.some(s => s.sharedToPlatform)) signals.push("Cross-platform spread detected");
-    if (recentShares.some(s => s.depth > 2)) signals.push("Deep propagation chain forming");
+    if (recentShares.some(s => s.sharedToPlatform))
+      signals.push("Cross-platform spread detected");
+    if (recentShares.some(s => s.depth > 2))
+      signals.push("Deep propagation chain forming");
 
-    const predictedPeakTime = new Date(Date.now() + (acceleration > 0 ? 3600000 : 1800000));
+    const predictedPeakTime = new Date(
+      Date.now() + (acceleration > 0 ? 3600000 : 1800000)
+    );
     const predictedPeakReach = totalReach * (1 + velocity / 10);
 
     const result: ViralityScore = {
@@ -371,13 +420,16 @@ export class ViralityScoreService {
 // ─── CONTENT DECAY MODEL SERVICE ─────────────────────────────────────────────
 
 export class ContentDecayModelService {
-  private models = new Map<string, {
-    contentType: string;
-    createdAt: Date;
-    peakEngagements: number;
-    peakTime: Date;
-    engagementHistory: { timestamp: Date; value: number }[];
-  }>();
+  private models = new Map<
+    string,
+    {
+      contentType: string;
+      createdAt: Date;
+      peakEngagements: number;
+      peakTime: Date;
+      engagementHistory: { timestamp: Date; value: number }[];
+    }
+  >();
 
   initializeModel(contentId: string, contentType: string): void {
     this.models.set(contentId, {
@@ -393,7 +445,10 @@ export class ContentDecayModelService {
     const model = this.models.get(contentId);
     if (!model) return;
 
-    model.engagementHistory.push({ timestamp: new Date(), value: engagementValue });
+    model.engagementHistory.push({
+      timestamp: new Date(),
+      value: engagementValue,
+    });
     if (engagementValue > model.peakEngagements) {
       model.peakEngagements = engagementValue;
       model.peakTime = new Date();
@@ -408,7 +463,8 @@ export class ContentDecayModelService {
     const hoursSincePeak = (Date.now() - model.peakTime.getTime()) / 3600000;
     const decayRate = Math.log(2) / halfLifeHours; // exponential decay constant
 
-    const currentEngagementRate = model.peakEngagements * Math.exp(-decayRate * hoursSincePeak);
+    const currentEngagementRate =
+      model.peakEngagements * Math.exp(-decayRate * hoursSincePeak);
     const isDecaying = hoursSincePeak > 0.5;
 
     const predictedEngagementAt = (hoursFromNow: number): number => {
@@ -417,12 +473,17 @@ export class ContentDecayModelService {
     };
 
     // Estimate total lifetime engagements using integral of decay function
-    const estimatedTotalLifetimeEngagements = Math.floor(model.peakEngagements / decayRate);
+    const estimatedTotalLifetimeEngagements = Math.floor(
+      model.peakEngagements / decayRate
+    );
 
     // Revival probability based on content type and current decay state
-    const revivalProbability = model.contentType === "nft" ? 0.3
-      : model.contentType === "reel" ? 0.15
-      : 0.05;
+    const revivalProbability =
+      model.contentType === "nft"
+        ? 0.3
+        : model.contentType === "reel"
+          ? 0.15
+          : 0.05;
 
     return {
       contentId,
@@ -438,7 +499,9 @@ export class ContentDecayModelService {
     };
   }
 
-  getBestPostingTimes(contentType: string): { hour: number; dayOfWeek: number; engagementMultiplier: number }[] {
+  getBestPostingTimes(
+    contentType: string
+  ): { hour: number; dayOfWeek: number; engagementMultiplier: number }[] {
     // Based on platform-wide engagement data patterns
     const bestTimes = [
       { hour: 19, dayOfWeek: 2, engagementMultiplier: 1.8 }, // Tuesday 7pm
@@ -449,7 +512,10 @@ export class ContentDecayModelService {
     ];
 
     if (contentType === "reel") {
-      return bestTimes.map(t => ({ ...t, engagementMultiplier: t.engagementMultiplier * 1.2 }));
+      return bestTimes.map(t => ({
+        ...t,
+        engagementMultiplier: t.engagementMultiplier * 1.2,
+      }));
     }
     return bestTimes;
   }
@@ -479,10 +545,15 @@ export class AudienceClusteringService {
 
   getUserClusters(userId: number): AudienceCluster[] {
     const clusterIds = this.userClusterMap.get(userId) || [];
-    return clusterIds.map(id => this.clusters.get(id)).filter(Boolean) as AudienceCluster[];
+    return clusterIds
+      .map(id => this.clusters.get(id))
+      .filter(Boolean) as AudienceCluster[];
   }
 
-  getViralAmplificationPotential(contentId: string, targetClusters: string[]): number {
+  getViralAmplificationPotential(
+    contentId: string,
+    targetClusters: string[]
+  ): number {
     let totalAmplification = 1.0;
     for (const clusterId of targetClusters) {
       const cluster = this.clusters.get(clusterId);
@@ -493,11 +564,19 @@ export class AudienceClusteringService {
     return totalAmplification;
   }
 
-  getBestClustersForContent(contentType: string, hashtags: string[]): AudienceCluster[] {
+  getBestClustersForContent(
+    contentType: string,
+    hashtags: string[]
+  ): AudienceCluster[] {
     return Array.from(this.clusters.values())
-      .filter(cluster =>
-        cluster.contentAffinities.some(a => a.contentType === contentType && a.affinity > 0.6) ||
-        cluster.interests.some(i => hashtags.some(h => h.toLowerCase().includes(i.toLowerCase())))
+      .filter(
+        cluster =>
+          cluster.contentAffinities.some(
+            a => a.contentType === contentType && a.affinity > 0.6
+          ) ||
+          cluster.interests.some(i =>
+            hashtags.some(h => h.toLowerCase().includes(i.toLowerCase()))
+          )
       )
       .sort((a, b) => b.viralAmplificationFactor - a.viralAmplificationFactor)
       .slice(0, 5);
@@ -511,7 +590,10 @@ export class AudienceClusteringService {
 // ─── VIRAL PREDICTION AI ──────────────────────────────────────────────────────
 
 export class ViralPredictionAI {
-  private predictionCache = new Map<string, { prediction: ViralPrediction; generatedAt: Date }>();
+  private predictionCache = new Map<
+    string,
+    { prediction: ViralPrediction; generatedAt: Date }
+  >();
   private readonly CACHE_TTL_MS = 300000; // 5 minutes
 
   async predictVirality(params: {
@@ -529,45 +611,70 @@ export class ViralPredictionAI {
   }): Promise<ViralPrediction> {
     const cacheKey = `${params.contentId}:${params.earlyEngagements}:${params.earlyShares}`;
     const cached = this.predictionCache.get(cacheKey);
-    if (cached && Date.now() - cached.generatedAt.getTime() < this.CACHE_TTL_MS) {
+    if (
+      cached &&
+      Date.now() - cached.generatedAt.getTime() < this.CACHE_TTL_MS
+    ) {
       return cached.prediction;
     }
 
     // Feature engineering
-    const earlyVelocity = (params.earlyEngagements + params.earlyShares * 3) / 5; // per minute
-    const creatorStrength = Math.log10(Math.max(1, params.creatorFollowers)) * params.creatorEngagementRate;
-    const mediaBoost = params.hasMedia ? (params.mediaType === "reel" ? 2.5 : params.mediaType === "video" ? 1.8 : 1.3) : 1.0;
-    const timingScore = this.getTimingScore(params.postingHour, params.dayOfWeek);
+    const earlyVelocity =
+      (params.earlyEngagements + params.earlyShares * 3) / 5; // per minute
+    const creatorStrength =
+      Math.log10(Math.max(1, params.creatorFollowers)) *
+      params.creatorEngagementRate;
+    const mediaBoost = params.hasMedia
+      ? params.mediaType === "reel"
+        ? 2.5
+        : params.mediaType === "video"
+          ? 1.8
+          : 1.3
+      : 1.0;
+    const timingScore = this.getTimingScore(
+      params.postingHour,
+      params.dayOfWeek
+    );
     const hashtagScore = Math.min(1, params.hashtags.length / 5) * 0.3 + 0.7;
 
     // Probability calculation
     let probability = 0;
-    probability += Math.min(0.4, earlyVelocity / 100 * 0.4);
-    probability += Math.min(0.25, creatorStrength / 10 * 0.25);
-    probability += Math.min(0.15, (mediaBoost - 1) / 1.5 * 0.15);
+    probability += Math.min(0.4, (earlyVelocity / 100) * 0.4);
+    probability += Math.min(0.25, (creatorStrength / 10) * 0.25);
+    probability += Math.min(0.15, ((mediaBoost - 1) / 1.5) * 0.15);
     probability += Math.min(0.1, timingScore * 0.1);
     probability += Math.min(0.1, hashtagScore * 0.1);
 
     const predictedPeakReach = Math.floor(
-      params.creatorFollowers * mediaBoost * timingScore * (1 + earlyVelocity / 10)
+      params.creatorFollowers *
+        mediaBoost *
+        timingScore *
+        (1 + earlyVelocity / 10)
     );
 
-    const predictedPeakTimeHours = probability > 0.7 ? 2 : probability > 0.4 ? 6 : 24;
+    const predictedPeakTimeHours =
+      probability > 0.7 ? 2 : probability > 0.4 ? 6 : 24;
 
     const keyFactors: string[] = [];
     if (earlyVelocity > 10) keyFactors.push("Strong early velocity");
-    if (params.creatorEngagementRate > 0.05) keyFactors.push("High-engagement creator");
-    if (params.mediaType === "reel") keyFactors.push("Reel format (2.5x amplification)");
+    if (params.creatorEngagementRate > 0.05)
+      keyFactors.push("High-engagement creator");
+    if (params.mediaType === "reel")
+      keyFactors.push("Reel format (2.5x amplification)");
     if (timingScore > 0.8) keyFactors.push("Optimal posting time");
     if (params.hashtags.length >= 3) keyFactors.push("Good hashtag coverage");
 
     const recommendedActions: string[] = [];
     if (probability > 0.5) {
-      recommendedActions.push("Pin this post immediately to maximize visibility");
+      recommendedActions.push(
+        "Pin this post immediately to maximize visibility"
+      );
       recommendedActions.push("Share to your top communities now");
       recommendedActions.push("Engage with every comment in the next 2 hours");
     } else {
-      recommendedActions.push("Boost with a follow-up post referencing this content");
+      recommendedActions.push(
+        "Boost with a follow-up post referencing this content"
+      );
       recommendedActions.push("Share to 3 relevant communities");
     }
 
@@ -623,8 +730,14 @@ export class SocialSpreadAnalyticsService {
     let peakShares = 0;
 
     for (let t = firstTime; t <= lastTime; t += windowSize) {
-      const windowShares = shares.filter(s => s.timestamp.getTime() >= t && s.timestamp.getTime() < t + windowSize);
-      const windowReach = windowShares.reduce((sum, s) => sum + s.audienceReached, 0);
+      const windowShares = shares.filter(
+        s =>
+          s.timestamp.getTime() >= t && s.timestamp.getTime() < t + windowSize
+      );
+      const windowReach = windowShares.reduce(
+        (sum, s) => sum + s.audienceReached,
+        0
+      );
       const velocity = windowShares.length / 60; // per minute
 
       const window = {
@@ -667,7 +780,9 @@ export class SocialSpreadAnalyticsService {
     peakHours: number[];
   } {
     const allHeatmaps = Array.from(this.heatmaps.values());
-    const viralContent = allHeatmaps.filter(h => h.timeWindows.some(w => w.velocity > VIRAL_THRESHOLDS.trending / 60));
+    const viralContent = allHeatmaps.filter(h =>
+      h.timeWindows.some(w => w.velocity > VIRAL_THRESHOLDS.trending / 60)
+    );
 
     const viralityByContentType: Record<string, number> = {};
     const peakHourCounts: Record<number, number> = {};
@@ -706,29 +821,60 @@ export const socialSpreadAnalytics = new SocialSpreadAnalyticsService();
 
 // ─── ROUTER COMPATIBILITY METHOD ALIASES ─────────────────────────────────────
 // ShareGraphService aliases
-(ShareGraphService.prototype as any).trackShare = function(userId: number, contentId: string, contentType: string, platform?: string) {
-  return this.recordShare({ sharerId: userId, contentId, contentType: contentType as any, platform: platform as any || "web" });
+(ShareGraphService.prototype as any).trackShare = function (
+  userId: number,
+  contentId: string,
+  contentType: string,
+  platform?: string
+) {
+  return this.recordShare({
+    sharerId: userId,
+    contentId,
+    contentType: contentType as any,
+    platform: (platform as any) || "web",
+  });
 };
-(ShareGraphService.prototype as any).getPropagationTree = function(contentId: string) {
+(ShareGraphService.prototype as any).getPropagationTree = function (
+  contentId: string
+) {
   return this.buildPropagationTree(contentId);
 };
 
 // ViralityScoreService aliases
-(ViralityScoreService.prototype as any).calculate = function(contentId: string) {
-  return this.getScore(contentId) || this.calculateScore(contentId, new ShareGraphService());
+(ViralityScoreService.prototype as any).calculate = function (
+  contentId: string
+) {
+  return (
+    this.getScore(contentId) ||
+    this.calculateScore(contentId, new ShareGraphService())
+  );
 };
 
 // SocialSpreadAnalyticsService aliases
-(SocialSpreadAnalyticsService.prototype as any).getTrending = function(category?: string, limit = 20) {
+(SocialSpreadAnalyticsService.prototype as any).getTrending = function (
+  category?: string,
+  limit = 20
+) {
   return this.getPlatformViralityReport();
 };
 
 // AudienceClusteringService aliases
-(AudienceClusteringService.prototype as any).getClusters = function(userId: number) {
+(AudienceClusteringService.prototype as any).getClusters = function (
+  userId: number
+) {
   return this.getUserClusters(userId);
 };
 
 // ViralPredictionAI aliases
-(ViralPredictionAI.prototype as any).predict = function(contentId: string) {
-  return this.predictVirality({ contentId, contentType: "post", currentShares: 0, currentLikes: 0, currentViews: 0, createdAt: new Date(), authorFollowers: 0, hashtags: [] });
+(ViralPredictionAI.prototype as any).predict = function (contentId: string) {
+  return this.predictVirality({
+    contentId,
+    contentType: "post",
+    currentShares: 0,
+    currentLikes: 0,
+    currentViews: 0,
+    createdAt: new Date(),
+    authorFollowers: 0,
+    hashtags: [],
+  });
 };

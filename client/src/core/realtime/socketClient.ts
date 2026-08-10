@@ -12,7 +12,10 @@
  *   PENDING → VALIDATING → PROCESSING → EXECUTING → COMPLETED | FAILED | ROLLED_BACK
  */
 
-import { REALTIME_EVENTS, type RealtimeEvent } from "@/core/actions/actionTypes";
+import {
+  REALTIME_EVENTS,
+  type RealtimeEvent,
+} from "@/core/actions/actionTypes";
 
 // ─── Action Lifecycle States ──────────────────────────────────────────────────
 
@@ -71,7 +74,7 @@ class EventBus {
   }
 
   once<T>(event: string, handler: EventHandler<T>): void {
-    const wrapper: EventHandler<T> = (data) => {
+    const wrapper: EventHandler<T> = data => {
       handler(data);
       this.off(event, wrapper);
     };
@@ -112,7 +115,11 @@ class ActionStateMachine {
     return action;
   }
 
-  transition(id: string, nextState: ActionState, data?: Partial<ActionLifecycle>): ActionLifecycle | null {
+  transition(
+    id: string,
+    nextState: ActionState,
+    data?: Partial<ActionLifecycle>
+  ): ActionLifecycle | null {
     const action = this.actions.get(id);
     if (!action) return null;
 
@@ -127,7 +134,9 @@ class ActionStateMachine {
     };
 
     if (!VALID_TRANSITIONS[action.state].includes(nextState)) {
-      console.warn(`[ActionSM] Invalid transition: ${action.state} → ${nextState} for ${id}`);
+      console.warn(
+        `[ActionSM] Invalid transition: ${action.state} → ${nextState} for ${id}`
+      );
       return action;
     }
 
@@ -136,7 +145,8 @@ class ActionStateMachine {
       ...data,
       state: nextState,
       updatedAt: Date.now(),
-      completedAt: nextState === ACTION_STATES.COMPLETED ? Date.now() : action.completedAt,
+      completedAt:
+        nextState === ACTION_STATES.COMPLETED ? Date.now() : action.completedAt,
     };
     this.actions.set(id, updated);
 
@@ -170,7 +180,10 @@ class ActionStateMachine {
       error: undefined,
     };
     this.actions.set(id, updated);
-    this.bus.emit(REALTIME_EVENTS.ACTION_STARTED, { ...updated, isRetry: true });
+    this.bus.emit(REALTIME_EVENTS.ACTION_STARTED, {
+      ...updated,
+      isRetry: true,
+    });
     return updated;
   }
 
@@ -220,7 +233,7 @@ class SocketClient {
         this.notifyConnectionListeners(true);
       };
 
-      this.eventSource.onmessage = (event) => {
+      this.eventSource.onmessage = event => {
         try {
           const data = JSON.parse(event.data);
           if (data.type) {
@@ -259,7 +272,10 @@ class SocketClient {
   private scheduleReconnect(userId?: string): void {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     this.reconnectTimer = setTimeout(() => {
-      this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.maxReconnectDelay);
+      this.reconnectDelay = Math.min(
+        this.reconnectDelay * 2,
+        this.maxReconnectDelay
+      );
       this.connectSSE(userId);
     }, this.reconnectDelay);
   }
@@ -297,7 +313,11 @@ class SocketClient {
     return this.stateMachine.start(type);
   }
 
-  transitionAction(id: string, state: ActionState, data?: Partial<ActionLifecycle>): ActionLifecycle | null {
+  transitionAction(
+    id: string,
+    state: ActionState,
+    data?: Partial<ActionLifecycle>
+  ): ActionLifecycle | null {
     return this.stateMachine.transition(id, state, data);
   }
 
@@ -351,19 +371,25 @@ export function useSocketClient(userId?: string) {
 
 export function useActionLifecycle(actionId: string | null) {
   const [lifecycle, setLifecycle] = useState<ActionLifecycle | null>(
-    actionId ? socketClient.getAction(actionId) ?? null : null
+    actionId ? (socketClient.getAction(actionId) ?? null) : null
   );
 
   useEffect(() => {
     if (!actionId) return;
 
-    const unsubStart = socketClient.on(REALTIME_EVENTS.ACTION_STARTED, (data: any) => {
-      if (data.id === actionId) setLifecycle({ ...data });
-    });
+    const unsubStart = socketClient.on(
+      REALTIME_EVENTS.ACTION_STARTED,
+      (data: any) => {
+        if (data.id === actionId) setLifecycle({ ...data });
+      }
+    );
 
-    const unsubComplete = socketClient.on(REALTIME_EVENTS.ACTION_COMPLETED, (data: any) => {
-      if (data.id === actionId) setLifecycle({ ...data });
-    });
+    const unsubComplete = socketClient.on(
+      REALTIME_EVENTS.ACTION_COMPLETED,
+      (data: any) => {
+        if (data.id === actionId) setLifecycle({ ...data });
+      }
+    );
 
     return () => {
       unsubStart();

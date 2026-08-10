@@ -3,8 +3,21 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import {
-  Cpu, GraduationCap, Gamepad2, Vote, BarChart3, Heart,
-  ShoppingBag, Menu, X, LogOut, Zap, LayoutDashboard, TrendingUp, Wallet, Trophy,
+  Cpu,
+  GraduationCap,
+  Gamepad2,
+  Vote,
+  BarChart3,
+  Heart,
+  ShoppingBag,
+  Menu,
+  X,
+  LogOut,
+  Zap,
+  LayoutDashboard,
+  TrendingUp,
+  Wallet,
+  Trophy,
 } from "lucide-react";
 
 const NAV = [
@@ -33,11 +46,16 @@ export default function Layout({ children }: { children: ReactNode }) {
           <Link href="/" className="flex items-center gap-2.5 group">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg,oklch(0.82 0.15 200),oklch(0.62 0.2 295))" }}
+              style={{
+                background:
+                  "linear-gradient(135deg,oklch(0.82 0.15 200),oklch(0.62 0.2 295))",
+              }}
             >
               <Zap className="w-5 h-5 text-background" fill="currentColor" />
             </div>
-            <span className="font-extrabold text-lg tracking-tight">SkyCoin4444</span>
+            <span className="font-extrabold text-lg tracking-tight">
+              SkyCoin4444
+            </span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-0.5">
@@ -132,16 +150,22 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2.5">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg,oklch(0.82 0.15 200),oklch(0.62 0.2 295))" }}
+              style={{
+                background:
+                  "linear-gradient(135deg,oklch(0.82 0.15 200),oklch(0.62 0.2 295))",
+              }}
             >
               <Zap className="w-4 h-4 text-background" fill="currentColor" />
             </div>
             <span className="font-bold tracking-tight">SkyCoin4444</span>
           </div>
           <p className="text-sm text-muted-foreground text-center">
-            One platform for AI, learning, gaming, governance, charity & commerce.
+            One platform for AI, learning, gaming, governance, charity &
+            commerce.
           </p>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} SKYCOIN4444</p>
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} SKYCOIN4444
+          </p>
         </div>
       </footer>
     </div>

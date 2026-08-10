@@ -9,8 +9,16 @@
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 export type StorageNodeStatus = "online" | "degraded" | "offline" | "syncing";
-export type ReplicationStatus = "pending" | "replicating" | "complete" | "failed";
-export type ProofLogCategory = "moderation" | "payout" | "donation" | "governance" | "identity" | "content" | "transaction";
+export type ReplicationStatus =
+  "pending" | "replicating" | "complete" | "failed";
+export type ProofLogCategory =
+  | "moderation"
+  | "payout"
+  | "donation"
+  | "governance"
+  | "identity"
+  | "content"
+  | "transaction";
 export type IndexSyncStatus = "synced" | "behind" | "diverged" | "unknown";
 
 export interface StorageNode {
@@ -73,7 +81,12 @@ export interface CrossRegionReplicationState {
 export interface DecentralizedArchive {
   id: string;
   creatorId: number;
-  archiveType: "full_profile" | "content_history" | "financial_history" | "governance_history" | "identity_history";
+  archiveType:
+    | "full_profile"
+    | "content_history"
+    | "financial_history"
+    | "governance_history"
+    | "identity_history";
   ipfsCid?: string;
   arweaveId?: string;
   filecoinDealId?: string;
@@ -112,7 +125,15 @@ export interface ImmutableModerationRecord {
   moderatorId: number;
   targetUserId?: number;
   targetContentId?: string;
-  action: "warn" | "mute" | "suspend" | "ban" | "remove_content" | "restore" | "appeal_granted" | "appeal_denied";
+  action:
+    | "warn"
+    | "mute"
+    | "suspend"
+    | "ban"
+    | "remove_content"
+    | "restore"
+    | "appeal_granted"
+    | "appeal_denied";
   reason: string;
   evidence: string[];
   duration?: number;
@@ -131,7 +152,14 @@ export interface ImmutablePayout {
   recipientId: number;
   amount: number;
   currency: string;
-  payoutType: "revenue_share" | "tip" | "subscription" | "bounty" | "grant" | "payroll" | "affiliate";
+  payoutType:
+    | "revenue_share"
+    | "tip"
+    | "subscription"
+    | "bounty"
+    | "grant"
+    | "payroll"
+    | "affiliate";
   txHash: string;
   blockConfirmations: number;
   proofLogId: string;
@@ -242,8 +270,14 @@ export const storageNodeManager = {
     return node;
   },
 
-  updateStatus(nodeId: string, status: StorageNodeStatus, latencyMs?: number): StorageNode | null {
-    const node = Array.from(_storageNodes.values()).find(n => n.nodeId === nodeId);
+  updateStatus(
+    nodeId: string,
+    status: StorageNodeStatus,
+    latencyMs?: number
+  ): StorageNode | null {
+    const node = Array.from(_storageNodes.values()).find(
+      n => n.nodeId === nodeId
+    );
     if (!node) return null;
     node.status = status;
     if (latencyMs !== undefined) node.latencyMs = latencyMs;
@@ -252,8 +286,9 @@ export const storageNodeManager = {
   },
 
   getHealthyNodes(region?: string): StorageNode[] {
-    return Array.from(_storageNodes.values())
-      .filter(n => n.status === "online" && (!region || n.region === region));
+    return Array.from(_storageNodes.values()).filter(
+      n => n.status === "online" && (!region || n.region === region)
+    );
   },
 
   getNodeStats(): {
@@ -274,7 +309,13 @@ export const storageNodeManager = {
       totalCapacityGB += n.capacityGB;
       usedCapacityGB += n.usedGB;
     }
-    return { total: nodes.length, online, totalCapacityGB, usedCapacityGB, byProvider };
+    return {
+      total: nodes.length,
+      online,
+      totalCapacityGB,
+      usedCapacityGB,
+      byProvider,
+    };
   },
 };
 
@@ -332,10 +373,14 @@ export const contentReplicationEngine = {
     const jobs = Array.from(_replicationJobs.values());
     return {
       total: jobs.length,
-      pending: jobs.filter(j => j.status === "pending" || j.status === "replicating").length,
+      pending: jobs.filter(
+        j => j.status === "pending" || j.status === "replicating"
+      ).length,
       complete: jobs.filter(j => j.status === "complete").length,
       failed: jobs.filter(j => j.status === "failed").length,
-      totalBytesReplicated: jobs.filter(j => j.status === "complete").reduce((s, j) => s + j.bytesTotal, 0),
+      totalBytesReplicated: jobs
+        .filter(j => j.status === "complete")
+        .reduce((s, j) => s + j.bytesTotal, 0),
     };
   },
 };
@@ -359,7 +404,9 @@ export const distributedIndexEngine = {
       sizeBytes: params.sizeBytes,
       syncStatus: "synced",
       lastSyncAt: new Date(),
-      checksum: _hash(`${params.indexType}:${params.shardKey}:${params.recordCount}`),
+      checksum: _hash(
+        `${params.indexType}:${params.shardKey}:${params.recordCount}`
+      ),
       version: 1,
     };
     _distributedIndexes.set(idx.id, idx);
@@ -373,11 +420,18 @@ export const distributedIndexEngine = {
     idx.syncStatus = "synced";
     idx.lastSyncAt = new Date();
     idx.version++;
-    idx.checksum = _hash(`${idx.indexType}:${idx.shardKey}:${newRecordCount}:${idx.version}`);
+    idx.checksum = _hash(
+      `${idx.indexType}:${idx.shardKey}:${newRecordCount}:${idx.version}`
+    );
     return idx;
   },
 
-  getIndexStats(): { totalShards: number; totalRecords: number; totalSizeBytes: number; synced: number } {
+  getIndexStats(): {
+    totalShards: number;
+    totalRecords: number;
+    totalSizeBytes: number;
+    synced: number;
+  } {
     const indexes = Array.from(_distributedIndexes.values());
     return {
       totalShards: indexes.length,
@@ -414,7 +468,12 @@ export const crossRegionEngine = {
     return state;
   },
 
-  markSynced(entityId: string, sourceRegion: string, targetRegion: string, lagMs: number): CrossRegionReplicationState | null {
+  markSynced(
+    entityId: string,
+    sourceRegion: string,
+    targetRegion: string,
+    lagMs: number
+  ): CrossRegionReplicationState | null {
     const key = `${entityId}:${sourceRegion}:${targetRegion}`;
     const state = _crossRegionStates.get(key);
     if (!state) return null;
@@ -425,16 +484,24 @@ export const crossRegionEngine = {
     return state;
   },
 
-  getReplicationHealth(): { total: number; synced: number; pending: number; avgLagMs: number } {
+  getReplicationHealth(): {
+    total: number;
+    synced: number;
+    pending: number;
+    avgLagMs: number;
+  } {
     const states = Array.from(_crossRegionStates.values());
     const synced = states.filter(s => s.status === "complete");
-    const avgLagMs = synced.length > 0
-      ? synced.reduce((s, r) => s + r.lagMs, 0) / synced.length
-      : 0;
+    const avgLagMs =
+      synced.length > 0
+        ? synced.reduce((s, r) => s + r.lagMs, 0) / synced.length
+        : 0;
     return {
       total: states.length,
       synced: synced.length,
-      pending: states.filter(s => s.status === "pending" || s.status === "replicating").length,
+      pending: states.filter(
+        s => s.status === "pending" || s.status === "replicating"
+      ).length,
       avgLagMs: Math.round(avgLagMs),
     };
   },
@@ -457,11 +524,15 @@ export const decentralizedArchiveEngine = {
       id: _id("arch"),
       creatorId: params.creatorId,
       archiveType: params.archiveType,
-      ipfsCid: params.ipfsCid ?? `Qm${Math.random().toString(36).slice(2).padStart(44, "0")}`,
+      ipfsCid:
+        params.ipfsCid ??
+        `Qm${Math.random().toString(36).slice(2).padStart(44, "0")}`,
       arweaveId: params.arweaveId,
       sizeBytes: params.sizeBytes,
       recordCount: params.recordCount,
-      checksum: _hash(`${params.creatorId}:${params.archiveType}:${params.sizeBytes}`),
+      checksum: _hash(
+        `${params.creatorId}:${params.archiveType}:${params.sizeBytes}`
+      ),
       isEncrypted: params.isEncrypted ?? false,
       isPublic: params.isPublic ?? false,
       createdAt: new Date(),
@@ -493,7 +564,12 @@ export const decentralizedArchiveEngine = {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   },
 
-  getArchiveStats(): { total: number; totalSizeBytes: number; totalPins: number; byType: Record<string, number> } {
+  getArchiveStats(): {
+    total: number;
+    totalSizeBytes: number;
+    totalPins: number;
+    byType: Record<string, number>;
+  } {
     const archives = Array.from(_archives.values());
     const byType: Record<string, number> = {};
     let totalSizeBytes = 0;
@@ -531,7 +607,11 @@ export const immutableProofLogEngine = {
       action: params.action,
       previousState: params.previousState,
       newState: params.newState,
-      merkleRoot: _merkleRoot([params.entityId, params.actorId.toString(), params.newState]),
+      merkleRoot: _merkleRoot([
+        params.entityId,
+        params.actorId.toString(),
+        params.newState,
+      ]),
       blockHash: _hash(data),
       timestamp: new Date(),
       signature: _hash(`sig:${data}`),
@@ -547,8 +627,15 @@ export const immutableProofLogEngine = {
     const log = _proofLogs.get(logId);
     if (!log) return { isValid: false, log: null };
     // Re-verify merkle root
-    const expectedMerkle = _merkleRoot([log.entityId, log.actorId.toString(), log.newState]);
-    return { isValid: log.merkleRoot === expectedMerkle && log.isVerified, log };
+    const expectedMerkle = _merkleRoot([
+      log.entityId,
+      log.actorId.toString(),
+      log.newState,
+    ]);
+    return {
+      isValid: log.merkleRoot === expectedMerkle && log.isVerified,
+      log,
+    };
   },
 
   getEntityHistory(entityId: string): ImmutableProofLog[] {
@@ -557,14 +644,21 @@ export const immutableProofLogEngine = {
       .sort((a, b) => a.chainPosition - b.chainPosition);
   },
 
-  getCategoryLogs(category: ProofLogCategory, limit = 100): ImmutableProofLog[] {
+  getCategoryLogs(
+    category: ProofLogCategory,
+    limit = 100
+  ): ImmutableProofLog[] {
     return Array.from(_proofLogs.values())
       .filter(l => l.category === category)
       .sort((a, b) => b.chainPosition - a.chainPosition)
       .slice(0, limit);
   },
 
-  getChainStats(): { totalLogs: number; chainLength: number; byCategory: Record<string, number> } {
+  getChainStats(): {
+    totalLogs: number;
+    chainLength: number;
+    byCategory: Record<string, number>;
+  } {
     const logs = Array.from(_proofLogs.values());
     const byCategory: Record<string, number> = {};
     for (const l of logs) {
@@ -593,10 +687,16 @@ export const immutableModerationEngine = {
       entityType: params.targetContentId ? "content" : "user",
       actorId: params.moderatorId,
       action: params.action,
-      newState: JSON.stringify({ action: params.action, reason: params.reason }),
+      newState: JSON.stringify({
+        action: params.action,
+        reason: params.reason,
+      }),
     });
 
-    const appealDeadline = params.appealable !== false ? new Date(Date.now() + 7 * 86400000) : undefined;
+    const appealDeadline =
+      params.appealable !== false
+        ? new Date(Date.now() + 7 * 86400000)
+        : undefined;
     const record: ImmutableModerationRecord = {
       id: _id("mod"),
       moderatorId: params.moderatorId,
@@ -616,7 +716,10 @@ export const immutableModerationEngine = {
     return record;
   },
 
-  reverseAction(recordId: string, reversedBy: number): ImmutableModerationRecord | null {
+  reverseAction(
+    recordId: string,
+    reversedBy: number
+  ): ImmutableModerationRecord | null {
     const record = _moderationRecords.get(recordId);
     if (!record || record.isReversed) return null;
     record.isReversed = true;
@@ -630,7 +733,10 @@ export const immutableModerationEngine = {
       actorId: reversedBy,
       action: "reverse",
       previousState: JSON.stringify({ action: record.action }),
-      newState: JSON.stringify({ action: "reversed", originalAction: record.action }),
+      newState: JSON.stringify({
+        action: "reversed",
+        originalAction: record.action,
+      }),
     });
     return record;
   },
@@ -641,7 +747,11 @@ export const immutableModerationEngine = {
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   },
 
-  getModerationStats(): { total: number; byAction: Record<string, number>; reversed: number } {
+  getModerationStats(): {
+    total: number;
+    byAction: Record<string, number>;
+    reversed: number;
+  } {
     const records = Array.from(_moderationRecords.values());
     const byAction: Record<string, number> = {};
     let reversed = 0;
@@ -664,14 +774,20 @@ export const immutablePayoutEngine = {
     payoutType: ImmutablePayout["payoutType"];
     txHash?: string;
   }): ImmutablePayout {
-    const txHash = params.txHash ?? `0x${Math.random().toString(16).slice(2).padStart(64, "0")}`;
+    const txHash =
+      params.txHash ??
+      `0x${Math.random().toString(16).slice(2).padStart(64, "0")}`;
     const proofLog = immutableProofLogEngine.record({
       category: "payout",
       entityId: txHash,
       entityType: "payout",
       actorId: params.payerId,
       action: "payout",
-      newState: JSON.stringify({ amount: params.amount, currency: params.currency, type: params.payoutType }),
+      newState: JSON.stringify({
+        amount: params.amount,
+        currency: params.currency,
+        type: params.payoutType,
+      }),
     });
 
     const payout: ImmutablePayout = {
@@ -702,11 +818,18 @@ export const immutablePayoutEngine = {
 
   getUserPayouts(userId: number, asRecipient = true): ImmutablePayout[] {
     return Array.from(_immutablePayouts.values())
-      .filter(p => asRecipient ? p.recipientId === userId : p.payerId === userId)
+      .filter(p =>
+        asRecipient ? p.recipientId === userId : p.payerId === userId
+      )
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   },
 
-  getPayoutStats(): { total: number; totalVolume: number; settled: number; byType: Record<string, number> } {
+  getPayoutStats(): {
+    total: number;
+    totalVolume: number;
+    settled: number;
+    byType: Record<string, number>;
+  } {
     const payouts = Array.from(_immutablePayouts.values());
     const byType: Record<string, number> = {};
     let totalVolume = 0;
@@ -739,7 +862,11 @@ export const immutableDonationEngine = {
       entityType: "donation",
       actorId: params.donorId,
       action: "donate",
-      newState: JSON.stringify({ amount: params.amount, currency: params.currency, campaignId: params.campaignId }),
+      newState: JSON.stringify({
+        amount: params.amount,
+        currency: params.currency,
+        campaignId: params.campaignId,
+      }),
     });
 
     const donation: ImmutableDonation = {
@@ -773,7 +900,12 @@ export const immutableDonationEngine = {
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   },
 
-  getDonationStats(): { total: number; totalVolume: number; anonymous: number; withReceipt: number } {
+  getDonationStats(): {
+    total: number;
+    totalVolume: number;
+    anonymous: number;
+    withReceipt: number;
+  } {
     const donations = Array.from(_immutableDonations.values());
     return {
       total: donations.length,
@@ -833,10 +965,19 @@ export const immutableGovernanceEngine = {
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   },
 
-  getVoteCount(proposalId: string): { yes: number; no: number; abstain: number; totalPower: number } {
-    const votes = Array.from(_governanceRecords.values())
-      .filter(r => r.proposalId === proposalId && r.action === "vote");
-    let yes = 0, no = 0, abstain = 0, totalPower = 0;
+  getVoteCount(proposalId: string): {
+    yes: number;
+    no: number;
+    abstain: number;
+    totalPower: number;
+  } {
+    const votes = Array.from(_governanceRecords.values()).filter(
+      r => r.proposalId === proposalId && r.action === "vote"
+    );
+    let yes = 0,
+      no = 0,
+      abstain = 0,
+      totalPower = 0;
     for (const v of votes) {
       const power = v.votingPower ?? 1;
       totalPower += power;
@@ -847,7 +988,11 @@ export const immutableGovernanceEngine = {
     return { yes, no, abstain, totalPower };
   },
 
-  getGovernanceStats(): { total: number; byAction: Record<string, number>; binding: number } {
+  getGovernanceStats(): {
+    total: number;
+    byAction: Record<string, number>;
+    binding: number;
+  } {
     const records = Array.from(_governanceRecords.values());
     const byAction: Record<string, number> = {};
     let binding = 0;
@@ -864,7 +1009,9 @@ export const immutableGovernanceEngine = {
 export const decentralizedInfraDashboard = {
   getInfraStatus(): {
     storageNodes: ReturnType<typeof storageNodeManager.getNodeStats>;
-    replication: ReturnType<typeof contentReplicationEngine.getReplicationStats>;
+    replication: ReturnType<
+      typeof contentReplicationEngine.getReplicationStats
+    >;
     indexes: ReturnType<typeof distributedIndexEngine.getIndexStats>;
     crossRegion: ReturnType<typeof crossRegionEngine.getReplicationHealth>;
     archives: ReturnType<typeof decentralizedArchiveEngine.getArchiveStats>;

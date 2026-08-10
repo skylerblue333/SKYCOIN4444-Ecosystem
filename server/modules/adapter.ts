@@ -5,12 +5,12 @@
  */
 
 // Use native fetch in Node 18+
-import Stripe from 'stripe';
-import { invokeLLM } from '../_core/llm';
+import Stripe from "stripe";
+import { invokeLLM } from "../_core/llm";
 
 // ─── CRYPTO MODULE ─────────────────────────────────────────────────────────
 
-const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+const COINGECKO_API = "https://api.coingecko.com/api/v3";
 const CACHE_TTL = 60000; // 1 minute
 let marketCache: any = {};
 let cacheTime = 0;
@@ -26,14 +26,26 @@ export async function fetchRealMarketData() {
     );
     const data: any = await response.json();
     marketCache = [
-      { pair: 'BTC/USD', price: data.bitcoin.usd, change24h: data.bitcoin.usd_24h_change },
-      { pair: 'ETH/USD', price: data.ethereum.usd, change24h: data.ethereum.usd_24h_change },
-      { pair: 'SOL/USD', price: data.solana.usd, change24h: data.solana.usd_24h_change },
+      {
+        pair: "BTC/USD",
+        price: data.bitcoin.usd,
+        change24h: data.bitcoin.usd_24h_change,
+      },
+      {
+        pair: "ETH/USD",
+        price: data.ethereum.usd,
+        change24h: data.ethereum.usd_24h_change,
+      },
+      {
+        pair: "SOL/USD",
+        price: data.solana.usd,
+        change24h: data.solana.usd_24h_change,
+      },
     ];
     cacheTime = now;
     return marketCache;
   } catch (error) {
-    console.error('CoinGecko API error:', error);
+    console.error("CoinGecko API error:", error);
     return marketCache || [];
   }
 }
@@ -41,9 +53,9 @@ export async function fetchRealMarketData() {
 // Fallback mock data if API fails
 export function getMockMarketData() {
   return [
-    { pair: 'BTC/USD', price: 67500, change24h: 2.5 },
-    { pair: 'ETH/USD', price: 3200, change24h: 1.8 },
-    { pair: 'SOL/USD', price: 185, change24h: 3.2 },
+    { pair: "BTC/USD", price: 67500, change24h: 2.5 },
+    { pair: "ETH/USD", price: 3200, change24h: 1.8 },
+    { pair: "SOL/USD", price: 185, change24h: 3.2 },
   ];
 }
 
@@ -52,7 +64,7 @@ export function getMockMarketData() {
 let stripe: Stripe | null = null;
 if (process.env.STRIPE_SECRET_KEY) {
   stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2026-04-22.dahlia' as any,
+    apiVersion: "2026-04-22.dahlia" as any,
   });
 }
 
@@ -62,14 +74,14 @@ export async function createStripeCheckoutSession(
   userId: number,
   userEmail: string
 ) {
-  if (!stripe) throw new Error('Stripe not configured');
+  if (!stripe) throw new Error("Stripe not configured");
 
   const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
+    payment_method_types: ["card"],
     line_items: [
       {
         price_data: {
-          currency: 'usd',
+          currency: "usd",
           product_data: {
             name: `Product ${productId}`,
           },
@@ -78,9 +90,9 @@ export async function createStripeCheckoutSession(
         quantity,
       },
     ],
-    mode: 'payment',
-    success_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/cancel`,
+    mode: "payment",
+    success_url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/cancel`,
     metadata: { userId: userId.toString(), productId },
   });
 
@@ -92,7 +104,7 @@ export async function createStripeSubscription(
   userEmail: string,
   priceId: string
 ) {
-  if (!stripe) throw new Error('Stripe not configured');
+  if (!stripe) throw new Error("Stripe not configured");
 
   const customer = await stripe.customers.create({
     email: userEmail,
@@ -102,13 +114,14 @@ export async function createStripeSubscription(
   const subscription = await stripe.subscriptions.create({
     customer: customer.id,
     items: [{ price: priceId }],
-    payment_behavior: 'default_incomplete',
-    expand: ['latest_invoice.payment_intent'],
+    payment_behavior: "default_incomplete",
+    expand: ["latest_invoice.payment_intent"],
   });
 
   return {
     subscriptionId: subscription.id,
-    clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
+    clientSecret: (subscription.latest_invoice as any)?.payment_intent
+      ?.client_secret,
   };
 }
 
@@ -119,18 +132,22 @@ export async function moderateContent(text: string) {
     const response = await invokeLLM({
       messages: [
         {
-          role: 'system',
-          content: 'You are a content moderation system. Analyze the following text and respond with JSON: {"flagged": boolean, "reason": string}',
+          role: "system",
+          content:
+            'You are a content moderation system. Analyze the following text and respond with JSON: {"flagged": boolean, "reason": string}',
         },
-        { role: 'user', content: text },
+        { role: "user", content: text },
       ],
     });
 
-    const content = typeof response.choices[0]?.message.content === 'string' ? response.choices[0].message.content : '{}';
+    const content =
+      typeof response.choices[0]?.message.content === "string"
+        ? response.choices[0].message.content
+        : "{}";
     return JSON.parse(content);
   } catch (error) {
-    console.error('Content moderation error:', error);
-    return { flagged: false, reason: 'Unable to moderate' };
+    console.error("Content moderation error:", error);
+    return { flagged: false, reason: "Unable to moderate" };
   }
 }
 
@@ -139,19 +156,23 @@ export async function analyzeSentiment(text: string) {
     const response = await invokeLLM({
       messages: [
         {
-          role: 'system',
-          content: 'Analyze the sentiment of the following text and respond with a single word: positive, negative, or neutral.',
+          role: "system",
+          content:
+            "Analyze the sentiment of the following text and respond with a single word: positive, negative, or neutral.",
         },
-        { role: 'user', content: text },
+        { role: "user", content: text },
       ],
     });
 
-    const contentStr = typeof response.choices[0]?.message.content === 'string' ? response.choices[0].message.content : 'neutral';
-    const sentiment = contentStr.trim().toLowerCase() || 'neutral';
+    const contentStr =
+      typeof response.choices[0]?.message.content === "string"
+        ? response.choices[0].message.content
+        : "neutral";
+    const sentiment = contentStr.trim().toLowerCase() || "neutral";
     return { sentiment };
   } catch (error) {
-    console.error('Sentiment analysis error:', error);
-    return { sentiment: 'neutral' };
+    console.error("Sentiment analysis error:", error);
+    return { sentiment: "neutral" };
   }
 }
 
@@ -160,17 +181,21 @@ export async function hopeAIChat(message: string) {
     const response = await invokeLLM({
       messages: [
         {
-          role: 'system',
-          content: 'You are HopeAI, a helpful assistant for the SkyCoin4444 platform. Provide concise, helpful responses.',
+          role: "system",
+          content:
+            "You are HopeAI, a helpful assistant for the SkyCoin4444 platform. Provide concise, helpful responses.",
         },
-        { role: 'user', content: message },
+        { role: "user", content: message },
       ],
     });
 
-    const contentStr = typeof response.choices[0]?.message.content === 'string' ? response.choices[0].message.content : 'Unable to process request';
+    const contentStr =
+      typeof response.choices[0]?.message.content === "string"
+        ? response.choices[0].message.content
+        : "Unable to process request";
     return { response: contentStr };
   } catch (error) {
-    console.error('HopeAI chat error:', error);
-    return { response: 'Sorry, I encountered an error. Please try again.' };
+    console.error("HopeAI chat error:", error);
+    return { response: "Sorry, I encountered an error. Please try again." };
   }
 }

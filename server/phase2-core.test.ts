@@ -58,7 +58,9 @@ describe("ContentModerationAI", () => {
     expect(result).toBeDefined();
     expect(result.contentId).toBe("test-1");
     expect(result.contentType).toBe("post");
-    expect(["allow", "flag", "remove", "shadow_ban", "escalate"]).toContain(result.action);
+    expect(["allow", "flag", "remove", "shadow_ban", "escalate"]).toContain(
+      result.action
+    );
     expect(result.confidence).toBeGreaterThan(0);
     expect(result.processingMs).toBeGreaterThanOrEqual(0);
   });
@@ -92,7 +94,12 @@ describe("ContentModerationAI", () => {
 
   it("should cache results for repeated content", async () => {
     const ai = new ContentModerationAI();
-    const params = { contentId: "cache-test", contentType: "post" as const, text: "Test content", authorId: 1 };
+    const params = {
+      contentId: "cache-test",
+      contentType: "post" as const,
+      text: "Test content",
+      authorId: 1,
+    };
     const result1 = await ai.moderateContent(params);
     const result2 = await ai.moderateContent(params);
     expect(result1.contentId).toBe(result2.contentId);
@@ -102,9 +109,24 @@ describe("ContentModerationAI", () => {
   it("should batch moderate multiple items", async () => {
     const ai = new ContentModerationAI();
     const items = [
-      { contentId: "batch-1", contentType: "post" as const, text: "Safe content 1", authorId: 1 },
-      { contentId: "batch-2", contentType: "comment" as const, text: "Safe content 2", authorId: 2 },
-      { contentId: "batch-3", contentType: "message" as const, text: "Safe content 3", authorId: 3 },
+      {
+        contentId: "batch-1",
+        contentType: "post" as const,
+        text: "Safe content 1",
+        authorId: 1,
+      },
+      {
+        contentId: "batch-2",
+        contentType: "comment" as const,
+        text: "Safe content 2",
+        authorId: 2,
+      },
+      {
+        contentId: "batch-3",
+        contentType: "message" as const,
+        text: "Safe content 3",
+        authorId: 3,
+      },
     ];
     const results = await ai.batchModerate(items);
     expect(results).toHaveLength(3);
@@ -115,7 +137,12 @@ describe("ContentModerationAI", () => {
 
   it("should return moderation stats", async () => {
     const ai = new ContentModerationAI();
-    await ai.moderateContent({ contentId: "stat-1", contentType: "post", text: "Test", authorId: 1 });
+    await ai.moderateContent({
+      contentId: "stat-1",
+      contentType: "post",
+      text: "Test",
+      authorId: 1,
+    });
     const stats = await ai.getModerationStats();
     expect(stats.totalModerated).toBeGreaterThan(0);
     expect(stats.actionBreakdown).toBeDefined();
@@ -134,7 +161,9 @@ describe("FraudDetectionAI", () => {
 
   it("should record behavior without errors", async () => {
     const ai = new FraudDetectionAI();
-    await expect(ai.recordBehavior(1, "login", { ipAddress: "192.168.1.1" })).resolves.not.toThrow();
+    await expect(
+      ai.recordBehavior(1, "login", { ipAddress: "192.168.1.1" })
+    ).resolves.not.toThrow();
     await expect(ai.recordBehavior(1, "post", {})).resolves.not.toThrow();
     await expect(ai.recordBehavior(1, "like", {})).resolves.not.toThrow();
   });
@@ -188,7 +217,9 @@ describe("FraudDetectionAI", () => {
     });
     const result = await ai.analyzeUserFraud(userId);
     expect(result).not.toBeNull();
-    expect(result!.signals.some((s: string) => s.includes("following"))).toBe(true);
+    expect(result!.signals.some((s: string) => s.includes("following"))).toBe(
+      true
+    );
   });
 
   it("should detect wash trading patterns", async () => {
@@ -227,14 +258,22 @@ describe("SentimentAnalysisAI", () => {
     const result = await ai.analyzeSentiment("This is amazing! Love it! 🚀");
     expect(result).toBeDefined();
     expect(result.text).toBe("This is amazing! Love it! 🚀");
-    expect(["very_positive", "positive", "neutral", "negative", "very_negative"]).toContain(result.label);
+    expect([
+      "very_positive",
+      "positive",
+      "neutral",
+      "negative",
+      "very_negative",
+    ]).toContain(result.label);
     expect(result.score).toBeGreaterThanOrEqual(-1);
     expect(result.score).toBeLessThanOrEqual(1);
   });
 
   it("should analyze negative sentiment for short text", async () => {
     const ai = new SentimentAnalysisAI();
-    const result = await ai.analyzeSentiment("This is terrible and broken. Worst experience ever.");
+    const result = await ai.analyzeSentiment(
+      "This is terrible and broken. Worst experience ever."
+    );
     expect(["negative", "very_negative"]).toContain(result.label);
     expect(result.score).toBeLessThan(0);
   });
@@ -366,7 +405,11 @@ describe("ContentSummaryAI", () => {
   it("should summarize thread of messages", async () => {
     const ai = new ContentSummaryAI();
     const messages = [
-      { authorId: 1, content: "First message in thread", timestamp: new Date() },
+      {
+        authorId: 1,
+        content: "First message in thread",
+        timestamp: new Date(),
+      },
       { authorId: 2, content: "Reply to first message", timestamp: new Date() },
       { authorId: 1, content: "Thanks for the reply!", timestamp: new Date() },
     ];
@@ -492,8 +535,18 @@ describe("SupportTicketService", () => {
 
   it("should get ticket queue sorted by priority", async () => {
     const svc = new SupportTicketService();
-    await svc.createTicket({ userId: 1, category: "other", subject: "Low priority", description: "Not urgent at all" });
-    await svc.createTicket({ userId: 2, category: "safety", subject: "Urgent safety", description: "Critical safety issue" });
+    await svc.createTicket({
+      userId: 1,
+      category: "other",
+      subject: "Low priority",
+      description: "Not urgent at all",
+    });
+    await svc.createTicket({
+      userId: 2,
+      category: "safety",
+      subject: "Urgent safety",
+      description: "Critical safety issue",
+    });
     const queue = await svc.getTicketQueue({ limit: 10 });
     expect(queue.length).toBeGreaterThan(0);
     // Safety tickets should be higher priority
@@ -506,7 +559,12 @@ describe("SupportTicketService", () => {
 
   it("should return ticket stats", async () => {
     const svc = new SupportTicketService();
-    await svc.createTicket({ userId: 1, category: "technical", subject: "Bug report", description: "Found a bug in the app" });
+    await svc.createTicket({
+      userId: 1,
+      category: "technical",
+      subject: "Bug report",
+      description: "Found a bug in the app",
+    });
     const stats = await svc.getTicketStats();
     expect(stats.total).toBeGreaterThan(0);
     expect(stats.byStatus).toBeDefined();
@@ -679,7 +737,16 @@ describe("CreatorPayoutService", () => {
       method: "paypal",
       periodStart: new Date(Date.now() - 86400000 * 30),
       periodEnd: new Date(),
-      breakdown: { subscriptions: 0, tips: 30, gifts: 0, premiumContent: 0, affiliates: 0, platformFee: 0, taxWithheld: 0, netAmount: 0 },
+      breakdown: {
+        subscriptions: 0,
+        tips: 30,
+        gifts: 0,
+        premiumContent: 0,
+        affiliates: 0,
+        platformFee: 0,
+        taxWithheld: 0,
+        netAmount: 0,
+      },
     });
     expect(payout).toBeNull();
   });
@@ -692,7 +759,16 @@ describe("CreatorPayoutService", () => {
       method: "bank_transfer",
       periodStart: new Date(Date.now() - 86400000 * 30),
       periodEnd: new Date(),
-      breakdown: { subscriptions: 200, tips: 0, gifts: 0, premiumContent: 0, affiliates: 0, platformFee: 0, taxWithheld: 0, netAmount: 0 },
+      breakdown: {
+        subscriptions: 200,
+        tips: 0,
+        gifts: 0,
+        premiumContent: 0,
+        affiliates: 0,
+        platformFee: 0,
+        taxWithheld: 0,
+        netAmount: 0,
+      },
     });
     expect(payout).not.toBeNull();
     expect(payout!.id).toMatch(/^PAY-/);
@@ -709,7 +785,16 @@ describe("CreatorPayoutService", () => {
       method: "paypal",
       periodStart: new Date(Date.now() - 86400000 * 30),
       periodEnd: new Date(),
-      breakdown: { subscriptions: 0, tips: 100, gifts: 0, premiumContent: 0, affiliates: 0, platformFee: 0, taxWithheld: 0, netAmount: 0 },
+      breakdown: {
+        subscriptions: 0,
+        tips: 100,
+        gifts: 0,
+        premiumContent: 0,
+        affiliates: 0,
+        platformFee: 0,
+        taxWithheld: 0,
+        netAmount: 0,
+      },
     });
     const balance = await svc.getPendingBalance(4);
     expect(balance).toBe(0);
@@ -723,7 +808,16 @@ describe("CreatorPayoutService", () => {
       method: "bank_transfer",
       periodStart: new Date(Date.now() - 86400000 * 30),
       periodEnd: new Date(),
-      breakdown: { subscriptions: 700, tips: 0, gifts: 0, premiumContent: 0, affiliates: 0, platformFee: 0, taxWithheld: 0, netAmount: 0 },
+      breakdown: {
+        subscriptions: 700,
+        tips: 0,
+        gifts: 0,
+        premiumContent: 0,
+        affiliates: 0,
+        platformFee: 0,
+        taxWithheld: 0,
+        netAmount: 0,
+      },
     });
     expect(payout!.taxFormRequired).toBe(true);
   });
@@ -736,7 +830,16 @@ describe("CreatorPayoutService", () => {
       method: "paypal",
       periodStart: new Date(Date.now() - 86400000 * 30),
       periodEnd: new Date(),
-      breakdown: { subscriptions: 0, tips: 100, gifts: 0, premiumContent: 0, affiliates: 0, platformFee: 0, taxWithheld: 0, netAmount: 0 },
+      breakdown: {
+        subscriptions: 0,
+        tips: 100,
+        gifts: 0,
+        premiumContent: 0,
+        affiliates: 0,
+        platformFee: 0,
+        taxWithheld: 0,
+        netAmount: 0,
+      },
     });
     const success = await svc.processPayout(payout!.id);
     expect(success).toBe(true);
@@ -750,7 +853,16 @@ describe("CreatorPayoutService", () => {
       method: "paypal",
       periodStart: new Date(Date.now() - 86400000 * 30),
       periodEnd: new Date(),
-      breakdown: { subscriptions: 0, tips: 100, gifts: 0, premiumContent: 0, affiliates: 0, platformFee: 0, taxWithheld: 0, netAmount: 0 },
+      breakdown: {
+        subscriptions: 0,
+        tips: 100,
+        gifts: 0,
+        premiumContent: 0,
+        affiliates: 0,
+        platformFee: 0,
+        taxWithheld: 0,
+        netAmount: 0,
+      },
     });
     const history = await svc.getCreatorPayouts(7);
     expect(history.length).toBe(1);
@@ -792,7 +904,11 @@ describe("ComplianceService", () => {
   it("should process a compliance request", async () => {
     const svc = new ComplianceService();
     const record = await svc.submitGDPRRequest(4, "data_export");
-    const success = await svc.processRequest(record.id, 100, "Data exported and sent via email");
+    const success = await svc.processRequest(
+      record.id,
+      100,
+      "Data exported and sent via email"
+    );
     expect(success).toBe(true);
     const history = await svc.getUserComplianceHistory(4);
     expect(history[0].status).toBe("completed");
@@ -895,28 +1011,61 @@ describe("IncidentResponseService", () => {
 
   it("should get active incidents", async () => {
     const svc = new IncidentResponseService();
-    await svc.createIncident({ title: "Active 1", description: "Desc", severity: "p2_moderate", affectedSystems: ["api"], createdBy: 1 });
-    await svc.createIncident({ title: "Active 2", description: "Desc", severity: "p1_major", affectedSystems: ["db"], createdBy: 1 });
+    await svc.createIncident({
+      title: "Active 1",
+      description: "Desc",
+      severity: "p2_moderate",
+      affectedSystems: ["api"],
+      createdBy: 1,
+    });
+    await svc.createIncident({
+      title: "Active 2",
+      description: "Desc",
+      severity: "p1_major",
+      affectedSystems: ["db"],
+      createdBy: 1,
+    });
     const active = await svc.getActiveIncidents();
     expect(active.length).toBeGreaterThanOrEqual(2);
     // Should be sorted by severity (p0 first)
-    const severityOrder = ["p0_critical", "p1_major", "p2_moderate", "p3_minor"];
+    const severityOrder = [
+      "p0_critical",
+      "p1_major",
+      "p2_moderate",
+      "p3_minor",
+    ];
     for (let i = 1; i < active.length; i++) {
-      expect(severityOrder.indexOf(active[i-1].severity)).toBeLessThanOrEqual(severityOrder.indexOf(active[i].severity));
+      expect(severityOrder.indexOf(active[i - 1].severity)).toBeLessThanOrEqual(
+        severityOrder.indexOf(active[i].severity)
+      );
     }
   });
 
   it("should calculate MTTR", async () => {
     const svc = new IncidentResponseService();
-    const incident = await svc.createIncident({ title: "Test", description: "Test", severity: "p3_minor", affectedSystems: [], createdBy: 1 });
-    await svc.updateIncident(incident.id, { status: "resolved", message: "Fixed", authorId: 1 });
+    const incident = await svc.createIncident({
+      title: "Test",
+      description: "Test",
+      severity: "p3_minor",
+      affectedSystems: [],
+      createdBy: 1,
+    });
+    await svc.updateIncident(incident.id, {
+      status: "resolved",
+      message: "Fixed",
+      authorId: 1,
+    });
     const mttr = await svc.getMTTR();
     expect(mttr).toBeGreaterThanOrEqual(0);
   });
 
   it("should return null for non-existent incident update", async () => {
     const svc = new IncidentResponseService();
-    const result = await svc.updateIncident("INC-NONEXISTENT", { status: "resolved", message: "test", authorId: 1 });
+    const result = await svc.updateIncident("INC-NONEXISTENT", {
+      status: "resolved",
+      message: "test",
+      authorId: 1,
+    });
     expect(result).toBeNull();
   });
 });
@@ -965,7 +1114,7 @@ describe("TaxReportingService", () => {
     expect(german.totalWithVAT).toBe(119);
 
     const french = await svc.calculateVAT(100, "FR");
-    expect(french.vatRate).toBe(0.20);
+    expect(french.vatRate).toBe(0.2);
     expect(french.vatAmount).toBe(20);
   });
 
@@ -979,8 +1128,22 @@ describe("TaxReportingService", () => {
 
   it("should get user tax reports", async () => {
     const svc = new TaxReportingService();
-    await svc.generateAnnualReport({ userId: 3, taxYear: 2024, country: "US", totalIncome: 1000, platformFees: 200, transactionCount: 100 });
-    await svc.generateAnnualReport({ userId: 3, taxYear: 2025, country: "US", totalIncome: 2000, platformFees: 400, transactionCount: 200 });
+    await svc.generateAnnualReport({
+      userId: 3,
+      taxYear: 2024,
+      country: "US",
+      totalIncome: 1000,
+      platformFees: 200,
+      transactionCount: 100,
+    });
+    await svc.generateAnnualReport({
+      userId: 3,
+      taxYear: 2025,
+      country: "US",
+      totalIncome: 2000,
+      platformFees: 400,
+      transactionCount: 200,
+    });
     const reports = await svc.getUserTaxReports(3);
     expect(reports.length).toBe(2);
     expect(reports[0].taxYear).toBeGreaterThan(reports[1].taxYear); // Sorted desc
@@ -1078,13 +1241,15 @@ describe("MediaCore", () => {
 
   it("should reject oversized files", async () => {
     const { mediaCore } = await import("./core-facades");
-    await expect(mediaCore.generateUploadUrl({
-      userId: 1,
-      fileName: "huge-video.mp4",
-      fileSize: 1024 * 1024 * 1024 * 10, // 10GB
-      mimeType: "video/mp4",
-      mediaType: "video",
-    })).rejects.toThrow();
+    await expect(
+      mediaCore.generateUploadUrl({
+        userId: 1,
+        fileName: "huge-video.mp4",
+        fileSize: 1024 * 1024 * 1024 * 10, // 10GB
+        mimeType: "video/mp4",
+        mediaType: "video",
+      })
+    ).rejects.toThrow();
   });
 
   it("should confirm upload and start transcoding for video", async () => {
@@ -1096,7 +1261,11 @@ describe("MediaCore", () => {
       mimeType: "video/mp4",
       mediaType: "video",
     });
-    const confirmed = await mediaCore.confirmUpload(upload.uploadId, 1, `media/1/${upload.uploadId}/stream.mp4`);
+    const confirmed = await mediaCore.confirmUpload(
+      upload.uploadId,
+      1,
+      `media/1/${upload.uploadId}/stream.mp4`
+    );
     expect(confirmed.status).toBe("processing");
     expect(confirmed.transcodeJobId).toBeDefined();
   });
@@ -1124,13 +1293,15 @@ describe("MediaCore", () => {
 
   it("should reject unsupported file types", async () => {
     const { mediaCore } = await import("./core-facades");
-    await expect(mediaCore.generateUploadUrl({
-      userId: 1,
-      fileName: "malware.exe",
-      fileSize: 1024,
-      mimeType: "application/x-executable",
-      mediaType: "document",
-    })).rejects.toThrow();
+    await expect(
+      mediaCore.generateUploadUrl({
+        userId: 1,
+        fileName: "malware.exe",
+        fileSize: 1024,
+        mimeType: "application/x-executable",
+        mediaType: "document",
+      })
+    ).rejects.toThrow();
   });
 });
 
@@ -1154,7 +1325,10 @@ describe("StreamingCore", () => {
 
   it("should go live with stream session", async () => {
     const { streamingCore } = await import("./core-facades");
-    const session = await streamingCore.createStreamSession({ creatorId: 2, title: "Live Now" });
+    const session = await streamingCore.createStreamSession({
+      creatorId: 2,
+      title: "Live Now",
+    });
     const liveSession = await streamingCore.goLive(session.id, 2);
     expect(liveSession!.status).toBe("live");
     expect(liveSession!.startedAt).toBeInstanceOf(Date);
@@ -1163,14 +1337,20 @@ describe("StreamingCore", () => {
 
   it("should reject going live for wrong creator", async () => {
     const { streamingCore } = await import("./core-facades");
-    const session = await streamingCore.createStreamSession({ creatorId: 3, title: "My Stream" });
+    const session = await streamingCore.createStreamSession({
+      creatorId: 3,
+      title: "My Stream",
+    });
     const result = await streamingCore.goLive(session.id, 999); // Wrong creator
     expect(result).toBeNull();
   });
 
   it("should end a stream and calculate duration", async () => {
     const { streamingCore } = await import("./core-facades");
-    const session = await streamingCore.createStreamSession({ creatorId: 4, title: "Short Stream" });
+    const session = await streamingCore.createStreamSession({
+      creatorId: 4,
+      title: "Short Stream",
+    });
     await streamingCore.goLive(session.id, 4);
     const ended = await streamingCore.endStream(session.id, 4);
     expect(ended!.status).toBe("ended");
@@ -1180,7 +1360,10 @@ describe("StreamingCore", () => {
 
   it("should send a gift during stream", async () => {
     const { streamingCore } = await import("./core-facades");
-    const session = await streamingCore.createStreamSession({ creatorId: 5, title: "Gift Stream" });
+    const session = await streamingCore.createStreamSession({
+      creatorId: 5,
+      title: "Gift Stream",
+    });
     await streamingCore.goLive(session.id, 5);
     const gift = await streamingCore.sendGift({
       sessionId: session.id,
@@ -1198,7 +1381,10 @@ describe("StreamingCore", () => {
 
   it("should not send gift to offline stream", async () => {
     const { streamingCore } = await import("./core-facades");
-    const session = await streamingCore.createStreamSession({ creatorId: 6, title: "Offline Stream" });
+    const session = await streamingCore.createStreamSession({
+      creatorId: 6,
+      title: "Offline Stream",
+    });
     // Don't go live
     const gift = await streamingCore.sendGift({
       sessionId: session.id,
@@ -1224,7 +1410,10 @@ describe("StreamingCore", () => {
 
   it("should get live streams list", async () => {
     const { streamingCore } = await import("./core-facades");
-    const session = await streamingCore.createStreamSession({ creatorId: 8, title: "Live Stream Test" });
+    const session = await streamingCore.createStreamSession({
+      creatorId: 8,
+      title: "Live Stream Test",
+    });
     await streamingCore.goLive(session.id, 8);
     const live = await streamingCore.getLiveStreams(undefined, 20);
     expect(Array.isArray(live)).toBe(true);
@@ -1233,7 +1422,10 @@ describe("StreamingCore", () => {
 
   it("should get stream analytics", async () => {
     const { streamingCore } = await import("./core-facades");
-    const session = await streamingCore.createStreamSession({ creatorId: 9, title: "Analytics Test" });
+    const session = await streamingCore.createStreamSession({
+      creatorId: 9,
+      title: "Analytics Test",
+    });
     await streamingCore.goLive(session.id, 9);
     const analytics = await streamingCore.getStreamAnalytics(session.id, 9);
     expect(analytics).not.toBeNull();
@@ -1287,7 +1479,11 @@ describe("SocialCore", () => {
 
   it("should get reels feed", async () => {
     const { socialCore } = await import("./core-facades");
-    await socialCore.createReel({ creatorId: 1, videoUrl: "https://cdn.example.com/r1.mp4", duration: 15 });
+    await socialCore.createReel({
+      creatorId: 1,
+      videoUrl: "https://cdn.example.com/r1.mp4",
+      duration: 15,
+    });
     const feed = await socialCore.getReelsFeed(10);
     expect(Array.isArray(feed)).toBe(true);
   });
@@ -1313,7 +1509,12 @@ describe("SocialCore", () => {
 
   it("should send a voice note", async () => {
     const { socialCore } = await import("./core-facades");
-    const voiceNote = await socialCore.sendVoiceNote(1, 2, "https://cdn.example.com/voice-1.mp3", 15);
+    const voiceNote = await socialCore.sendVoiceNote(
+      1,
+      2,
+      "https://cdn.example.com/voice-1.mp3",
+      15
+    );
     expect(voiceNote.senderId).toBe(1);
     expect(voiceNote.recipientId).toBe(2);
     expect(voiceNote.duration).toBe(15);
@@ -1322,7 +1523,9 @@ describe("SocialCore", () => {
 
   it("should record engagement event", async () => {
     const { socialCore } = await import("./core-facades");
-    await expect(socialCore.recordEngagement(1, "post-123", "post", "view", 30)).resolves.not.toThrow();
+    await expect(
+      socialCore.recordEngagement(1, "post-123", "post", "view", 30)
+    ).resolves.not.toThrow();
   });
 });
 
@@ -1360,7 +1563,10 @@ describe("CommunityCore", () => {
 
   it("should join a public server", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 3, name: "Open Server" });
+    const server = await communityCore.createServer({
+      ownerId: 3,
+      name: "Open Server",
+    });
     const result = await communityCore.joinServer(server.id, 100);
     expect(result.success).toBe(true);
     const stats = await communityCore.getServerStats(server.id);
@@ -1375,7 +1581,10 @@ describe("CommunityCore", () => {
 
   it("should leave a server", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 4, name: "Leave Test" });
+    const server = await communityCore.createServer({
+      ownerId: 4,
+      name: "Leave Test",
+    });
     await communityCore.joinServer(server.id, 200);
     const result = await communityCore.leaveServer(server.id, 200);
     expect(result.success).toBe(true);
@@ -1383,14 +1592,20 @@ describe("CommunityCore", () => {
 
   it("should not allow owner to leave their server", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 5, name: "Owner Test" });
+    const server = await communityCore.createServer({
+      ownerId: 5,
+      name: "Owner Test",
+    });
     const result = await communityCore.leaveServer(server.id, 5);
     expect(result.success).toBe(false);
   });
 
   it("should create a text channel", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 6, name: "Channel Test" });
+    const server = await communityCore.createServer({
+      ownerId: 6,
+      name: "Channel Test",
+    });
     const channel = await communityCore.createChannel({
       serverId: server.id,
       creatorId: 6,
@@ -1405,8 +1620,13 @@ describe("CommunityCore", () => {
 
   it("should send a message to a channel", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 7, name: "Message Test" });
-    const generalChannel = server.channels.find((c: any) => c.name === "general");
+    const server = await communityCore.createServer({
+      ownerId: 7,
+      name: "Message Test",
+    });
+    const generalChannel = server.channels.find(
+      (c: any) => c.name === "general"
+    );
     const msg = await communityCore.sendMessage({
       channelId: generalChannel!.id,
       authorId: 7,
@@ -1419,17 +1639,33 @@ describe("CommunityCore", () => {
 
   it("should get channel messages", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 8, name: "Get Messages Test" });
-    const generalChannel = server.channels.find((c: any) => c.name === "general");
-    await communityCore.sendMessage({ channelId: generalChannel!.id, authorId: 8, content: "Message 1" });
-    await communityCore.sendMessage({ channelId: generalChannel!.id, authorId: 8, content: "Message 2" });
+    const server = await communityCore.createServer({
+      ownerId: 8,
+      name: "Get Messages Test",
+    });
+    const generalChannel = server.channels.find(
+      (c: any) => c.name === "general"
+    );
+    await communityCore.sendMessage({
+      channelId: generalChannel!.id,
+      authorId: 8,
+      content: "Message 1",
+    });
+    await communityCore.sendMessage({
+      channelId: generalChannel!.id,
+      authorId: 8,
+      content: "Message 2",
+    });
     const messages = await communityCore.getMessages(generalChannel!.id, 10);
     expect(messages.length).toBeGreaterThanOrEqual(2);
   });
 
   it("should create a role", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 9, name: "Role Test" });
+    const server = await communityCore.createServer({
+      ownerId: 9,
+      name: "Role Test",
+    });
     const role = await communityCore.createRole({
       serverId: server.id,
       createdBy: 9,
@@ -1445,17 +1681,32 @@ describe("CommunityCore", () => {
 
   it("should assign a role to a member", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 10, name: "Assign Role Test" });
+    const server = await communityCore.createServer({
+      ownerId: 10,
+      name: "Assign Role Test",
+    });
     await communityCore.joinServer(server.id, 300);
-    const role = await communityCore.createRole({ serverId: server.id, createdBy: 10, name: "VIP" });
+    const role = await communityCore.createRole({
+      serverId: server.id,
+      createdBy: 10,
+      name: "VIP",
+    });
     const result = await communityCore.assignRole(server.id, 300, role!.id, 10);
     expect(result.success).toBe(true);
   });
 
   it("should generate invite code", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 11, name: "Invite Test" });
-    const invite = await communityCore.generateInviteCode(server.id, 11, 10, 24);
+    const server = await communityCore.createServer({
+      ownerId: 11,
+      name: "Invite Test",
+    });
+    const invite = await communityCore.generateInviteCode(
+      server.id,
+      11,
+      10,
+      24
+    );
     expect(invite.code).toBeDefined();
     expect(invite.code.length).toBeGreaterThan(5);
     expect(invite.maxUses).toBe(10);
@@ -1464,7 +1715,10 @@ describe("CommunityCore", () => {
 
   it("should join server via invite code", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 12, name: "Invite Join Test" });
+    const server = await communityCore.createServer({
+      ownerId: 12,
+      name: "Invite Join Test",
+    });
     const invite = await communityCore.generateInviteCode(server.id, 12);
     const result = await communityCore.joinServer(server.id, 400, invite.code);
     expect(result.success).toBe(true);
@@ -1472,7 +1726,10 @@ describe("CommunityCore", () => {
 
   it("should get server stats", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 13, name: "Stats Test" });
+    const server = await communityCore.createServer({
+      ownerId: 13,
+      name: "Stats Test",
+    });
     const stats = await communityCore.getServerStats(server.id);
     expect(stats).not.toBeNull();
     expect(stats!.memberCount).toBeGreaterThan(0);
@@ -1482,7 +1739,12 @@ describe("CommunityCore", () => {
 
   it("should discover public servers", async () => {
     const { communityCore } = await import("./core-facades");
-    await communityCore.createServer({ ownerId: 14, name: "Discoverable Server", isPublic: true, category: "gaming" });
+    await communityCore.createServer({
+      ownerId: 14,
+      name: "Discoverable Server",
+      isPublic: true,
+      category: "gaming",
+    });
     const servers = await communityCore.discoverServers(undefined, 20);
     expect(Array.isArray(servers)).toBe(true);
     expect(servers.every((s: any) => s.isPublic)).toBe(true);
@@ -1490,10 +1752,24 @@ describe("CommunityCore", () => {
 
   it("should moderate a message (delete)", async () => {
     const { communityCore } = await import("./core-facades");
-    const server = await communityCore.createServer({ ownerId: 15, name: "Moderation Test" });
-    const generalChannel = server.channels.find((c: any) => c.name === "general");
-    const msg = await communityCore.sendMessage({ channelId: generalChannel!.id, authorId: 100, content: "Spam message" });
-    const result = await communityCore.moderateMessage(server.id, msg!.id, "delete", 15);
+    const server = await communityCore.createServer({
+      ownerId: 15,
+      name: "Moderation Test",
+    });
+    const generalChannel = server.channels.find(
+      (c: any) => c.name === "general"
+    );
+    const msg = await communityCore.sendMessage({
+      channelId: generalChannel!.id,
+      authorId: 100,
+      content: "Spam message",
+    });
+    const result = await communityCore.moderateMessage(
+      server.id,
+      msg!.id,
+      "delete",
+      15
+    );
     expect(result.success).toBe(true);
   });
 });

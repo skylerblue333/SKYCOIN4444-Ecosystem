@@ -35,7 +35,7 @@ export interface TeamSimulation {
 export interface SimulationOutcome {
   timelineImpact: number; // days
   costImpact: number; // dollars
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  riskLevel: "low" | "medium" | "high" | "critical";
   successProbability: number; // 0-1
   keyMetrics: MetricPrediction[];
   criticalPath: string[];
@@ -52,7 +52,7 @@ export interface MetricPrediction {
 
 export interface RiskFactor {
   riskType: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   probability: number;
   impact: string;
   mitigationStrategy: string;
@@ -76,7 +76,10 @@ export class CompanySimulatorEngine {
     const overallOutcome = this.calculateOverallOutcome(teamSimulations);
     const riskFactors = this.identifyRiskFactors(prompt, teamSimulations);
     const opportunityFactors = this.identifyOpportunities(prompt);
-    const recommendations = this.generateRecommendations(overallOutcome, riskFactors);
+    const recommendations = this.generateRecommendations(
+      overallOutcome,
+      riskFactors
+    );
 
     return {
       simulationId: `sim_${Date.now()}`,
@@ -97,11 +100,11 @@ export class CompanySimulatorEngine {
    */
   private extractScenarioName(prompt: string): string {
     // Simple extraction - in production would use NLP
-    if (prompt.includes('launch')) return 'Feature Launch Scenario';
-    if (prompt.includes('hire')) return 'Team Expansion Scenario';
-    if (prompt.includes('pivot')) return 'Product Pivot Scenario';
-    if (prompt.includes('market')) return 'Market Expansion Scenario';
-    return 'Custom Scenario';
+    if (prompt.includes("launch")) return "Feature Launch Scenario";
+    if (prompt.includes("hire")) return "Team Expansion Scenario";
+    if (prompt.includes("pivot")) return "Product Pivot Scenario";
+    if (prompt.includes("market")) return "Market Expansion Scenario";
+    return "Custom Scenario";
   }
 
   /**
@@ -110,74 +113,110 @@ export class CompanySimulatorEngine {
   private async simulateTeams(prompt: string): Promise<TeamSimulation[]> {
     return [
       {
-        teamName: 'Engineering',
+        teamName: "Engineering",
         teamSize: 12,
         capacity: 0.85,
         workload: 0.9,
         morale: 0.7,
-        bottlenecks: ['Database migration', 'API redesign', 'Testing infrastructure'],
-        predictedChallenges: [
-          'Scope creep on new features',
-          'Technical debt accumulation',
-          'Integration complexity',
+        bottlenecks: [
+          "Database migration",
+          "API redesign",
+          "Testing infrastructure",
         ],
-        requiredResources: ['Senior backend engineer', 'DevOps engineer', 'QA automation'],
+        predictedChallenges: [
+          "Scope creep on new features",
+          "Technical debt accumulation",
+          "Integration complexity",
+        ],
+        requiredResources: [
+          "Senior backend engineer",
+          "DevOps engineer",
+          "QA automation",
+        ],
         timelineImpact: 14,
       },
       {
-        teamName: 'Product',
+        teamName: "Product",
         teamSize: 4,
         capacity: 0.8,
         workload: 0.95,
         morale: 0.65,
-        bottlenecks: ['Roadmap prioritization', 'Stakeholder alignment', 'Design handoff'],
-        predictedChallenges: [
-          'Conflicting priorities',
-          'Unclear requirements',
-          'Design-engineering misalignment',
+        bottlenecks: [
+          "Roadmap prioritization",
+          "Stakeholder alignment",
+          "Design handoff",
         ],
-        requiredResources: ['Senior product manager', 'Product designer', 'User researcher'],
+        predictedChallenges: [
+          "Conflicting priorities",
+          "Unclear requirements",
+          "Design-engineering misalignment",
+        ],
+        requiredResources: [
+          "Senior product manager",
+          "Product designer",
+          "User researcher",
+        ],
         timelineImpact: 7,
       },
       {
-        teamName: 'Design',
+        teamName: "Design",
         teamSize: 3,
         capacity: 0.75,
         workload: 0.85,
         morale: 0.75,
-        bottlenecks: ['Design system updates', 'Mobile responsiveness', 'Accessibility'],
-        predictedChallenges: [
-          'Design-to-engineering handoff delays',
-          'Scope expansion',
-          'Tool limitations',
+        bottlenecks: [
+          "Design system updates",
+          "Mobile responsiveness",
+          "Accessibility",
         ],
-        requiredResources: ['UI/UX designer', 'Design systems specialist'],
+        predictedChallenges: [
+          "Design-to-engineering handoff delays",
+          "Scope expansion",
+          "Tool limitations",
+        ],
+        requiredResources: ["UI/UX designer", "Design systems specialist"],
         timelineImpact: 10,
       },
       {
-        teamName: 'Marketing',
+        teamName: "Marketing",
         teamSize: 5,
         capacity: 0.8,
         workload: 0.7,
         morale: 0.8,
-        bottlenecks: ['Content creation', 'Campaign coordination', 'Analytics setup'],
-        predictedChallenges: [
-          'Message positioning',
-          'Channel optimization',
-          'Budget constraints',
+        bottlenecks: [
+          "Content creation",
+          "Campaign coordination",
+          "Analytics setup",
         ],
-        requiredResources: ['Content marketer', 'Growth marketer', 'Analytics specialist'],
+        predictedChallenges: [
+          "Message positioning",
+          "Channel optimization",
+          "Budget constraints",
+        ],
+        requiredResources: [
+          "Content marketer",
+          "Growth marketer",
+          "Analytics specialist",
+        ],
         timelineImpact: 5,
       },
       {
-        teamName: 'Sales',
+        teamName: "Sales",
         teamSize: 6,
         capacity: 0.9,
         workload: 0.8,
         morale: 0.85,
-        bottlenecks: ['Deal closure', 'Proposal generation', 'Contract negotiation'],
-        predictedChallenges: ['Sales cycle length', 'Competitive pressure', 'Pricing objections'],
-        requiredResources: ['Scalable account executive', 'Sales engineer'],
+        bottlenecks: [
+          "Deal closure",
+          "Proposal generation",
+          "Contract negotiation",
+        ],
+        predictedChallenges: [
+          "Sales cycle length",
+          "Competitive pressure",
+          "Pricing objections",
+        ],
+        requiredResources: ["Scalable account executive", "Sales engineer"],
         timelineImpact: 3,
       },
     ];
@@ -186,14 +225,31 @@ export class CompanySimulatorEngine {
   /**
    * Calculate overall outcome
    */
-  private calculateOverallOutcome(teamSimulations: TeamSimulation[]): SimulationOutcome {
-    const avgTimelineImpact = teamSimulations.reduce((sum, t) => sum + t.timelineImpact, 0) / teamSimulations.length;
-    const avgWorkload = teamSimulations.reduce((sum, t) => sum + t.workload, 0) / teamSimulations.length;
-    const avgMorale = teamSimulations.reduce((sum, t) => sum + t.morale, 0) / teamSimulations.length;
+  private calculateOverallOutcome(
+    teamSimulations: TeamSimulation[]
+  ): SimulationOutcome {
+    const avgTimelineImpact =
+      teamSimulations.reduce((sum, t) => sum + t.timelineImpact, 0) /
+      teamSimulations.length;
+    const avgWorkload =
+      teamSimulations.reduce((sum, t) => sum + t.workload, 0) /
+      teamSimulations.length;
+    const avgMorale =
+      teamSimulations.reduce((sum, t) => sum + t.morale, 0) /
+      teamSimulations.length;
 
     const riskLevel =
-      avgWorkload > 0.9 ? 'critical' : avgWorkload > 0.8 ? 'high' : avgWorkload > 0.7 ? 'medium' : 'low';
-    const successProbability = Math.max(0, 1 - avgWorkload * 0.3 - (1 - avgMorale) * 0.2);
+      avgWorkload > 0.9
+        ? "critical"
+        : avgWorkload > 0.8
+          ? "high"
+          : avgWorkload > 0.7
+            ? "medium"
+            : "low";
+    const successProbability = Math.max(
+      0,
+      1 - avgWorkload * 0.3 - (1 - avgMorale) * 0.2
+    );
 
     return {
       timelineImpact: Math.ceil(avgTimelineImpact),
@@ -201,16 +257,38 @@ export class CompanySimulatorEngine {
       riskLevel,
       successProbability,
       keyMetrics: [
-        { metricName: 'Time to launch', currentValue: 8, predictedValue: 8 + avgTimelineImpact / 7, percentageChange: (avgTimelineImpact / 7 / 8) * 100, confidence: 0.85 },
-        { metricName: 'Team morale', currentValue: 0.75, predictedValue: avgMorale, percentageChange: ((avgMorale - 0.75) / 0.75) * 100, confidence: 0.7 },
-        { metricName: 'Quality score', currentValue: 0.88, predictedValue: 0.88 - avgWorkload * 0.1, percentageChange: -((avgWorkload * 0.1) / 0.88) * 100, confidence: 0.8 },
+        {
+          metricName: "Time to launch",
+          currentValue: 8,
+          predictedValue: 8 + avgTimelineImpact / 7,
+          percentageChange: (avgTimelineImpact / 7 / 8) * 100,
+          confidence: 0.85,
+        },
+        {
+          metricName: "Team morale",
+          currentValue: 0.75,
+          predictedValue: avgMorale,
+          percentageChange: ((avgMorale - 0.75) / 0.75) * 100,
+          confidence: 0.7,
+        },
+        {
+          metricName: "Quality score",
+          currentValue: 0.88,
+          predictedValue: 0.88 - avgWorkload * 0.1,
+          percentageChange: -((avgWorkload * 0.1) / 0.88) * 100,
+          confidence: 0.8,
+        },
       ],
-      criticalPath: ['Engineering: Database migration (14 days)', 'Product: Roadmap alignment (7 days)', 'Design: System updates (10 days)'],
+      criticalPath: [
+        "Engineering: Database migration (14 days)",
+        "Product: Roadmap alignment (7 days)",
+        "Design: System updates (10 days)",
+      ],
       recommendations: [
         `Allocate ${Math.ceil(avgTimelineImpact / 7)} additional weeks to timeline`,
-        'Hire additional resources to reduce workload',
-        'Prioritize critical path items',
-        'Implement daily standups to improve coordination',
+        "Hire additional resources to reduce workload",
+        "Prioritize critical path items",
+        "Implement daily standups to improve coordination",
       ],
     };
   }
@@ -218,42 +296,47 @@ export class CompanySimulatorEngine {
   /**
    * Identify risk factors
    */
-  private identifyRiskFactors(prompt: string, teamSimulations: TeamSimulation[]): RiskFactor[] {
+  private identifyRiskFactors(
+    prompt: string,
+    teamSimulations: TeamSimulation[]
+  ): RiskFactor[] {
     const risks: RiskFactor[] = [];
 
     // Workload risks
-    teamSimulations.forEach((team) => {
+    teamSimulations.forEach(team => {
       if (team.workload > 0.9) {
         risks.push({
           riskType: `${team.teamName} team overload`,
-          severity: 'high',
+          severity: "high",
           probability: 0.8,
-          impact: 'Quality degradation, burnout, attrition',
+          impact: "Quality degradation, burnout, attrition",
           mitigationStrategy: `Hire additional ${team.teamName} resources or reduce scope`,
         });
       }
     });
 
     // Morale risks
-    teamSimulations.forEach((team) => {
+    teamSimulations.forEach(team => {
       if (team.morale < 0.7) {
         risks.push({
           riskType: `${team.teamName} team morale`,
-          severity: 'medium',
+          severity: "medium",
           probability: 0.6,
-          impact: 'Reduced productivity, potential attrition',
-          mitigationStrategy: 'Improve communication, celebrate wins, provide support',
+          impact: "Reduced productivity, potential attrition",
+          mitigationStrategy:
+            "Improve communication, celebrate wins, provide support",
         });
       }
     });
 
     // Bottleneck risks
     risks.push({
-      riskType: 'Critical path delays',
-      severity: 'high',
+      riskType: "Critical path delays",
+      severity: "high",
       probability: 0.7,
-      impact: 'Project timeline slips by 2-4 weeks',
-      mitigationStrategy: 'Parallelize work, allocate senior resources to blockers',
+      impact: "Project timeline slips by 2-4 weeks",
+      mitigationStrategy:
+        "Parallelize work, allocate senior resources to blockers",
     });
 
     return risks;
@@ -265,25 +348,33 @@ export class CompanySimulatorEngine {
   private identifyOpportunities(prompt: string): OpportunityFactor[] {
     return [
       {
-        opportunityType: 'Early market entry',
-        potentialValue: '$5M+ revenue opportunity',
+        opportunityType: "Early market entry",
+        potentialValue: "$5M+ revenue opportunity",
         probability: 0.7,
-        timeToCapture: '90 days',
-        requiredActions: ['Accelerate launch', 'Hire sales team', 'Create marketing campaign'],
+        timeToCapture: "90 days",
+        requiredActions: [
+          "Accelerate launch",
+          "Hire sales team",
+          "Create marketing campaign",
+        ],
       },
       {
-        opportunityType: 'Team skill development',
-        potentialValue: 'Improved team capabilities',
+        opportunityType: "Team skill development",
+        potentialValue: "Improved team capabilities",
         probability: 0.8,
-        timeToCapture: '6 months',
-        requiredActions: ['Provide training', 'Assign mentors', 'Create learning paths'],
+        timeToCapture: "6 months",
+        requiredActions: [
+          "Provide training",
+          "Assign mentors",
+          "Create learning paths",
+        ],
       },
       {
-        opportunityType: 'Process improvement',
-        potentialValue: '20-30% productivity gain',
+        opportunityType: "Process improvement",
+        potentialValue: "20-30% productivity gain",
         probability: 0.75,
-        timeToCapture: '3 months',
-        requiredActions: ['Audit workflows', 'Implement tools', 'Train teams'],
+        timeToCapture: "3 months",
+        requiredActions: ["Audit workflows", "Implement tools", "Train teams"],
       },
     ];
   }
@@ -291,25 +382,34 @@ export class CompanySimulatorEngine {
   /**
    * Generate recommendations
    */
-  private generateRecommendations(outcome: SimulationOutcome, risks: RiskFactor[]): string[] {
+  private generateRecommendations(
+    outcome: SimulationOutcome,
+    risks: RiskFactor[]
+  ): string[] {
     const recommendations: string[] = [];
 
-    if (outcome.riskLevel === 'critical') {
-      recommendations.push('URGENT: Reduce scope or extend timeline to prevent project failure');
+    if (outcome.riskLevel === "critical") {
+      recommendations.push(
+        "URGENT: Reduce scope or extend timeline to prevent project failure"
+      );
     }
 
     if (outcome.successProbability < 0.6) {
-      recommendations.push('High failure risk. Consider phased approach or additional resources.');
+      recommendations.push(
+        "High failure risk. Consider phased approach or additional resources."
+      );
     }
 
-    const highRisks = risks.filter((r) => r.severity === 'high');
+    const highRisks = risks.filter(r => r.severity === "high");
     if (highRisks.length > 0) {
-      recommendations.push(`Address ${highRisks.length} high-severity risks immediately`);
+      recommendations.push(
+        `Address ${highRisks.length} high-severity risks immediately`
+      );
     }
 
-    recommendations.push('Implement daily standups to monitor progress');
-    recommendations.push('Create contingency plans for critical path items');
-    recommendations.push('Establish clear success metrics and tracking');
+    recommendations.push("Implement daily standups to monitor progress");
+    recommendations.push("Create contingency plans for critical path items");
+    recommendations.push("Establish clear success metrics and tracking");
 
     return recommendations;
   }
@@ -317,7 +417,10 @@ export class CompanySimulatorEngine {
   /**
    * Get what-if scenario
    */
-  async getWhatIfScenario(baselineSimulation: CompanySimulation, change: string): Promise<CompanySimulation> {
+  async getWhatIfScenario(
+    baselineSimulation: CompanySimulation,
+    change: string
+  ): Promise<CompanySimulation> {
     const newPrompt = `${baselineSimulation.prompt} + ${change}`;
     return this.runCompanySimulation(newPrompt);
   }
@@ -325,7 +428,10 @@ export class CompanySimulatorEngine {
   /**
    * Compare scenarios
    */
-  async compareScenarios(sim1: CompanySimulation, sim2: CompanySimulation): Promise<any> {
+  async compareScenarios(
+    sim1: CompanySimulation,
+    sim2: CompanySimulation
+  ): Promise<any> {
     return {
       scenario1: sim1.scenarioName,
       scenario2: sim2.scenarioName,
@@ -333,12 +439,15 @@ export class CompanySimulatorEngine {
         timelineImpact: {
           scenario1: sim1.overallOutcome.timelineImpact,
           scenario2: sim2.overallOutcome.timelineImpact,
-          difference: sim2.overallOutcome.timelineImpact - sim1.overallOutcome.timelineImpact,
+          difference:
+            sim2.overallOutcome.timelineImpact -
+            sim1.overallOutcome.timelineImpact,
         },
         costImpact: {
           scenario1: sim1.overallOutcome.costImpact,
           scenario2: sim2.overallOutcome.costImpact,
-          difference: sim2.overallOutcome.costImpact - sim1.overallOutcome.costImpact,
+          difference:
+            sim2.overallOutcome.costImpact - sim1.overallOutcome.costImpact,
         },
         riskLevel: {
           scenario1: sim1.overallOutcome.riskLevel,
@@ -347,10 +456,12 @@ export class CompanySimulatorEngine {
         successProbability: {
           scenario1: sim1.overallOutcome.successProbability,
           scenario2: sim2.overallOutcome.successProbability,
-          difference: sim2.overallOutcome.successProbability - sim1.overallOutcome.successProbability,
+          difference:
+            sim2.overallOutcome.successProbability -
+            sim1.overallOutcome.successProbability,
         },
       },
-      recommendation: 'Scenario 1 has lower risk and faster timeline',
+      recommendation: "Scenario 1 has lower risk and faster timeline",
     };
   }
 
@@ -360,26 +471,38 @@ export class CompanySimulatorEngine {
   async get90DayForecast(simulation: CompanySimulation): Promise<any> {
     return {
       simulationId: simulation.simulationId,
-      forecastPeriod: '90 days',
+      forecastPeriod: "90 days",
       weeklyMilestones: [
-        { week: 1, milestone: 'Team alignment and kickoff', riskLevel: 'low' },
-        { week: 2, milestone: 'Design and architecture finalized', riskLevel: 'low' },
-        { week: 3, milestone: 'Engineering sprint 1 complete', riskLevel: 'medium' },
-        { week: 4, milestone: 'Beta testing begins', riskLevel: 'medium' },
-        { week: 5, milestone: 'Marketing campaign launch', riskLevel: 'medium' },
-        { week: 6, milestone: 'Sales enablement complete', riskLevel: 'low' },
-        { week: 7, milestone: 'Final QA and polish', riskLevel: 'medium' },
-        { week: 8, milestone: 'Launch preparation', riskLevel: 'high' },
-        { week: 9, milestone: 'Product launch', riskLevel: 'high' },
-        { week: 10, milestone: 'Post-launch monitoring', riskLevel: 'medium' },
-        { week: 11, milestone: 'Iteration and optimization', riskLevel: 'low' },
-        { week: 12, milestone: 'Success metrics review', riskLevel: 'low' },
+        { week: 1, milestone: "Team alignment and kickoff", riskLevel: "low" },
+        {
+          week: 2,
+          milestone: "Design and architecture finalized",
+          riskLevel: "low",
+        },
+        {
+          week: 3,
+          milestone: "Engineering sprint 1 complete",
+          riskLevel: "medium",
+        },
+        { week: 4, milestone: "Beta testing begins", riskLevel: "medium" },
+        {
+          week: 5,
+          milestone: "Marketing campaign launch",
+          riskLevel: "medium",
+        },
+        { week: 6, milestone: "Sales enablement complete", riskLevel: "low" },
+        { week: 7, milestone: "Final QA and polish", riskLevel: "medium" },
+        { week: 8, milestone: "Launch preparation", riskLevel: "high" },
+        { week: 9, milestone: "Product launch", riskLevel: "high" },
+        { week: 10, milestone: "Post-launch monitoring", riskLevel: "medium" },
+        { week: 11, milestone: "Iteration and optimization", riskLevel: "low" },
+        { week: 12, milestone: "Success metrics review", riskLevel: "low" },
       ],
       predictedOutcomes: {
-        revenue: '$500K - $1M',
-        users: '10K - 50K',
-        retention: '60-70%',
-        teamMorale: 'Improved to 0.8+',
+        revenue: "$500K - $1M",
+        users: "10K - 50K",
+        retention: "60-70%",
+        teamMorale: "Improved to 0.8+",
       },
     };
   }

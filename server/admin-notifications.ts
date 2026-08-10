@@ -9,7 +9,18 @@ import * as db from "./db";
 const ADMIN_USER_ID = "admin-skyler-blue"; // Sky4 admin account identifier
 
 export interface AdminNotification {
-  type: "user_signup" | "payment" | "stake" | "swap" | "tip" | "mining" | "charity" | "marketplace" | "governance" | "security" | "system";
+  type:
+    | "user_signup"
+    | "payment"
+    | "stake"
+    | "swap"
+    | "tip"
+    | "mining"
+    | "charity"
+    | "marketplace"
+    | "governance"
+    | "security"
+    | "system";
   title: string;
   message: string;
   data?: Record<string, any>;
@@ -20,14 +31,16 @@ export interface AdminNotification {
 /**
  * Send notification to admin ShadowChat
  */
-export async function notifyAdmin(notification: AdminNotification): Promise<boolean> {
+export async function notifyAdmin(
+  notification: AdminNotification
+): Promise<boolean> {
   try {
     const timestamp = notification.timestamp || Date.now();
     const severity = notification.severity || "info";
-    
+
     // Format message for ShadowChat
     const formattedMessage = formatNotificationMessage(notification);
-    
+
     // Store in database for retrieval via ShadowChat
     await db.createNotification({
       userId: 1, // Admin user ID
@@ -35,8 +48,10 @@ export async function notifyAdmin(notification: AdminNotification): Promise<bool
       title: notification.title,
       message: formattedMessage,
     });
-    
-    console.log(`[Admin Notification] ${notification.type.toUpperCase()}: ${notification.title}`);
+
+    console.log(
+      `[Admin Notification] ${notification.type.toUpperCase()}: ${notification.title}`
+    );
     return true;
   } catch (error) {
     console.error("[Admin Notification] Failed:", error);
@@ -48,18 +63,20 @@ export async function notifyAdmin(notification: AdminNotification): Promise<bool
  * Format notification for display in ShadowChat
  */
 function formatNotificationMessage(notification: AdminNotification): string {
-  const timestamp = new Date(notification.timestamp || Date.now()).toLocaleString();
+  const timestamp = new Date(
+    notification.timestamp || Date.now()
+  ).toLocaleString();
   let message = `\n📌 **${notification.title}**\n`;
   message += `${notification.message}\n`;
   message += `⏰ ${timestamp}\n`;
-  
+
   if (notification.data && Object.keys(notification.data).length > 0) {
     message += `\n📊 **Details:**\n`;
     Object.entries(notification.data).forEach(([key, value]) => {
       message += `• ${key}: ${value}\n`;
     });
   }
-  
+
   return message;
 }
 
@@ -70,16 +87,20 @@ function formatNotificationMessage(notification: AdminNotification): string {
 /**
  * New User Signup
  */
-export async function notifyNewUser(userName: string, email: string, airdropAmount: number): Promise<boolean> {
+export async function notifyNewUser(
+  userName: string,
+  email: string,
+  airdropAmount: number
+): Promise<boolean> {
   return notifyAdmin({
     type: "user_signup",
     title: `👤 New User: ${userName}`,
     message: `New user registered on the platform`,
     data: {
       "User Name": userName,
-      "Email": email,
-      "Airdrop": `${airdropAmount} SKY4444`,
-      "Timestamp": new Date().toISOString(),
+      Email: email,
+      Airdrop: `${airdropAmount} SKY4444`,
+      Timestamp: new Date().toISOString(),
     },
     severity: "info",
   });
@@ -100,11 +121,11 @@ export async function notifyPaymentReceived(
     title: `💳 Payment Received: ${amount} ${currency}`,
     message: `Payment processed successfully`,
     data: {
-      "Amount": `${amount} ${currency}`,
-      "Method": method.toUpperCase(),
-      "User": userName,
+      Amount: `${amount} ${currency}`,
+      Method: method.toUpperCase(),
+      User: userName,
       "Order ID": orderId,
-      "Status": "✅ Completed",
+      Status: "✅ Completed",
     },
     severity: "info",
   });
@@ -124,9 +145,9 @@ export async function notifyLargePayment(
     title: `⚠️ LARGE PAYMENT: ${amount} ${currency}`,
     message: `Payment exceeds threshold of ${threshold} ${currency}`,
     data: {
-      "Amount": `${amount} ${currency}`,
-      "Threshold": `${threshold} ${currency}`,
-      "User": userName,
+      Amount: `${amount} ${currency}`,
+      Threshold: `${threshold} ${currency}`,
+      User: userName,
       "Alert Level": "HIGH",
     },
     severity: "warning",
@@ -148,12 +169,12 @@ export async function notifyStakingEvent(
     title: `📈 Staking: ${amount} SKY4444 @ ${apy}% APY`,
     message: `User staked tokens in liquidity pool`,
     data: {
-      "User": userName,
-      "Amount": `${amount} SKY4444`,
-      "APY": `${apy}%`,
+      User: userName,
+      Amount: `${amount} SKY4444`,
+      APY: `${apy}%`,
       "Lock Period": `${lockDays} days`,
       "Pool ID": poolId,
-      "Status": "✅ Active",
+      Status: "✅ Active",
     },
     severity: "info",
   });
@@ -175,12 +196,12 @@ export async function notifySwapExecuted(
     title: `🔄 Swap: ${fromAmount} ${fromToken} → ${toAmount} ${toToken}`,
     message: `Token swap completed on DEX`,
     data: {
-      "User": userName,
-      "From": `${fromAmount} ${fromToken}`,
-      "To": `${toAmount} ${toToken}`,
-      "Slippage": `${slippage}%`,
+      User: userName,
+      From: `${fromAmount} ${fromToken}`,
+      To: `${toAmount} ${toToken}`,
+      Slippage: `${slippage}%`,
       "Price Impact": "Calculated",
-      "Status": "✅ Completed",
+      Status: "✅ Completed",
     },
     severity: "info",
   });
@@ -201,11 +222,11 @@ export async function notifyTipSent(
     title: `💰 Tip: ${amount} ${currency} from ${fromUser}`,
     message: `Creator tip sent successfully`,
     data: {
-      "From": fromUser,
-      "To": toUser,
-      "Amount": `${amount} ${currency}`,
-      "Message": message || "(no message)",
-      "Status": "✅ Sent",
+      From: fromUser,
+      To: toUser,
+      Amount: `${amount} ${currency}`,
+      Message: message || "(no message)",
+      Status: "✅ Sent",
     },
     severity: "info",
   });
@@ -225,11 +246,11 @@ export async function notifyMiningRewards(
     title: `⛏️ Mining Rewards: +${rewardAmount} SKY4444`,
     message: `AI mining agent earned rewards`,
     data: {
-      "User": userName,
-      "Reward": `${rewardAmount} SKY4444`,
+      User: userName,
+      Reward: `${rewardAmount} SKY4444`,
       "Mining Agent": miningAgent,
       "Total Earned": `${totalEarned} SKY4444`,
-      "Status": "✅ Credited",
+      Status: "✅ Credited",
     },
     severity: "info",
   });
@@ -249,11 +270,11 @@ export async function notifyCharityCampaignCreated(
     title: `🎗️ Charity Campaign: ${campaignName}`,
     message: `New charity campaign launched`,
     data: {
-      "Campaign": campaignName,
-      "Creator": creatorName,
-      "Target": `${targetAmount} SKY4444`,
+      Campaign: campaignName,
+      Creator: creatorName,
+      Target: `${targetAmount} SKY4444`,
       "Campaign ID": campaignId,
-      "Status": "✅ Live",
+      Status: "✅ Live",
     },
     severity: "info",
   });
@@ -275,13 +296,13 @@ export async function notifyDonationReceived(
     title: `❤️ Donation: ${amount} SKY4444 for ${campaignName}`,
     message: `Donation received for charity campaign`,
     data: {
-      "Campaign": campaignName,
-      "Donor": donorName,
-      "Amount": `${amount} SKY4444`,
+      Campaign: campaignName,
+      Donor: donorName,
+      Amount: `${amount} SKY4444`,
       "Total Raised": `${totalRaised} SKY4444`,
-      "Target": `${targetAmount} SKY4444`,
-      "Progress": `${percentageRaised}%`,
-      "Status": "✅ Received",
+      Target: `${targetAmount} SKY4444`,
+      Progress: `${percentageRaised}%`,
+      Status: "✅ Received",
     },
     severity: "info",
   });
@@ -303,12 +324,12 @@ export async function notifyMarketplaceSale(
     title: `🛍️ Sale: ${itemName} - ${salePrice} ${currency}`,
     message: `Item sold on marketplace`,
     data: {
-      "Item": itemName,
-      "Seller": sellerName,
-      "Buyer": buyerName,
-      "Price": `${salePrice} ${currency}`,
+      Item: itemName,
+      Seller: sellerName,
+      Buyer: buyerName,
+      Price: `${salePrice} ${currency}`,
       "Listing ID": listingId,
-      "Status": "✅ Completed",
+      Status: "✅ Completed",
     },
     severity: "info",
   });
@@ -328,11 +349,11 @@ export async function notifyNFTMinted(
     title: `🎨 NFT Minted: ${nftName}`,
     message: `New NFT created and minted`,
     data: {
-      "NFT": nftName,
-      "Creator": creatorName,
+      NFT: nftName,
+      Creator: creatorName,
       "Token ID": tokenId,
-      "Contract": contractAddress,
-      "Status": "✅ Minted",
+      Contract: contractAddress,
+      Status: "✅ Minted",
     },
     severity: "info",
   });
@@ -353,17 +374,17 @@ export async function notifyAchievementUnlocked(
     epic: "🟣",
     legendary: "🟡",
   };
-  
+
   return notifyAdmin({
     type: "system",
     title: `${rarityEmoji[rarity]} Achievement: ${achievementName}`,
     message: `User unlocked achievement`,
     data: {
-      "User": userName,
-      "Achievement": achievementName,
-      "Rarity": rarity.toUpperCase(),
-      "Reward": reward,
-      "Status": "✅ Unlocked",
+      User: userName,
+      Achievement: achievementName,
+      Rarity: rarity.toUpperCase(),
+      Reward: reward,
+      Status: "✅ Unlocked",
     },
     severity: "info",
   });
@@ -384,17 +405,17 @@ export async function notifyGovernanceVote(
     passed: "✅",
     failed: "❌",
   };
-  
+
   return notifyAdmin({
     type: "governance",
     title: `${statusEmoji[status]} Governance: ${proposalTitle}`,
     message: `DAO proposal vote update`,
     data: {
-      "Proposal": proposalTitle,
+      Proposal: proposalTitle,
       "Proposal ID": proposalId,
-      "For": votesFor,
-      "Against": votesAgainst,
-      "Status": status.toUpperCase(),
+      For: votesFor,
+      Against: votesAgainst,
+      Status: status.toUpperCase(),
     },
     severity: "info",
   });
@@ -415,10 +436,10 @@ export async function notifySecurityAlert(
     message: `Security issue detected and action taken`,
     data: {
       "Alert Type": alertType,
-      "Description": description,
+      Description: description,
       "Affected Users": affectedUsers,
       "Action Taken": action,
-      "Severity": "HIGH",
+      Severity: "HIGH",
     },
     severity: "critical",
   });
@@ -437,8 +458,8 @@ export async function notifySystemAlert(
     title: `⚙️ System Alert: ${alertType}`,
     message: `System health check alert`,
     data: {
-      "Alert": alertType,
-      "Message": message,
+      Alert: alertType,
+      Message: message,
       ...metrics,
     },
     severity: "warning",
@@ -465,7 +486,7 @@ export async function notifyDailySummary(
       "Total Volume": `${totalVolume} SKY4444`,
       "Top User": topUser,
       "Top Activity": topActivity,
-      "Date": new Date().toLocaleDateString(),
+      Date: new Date().toLocaleDateString(),
     },
     severity: "info",
   });

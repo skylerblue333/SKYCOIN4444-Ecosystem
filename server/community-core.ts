@@ -20,17 +20,42 @@
 // TYPES & INTERFACES
 // ═══════════════════════════════════════════════════════════════
 
-export type ChannelType = "text" | "voice" | "announcement" | "stage" | "forum" | "media" | "rules" | "welcome";
+export type ChannelType =
+  | "text"
+  | "voice"
+  | "announcement"
+  | "stage"
+  | "forum"
+  | "media"
+  | "rules"
+  | "welcome";
 export type ServerBoostTier = "none" | "tier1" | "tier2" | "tier3";
 export type MemberStatus = "active" | "idle" | "dnd" | "offline" | "streaming";
 export type EventStatus = "scheduled" | "active" | "completed" | "cancelled";
-export type PermissionFlag = 
-  | "VIEW_CHANNEL" | "SEND_MESSAGES" | "READ_HISTORY" | "MANAGE_MESSAGES"
-  | "KICK_MEMBERS" | "BAN_MEMBERS" | "MANAGE_ROLES" | "MANAGE_CHANNELS"
-  | "MANAGE_SERVER" | "ADMINISTRATOR" | "CONNECT_VOICE" | "SPEAK_VOICE"
-  | "MUTE_MEMBERS" | "DEAFEN_MEMBERS" | "MOVE_MEMBERS" | "CREATE_EVENTS"
-  | "MANAGE_EVENTS" | "MENTION_EVERYONE" | "EMBED_LINKS" | "ATTACH_FILES"
-  | "USE_SLASH_COMMANDS" | "MANAGE_WEBHOOKS" | "VIEW_AUDIT_LOG";
+export type PermissionFlag =
+  | "VIEW_CHANNEL"
+  | "SEND_MESSAGES"
+  | "READ_HISTORY"
+  | "MANAGE_MESSAGES"
+  | "KICK_MEMBERS"
+  | "BAN_MEMBERS"
+  | "MANAGE_ROLES"
+  | "MANAGE_CHANNELS"
+  | "MANAGE_SERVER"
+  | "ADMINISTRATOR"
+  | "CONNECT_VOICE"
+  | "SPEAK_VOICE"
+  | "MUTE_MEMBERS"
+  | "DEAFEN_MEMBERS"
+  | "MOVE_MEMBERS"
+  | "CREATE_EVENTS"
+  | "MANAGE_EVENTS"
+  | "MENTION_EVERYONE"
+  | "EMBED_LINKS"
+  | "ATTACH_FILES"
+  | "USE_SLASH_COMMANDS"
+  | "MANAGE_WEBHOOKS"
+  | "VIEW_AUDIT_LOG";
 
 export interface CommunityServer {
   id: string;
@@ -300,7 +325,11 @@ export class CommunityServerService {
     return this.servers.get(serverId) || null;
   }
 
-  async updateServer(serverId: string, ownerId: number, updates: Partial<CommunityServer>): Promise<CommunityServer | null> {
+  async updateServer(
+    serverId: string,
+    ownerId: number,
+    updates: Partial<CommunityServer>
+  ): Promise<CommunityServer | null> {
     const server = this.servers.get(serverId);
     if (!server || server.ownerId !== ownerId) return null;
     Object.assign(server, { ...updates, updatedAt: new Date() });
@@ -314,21 +343,24 @@ export class CommunityServerService {
     return true;
   }
 
-  async discoverServers(params: {
-    query?: string;
-    category?: string;
-    limit?: number;
-    offset?: number;
-    sortBy?: "members" | "activity" | "new";
-  } = {}): Promise<CommunityServer[]> {
+  async discoverServers(
+    params: {
+      query?: string;
+      category?: string;
+      limit?: number;
+      offset?: number;
+      sortBy?: "members" | "activity" | "new";
+    } = {}
+  ): Promise<CommunityServer[]> {
     let servers = Array.from(this.servers.values()).filter(s => s.isPublic);
 
     if (params.query) {
       const q = params.query.toLowerCase();
-      servers = servers.filter(s =>
-        s.name.toLowerCase().includes(q) ||
-        s.description.toLowerCase().includes(q) ||
-        s.tags.some(t => t.toLowerCase().includes(q))
+      servers = servers.filter(
+        s =>
+          s.name.toLowerCase().includes(q) ||
+          s.description.toLowerCase().includes(q) ||
+          s.tags.some(t => t.toLowerCase().includes(q))
       );
     }
 
@@ -347,8 +379,14 @@ export class CommunityServerService {
     return servers.slice(offset, offset + (params.limit || 20));
   }
 
-  async getServerByInviteCode(inviteCode: string): Promise<CommunityServer | null> {
-    return Array.from(this.servers.values()).find(s => s.inviteCode === inviteCode) || null;
+  async getServerByInviteCode(
+    inviteCode: string
+  ): Promise<CommunityServer | null> {
+    return (
+      Array.from(this.servers.values()).find(
+        s => s.inviteCode === inviteCode
+      ) || null
+    );
   }
 
   async updateMemberCount(serverId: string, delta: number): Promise<void> {
@@ -370,14 +408,21 @@ export class CommunityServerService {
     else if (server.boostCount >= 2) server.boostTier = "tier1";
   }
 
-  async setTokenGating(serverId: string, config: TokenGateConfig): Promise<void> {
+  async setTokenGating(
+    serverId: string,
+    config: TokenGateConfig
+  ): Promise<void> {
     const server = this.servers.get(serverId);
     if (server) server.tokenGating = config;
   }
 
   private generateInviteCode(): string {
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const chars =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    return Array.from(
+      { length: 8 },
+      () => chars[Math.floor(Math.random() * chars.length)]
+    ).join("");
   }
 }
 
@@ -405,7 +450,11 @@ export class RolePermissionService {
       name: params.name,
       color: params.color || "#99AAB5",
       position: 1,
-      permissions: params.permissions || ["VIEW_CHANNEL", "SEND_MESSAGES", "READ_HISTORY"],
+      permissions: params.permissions || [
+        "VIEW_CHANNEL",
+        "SEND_MESSAGES",
+        "READ_HISTORY",
+      ],
       isHoisted: params.isHoisted || false,
       isMentionable: params.isMentionable || false,
       isManaged: false,
@@ -423,7 +472,11 @@ export class RolePermissionService {
       .sort((a, b) => b.position - a.position);
   }
 
-  async assignRole(serverId: string, userId: number, roleId: string): Promise<boolean> {
+  async assignRole(
+    serverId: string,
+    userId: number,
+    roleId: string
+  ): Promise<boolean> {
     const role = this.roles.get(roleId);
     if (!role || role.serverId !== serverId) return false;
 
@@ -437,7 +490,11 @@ export class RolePermissionService {
     return true;
   }
 
-  async removeRole(serverId: string, userId: number, roleId: string): Promise<boolean> {
+  async removeRole(
+    serverId: string,
+    userId: number,
+    roleId: string
+  ): Promise<boolean> {
     const key = `${serverId}_${userId}`;
     const memberRoles = this.memberRoles.get(key) || [];
     const idx = memberRoles.indexOf(roleId);
@@ -448,7 +505,10 @@ export class RolePermissionService {
     return true;
   }
 
-  async getMemberPermissions(serverId: string, userId: number): Promise<Set<PermissionFlag>> {
+  async getMemberPermissions(
+    serverId: string,
+    userId: number
+  ): Promise<Set<PermissionFlag>> {
     const key = `${serverId}_${userId}`;
     const memberRoleIds = this.memberRoles.get(key) || [];
     const permissions = new Set<PermissionFlag>();
@@ -459,12 +519,29 @@ export class RolePermissionService {
       if (role.permissions.includes("ADMINISTRATOR")) {
         // Administrator gets all permissions
         return new Set<PermissionFlag>([
-          "VIEW_CHANNEL", "SEND_MESSAGES", "READ_HISTORY", "MANAGE_MESSAGES",
-          "KICK_MEMBERS", "BAN_MEMBERS", "MANAGE_ROLES", "MANAGE_CHANNELS",
-          "MANAGE_SERVER", "ADMINISTRATOR", "CONNECT_VOICE", "SPEAK_VOICE",
-          "MUTE_MEMBERS", "DEAFEN_MEMBERS", "MOVE_MEMBERS", "CREATE_EVENTS",
-          "MANAGE_EVENTS", "MENTION_EVERYONE", "EMBED_LINKS", "ATTACH_FILES",
-          "USE_SLASH_COMMANDS", "MANAGE_WEBHOOKS", "VIEW_AUDIT_LOG",
+          "VIEW_CHANNEL",
+          "SEND_MESSAGES",
+          "READ_HISTORY",
+          "MANAGE_MESSAGES",
+          "KICK_MEMBERS",
+          "BAN_MEMBERS",
+          "MANAGE_ROLES",
+          "MANAGE_CHANNELS",
+          "MANAGE_SERVER",
+          "ADMINISTRATOR",
+          "CONNECT_VOICE",
+          "SPEAK_VOICE",
+          "MUTE_MEMBERS",
+          "DEAFEN_MEMBERS",
+          "MOVE_MEMBERS",
+          "CREATE_EVENTS",
+          "MANAGE_EVENTS",
+          "MENTION_EVERYONE",
+          "EMBED_LINKS",
+          "ATTACH_FILES",
+          "USE_SLASH_COMMANDS",
+          "MANAGE_WEBHOOKS",
+          "VIEW_AUDIT_LOG",
         ]);
       }
       for (const perm of role.permissions) {
@@ -475,18 +552,30 @@ export class RolePermissionService {
     return permissions;
   }
 
-  async hasPermission(serverId: string, userId: number, permission: PermissionFlag): Promise<boolean> {
+  async hasPermission(
+    serverId: string,
+    userId: number,
+    permission: PermissionFlag
+  ): Promise<boolean> {
     const permissions = await this.getMemberPermissions(serverId, userId);
     return permissions.has(permission) || permissions.has("ADMINISTRATOR");
   }
 
-  async getMemberRoles(serverId: string, userId: number): Promise<ServerRole[]> {
+  async getMemberRoles(
+    serverId: string,
+    userId: number
+  ): Promise<ServerRole[]> {
     const key = `${serverId}_${userId}`;
     const roleIds = this.memberRoles.get(key) || [];
-    return roleIds.map(id => this.roles.get(id)).filter(Boolean) as ServerRole[];
+    return roleIds
+      .map(id => this.roles.get(id))
+      .filter(Boolean) as ServerRole[];
   }
 
-  async updateRole(roleId: string, updates: Partial<ServerRole>): Promise<ServerRole | null> {
+  async updateRole(
+    roleId: string,
+    updates: Partial<ServerRole>
+  ): Promise<ServerRole | null> {
     const role = this.roles.get(roleId);
     if (!role) return null;
     Object.assign(role, updates);
@@ -505,7 +594,12 @@ export class RolePermissionService {
 export class VoiceChannelService {
   private voiceRooms: Map<string, VoiceRoom> = new Map();
 
-  async joinVoiceChannel(channelId: string, serverId: string, userId: number, sessionId: string): Promise<VoiceRoom> {
+  async joinVoiceChannel(
+    channelId: string,
+    serverId: string,
+    userId: number,
+    sessionId: string
+  ): Promise<VoiceRoom> {
     let room = this.voiceRooms.get(channelId);
 
     if (!room) {
@@ -554,13 +648,21 @@ export class VoiceChannelService {
     }
   }
 
-  async muteParticipant(channelId: string, userId: number, isMuted: boolean): Promise<void> {
+  async muteParticipant(
+    channelId: string,
+    userId: number,
+    isMuted: boolean
+  ): Promise<void> {
     const room = this.voiceRooms.get(channelId);
     const participant = room?.participants.find(p => p.userId === userId);
     if (participant) participant.isMuted = isMuted;
   }
 
-  async deafenParticipant(channelId: string, userId: number, isDeafened: boolean): Promise<void> {
+  async deafenParticipant(
+    channelId: string,
+    userId: number,
+    isDeafened: boolean
+  ): Promise<void> {
     const room = this.voiceRooms.get(channelId);
     const participant = room?.participants.find(p => p.userId === userId);
     if (participant) participant.isDeafened = isDeafened;
@@ -608,7 +710,9 @@ export class VoiceChannelService {
   }
 
   async getActiveVoiceChannels(serverId: string): Promise<VoiceRoom[]> {
-    return Array.from(this.voiceRooms.values()).filter(r => r.serverId === serverId);
+    return Array.from(this.voiceRooms.values()).filter(
+      r => r.serverId === serverId
+    );
   }
 
   async startRecording(channelId: string): Promise<boolean> {
@@ -632,22 +736,39 @@ export class VoiceChannelService {
 // ═══════════════════════════════════════════════════════════════
 
 export class TokenGatingService {
-  private verifiedWallets: Map<string, { userId: number; address: string; verifiedAt: Date }> = new Map();
-  private accessCache: Map<string, { hasAccess: boolean; checkedAt: Date }> = new Map();
+  private verifiedWallets: Map<
+    string,
+    { userId: number; address: string; verifiedAt: Date }
+  > = new Map();
+  private accessCache: Map<string, { hasAccess: boolean; checkedAt: Date }> =
+    new Map();
 
-  async verifyWalletOwnership(userId: number, walletAddress: string, signature: string, message: string): Promise<boolean> {
+  async verifyWalletOwnership(
+    userId: number,
+    walletAddress: string,
+    signature: string,
+    message: string
+  ): Promise<boolean> {
     // In production: verify ECDSA signature against wallet address
     // For now: accept all verifications (replace with ethers.js verification)
-    const isValid = walletAddress.startsWith("0x") && walletAddress.length === 42;
+    const isValid =
+      walletAddress.startsWith("0x") && walletAddress.length === 42;
 
     if (isValid) {
-      this.verifiedWallets.set(`${userId}`, { userId, address: walletAddress, verifiedAt: new Date() });
+      this.verifiedWallets.set(`${userId}`, {
+        userId,
+        address: walletAddress,
+        verifiedAt: new Date(),
+      });
     }
 
     return isValid;
   }
 
-  async checkTokenGateAccess(userId: number, config: TokenGateConfig): Promise<boolean> {
+  async checkTokenGateAccess(
+    userId: number,
+    config: TokenGateConfig
+  ): Promise<boolean> {
     const cacheKey = `${userId}_${config.contractAddress}`;
     const cached = this.accessCache.get(cacheKey);
 
@@ -658,7 +779,10 @@ export class TokenGatingService {
 
     const wallet = this.verifiedWallets.get(`${userId}`);
     if (!wallet) {
-      this.accessCache.set(cacheKey, { hasAccess: false, checkedAt: new Date() });
+      this.accessCache.set(cacheKey, {
+        hasAccess: false,
+        checkedAt: new Date(),
+      });
       return false;
     }
 
@@ -690,7 +814,10 @@ export class TokenGatingService {
 // ═══════════════════════════════════════════════════════════════
 
 export class CommunityRewardsService {
-  private memberXP: Map<string, { xp: number; level: number; lastActivity: Date }> = new Map();
+  private memberXP: Map<
+    string,
+    { xp: number; level: number; lastActivity: Date }
+  > = new Map();
 
   readonly XP_REWARDS: Record<string, number> = {
     send_message: 5,
@@ -706,9 +833,17 @@ export class CommunityRewardsService {
     helpful_post: 40,
   };
 
-  async awardXP(serverId: string, userId: number, action: string): Promise<{ xp: number; level: number; leveledUp: boolean }> {
+  async awardXP(
+    serverId: string,
+    userId: number,
+    action: string
+  ): Promise<{ xp: number; level: number; leveledUp: boolean }> {
     const key = `${serverId}_${userId}`;
-    const current = this.memberXP.get(key) || { xp: 0, level: 1, lastActivity: new Date() };
+    const current = this.memberXP.get(key) || {
+      xp: 0,
+      level: 1,
+      lastActivity: new Date(),
+    };
 
     const xpGain = this.XP_REWARDS[action] || 1;
 
@@ -731,17 +866,38 @@ export class CommunityRewardsService {
     return { xp: current.xp, level: newLevel, leveledUp };
   }
 
-  async getMemberXP(serverId: string, userId: number): Promise<{ xp: number; level: number; nextLevelXP: number; progress: number }> {
+  async getMemberXP(
+    serverId: string,
+    userId: number
+  ): Promise<{
+    xp: number;
+    level: number;
+    nextLevelXP: number;
+    progress: number;
+  }> {
     const key = `${serverId}_${userId}`;
-    const data = this.memberXP.get(key) || { xp: 0, level: 1, lastActivity: new Date() };
+    const data = this.memberXP.get(key) || {
+      xp: 0,
+      level: 1,
+      lastActivity: new Date(),
+    };
     const nextLevelXP = this.getXPForLevel(data.level + 1);
     const currentLevelXP = this.getXPForLevel(data.level);
-    const progress = (data.xp - currentLevelXP) / (nextLevelXP - currentLevelXP);
+    const progress =
+      (data.xp - currentLevelXP) / (nextLevelXP - currentLevelXP);
 
-    return { xp: data.xp, level: data.level, nextLevelXP, progress: Math.max(0, Math.min(1, progress)) };
+    return {
+      xp: data.xp,
+      level: data.level,
+      nextLevelXP,
+      progress: Math.max(0, Math.min(1, progress)),
+    };
   }
 
-  async getServerLeaderboard(serverId: string, limit = 20): Promise<{ userId: number; xp: number; level: number }[]> {
+  async getServerLeaderboard(
+    serverId: string,
+    limit = 20
+  ): Promise<{ userId: number; xp: number; level: number }[]> {
     return Array.from(this.memberXP.entries())
       .filter(([key]) => key.startsWith(`${serverId}_`))
       .map(([key, data]) => ({
@@ -770,7 +926,10 @@ export class CommunityRewardsService {
 export class CommunityAnalyticsService {
   private snapshots: Map<string, CommunityAnalytics[]> = new Map();
 
-  async recordSnapshot(serverId: string, data: Omit<CommunityAnalytics, "serverId" | "computedAt">): Promise<void> {
+  async recordSnapshot(
+    serverId: string,
+    data: Omit<CommunityAnalytics, "serverId" | "computedAt">
+  ): Promise<void> {
     const snapshot: CommunityAnalytics = {
       serverId,
       computedAt: new Date(),
@@ -785,12 +944,17 @@ export class CommunityAnalyticsService {
     if (snaps.length > 90) snaps.splice(0, snaps.length - 90); // Keep 90 days
   }
 
-  async getServerAnalytics(serverId: string, period: "day" | "week" | "month" = "week"): Promise<CommunityAnalytics | null> {
+  async getServerAnalytics(
+    serverId: string,
+    period: "day" | "week" | "month" = "week"
+  ): Promise<CommunityAnalytics | null> {
     const snaps = this.snapshots.get(serverId) || [];
     return snaps.filter(s => s.period === period).slice(-1)[0] || null;
   }
 
-  async getGrowthTrend(serverId: string): Promise<{ date: Date; memberCount: number }[]> {
+  async getGrowthTrend(
+    serverId: string
+  ): Promise<{ date: Date; memberCount: number }[]> {
     const snaps = this.snapshots.get(serverId) || [];
     return snaps
       .filter(s => s.period === "day")
@@ -801,7 +965,10 @@ export class CommunityAnalyticsService {
   async getEngagementScore(serverId: string): Promise<number> {
     const analytics = await this.getServerAnalytics(serverId, "week");
     if (!analytics || analytics.memberCount === 0) return 0;
-    return Math.min(100, (analytics.activeMembers / analytics.memberCount) * 100);
+    return Math.min(
+      100,
+      (analytics.activeMembers / analytics.memberCount) * 100
+    );
   }
 }
 
@@ -855,7 +1022,8 @@ export class CommunityEventService {
   async rsvpEvent(eventId: string, userId: number): Promise<boolean> {
     const event = this.events.get(eventId);
     if (!event || event.status !== "scheduled") return false;
-    if (event.maxAttendees && event.rsvpCount >= event.maxAttendees) return false;
+    if (event.maxAttendees && event.rsvpCount >= event.maxAttendees)
+      return false;
 
     if (!this.rsvps.has(eventId)) this.rsvps.set(eventId, new Set());
     if (!this.rsvps.get(eventId)!.has(userId)) {
@@ -889,7 +1057,10 @@ export class CommunityEventService {
     return true;
   }
 
-  async getServerEvents(serverId: string, status?: EventStatus): Promise<CommunityEvent[]> {
+  async getServerEvents(
+    serverId: string,
+    status?: EventStatus
+  ): Promise<CommunityEvent[]> {
     return Array.from(this.events.values())
       .filter(e => e.serverId === serverId && (!status || e.status === status))
       .sort((a, b) => a.scheduledStart.getTime() - b.scheduledStart.getTime());
@@ -944,9 +1115,14 @@ export class ThreadService {
     return thread;
   }
 
-  async getChannelThreads(channelId: string, includeArchived = false): Promise<Thread[]> {
+  async getChannelThreads(
+    channelId: string,
+    includeArchived = false
+  ): Promise<Thread[]> {
     return Array.from(this.threads.values())
-      .filter(t => t.channelId === channelId && (includeArchived || !t.isArchived))
+      .filter(
+        t => t.channelId === channelId && (includeArchived || !t.isArchived)
+      )
       .sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime());
   }
 
@@ -988,41 +1164,133 @@ export const threadService = new ThreadService();
 
 // ─── ROUTER COMPATIBILITY FACADE ─────────────────────────────────────────────
 export const communityCore = {
-  createServer(params: { ownerId: number; name: string; description?: string; category?: string; isPublic?: boolean; tokenGated?: boolean; requiredTokenAddress?: string; requiredTokenAmount?: number; iconUrl?: string; bannerUrl?: string }) {
+  createServer(params: {
+    ownerId: number;
+    name: string;
+    description?: string;
+    category?: string;
+    isPublic?: boolean;
+    tokenGated?: boolean;
+    requiredTokenAddress?: string;
+    requiredTokenAmount?: number;
+    iconUrl?: string;
+    bannerUrl?: string;
+  }) {
     return communityServer.createServer(params);
   },
   joinServer(serverId: string, userId: number, inviteCode?: string) {
-    return communityServer.getServerByInviteCode(inviteCode || "").then(s => ({ serverId, userId, joined: true }));
+    return communityServer
+      .getServerByInviteCode(inviteCode || "")
+      .then(s => ({ serverId, userId, joined: true }));
   },
   leaveServer(serverId: string, userId: number) {
-    return communityServer.updateMemberCount(serverId, -1).then(() => ({ serverId, userId, left: true }));
+    return communityServer
+      .updateMemberCount(serverId, -1)
+      .then(() => ({ serverId, userId, left: true }));
   },
-  createChannel(params: { creatorId: number; serverId: string; name: string; type: string; description?: string; isPrivate?: boolean; position?: number }) {
-    return communityServer.createServer({ ownerId: params.creatorId, name: params.name }).then(s => ({ channelId: `ch_${Date.now()}`, ...params, createdAt: new Date() }));
+  createChannel(params: {
+    creatorId: number;
+    serverId: string;
+    name: string;
+    type: string;
+    description?: string;
+    isPrivate?: boolean;
+    position?: number;
+  }) {
+    return communityServer
+      .createServer({ ownerId: params.creatorId, name: params.name })
+      .then(s => ({
+        channelId: `ch_${Date.now()}`,
+        ...params,
+        createdAt: new Date(),
+      }));
   },
-  sendMessage(params: { authorId: number; channelId: string; content: string; attachments?: string[]; replyToId?: string }) {
-    return Promise.resolve({ id: `msg_${Date.now()}`, ...params, createdAt: new Date() });
+  sendMessage(params: {
+    authorId: number;
+    channelId: string;
+    content: string;
+    attachments?: string[];
+    replyToId?: string;
+  }) {
+    return Promise.resolve({
+      id: `msg_${Date.now()}`,
+      ...params,
+      createdAt: new Date(),
+    });
   },
   getMessages(channelId: string, limit = 50, before?: string) {
     return Promise.resolve([]);
   },
-  createRole(params: { createdBy: number; serverId: string; name: string; color?: string; permissions?: string[]; isHoisted?: boolean; isMentionable?: boolean; position?: number }) {
-    return (rolePermissions as any).createRole({ serverId: params.serverId, name: params.name, color: params.color, permissions: params.permissions as any, isHoisted: params.isHoisted, isMentionable: params.isMentionable, createdBy: params.createdBy });
+  createRole(params: {
+    createdBy: number;
+    serverId: string;
+    name: string;
+    color?: string;
+    permissions?: string[];
+    isHoisted?: boolean;
+    isMentionable?: boolean;
+    position?: number;
+  }) {
+    return (rolePermissions as any).createRole({
+      serverId: params.serverId,
+      name: params.name,
+      color: params.color,
+      permissions: params.permissions as any,
+      isHoisted: params.isHoisted,
+      isMentionable: params.isMentionable,
+      createdBy: params.createdBy,
+    });
   },
-  assignRole(serverId: string, targetUserId: number, roleId: string, assignedBy: number) {
+  assignRole(
+    serverId: string,
+    targetUserId: number,
+    roleId: string,
+    assignedBy: number
+  ) {
     return rolePermissions.assignRole(serverId, targetUserId, roleId);
   },
-  generateInviteCode(serverId: string, userId: number, maxUses?: number, expiresInHours?: number) {
+  generateInviteCode(
+    serverId: string,
+    userId: number,
+    maxUses?: number,
+    expiresInHours?: number
+  ) {
     const code = `inv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    return Promise.resolve({ code, serverId, createdBy: userId, maxUses, expiresAt: expiresInHours ? new Date(Date.now() + expiresInHours * 3600000) : null });
+    return Promise.resolve({
+      code,
+      serverId,
+      createdBy: userId,
+      maxUses,
+      expiresAt: expiresInHours
+        ? new Date(Date.now() + expiresInHours * 3600000)
+        : null,
+    });
   },
   getServerStats(serverId: string) {
-    return communityServer.getServer(serverId).then(s => ({ serverId, memberCount: s?.memberCount || 0, onlineCount: s?.onlineCount || 0 }));
+    return communityServer.getServer(serverId).then(s => ({
+      serverId,
+      memberCount: s?.memberCount || 0,
+      onlineCount: s?.onlineCount || 0,
+    }));
   },
   discoverServers(category?: string, limit = 20) {
-    return communityServer.discoverServers({ category: category as any, limit });
+    return communityServer.discoverServers({
+      category: category as any,
+      limit,
+    });
   },
-  moderateMessage(serverId: string, messageId: string, action: string, moderatorId: number) {
-    return Promise.resolve({ serverId, messageId, action, moderatorId, executedAt: new Date() });
+  moderateMessage(
+    serverId: string,
+    messageId: string,
+    action: string,
+    moderatorId: number
+  ) {
+    return Promise.resolve({
+      serverId,
+      messageId,
+      action,
+      moderatorId,
+      executedAt: new Date(),
+    });
   },
 };

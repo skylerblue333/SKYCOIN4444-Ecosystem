@@ -1,10 +1,10 @@
-import { Router } from 'express';
-import { db } from './db';
-import os from 'os';
-import { performance } from 'perf_hooks';
+import { Router } from "express";
+import { db } from "./db";
+import os from "os";
+import { performance } from "perf_hooks";
 
 interface HealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   timestamp: Date;
   uptime: number;
   checks: {
@@ -19,7 +19,7 @@ interface HealthStatus {
 }
 
 interface HealthCheck {
-  status: 'pass' | 'warn' | 'fail';
+  status: "pass" | "warn" | "fail";
   responseTime: number;
   message: string;
   lastChecked: Date;
@@ -44,7 +44,7 @@ interface SystemMetrics {
 
 interface Alert {
   id: string;
-  severity: 'critical' | 'warning' | 'info';
+  severity: "critical" | "warning" | "info";
   type: string;
   message: string;
   timestamp: Date;
@@ -71,18 +71,18 @@ class HealthMonitor {
     const startTime = performance.now();
     try {
       // Simple query to test connection
-      const result = await (db as any).execute('SELECT 1');
+      const result = await (db as any).execute("SELECT 1");
       const responseTime = performance.now() - startTime;
 
       return {
-        status: responseTime > this.thresholds.responseTimeMs ? 'warn' : 'pass',
+        status: responseTime > this.thresholds.responseTimeMs ? "warn" : "pass",
         responseTime,
         message: `Database connected (${responseTime.toFixed(2)}ms)`,
         lastChecked: new Date(),
       };
     } catch (error) {
       return {
-        status: 'fail',
+        status: "fail",
         responseTime: performance.now() - startTime,
         message: `Database connection failed: ${error}`,
         lastChecked: new Date(),
@@ -101,10 +101,10 @@ class HealthMonitor {
 
     const status =
       usagePercent > this.thresholds.memoryUsagePercent
-        ? 'warn'
+        ? "warn"
         : usagePercent > 95
-          ? 'fail'
-          : 'pass';
+          ? "fail"
+          : "pass";
 
     return {
       status,
@@ -126,15 +126,15 @@ class HealthMonitor {
 
     const status =
       usagePercent > this.thresholds.cpuUsagePercent
-        ? 'warn'
+        ? "warn"
         : usagePercent > 95
-          ? 'fail'
-          : 'pass';
+          ? "fail"
+          : "pass";
 
     return {
       status,
       responseTime: 0,
-      message: `CPU usage: ${usagePercent.toFixed(2)}% (Load: ${loadAverage.map((l) => l.toFixed(2)).join(', ')})`,
+      message: `CPU usage: ${usagePercent.toFixed(2)}% (Load: ${loadAverage.map(l => l.toFixed(2)).join(", ")})`,
       lastChecked: new Date(),
     };
   }
@@ -143,13 +143,14 @@ class HealthMonitor {
    * Check API health
    */
   private checkAPI(): HealthCheck {
-    const errorRate = this.requestCount > 0 ? (this.errorCount / this.requestCount) * 100 : 0;
+    const errorRate =
+      this.requestCount > 0 ? (this.errorCount / this.requestCount) * 100 : 0;
     const status =
       errorRate > this.thresholds.errorRatePercent
-        ? 'warn'
+        ? "warn"
         : errorRate > 10
-          ? 'fail'
-          : 'pass';
+          ? "fail"
+          : "pass";
 
     return {
       status,
@@ -165,9 +166,9 @@ class HealthMonitor {
   private checkCache(): HealthCheck {
     // Placeholder for cache health check
     return {
-      status: 'pass',
+      status: "pass",
       responseTime: 0,
-      message: 'Cache operational',
+      message: "Cache operational",
       lastChecked: new Date(),
     };
   }
@@ -203,20 +204,26 @@ class HealthMonitor {
   /**
    * Determine overall health status
    */
-  private determineStatus(checks: HealthStatus['checks']): 'healthy' | 'degraded' | 'unhealthy' {
-    const failCount = Object.values(checks).filter((c) => c.status === 'fail').length;
-    const warnCount = Object.values(checks).filter((c) => c.status === 'warn').length;
+  private determineStatus(
+    checks: HealthStatus["checks"]
+  ): "healthy" | "degraded" | "unhealthy" {
+    const failCount = Object.values(checks).filter(
+      c => c.status === "fail"
+    ).length;
+    const warnCount = Object.values(checks).filter(
+      c => c.status === "warn"
+    ).length;
 
-    if (failCount >= 2) return 'unhealthy';
-    if (failCount === 1 || warnCount >= 2) return 'degraded';
-    return 'healthy';
+    if (failCount >= 2) return "unhealthy";
+    if (failCount === 1 || warnCount >= 2) return "degraded";
+    return "healthy";
   }
 
   /**
    * Create alert
    */
   private createAlert(
-    severity: Alert['severity'],
+    severity: Alert["severity"],
     type: string,
     message: string
   ): Alert {
@@ -255,16 +262,16 @@ class HealthMonitor {
     const metrics = this.getMetrics();
 
     // Create alerts based on health checks
-    if (checks.database.status === 'fail') {
-      this.createAlert('critical', 'database', 'Database connection failed');
+    if (checks.database.status === "fail") {
+      this.createAlert("critical", "database", "Database connection failed");
     }
 
-    if (checks.memory.status === 'fail') {
-      this.createAlert('critical', 'memory', 'Memory usage critical');
+    if (checks.memory.status === "fail") {
+      this.createAlert("critical", "memory", "Memory usage critical");
     }
 
-    if (checks.cpu.status === 'fail') {
-      this.createAlert('warning', 'cpu', 'CPU usage high');
+    if (checks.cpu.status === "fail") {
+      this.createAlert("warning", "cpu", "CPU usage high");
     }
 
     return {
@@ -273,7 +280,7 @@ class HealthMonitor {
       uptime: metrics.uptime,
       checks,
       metrics,
-      alerts: this.alerts.filter((a) => !a.resolved),
+      alerts: this.alerts.filter(a => !a.resolved),
     };
   }
 
@@ -291,14 +298,14 @@ class HealthMonitor {
    * Get alerts
    */
   getAlerts(): Alert[] {
-    return this.alerts.filter((a) => !a.resolved);
+    return this.alerts.filter(a => !a.resolved);
   }
 
   /**
    * Resolve alert
    */
   resolveAlert(alertId: string) {
-    const alert = this.alerts.find((a) => a.id === alertId);
+    const alert = this.alerts.find(a => a.id === alertId);
     if (alert) {
       alert.resolved = true;
     }
@@ -323,10 +330,15 @@ export const healthRouter = Router();
 /**
  * GET /health - Basic health check
  */
-healthRouter.get('/health', async (req, res) => {
+healthRouter.get("/health", async (req, res) => {
   try {
     const health = await healthMonitor.getHealthStatus();
-    const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 503 : 500;
+    const statusCode =
+      health.status === "healthy"
+        ? 200
+        : health.status === "degraded"
+          ? 503
+          : 500;
 
     res.status(statusCode).json({
       status: health.status,
@@ -335,8 +347,8 @@ healthRouter.get('/health', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      status: 'unhealthy',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      status: "unhealthy",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 });
@@ -344,14 +356,14 @@ healthRouter.get('/health', async (req, res) => {
 /**
  * GET /health/detailed - Detailed health check
  */
-healthRouter.get('/health/detailed', async (req, res) => {
+healthRouter.get("/health/detailed", async (req, res) => {
   try {
     const health = await healthMonitor.getHealthStatus();
     res.json(health);
   } catch (error) {
     res.status(500).json({
-      status: 'unhealthy',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      status: "unhealthy",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 });
@@ -359,7 +371,7 @@ healthRouter.get('/health/detailed', async (req, res) => {
 /**
  * GET /health/alerts - Get active alerts
  */
-healthRouter.get('/health/alerts', (req, res) => {
+healthRouter.get("/health/alerts", (req, res) => {
   const alerts = healthMonitor.getAlerts();
   res.json({
     count: alerts.length,
@@ -370,7 +382,7 @@ healthRouter.get('/health/alerts', (req, res) => {
 /**
  * POST /health/alerts/:id/resolve - Resolve alert
  */
-healthRouter.post('/health/alerts/:id/resolve', (req, res) => {
+healthRouter.post("/health/alerts/:id/resolve", (req, res) => {
   const { id } = req.params;
   healthMonitor.resolveAlert(id);
   res.json({ success: true });
@@ -379,7 +391,7 @@ healthRouter.post('/health/alerts/:id/resolve', (req, res) => {
 /**
  * POST /health/metrics/reset - Reset metrics
  */
-healthRouter.post('/health/metrics/reset', (req, res) => {
+healthRouter.post("/health/metrics/reset", (req, res) => {
   healthMonitor.resetMetrics();
   res.json({ success: true });
 });

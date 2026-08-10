@@ -54,7 +54,8 @@ const SPRINT_TASK_POOL: Array<{
     botId: "NOVA",
     taskType: "social_engine",
     language: "TypeScript",
-    description: "Expand social feed algorithm with ML-based ranking, trending detection, and personalization",
+    description:
+      "Expand social feed algorithm with ML-based ranking, trending detection, and personalization",
     prompt: `Generate a TypeScript module for an advanced social feed ranking algorithm.
 Include: weighted scoring (engagement, recency, creator reputation, user affinity),
 trending topic detection using exponential decay, collaborative filtering for personalization,
@@ -67,7 +68,8 @@ Write 300+ lines of production TypeScript with full type safety, JSDoc comments,
     botId: "CIPHER",
     taskType: "defi_engine",
     language: "TypeScript",
-    description: "Build DEX aggregator with multi-hop routing, slippage protection, and MEV resistance",
+    description:
+      "Build DEX aggregator with multi-hop routing, slippage protection, and MEV resistance",
     prompt: `Generate a TypeScript DEX aggregator module.
 Include: multi-hop swap routing across Uniswap V3/V2/Curve/Balancer,
 optimal path finding using Dijkstra's algorithm, slippage calculation,
@@ -80,7 +82,8 @@ and real-time liquidity monitoring. 300+ lines of production TypeScript.`,
     botId: "ATLAS",
     taskType: "smart_contract",
     language: "Solidity",
-    description: "ERC-20 SKY444 token with staking, burn mechanics, and vesting schedules",
+    description:
+      "ERC-20 SKY444 token with staking, burn mechanics, and vesting schedules",
     prompt: `Generate production Solidity smart contracts for the SKY444 token ecosystem.
 Include:
 1. ERC-20 token with burn, mint (governance only), and transfer tax
@@ -96,7 +99,8 @@ Write 400+ lines of production Solidity with NatSpec comments and events.`,
     botId: "PRISM",
     taskType: "performance_engine",
     language: "Rust",
-    description: "High-performance WebSocket message broker and real-time event processor",
+    description:
+      "High-performance WebSocket message broker and real-time event processor",
     prompt: `Generate a Rust WebSocket message broker for real-time events.
 Include: async Tokio runtime, connection pool management, pub/sub channels,
 message serialization with serde_json, rate limiting per connection,
@@ -109,7 +113,8 @@ Write 350+ lines of production Rust with proper error handling using thiserror.`
     botId: "FORGE",
     taskType: "gaming_engine",
     language: "TypeScript",
-    description: "GameFi reward system with quest engine, achievement tracker, and on-chain rewards",
+    description:
+      "GameFi reward system with quest engine, achievement tracker, and on-chain rewards",
     prompt: `Generate a TypeScript GameFi reward engine.
 Include: quest definition DSL with conditions/rewards, achievement unlock system,
 XP and level progression curves, daily/weekly challenge rotation,
@@ -123,7 +128,8 @@ Write 400+ lines of production TypeScript.`,
     botId: "VECTOR",
     taskType: "ai_ml_engine",
     language: "Python",
-    description: "Content moderation AI with toxicity detection, spam filtering, and fraud scoring",
+    description:
+      "Content moderation AI with toxicity detection, spam filtering, and fraud scoring",
     prompt: `Generate a Python AI content moderation pipeline.
 Include: toxicity classification using transformer embeddings,
 spam detection with TF-IDF + gradient boosting, image NSFW detection interface,
@@ -137,7 +143,8 @@ Write 350+ lines of production Python with type hints and docstrings.`,
     botId: "NEXUS",
     taskType: "streaming_engine",
     language: "TypeScript",
-    description: "Live streaming pipeline with HLS transcoding, CDN distribution, and clip generation",
+    description:
+      "Live streaming pipeline with HLS transcoding, CDN distribution, and clip generation",
     prompt: `Generate a TypeScript live streaming management system.
 Include: HLS stream ingestion and transcoding orchestration,
 multi-bitrate adaptive streaming (1080p/720p/480p/360p),
@@ -152,7 +159,8 @@ Write 400+ lines of production TypeScript.`,
     botId: "PULSE",
     taskType: "database_optimization",
     language: "SQL",
-    description: "Advanced database views, stored procedures, and performance indexes for the platform",
+    description:
+      "Advanced database views, stored procedures, and performance indexes for the platform",
     prompt: `Generate production MySQL/TiDB SQL for the SKYCOIN4444 platform.
 Include:
 - Materialized views for feed ranking, trending topics, creator leaderboards
@@ -169,7 +177,8 @@ Write 300+ lines of production SQL with comments.`,
     botId: "SHIELD",
     taskType: "security_engine",
     language: "TypeScript",
-    description: "Zero-trust security layer with rate limiting, CSRF, bot detection, and audit logging",
+    description:
+      "Zero-trust security layer with rate limiting, CSRF, bot detection, and audit logging",
     prompt: `Generate a TypeScript zero-trust security middleware system.
 Include: adaptive rate limiting with Redis sliding window,
 CSRF token generation and validation, bot detection (behavioral analysis, fingerprinting),
@@ -183,7 +192,8 @@ and security event alerting. Write 400+ lines of production TypeScript.`,
     botId: "ORACLE",
     taskType: "creator_economy",
     language: "TypeScript",
-    description: "Creator monetization engine with subscriptions, tips, paid content, and revenue splits",
+    description:
+      "Creator monetization engine with subscriptions, tips, paid content, and revenue splits",
     prompt: `Generate a TypeScript creator economy engine.
 Include: tiered subscription management (free/basic/pro/elite),
 tip/gift processing with platform fee splits, paid content gating with access tokens,
@@ -198,7 +208,8 @@ Write 400+ lines of production TypeScript.`,
     botId: "ECHO",
     taskType: "devops_automation",
     language: "Shell",
-    description: "CI/CD pipeline scripts, deployment automation, and infrastructure monitoring",
+    description:
+      "CI/CD pipeline scripts, deployment automation, and infrastructure monitoring",
     prompt: `Generate production Shell scripts for SKYCOIN4444 DevOps automation.
 Include:
 - CI/CD pipeline with build, test, lint, security scan, and deploy stages
@@ -216,7 +227,8 @@ Write 250+ lines of production Bash with error handling and logging.`,
     botId: "TITAN",
     taskType: "platform_orchestration",
     language: "TypeScript",
-    description: "Platform self-improvement: gap analysis, feature prioritization, and autonomous enhancement",
+    description:
+      "Platform self-improvement: gap analysis, feature prioritization, and autonomous enhancement",
     prompt: `Generate a TypeScript platform self-improvement orchestrator.
 Include: automated gap analysis comparing current vs target feature set,
 feature prioritization using impact/effort scoring matrix,
@@ -289,7 +301,10 @@ Focus on the most impactful features for sprint #${sprintNumber}: monetization, 
         taskType: String(t.taskType ?? "platform_upgrade"),
         language: String(t.language ?? "TypeScript"),
         description: String(t.description ?? "Platform upgrade"),
-        prompt: String(t.prompt ?? "Write production TypeScript code for platform improvements."),
+        prompt: String(
+          t.prompt ??
+            "Write production TypeScript code for platform improvements."
+        ),
         targetLines: Number(t.targetLines ?? 300),
       }));
     }
@@ -302,11 +317,17 @@ Focus on the most impactful features for sprint #${sprintNumber}: monetization, 
   const taskResults: SprintTaskResult[] = [];
   const taskBatch = SPRINT_TASK_POOL.slice(
     ((sprintNumber - 1) * 4) % SPRINT_TASK_POOL.length,
-    ((sprintNumber - 1) * 4 + 6) % SPRINT_TASK_POOL.length || SPRINT_TASK_POOL.length
+    ((sprintNumber - 1) * 4 + 6) % SPRINT_TASK_POOL.length ||
+      SPRINT_TASK_POOL.length
   );
 
   // Prefer LLM-planned tasks; fall back to static pool
-  const tasksToRun = llmPlanTasks.length >= 4 ? llmPlanTasks : (taskBatch.length >= 6 ? taskBatch : SPRINT_TASK_POOL.slice(0, 6));
+  const tasksToRun =
+    llmPlanTasks.length >= 4
+      ? llmPlanTasks
+      : taskBatch.length >= 6
+        ? taskBatch
+        : SPRINT_TASK_POOL.slice(0, 6);
 
   for (const task of tasksToRun) {
     try {
@@ -373,10 +394,15 @@ Target ${task.targetLines}+ lines of real, functional code.`,
   }
 
   // Aggregate results
-  const totalLinesAdded = taskResults.reduce((sum, t) => sum + t.linesGenerated, 0);
-  const languagesUsed = [...new Set(taskResults.map((t) => t.language))];
-  const botsActivated = [...new Set(taskResults.map((t) => t.botId))];
-  const featuresBuilt = taskResults.filter((t) => t.status === "done").map((t) => t.description);
+  const totalLinesAdded = taskResults.reduce(
+    (sum, t) => sum + t.linesGenerated,
+    0
+  );
+  const languagesUsed = [...new Set(taskResults.map(t => t.language))];
+  const botsActivated = [...new Set(taskResults.map(t => t.botId))];
+  const featuresBuilt = taskResults
+    .filter(t => t.status === "done")
+    .map(t => t.description);
   const testsAdded = Math.floor(totalLinesAdded * 0.15); // ~15% test coverage lines
   const securityIssuesFixed = Math.floor(Math.random() * 5) + 1;
   const performanceGainPct = parseFloat((Math.random() * 3 + 0.5).toFixed(2));
@@ -406,12 +432,24 @@ Target ${task.targetLines}+ lines of real, functional code.`,
     .where(eq(schema.sprintMetrics.date, today))
     .limit(1);
 
-  const tsLines = taskResults.filter((t) => t.language === "TypeScript").reduce((s, t) => s + t.linesGenerated, 0);
-  const solLines = taskResults.filter((t) => t.language === "Solidity").reduce((s, t) => s + t.linesGenerated, 0);
-  const rustLines = taskResults.filter((t) => t.language === "Rust").reduce((s, t) => s + t.linesGenerated, 0);
-  const pyLines = taskResults.filter((t) => t.language === "Python").reduce((s, t) => s + t.linesGenerated, 0);
-  const sqlLines = taskResults.filter((t) => t.language === "SQL").reduce((s, t) => s + t.linesGenerated, 0);
-  const shLines = taskResults.filter((t) => t.language === "Shell").reduce((s, t) => s + t.linesGenerated, 0);
+  const tsLines = taskResults
+    .filter(t => t.language === "TypeScript")
+    .reduce((s, t) => s + t.linesGenerated, 0);
+  const solLines = taskResults
+    .filter(t => t.language === "Solidity")
+    .reduce((s, t) => s + t.linesGenerated, 0);
+  const rustLines = taskResults
+    .filter(t => t.language === "Rust")
+    .reduce((s, t) => s + t.linesGenerated, 0);
+  const pyLines = taskResults
+    .filter(t => t.language === "Python")
+    .reduce((s, t) => s + t.linesGenerated, 0);
+  const sqlLines = taskResults
+    .filter(t => t.language === "SQL")
+    .reduce((s, t) => s + t.linesGenerated, 0);
+  const shLines = taskResults
+    .filter(t => t.language === "Shell")
+    .reduce((s, t) => s + t.linesGenerated, 0);
 
   if (existing.length > 0) {
     await db
@@ -492,10 +530,32 @@ export async function getTotalCodebaseLines(): Promise<{
   byLanguage: Record<string, number>;
 }> {
   const db = await getDb();
-  if (!db) return { total: 23301, byLanguage: { TypeScript: 18000, Solidity: 1200, Rust: 800, Python: 1500, SQL: 1200, Shell: 601 } };
+  if (!db)
+    return {
+      total: 23301,
+      byLanguage: {
+        TypeScript: 18000,
+        Solidity: 1200,
+        Rust: 800,
+        Python: 1500,
+        SQL: 1200,
+        Shell: 601,
+      },
+    };
   const metrics = await db.select().from(schema.sprintMetrics);
   const totals = metrics.reduce(
-    (acc: { total: number; TypeScript: number; Solidity: number; Rust: number; Python: number; SQL: number; Shell: number }, m: (typeof metrics)[0]) => ({
+    (
+      acc: {
+        total: number;
+        TypeScript: number;
+        Solidity: number;
+        Rust: number;
+        Python: number;
+        SQL: number;
+        Shell: number;
+      },
+      m: (typeof metrics)[0]
+    ) => ({
       total: acc.total + m.totalLines,
       TypeScript: acc.TypeScript + m.tsLines,
       Solidity: acc.Solidity + m.solidityLines,
@@ -504,7 +564,15 @@ export async function getTotalCodebaseLines(): Promise<{
       SQL: acc.SQL + m.sqlLines,
       Shell: acc.Shell + m.shellLines,
     }),
-    { total: 0, TypeScript: 0, Solidity: 0, Rust: 0, Python: 0, SQL: 0, Shell: 0 }
+    {
+      total: 0,
+      TypeScript: 0,
+      Solidity: 0,
+      Rust: 0,
+      Python: 0,
+      SQL: 0,
+      Shell: 0,
+    }
   );
 
   // Add base codebase lines (already written)

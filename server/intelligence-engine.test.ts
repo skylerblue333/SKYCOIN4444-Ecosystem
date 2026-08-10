@@ -40,7 +40,13 @@ function llmReturns(content: string) {
     id: "test",
     created: 0,
     model: "test",
-    choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: "stop" }],
+    choices: [
+      {
+        index: 0,
+        message: { role: "assistant", content },
+        finish_reason: "stop",
+      },
+    ],
   });
 }
 
@@ -84,7 +90,14 @@ describe("computeReputation", () => {
     const result = await engine.computeReputation(42);
     expect(result).not.toBeNull();
     const r = repoState.upserted as Record<string, number>;
-    for (const key of ["learningScore", "builderScore", "teachingScore", "communityScore", "trustScore", "overall"]) {
+    for (const key of [
+      "learningScore",
+      "builderScore",
+      "teachingScore",
+      "communityScore",
+      "trustScore",
+      "overall",
+    ]) {
       expect(r[key]).toBeGreaterThanOrEqual(0);
       expect(r[key]).toBeLessThanOrEqual(100);
     }
@@ -94,10 +107,21 @@ describe("computeReputation", () => {
 
   it("penalizes toxicity in the trust score", async () => {
     const base = {
-      xp: 0, level: 1, reputation: 0, followerCount: 0, postCount: 0,
-      contributionScore: 0, isCreator: false, verified: false,
-      missionsTotal: 0, missionsCompleted: 0, blueprints: 0, listings: 0, listingSales: 0,
-      reliabilityScore: 80, behaviorScore: 80,
+      xp: 0,
+      level: 1,
+      reputation: 0,
+      followerCount: 0,
+      postCount: 0,
+      contributionScore: 0,
+      isCreator: false,
+      verified: false,
+      missionsTotal: 0,
+      missionsCompleted: 0,
+      blueprints: 0,
+      listings: 0,
+      listingSales: 0,
+      reliabilityScore: 80,
+      behaviorScore: 80,
     };
     repoState.signals = { ...base, toxicityScore: 0 };
     await engine.computeReputation(1);
@@ -120,13 +144,33 @@ describe("buildTwinContext", () => {
     repoState.twin = {
       userId: 1,
       summary: "A solo founder learning full-stack dev.",
-      goals: [{ id: "g1", title: "Launch SaaS", status: "active", target: "Q3", createdAt: 0 }],
-      projects: [{ id: "p1", name: "SkyApp", status: "building", createdAt: 0 }],
+      goals: [
+        {
+          id: "g1",
+          title: "Launch SaaS",
+          status: "active",
+          target: "Q3",
+          createdAt: 0,
+        },
+      ],
+      projects: [
+        { id: "p1", name: "SkyApp", status: "building", createdAt: 0 },
+      ],
       preferences: { tone: "direct" },
       finances: { currency: "$", monthlyTarget: 5000, notes: "bootstrapping" },
       learning: [{ id: "l1", topic: "TypeScript", progress: 60, createdAt: 0 }],
     };
-    repoState.facts = [{ id: 1, kind: "goal", content: "Wants to hire a co-founder", source: "chat", confidence: 90, active: true, createdAt: new Date() }];
+    repoState.facts = [
+      {
+        id: 1,
+        kind: "goal",
+        content: "Wants to hire a co-founder",
+        source: "chat",
+        confidence: 90,
+        active: true,
+        createdAt: new Date(),
+      },
+    ];
     const ctx = await engine.buildTwinContext(1);
     expect(ctx).toContain("Launch SaaS");
     expect(ctx).toContain("SkyApp");
@@ -138,14 +182,32 @@ describe("buildTwinContext", () => {
 
 describe("scoreOpportunity", () => {
   beforeEach(() => {
-    repoState.twin = { userId: 1, summary: "Dev", goals: [], projects: [], preferences: {}, finances: {}, learning: [] };
+    repoState.twin = {
+      userId: 1,
+      summary: "Dev",
+      goals: [],
+      projects: [],
+      preferences: {},
+      finances: {},
+      learning: [],
+    };
   });
 
   it("parses LLM JSON and clamps the score", async () => {
     llmReturns('{"score": 87, "reasoning": "Strong skill overlap."}');
     const result = await engine.scoreOpportunity(1, {
-      id: 1, postedBy: null, type: "job", title: "Senior Engineer", description: "Build things",
-      skills: ["TypeScript"], tags: [], location: null, remote: true, compensation: null, status: "open", createdAt: new Date(),
+      id: 1,
+      postedBy: null,
+      type: "job",
+      title: "Senior Engineer",
+      description: "Build things",
+      skills: ["TypeScript"],
+      tags: [],
+      location: null,
+      remote: true,
+      compensation: null,
+      status: "open",
+      createdAt: new Date(),
     } as never);
     expect(result.score).toBe(87);
     expect(result.reasoning).toContain("skill");
@@ -154,8 +216,18 @@ describe("scoreOpportunity", () => {
   it("falls back gracefully on non-JSON output", async () => {
     llmReturns("the model rambled without json");
     const result = await engine.scoreOpportunity(1, {
-      id: 2, postedBy: null, type: "gig", title: "Logo design", description: null,
-      skills: [], tags: [], location: null, remote: true, compensation: null, status: "open", createdAt: new Date(),
+      id: 2,
+      postedBy: null,
+      type: "gig",
+      title: "Logo design",
+      description: null,
+      skills: [],
+      tags: [],
+      location: null,
+      remote: true,
+      compensation: null,
+      status: "open",
+      createdAt: new Date(),
     } as never);
     expect(result.score).toBeGreaterThanOrEqual(0);
     expect(result.score).toBeLessThanOrEqual(100);
@@ -165,8 +237,18 @@ describe("scoreOpportunity", () => {
   it("clamps out-of-range LLM scores", async () => {
     llmReturns('{"score": 250, "reasoning": "overconfident"}');
     const result = await engine.scoreOpportunity(1, {
-      id: 3, postedBy: null, type: "mentor", title: "Mentor", description: null,
-      skills: [], tags: [], location: null, remote: true, compensation: null, status: "open", createdAt: new Date(),
+      id: 3,
+      postedBy: null,
+      type: "mentor",
+      title: "Mentor",
+      description: null,
+      skills: [],
+      tags: [],
+      location: null,
+      remote: true,
+      compensation: null,
+      status: "open",
+      createdAt: new Date(),
     } as never);
     expect(result.score).toBe(100);
   });
@@ -174,9 +256,15 @@ describe("scoreOpportunity", () => {
 
 describe("generateMissionSteps", () => {
   it("parses a JSON array of steps and caps at 8", async () => {
-    const steps = Array.from({ length: 12 }, (_, i) => ({ title: `Step ${i}`, detail: `Detail ${i}` }));
+    const steps = Array.from({ length: 12 }, (_, i) => ({
+      title: `Step ${i}`,
+      detail: `Detail ${i}`,
+    }));
     llmReturns("```json\n" + JSON.stringify(steps) + "\n```");
-    const result = await engine.generateMissionSteps("Learn Mandarin", "language");
+    const result = await engine.generateMissionSteps(
+      "Learn Mandarin",
+      "language"
+    );
     expect(result.length).toBe(8);
     expect(result[0].title).toBe("Step 0");
   });
@@ -190,17 +278,44 @@ describe("generateMissionSteps", () => {
 
 describe("generateDailySuggestions", () => {
   it("parses a JSON array of up to 3 suggestions", async () => {
-    repoState.twin = { userId: 1, summary: "Founder", goals: [], projects: [], preferences: {}, finances: {}, learning: [] };
-    llmReturns('["Ship the MVP landing page", "Reply to 2 unread DMs", "Block 1h for TypeScript practice", "extra ignored"]');
-    const result = await engine.generateDailySuggestions(1, { activeMissions: 1, unreadMessages: 2, openGoals: 1, topOpportunity: "Senior Engineer" });
+    repoState.twin = {
+      userId: 1,
+      summary: "Founder",
+      goals: [],
+      projects: [],
+      preferences: {},
+      finances: {},
+      learning: [],
+    };
+    llmReturns(
+      '["Ship the MVP landing page", "Reply to 2 unread DMs", "Block 1h for TypeScript practice", "extra ignored"]'
+    );
+    const result = await engine.generateDailySuggestions(1, {
+      activeMissions: 1,
+      unreadMessages: 2,
+      openGoals: 1,
+      topOpportunity: "Senior Engineer",
+    });
     expect(result.length).toBe(3);
     expect(result[0]).toContain("MVP");
   });
 
   it("returns an empty array on unusable model output", async () => {
-    repoState.twin = { userId: 1, summary: "", goals: [], projects: [], preferences: {}, finances: {}, learning: [] };
+    repoState.twin = {
+      userId: 1,
+      summary: "",
+      goals: [],
+      projects: [],
+      preferences: {},
+      finances: {},
+      learning: [],
+    };
     llmReturns("sorry no json");
-    const result = await engine.generateDailySuggestions(1, { activeMissions: 0, unreadMessages: 0, openGoals: 0 });
+    const result = await engine.generateDailySuggestions(1, {
+      activeMissions: 0,
+      unreadMessages: 0,
+      openGoals: 0,
+    });
     expect(result).toEqual([]);
   });
 });
@@ -210,9 +325,27 @@ describe("generateStartup", () => {
     const blueprint = {
       name: "SkyForge",
       tagline: "Build faster",
-      businessPlan: { problem: "p", solution: "s", targetMarket: "m", businessModel: "b", revenueStreams: ["x"], competitors: [], moat: "" },
-      branding: { vibe: "bold", colorPalette: ["#000"], voice: "v", logoConcept: "l" },
-      marketing: { positioning: "p", channels: ["x"], launchTactics: [], firstWeekPlan: [] },
+      businessPlan: {
+        problem: "p",
+        solution: "s",
+        targetMarket: "m",
+        businessModel: "b",
+        revenueStreams: ["x"],
+        competitors: [],
+        moat: "",
+      },
+      branding: {
+        vibe: "bold",
+        colorPalette: ["#000"],
+        voice: "v",
+        logoConcept: "l",
+      },
+      marketing: {
+        positioning: "p",
+        channels: ["x"],
+        launchTactics: [],
+        firstWeekPlan: [],
+      },
       mvpRoadmap: [{ phase: "P1", items: ["a", "b"] }],
       teamPlan: [{ role: "Founder", focus: "all" }],
     };

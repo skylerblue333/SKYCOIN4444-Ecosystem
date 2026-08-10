@@ -1,7 +1,7 @@
 /**
  * SKYCOIN4444 SIGN-UP FLOW x44
  * Most Irresistible Sign-Up Ever
- * 
+ *
  * Conversion Psychology:
  * - FOMO (Fear of Missing Out)
  * - Social Proof (Real testimonials)
@@ -13,15 +13,19 @@
  * - Instant Gratification (Rewards on signup)
  */
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 export const SignUpFlow: React.FC = () => {
   const [step, setStep] = useState(0);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [spotsLeft, setSpotsLeft] = useState(Math.floor(Math.random() * 100) + 1);
-  const [usersOnline, setUsersOnline] = useState(Math.floor(Math.random() * 10000) + 5000);
+  const [spotsLeft, setSpotsLeft] = useState(
+    Math.floor(Math.random() * 100) + 1
+  );
+  const [usersOnline, setUsersOnline] = useState(
+    Math.floor(Math.random() * 10000) + 5000
+  );
 
   useEffect(() => {
     // Simulate real-time updates
@@ -45,7 +49,10 @@ export const SignUpFlow: React.FC = () => {
       {/* Animated background */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-[#d4af37] to-transparent rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-[#6366f1] to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div
+          className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-[#6366f1] to-transparent rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
@@ -55,9 +62,22 @@ export const SignUpFlow: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="w-full max-w-md"
         >
-          {step === 0 && <HeroStep onNext={() => setStep(1)} spotsLeft={spotsLeft} usersOnline={usersOnline} />}
+          {step === 0 && (
+            <HeroStep
+              onNext={() => setStep(1)}
+              spotsLeft={spotsLeft}
+              usersOnline={usersOnline}
+            />
+          )}
           {step === 1 && <BenefitsStep onNext={() => setStep(2)} />}
-          {step === 2 && <SignUpStep email={email} setEmail={setEmail} onSignUp={handleSignUp} loading={loading} />}
+          {step === 2 && (
+            <SignUpStep
+              email={email}
+              setEmail={setEmail}
+              onSignUp={handleSignUp}
+              loading={loading}
+            />
+          )}
           {step === 3 && <SuccessStep />}
         </motion.div>
       </div>
@@ -68,7 +88,11 @@ export const SignUpFlow: React.FC = () => {
 // ============================================================================
 // STEP 1: HERO - FOMO & URGENCY
 // ============================================================================
-const HeroStep: React.FC<{ onNext: () => void; spotsLeft: number; usersOnline: number }> = ({ onNext, spotsLeft, usersOnline }) => {
+const HeroStep: React.FC<{
+  onNext: () => void;
+  spotsLeft: number;
+  usersOnline: number;
+}> = ({ onNext, spotsLeft, usersOnline }) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -82,8 +106,12 @@ const HeroStep: React.FC<{ onNext: () => void; spotsLeft: number; usersOnline: n
         transition={{ repeat: Infinity, duration: 2 }}
         className="bg-gradient-to-r from-[#d4af37] to-[#f4d03f] rounded-lg p-4 text-center"
       >
-        <div className="text-black font-bold text-lg">⚡ ONLY {spotsLeft} SPOTS LEFT</div>
-        <div className="text-black text-sm mt-1">{usersOnline.toLocaleString()} users online right now</div>
+        <div className="text-black font-bold text-lg">
+          ⚡ ONLY {spotsLeft} SPOTS LEFT
+        </div>
+        <div className="text-black text-sm mt-1">
+          {usersOnline.toLocaleString()} users online right now
+        </div>
       </motion.div>
 
       {/* Main Headline */}
@@ -94,7 +122,8 @@ const HeroStep: React.FC<{ onNext: () => void; spotsLeft: number; usersOnline: n
           </span>
         </h1>
         <p className="text-center text-[#e0e0e0] text-lg">
-          The #1 AI Platform on Earth. Join {usersOnline.toLocaleString()}+ users already earning, learning, and growing.
+          The #1 AI Platform on Earth. Join {usersOnline.toLocaleString()}+
+          users already earning, learning, and growing.
         </p>
       </div>
 
@@ -126,7 +155,9 @@ const HeroStep: React.FC<{ onNext: () => void; spotsLeft: number; usersOnline: n
 
       {/* Trust Signals */}
       <div className="text-center text-xs text-[#a0a0a0] space-y-2">
-        <div>🔒 Bank-level security • 🎯 Verified users • ✅ Money-back guarantee</div>
+        <div>
+          🔒 Bank-level security • 🎯 Verified users • ✅ Money-back guarantee
+        </div>
       </div>
     </motion.div>
   );
@@ -137,12 +168,12 @@ const HeroStep: React.FC<{ onNext: () => void; spotsLeft: number; usersOnline: n
 // ============================================================================
 const BenefitsStep: React.FC<{ onNext: () => void }> = ({ onNext }) => {
   const benefits = [
-    { icon: '💰', title: 'Earn Passive Income', desc: 'Up to $10K/month' },
-    { icon: '🧠', title: 'Learn from AI', desc: 'Personalized education' },
-    { icon: '🎮', title: 'Play & Earn', desc: 'Gaming rewards' },
-    { icon: '🤝', title: 'Build Community', desc: 'Connect with 1M+ users' },
-    { icon: '📈', title: 'Grow Your Skills', desc: 'Certifications included' },
-    { icon: '🌟', title: 'Premium Features', desc: 'Lifetime access' },
+    { icon: "💰", title: "Earn Passive Income", desc: "Up to $10K/month" },
+    { icon: "🧠", title: "Learn from AI", desc: "Personalized education" },
+    { icon: "🎮", title: "Play & Earn", desc: "Gaming rewards" },
+    { icon: "🤝", title: "Build Community", desc: "Connect with 1M+ users" },
+    { icon: "📈", title: "Grow Your Skills", desc: "Certifications included" },
+    { icon: "🌟", title: "Premium Features", desc: "Lifetime access" },
   ];
 
   return (
@@ -166,7 +197,9 @@ const BenefitsStep: React.FC<{ onNext: () => void }> = ({ onNext }) => {
             className="bg-[#141829] rounded-lg p-4 border border-[#d4af37]/20 hover:border-[#d4af37]/50 transition-all"
           >
             <div className="text-2xl mb-2">{benefit.icon}</div>
-            <div className="font-bold text-sm text-[#ffffff]">{benefit.title}</div>
+            <div className="font-bold text-sm text-[#ffffff]">
+              {benefit.title}
+            </div>
             <div className="text-xs text-[#a0a0a0] mt-1">{benefit.desc}</div>
           </motion.div>
         ))}
@@ -209,7 +242,7 @@ const SignUpStep: React.FC<{
           type="email"
           placeholder="your@email.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           className="w-full bg-[#1a1f3a] border border-[#d4af37]/30 rounded-lg px-4 py-3 text-white placeholder-[#a0a0a0] focus:outline-none focus:border-[#d4af37] transition-all"
         />
 
@@ -220,7 +253,7 @@ const SignUpStep: React.FC<{
           disabled={loading || !email}
           className="w-full bg-gradient-to-r from-[#d4af37] to-[#f4d03f] text-black font-bold py-4 rounded-lg text-lg shadow-lg disabled:opacity-50"
         >
-          {loading ? 'Creating Account...' : 'Create Free Account'}
+          {loading ? "Creating Account..." : "Create Free Account"}
         </motion.button>
       </div>
 
@@ -228,7 +261,9 @@ const SignUpStep: React.FC<{
       <div className="bg-[#141829] rounded-lg p-4 border border-[#10b981]/50 text-center">
         <div className="text-sm text-[#10b981] font-bold">🎁 Instant Bonus</div>
         <div className="text-lg font-bold text-[#d4af37] mt-1">$50 Credits</div>
-        <div className="text-xs text-[#a0a0a0] mt-1">When you sign up today</div>
+        <div className="text-xs text-[#a0a0a0] mt-1">
+          When you sign up today
+        </div>
       </div>
 
       <div className="text-center text-xs text-[#a0a0a0]">
@@ -266,14 +301,18 @@ const SuccessStep: React.FC = () => {
             <span className="text-2xl">✅</span>
             <div>
               <div className="font-bold">$50 Bonus Credited</div>
-              <div className="text-sm text-[#a0a0a0]">Start earning immediately</div>
+              <div className="text-sm text-[#a0a0a0]">
+                Start earning immediately
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-2xl">✅</span>
             <div>
               <div className="font-bold">Premium Access Unlocked</div>
-              <div className="text-sm text-[#a0a0a0]">All features available</div>
+              <div className="text-sm text-[#a0a0a0]">
+                All features available
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -296,3 +335,5 @@ const SuccessStep: React.FC = () => {
     </motion.div>
   );
 };
+
+export default SignUpFlow;

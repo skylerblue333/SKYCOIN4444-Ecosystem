@@ -1,7 +1,7 @@
 /**
  * PHASE 12: BLOCKCHAIN & WEB3 ENGINE
  * Real Crypto, NFTs, DAO, DeFi Integration
- * 
+ *
  * Features:
  * - Native token (SKYCOIN)
  * - NFT marketplace
@@ -35,7 +35,7 @@ export interface NFTCollection {
 
 export interface DeFiProtocol {
   name: string;
-  type: 'staking' | 'yield' | 'lending' | 'swap';
+  type: "staking" | "yield" | "lending" | "swap";
   tvl: number; // Total Value Locked
   apy: number; // Annual Percentage Yield
   users: number;
@@ -47,16 +47,16 @@ export interface DAOProposal {
   description: string;
   votesFor: number;
   votesAgainst: number;
-  status: 'active' | 'passed' | 'failed' | 'executed';
+  status: "active" | "passed" | "failed" | "executed";
 }
 
 export class BlockchainWeb3Engine {
   private token: CryptoToken = {
-    symbol: 'SKYCOIN',
-    name: 'SKYCOIN Token',
+    symbol: "SKYCOIN",
+    name: "SKYCOIN Token",
     totalSupply: 1000000000,
     circulatingSupply: 300000000,
-    price: 0.50,
+    price: 0.5,
     marketCap: 150000000,
     volume24h: 5000000,
   };
@@ -78,11 +78,11 @@ export class BlockchainWeb3Engine {
    */
   private initializeToken(): void {
     this.token = {
-      symbol: 'SKYCOIN',
-      name: 'SKYCOIN Token',
+      symbol: "SKYCOIN",
+      name: "SKYCOIN Token",
       totalSupply: 1000000000, // 1B tokens
       circulatingSupply: 300000000, // 300M circulating
-      price: 0.50, // $0.50 per token
+      price: 0.5, // $0.50 per token
       marketCap: 150000000, // $150M market cap
       volume24h: 5000000, // $5M 24h volume
     };
@@ -93,10 +93,10 @@ export class BlockchainWeb3Engine {
    */
   private initializeNFTs(): void {
     // Collection 1: Genesis NFTs
-    this.nftCollections.set('genesis', {
-      id: 'genesis',
-      name: 'SKYCOIN Genesis',
-      symbol: 'SKYGEN',
+    this.nftCollections.set("genesis", {
+      id: "genesis",
+      name: "SKYCOIN Genesis",
+      symbol: "SKYGEN",
       totalSupply: 10000,
       floorPrice: 1.5,
       volume: 500000,
@@ -104,10 +104,10 @@ export class BlockchainWeb3Engine {
     });
 
     // Collection 2: Achievement NFTs
-    this.nftCollections.set('achievements', {
-      id: 'achievements',
-      name: 'SKYCOIN Achievements',
-      symbol: 'SKYACH',
+    this.nftCollections.set("achievements", {
+      id: "achievements",
+      name: "SKYCOIN Achievements",
+      symbol: "SKYACH",
       totalSupply: 100000,
       floorPrice: 0.1,
       volume: 50000,
@@ -115,10 +115,10 @@ export class BlockchainWeb3Engine {
     });
 
     // Collection 3: Exclusive Access NFTs
-    this.nftCollections.set('access', {
-      id: 'access',
-      name: 'SKYCOIN Access Pass',
-      symbol: 'SKYPASS',
+    this.nftCollections.set("access", {
+      id: "access",
+      name: "SKYCOIN Access Pass",
+      symbol: "SKYPASS",
       totalSupply: 1000,
       floorPrice: 5.0,
       volume: 100000,
@@ -131,38 +131,38 @@ export class BlockchainWeb3Engine {
    */
   private initializeDeFi(): void {
     // Staking Protocol
-    this.defiProtocols.set('staking', {
-      name: 'SKYCOIN Staking',
-      type: 'staking',
+    this.defiProtocols.set("staking", {
+      name: "SKYCOIN Staking",
+      type: "staking",
       tvl: 50000000, // $50M TVL
       apy: 0.25, // 25% APY
       users: 50000,
     });
 
     // Yield Farming
-    this.defiProtocols.set('yield', {
-      name: 'SKYCOIN Yield Farm',
-      type: 'yield',
+    this.defiProtocols.set("yield", {
+      name: "SKYCOIN Yield Farm",
+      type: "yield",
       tvl: 30000000, // $30M TVL
-      apy: 0.40, // 40% APY
+      apy: 0.4, // 40% APY
       users: 30000,
     });
 
     // Lending Protocol
-    this.defiProtocols.set('lending', {
-      name: 'SKYCOIN Lending',
-      type: 'lending',
+    this.defiProtocols.set("lending", {
+      name: "SKYCOIN Lending",
+      type: "lending",
       tvl: 20000000, // $20M TVL
       apy: 0.15, // 15% APY
       users: 15000,
     });
 
     // DEX (Decentralized Exchange)
-    this.defiProtocols.set('swap', {
-      name: 'SKYCOIN DEX',
-      type: 'swap',
+    this.defiProtocols.set("swap", {
+      name: "SKYCOIN DEX",
+      type: "swap",
       tvl: 40000000, // $40M TVL
-      apy: 0.10, // 10% APY (from trading fees)
+      apy: 0.1, // 10% APY (from trading fees)
       users: 100000,
     });
 
@@ -175,33 +175,33 @@ export class BlockchainWeb3Engine {
    */
   private initializeDAO(): void {
     // Proposal 1: Feature prioritization
-    this.daoProposals.set('prop-1', {
-      id: 'prop-1',
-      title: 'Prioritize Mobile App Development',
-      description: 'Should we prioritize iOS/Android development in Q3?',
+    this.daoProposals.set("prop-1", {
+      id: "prop-1",
+      title: "Prioritize Mobile App Development",
+      description: "Should we prioritize iOS/Android development in Q3?",
       votesFor: 75000,
       votesAgainst: 25000,
-      status: 'passed',
+      status: "passed",
     });
 
     // Proposal 2: Treasury allocation
-    this.daoProposals.set('prop-2', {
-      id: 'prop-2',
-      title: 'Allocate $10M to Marketing',
-      description: 'Allocate $10M from treasury for global marketing campaign',
+    this.daoProposals.set("prop-2", {
+      id: "prop-2",
+      title: "Allocate $10M to Marketing",
+      description: "Allocate $10M from treasury for global marketing campaign",
       votesFor: 60000,
       votesAgainst: 40000,
-      status: 'active',
+      status: "active",
     });
 
     // Proposal 3: New partnership
-    this.daoProposals.set('prop-3', {
-      id: 'prop-3',
-      title: 'Partner with Major Exchange',
-      description: 'Strategic partnership with Coinbase for listing',
+    this.daoProposals.set("prop-3", {
+      id: "prop-3",
+      title: "Partner with Major Exchange",
+      description: "Strategic partnership with Coinbase for listing",
       votesFor: 80000,
       votesAgainst: 20000,
-      status: 'active',
+      status: "active",
     });
   }
 
@@ -237,8 +237,14 @@ export class BlockchainWeb3Engine {
    * Get Web3 summary
    */
   getWeb3Summary(): any {
-    const nftVolume = Array.from(this.nftCollections.values()).reduce((sum, c) => sum + c.volume, 0);
-    const nftOwners = Array.from(this.nftCollections.values()).reduce((sum, c) => sum + c.owners, 0);
+    const nftVolume = Array.from(this.nftCollections.values()).reduce(
+      (sum, c) => sum + c.volume,
+      0
+    );
+    const nftOwners = Array.from(this.nftCollections.values()).reduce(
+      (sum, c) => sum + c.owners,
+      0
+    );
 
     return {
       token: {
@@ -260,15 +266,23 @@ export class BlockchainWeb3Engine {
       defi: {
         protocols: this.defiProtocols.size,
         totalTVL: `$${(this.totalValueLocked / 1000000).toFixed(0)}M`,
-        averageAPY: `${(Array.from(this.defiProtocols.values()).reduce((sum, p) => sum + p.apy, 0) / this.defiProtocols.size * 100).toFixed(1)}%`,
-        totalUsers: Array.from(this.defiProtocols.values()).reduce((sum, p) => sum + p.users, 0),
+        averageAPY: `${((Array.from(this.defiProtocols.values()).reduce((sum, p) => sum + p.apy, 0) / this.defiProtocols.size) * 100).toFixed(1)}%`,
+        totalUsers: Array.from(this.defiProtocols.values()).reduce(
+          (sum, p) => sum + p.users,
+          0
+        ),
       },
       dao: {
         proposals: this.daoProposals.size,
-        activeProposals: Array.from(this.daoProposals.values()).filter(p => p.status === 'active').length,
-        totalVoters: Array.from(this.daoProposals.values()).reduce((sum, p) => sum + p.votesFor + p.votesAgainst, 0),
+        activeProposals: Array.from(this.daoProposals.values()).filter(
+          p => p.status === "active"
+        ).length,
+        totalVoters: Array.from(this.daoProposals.values()).reduce(
+          (sum, p) => sum + p.votesFor + p.votesAgainst,
+          0
+        ),
       },
-      status: 'Blockchain & Web3 fully operational',
+      status: "Blockchain & Web3 fully operational",
     };
   }
 
@@ -292,13 +306,16 @@ export class BlockchainWeb3Engine {
    */
   getDAOVotingPower(): any {
     const proposals = this.getDAOProposals();
-    const totalVotes = proposals.reduce((sum, p) => sum + p.votesFor + p.votesAgainst, 0);
+    const totalVotes = proposals.reduce(
+      (sum, p) => sum + p.votesFor + p.votesAgainst,
+      0
+    );
 
     return {
       totalVoters: totalVotes,
-      activeProposals: proposals.filter(p => p.status === 'active').length,
-      passedProposals: proposals.filter(p => p.status === 'passed').length,
-      avgVotingParticipation: `${(proposals.reduce((sum, p) => sum + (p.votesFor + p.votesAgainst), 0) / proposals.length / 100000 * 100).toFixed(1)}%`,
+      activeProposals: proposals.filter(p => p.status === "active").length,
+      passedProposals: proposals.filter(p => p.status === "passed").length,
+      avgVotingParticipation: `${((proposals.reduce((sum, p) => sum + (p.votesFor + p.votesAgainst), 0) / proposals.length / 100000) * 100).toFixed(1)}%`,
     };
   }
 }

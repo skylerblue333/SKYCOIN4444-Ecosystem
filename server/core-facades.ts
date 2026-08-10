@@ -88,7 +88,19 @@ class CommunityCoreFacade {
   private channels = new Map<string, ChannelRecord>();
   private messages = new Map<string, MessageRecord[]>(); // channelId -> messages
   private invites = new Map<string, InviteRecord>(); // code -> invite
-  private roles = new Map<string, { id: string; serverId: string; name: string; color?: string; permissions: string[]; isHoisted: boolean; isMentionable: boolean; createdBy: number }>();
+  private roles = new Map<
+    string,
+    {
+      id: string;
+      serverId: string;
+      name: string;
+      color?: string;
+      permissions: string[];
+      isHoisted: boolean;
+      isMentionable: boolean;
+      createdBy: number;
+    }
+  >();
   private memberRoles = new Map<string, string[]>(); // `${serverId}:${userId}` -> roleIds
   private channelCounter = 0;
   private messageCounter = 0;
@@ -157,7 +169,11 @@ class CommunityCoreFacade {
     return server;
   }
 
-  async joinServer(serverId: string, userId: number, inviteCode?: string): Promise<{ success: boolean; reason?: string }> {
+  async joinServer(
+    serverId: string,
+    userId: number,
+    inviteCode?: string
+  ): Promise<{ success: boolean; reason?: string }> {
     const server = this.servers.get(serverId);
     if (!server) return { success: false, reason: "Server not found" };
 
@@ -185,11 +201,16 @@ class CommunityCoreFacade {
     return { success: true };
   }
 
-  async leaveServer(serverId: string, userId: number): Promise<{ success: boolean; reason?: string }> {
+  async leaveServer(
+    serverId: string,
+    userId: number
+  ): Promise<{ success: boolean; reason?: string }> {
     const server = this.servers.get(serverId);
     if (!server) return { success: false, reason: "Server not found" };
-    if (server.ownerId === userId) return { success: false, reason: "Owner cannot leave server" };
-    if (!server.members.has(userId)) return { success: false, reason: "Not a member" };
+    if (server.ownerId === userId)
+      return { success: false, reason: "Owner cannot leave server" };
+    if (!server.members.has(userId))
+      return { success: false, reason: "Not a member" };
 
     server.members.delete(userId);
     server.memberCount--;
@@ -253,7 +274,11 @@ class CommunityCoreFacade {
     return message;
   }
 
-  async getMessages(channelId: string, limit = 50, before?: string): Promise<MessageRecord[]> {
+  async getMessages(
+    channelId: string,
+    limit = 50,
+    before?: string
+  ): Promise<MessageRecord[]> {
     const msgs = this.messages.get(channelId) || [];
     let filtered = msgs.filter(m => !m.isDeleted);
     if (before) {
@@ -272,7 +297,14 @@ class CommunityCoreFacade {
     isHoisted?: boolean;
     isMentionable?: boolean;
     position?: number;
-  }): Promise<{ id: string; name: string; color?: string; permissions: string[]; isHoisted: boolean; isMentionable: boolean } | null> {
+  }): Promise<{
+    id: string;
+    name: string;
+    color?: string;
+    permissions: string[];
+    isHoisted: boolean;
+    isMentionable: boolean;
+  } | null> {
     const server = this.servers.get(params.serverId);
     if (!server) return null;
 
@@ -291,7 +323,12 @@ class CommunityCoreFacade {
     return role;
   }
 
-  async assignRole(serverId: string, targetUserId: number, roleId: string, assignerId: number): Promise<{ success: boolean }> {
+  async assignRole(
+    serverId: string,
+    targetUserId: number,
+    roleId: string,
+    assignerId: number
+  ): Promise<{ success: boolean }> {
     const server = this.servers.get(serverId);
     if (!server) return { success: false };
     if (!server.members.has(targetUserId)) return { success: false };
@@ -305,7 +342,12 @@ class CommunityCoreFacade {
     return { success: true };
   }
 
-  async generateInviteCode(serverId: string, creatorId: number, maxUses?: number, expiresInHours?: number): Promise<InviteRecord> {
+  async generateInviteCode(
+    serverId: string,
+    creatorId: number,
+    maxUses?: number,
+    expiresInHours?: number
+  ): Promise<InviteRecord> {
     const code = Math.random().toString(36).slice(2, 10).toUpperCase();
     const invite: InviteRecord = {
       code,
@@ -313,14 +355,21 @@ class CommunityCoreFacade {
       createdBy: creatorId,
       maxUses,
       usedCount: 0,
-      expiresAt: expiresInHours ? new Date(Date.now() + expiresInHours * 3600000) : undefined,
+      expiresAt: expiresInHours
+        ? new Date(Date.now() + expiresInHours * 3600000)
+        : undefined,
       createdAt: new Date(),
     };
     this.invites.set(code, invite);
     return invite;
   }
 
-  async getServerStats(serverId: string): Promise<{ memberCount: number; channelCount: number; totalMessages: number; onlineCount: number } | null> {
+  async getServerStats(serverId: string): Promise<{
+    memberCount: number;
+    channelCount: number;
+    totalMessages: number;
+    onlineCount: number;
+  } | null> {
     const server = this.servers.get(serverId);
     if (!server) return null;
 
@@ -340,13 +389,21 @@ class CommunityCoreFacade {
     };
   }
 
-  async discoverServers(category?: string, limit = 20): Promise<ServerWithMeta[]> {
+  async discoverServers(
+    category?: string,
+    limit = 20
+  ): Promise<ServerWithMeta[]> {
     const all = Array.from(this.servers.values()).filter(s => s.isPublic);
     const filtered = category ? all.filter(s => s.category === category) : all;
     return filtered.slice(0, limit);
   }
 
-  async moderateMessage(serverId: string, messageId: string, action: "delete" | "pin" | "unpin", moderatorId: number): Promise<{ success: boolean }> {
+  async moderateMessage(
+    serverId: string,
+    messageId: string,
+    action: "delete" | "pin" | "unpin",
+    moderatorId: number
+  ): Promise<{ success: boolean }> {
     for (const [channelId, msgs] of this.messages) {
       const channel = this.channels.get(channelId);
       if (channel?.serverId !== serverId) continue;
@@ -405,11 +462,27 @@ class SocialCoreFacade {
     return friendGraph.getSuggestions(userId, limit);
   }
 
-  async sendVoiceNote(senderId: number, recipientId: number, audioUrl: string, duration: number) {
-    return voiceNoteService.createVoiceNote({ senderId, recipientId, audioUrl, duration });
+  async sendVoiceNote(
+    senderId: number,
+    recipientId: number,
+    audioUrl: string,
+    duration: number
+  ) {
+    return voiceNoteService.createVoiceNote({
+      senderId,
+      recipientId,
+      audioUrl,
+      duration,
+    });
   }
 
-  async recordEngagement(userId: number, contentId: string, contentType: string, action: string, durationSeconds?: number) {
+  async recordEngagement(
+    userId: number,
+    contentId: string,
+    contentType: string,
+    action: string,
+    durationSeconds?: number
+  ) {
     if (contentType === "post") {
       await trendEngine.recordHashtag("engagement", contentId);
     }
@@ -472,7 +545,11 @@ class StreamingCoreFacade {
     return session;
   }
 
-  async goLive(sessionId: string, creatorId: number, rtmpUrl?: string): Promise<StreamSessionRecord | null> {
+  async goLive(
+    sessionId: string,
+    creatorId: number,
+    rtmpUrl?: string
+  ): Promise<StreamSessionRecord | null> {
     const session = this.sessions.get(sessionId);
     if (!session || session.creatorId !== creatorId) return null;
 
@@ -483,14 +560,19 @@ class StreamingCoreFacade {
     return session;
   }
 
-  async endStream(sessionId: string, creatorId: number): Promise<StreamSessionRecord | null> {
+  async endStream(
+    sessionId: string,
+    creatorId: number
+  ): Promise<StreamSessionRecord | null> {
     const session = this.sessions.get(sessionId);
     if (!session || session.creatorId !== creatorId) return null;
 
     session.status = "ended";
     session.endedAt = new Date();
     if (session.startedAt) {
-      session.duration = Math.floor((session.endedAt.getTime() - session.startedAt.getTime()) / 1000);
+      session.duration = Math.floor(
+        (session.endedAt.getTime() - session.startedAt.getTime()) / 1000
+      );
     }
     return session;
   }
@@ -514,7 +596,12 @@ class StreamingCoreFacade {
     });
   }
 
-  async startStreamBattle(sessionId: string, opponentSessionId: string, creatorId: number, durationMinutes = 10) {
+  async startStreamBattle(
+    sessionId: string,
+    opponentSessionId: string,
+    creatorId: number,
+    durationMinutes = 10
+  ) {
     return streamBattles.challengeCreator({
       challengerId: creatorId,
       challengerStreamId: sessionId,
@@ -534,9 +621,16 @@ class StreamingCoreFacade {
     return this.createStreamSession(params);
   }
 
-  async getLiveStreams(category?: string, limit = 20): Promise<StreamSessionRecord[]> {
-    const live = Array.from(this.sessions.values()).filter(s => s.status === "live");
-    const filtered = category ? live.filter(s => s.category === category) : live;
+  async getLiveStreams(
+    category?: string,
+    limit = 20
+  ): Promise<StreamSessionRecord[]> {
+    const live = Array.from(this.sessions.values()).filter(
+      s => s.status === "live"
+    );
+    const filtered = category
+      ? live.filter(s => s.category === category)
+      : live;
     return filtered.slice(0, limit);
   }
 
@@ -544,7 +638,8 @@ class StreamingCoreFacade {
     const session = this.sessions.get(sessionId);
     if (!session || session.creatorId !== creatorId) return null;
 
-    const analytics = await streamAnalyticsDashboard.getStreamAnalytics(sessionId);
+    const analytics =
+      await streamAnalyticsDashboard.getStreamAnalytics(sessionId);
     return {
       sessionId,
       currentViewers: session.viewerCount,
@@ -556,15 +651,24 @@ class StreamingCoreFacade {
   }
 
   async getCreatorStreamStats(creatorId: number) {
-    const creatorSessions = Array.from(this.sessions.values()).filter(s => s.creatorId === creatorId);
-    const history = await streamAnalyticsDashboard.getCreatorStreamHistory(creatorId, 10);
+    const creatorSessions = Array.from(this.sessions.values()).filter(
+      s => s.creatorId === creatorId
+    );
+    const history = await streamAnalyticsDashboard.getCreatorStreamHistory(
+      creatorId,
+      10
+    );
     return {
       totalStreams: creatorSessions.length,
       totalViewers: creatorSessions.reduce((sum, s) => sum + s.peakViewers, 0),
       totalGiftsReceived: 0,
-      avgViewers: creatorSessions.length > 0
-        ? Math.floor(creatorSessions.reduce((sum, s) => sum + s.peakViewers, 0) / creatorSessions.length)
-        : 0,
+      avgViewers:
+        creatorSessions.length > 0
+          ? Math.floor(
+              creatorSessions.reduce((sum, s) => sum + s.peakViewers, 0) /
+                creatorSessions.length
+            )
+          : 0,
       history,
     };
   }
@@ -588,16 +692,26 @@ interface UploadRecord {
 }
 
 const ALLOWED_MIME_TYPES = new Set([
-  "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif",
-  "video/mp4", "video/webm", "video/quicktime", "video/x-msvideo",
-  "audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4",
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/avif",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/x-msvideo",
+  "audio/mpeg",
+  "audio/wav",
+  "audio/ogg",
+  "audio/mp4",
   "application/pdf",
 ]);
 
 const MAX_FILE_SIZES: Record<string, number> = {
-  image: 50 * 1024 * 1024,    // 50MB
+  image: 50 * 1024 * 1024, // 50MB
   video: 5 * 1024 * 1024 * 1024, // 5GB
-  audio: 500 * 1024 * 1024,   // 500MB
+  audio: 500 * 1024 * 1024, // 500MB
   document: 100 * 1024 * 1024, // 100MB
 };
 
@@ -622,7 +736,9 @@ class MediaCoreFacade {
     // Validate file size
     const maxSize = MAX_FILE_SIZES[params.mediaType] || MAX_FILE_SIZES.document;
     if (params.fileSize > maxSize) {
-      throw new Error(`File too large: ${params.fileSize} bytes exceeds ${maxSize} byte limit for ${params.mediaType}`);
+      throw new Error(
+        `File too large: ${params.fileSize} bytes exceeds ${maxSize} byte limit for ${params.mediaType}`
+      );
     }
 
     const uploadId = `upload_${++this.uploadCounter}_${Date.now()}`;
@@ -645,7 +761,11 @@ class MediaCoreFacade {
     return { uploadId, uploadUrl: record.uploadUrl, expiresAt };
   }
 
-  async confirmUpload(uploadId: string, userId: number, s3Key: string): Promise<UploadRecord> {
+  async confirmUpload(
+    uploadId: string,
+    userId: number,
+    s3Key: string
+  ): Promise<UploadRecord> {
     const upload = this.uploads.get(uploadId);
     if (!upload || upload.userId !== userId) {
       throw new Error("Upload not found or unauthorized");
@@ -676,7 +796,12 @@ class MediaCoreFacade {
     return upload;
   }
 
-  async getUserLibrary(userId: number, mediaType?: string, limit = 20, offset = 0): Promise<UploadRecord[]> {
+  async getUserLibrary(
+    userId: number,
+    mediaType?: string,
+    limit = 20,
+    offset = 0
+  ): Promise<UploadRecord[]> {
     const userUploads = Array.from(this.uploads.values())
       .filter(u => u.userId === userId && u.status === "ready")
       .filter(u => !mediaType || u.mediaType === mediaType)
@@ -684,7 +809,10 @@ class MediaCoreFacade {
     return userUploads;
   }
 
-  async deleteMedia(mediaId: string, userId: number): Promise<{ success: boolean }> {
+  async deleteMedia(
+    mediaId: string,
+    userId: number
+  ): Promise<{ success: boolean }> {
     const upload = this.uploads.get(mediaId);
     if (!upload || upload.userId !== userId) return { success: false };
 
@@ -694,7 +822,9 @@ class MediaCoreFacade {
     return { success: true };
   }
 
-  async getStorageUsage(userId: number): Promise<{ usedBytes: number; limitBytes: number; usedPercent: number }> {
+  async getStorageUsage(
+    userId: number
+  ): Promise<{ usedBytes: number; limitBytes: number; usedPercent: number }> {
     const usedBytes = this.userStorage.get(userId) || 0;
     const limitBytes = 100 * 1024 * 1024 * 1024; // 100GB default
     return {

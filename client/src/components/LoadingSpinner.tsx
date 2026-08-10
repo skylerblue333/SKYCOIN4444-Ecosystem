@@ -11,14 +11,23 @@ const sizeMap = {
   lg: "w-12 h-12 border-3",
 };
 
-export function LoadingSpinner({ size = "md", text, fullPage = false, className = "" }: LoadingSpinnerProps) {
+export function LoadingSpinner({
+  size = "md",
+  text,
+  fullPage = false,
+  className = "",
+}: LoadingSpinnerProps) {
   const spinner = (
-    <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
+    <div
+      className={`flex flex-col items-center justify-center gap-3 ${className}`}
+    >
       <div
         className={`${sizeMap[size]} rounded-full border-primary/20 border-t-primary animate-spin`}
         style={{ animationDuration: "0.7s" }}
       />
-      {text && <p className="text-sm text-muted-foreground animate-pulse">{text}</p>}
+      {text && (
+        <p className="text-sm text-muted-foreground animate-pulse">{text}</p>
+      )}
     </div>
   );
 
@@ -41,11 +50,21 @@ export function PageLoading({ text = "Loading..." }: { text?: string }) {
   );
 }
 
-export function CardSkeleton({ count = 3, className = "" }: { count?: number; className?: string }) {
+export function CardSkeleton({
+  count = 3,
+  className = "",
+}: {
+  count?: number;
+  className?: string;
+}) {
   return (
     <div className={`grid gap-4 ${className}`}>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="card p-5 space-y-3" style={{ animationDelay: `${i * 75}ms` }}>
+        <div
+          key={i}
+          className="card p-5 space-y-3"
+          style={{ animationDelay: `${i * 75}ms` }}
+        >
           <div className="flex items-center gap-3">
             <div className="skeleton w-10 h-10 rounded-full" />
             <div className="flex-1 space-y-2">

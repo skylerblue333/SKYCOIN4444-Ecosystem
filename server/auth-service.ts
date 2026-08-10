@@ -8,7 +8,9 @@ import { SignJWT, jwtVerify } from "jose";
 import * as db from "./db";
 import { ENV } from "./_core/env";
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-key-change-in-production");
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || "dev-secret-key-change-in-production"
+);
 const JWT_EXPIRY = "7d";
 
 export interface SignupInput {
@@ -40,7 +42,10 @@ export async function hashPassword(password: string): Promise<string> {
 /**
  * Verify password against hash
  */
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  hash: string
+): Promise<boolean> {
   try {
     const hashed = await hashPassword(password);
     return hashed === hash;
@@ -52,7 +57,10 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 /**
  * Create JWT token
  */
-export async function createToken(userId: number, email: string): Promise<string> {
+export async function createToken(
+  userId: number,
+  email: string
+): Promise<string> {
   const token = await new SignJWT({
     userId,
     email,
@@ -68,7 +76,9 @@ export async function createToken(userId: number, email: string): Promise<string
 /**
  * Verify JWT token
  */
-export async function verifyToken(token: string): Promise<{ userId: number; email: string } | null> {
+export async function verifyToken(
+  token: string
+): Promise<{ userId: number; email: string } | null> {
   try {
     const verified = await jwtVerify(token, JWT_SECRET);
     return {
@@ -170,7 +180,11 @@ export async function getUserFromToken(token: string) {
 /**
  * Change password
  */
-export async function changePassword(userId: number, oldPassword: string, newPassword: string): Promise<boolean> {
+export async function changePassword(
+  userId: number,
+  oldPassword: string,
+  newPassword: string
+): Promise<boolean> {
   try {
     // Simplified: just validate new password
     if (newPassword.length < 8) return false;
@@ -183,7 +197,9 @@ export async function changePassword(userId: number, oldPassword: string, newPas
 /**
  * Reset password (via email)
  */
-export async function requestPasswordReset(email: string): Promise<string | null> {
+export async function requestPasswordReset(
+  email: string
+): Promise<string | null> {
   try {
     // Generate reset token (valid for 1 hour)
     const resetToken = await new SignJWT({
@@ -204,7 +220,10 @@ export async function requestPasswordReset(email: string): Promise<string | null
 /**
  * Reset password with token
  */
-export async function resetPassword(resetToken: string, newPassword: string): Promise<boolean> {
+export async function resetPassword(
+  resetToken: string,
+  newPassword: string
+): Promise<boolean> {
   try {
     if (newPassword.length < 8) return false;
     const payload = await jwtVerify(resetToken, JWT_SECRET);

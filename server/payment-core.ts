@@ -16,13 +16,33 @@
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type Currency = "USD" | "EUR" | "GBP" | "SKY444" | "ETH" | "USDT" | "BNB" | "USDC";
-export type PaymentStatus = "pending" | "processing" | "completed" | "failed" | "refunded" | "disputed" | "cancelled";
-export type PayoutStatus = "pending" | "scheduled" | "processing" | "paid" | "failed" | "on_hold";
+export type Currency =
+  "USD" | "EUR" | "GBP" | "SKY444" | "ETH" | "USDT" | "BNB" | "USDC";
+export type PaymentStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "refunded"
+  | "disputed"
+  | "cancelled";
+export type PayoutStatus =
+  "pending" | "scheduled" | "processing" | "paid" | "failed" | "on_hold";
 
 export interface PaymentTransaction {
   id: string;
-  type: "subscription" | "tip" | "purchase" | "donation" | "escrow" | "payout" | "refund" | "fee" | "staking_reward" | "nft_sale" | "ad_revenue";
+  type:
+    | "subscription"
+    | "tip"
+    | "purchase"
+    | "donation"
+    | "escrow"
+    | "payout"
+    | "refund"
+    | "fee"
+    | "staking_reward"
+    | "nft_sale"
+    | "ad_revenue";
   fromUserId?: number;
   toUserId?: number;
   amount: number;
@@ -68,7 +88,15 @@ export interface EscrowContract {
   amount: number;
   currency: Currency;
   usdEquivalent: number;
-  status: "created" | "funded" | "in_progress" | "milestone_pending" | "disputed" | "released" | "refunded" | "expired";
+  status:
+    | "created"
+    | "funded"
+    | "in_progress"
+    | "milestone_pending"
+    | "disputed"
+    | "released"
+    | "refunded"
+    | "expired";
   description: string;
   milestones?: EscrowMilestone[];
   disputeReason?: string;
@@ -101,7 +129,8 @@ export interface Subscription {
   amount: number;
   currency: Currency;
   billingCycle: "monthly" | "quarterly" | "annual";
-  status: "active" | "paused" | "cancelled" | "past_due" | "trialing" | "expired";
+  status:
+    "active" | "paused" | "cancelled" | "past_due" | "trialing" | "expired";
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
   cancelAtPeriodEnd: boolean;
@@ -242,8 +271,12 @@ class PayoutLedger {
     return true;
   }
 
-  getBalance(userId: number, currency?: Currency): number | Map<Currency, number> {
-    const userBalances = this.balances.get(userId) || new Map<Currency, number>();
+  getBalance(
+    userId: number,
+    currency?: Currency
+  ): number | Map<Currency, number> {
+    const userBalances =
+      this.balances.get(userId) || new Map<Currency, number>();
     if (currency) return userBalances.get(currency) || 0;
     return userBalances;
   }
@@ -267,7 +300,10 @@ class PayoutLedger {
   ): { success: boolean; payout?: PayoutRecord; error?: string } {
     const usdEquivalent = exchangeRates.toUSD(amount, currency);
     if (usdEquivalent < this.MINIMUM_PAYOUT_USD) {
-      return { success: false, error: `Minimum payout is $${this.MINIMUM_PAYOUT_USD} USD equivalent` };
+      return {
+        success: false,
+        error: `Minimum payout is $${this.MINIMUM_PAYOUT_USD} USD equivalent`,
+      };
     }
     const balance = this.getBalance(userId, currency) as number;
     if (balance < amount) {
@@ -309,10 +345,14 @@ class PayoutLedger {
     return nextFriday;
   }
 
-  processBatch(batchId: string): { processed: number; failed: number; totalPaid: number } {
+  processBatch(batchId: string): {
+    processed: number;
+    failed: number;
+    totalPaid: number;
+  } {
     const scheduled = this.pendingPayouts.filter(p => p.status === "scheduled");
     let processed = 0;
-    let failed = 0;
+    const failed = 0;
     let totalPaid = 0;
     for (const payout of scheduled) {
       payout.batchId = batchId;
@@ -366,8 +406,14 @@ class EscrowEngine {
       usdEquivalent,
       status: "created",
       description,
-      milestones: milestones?.map((m, i) => ({ ...m, id: `ms_${i}_${Date.now()}`, status: "pending" as const })),
-      expiryDate: expiryDays ? new Date(Date.now() + expiryDays * 86400000) : undefined,
+      milestones: milestones?.map((m, i) => ({
+        ...m,
+        id: `ms_${i}_${Date.now()}`,
+        status: "pending" as const,
+      })),
+      expiryDate: expiryDays
+        ? new Date(Date.now() + expiryDays * 86400000)
+        : undefined,
       platformFee,
       createdAt: new Date(),
     };
@@ -375,23 +421,39 @@ class EscrowEngine {
     return contract;
   }
 
-  fundContract(contractId: string, buyerId: number): { success: boolean; error?: string } {
+  fundContract(
+    contractId: string,
+    buyerId: number
+  ): { success: boolean; error?: string } {
     const contract = this.contracts.get(contractId);
-    if (!contract || contract.buyerId !== buyerId) return { success: false, error: "Contract not found" };
-    if (contract.status !== "created") return { success: false, error: "Contract already funded" };
-    const deducted = payoutLedger.debit(buyerId, contract.amount, contract.currency);
+    if (!contract || contract.buyerId !== buyerId)
+      return { success: false, error: "Contract not found" };
+    if (contract.status !== "created")
+      return { success: false, error: "Contract already funded" };
+    const deducted = payoutLedger.debit(
+      buyerId,
+      contract.amount,
+      contract.currency
+    );
     if (!deducted) return { success: false, error: "Insufficient balance" };
     contract.status = "funded";
     contract.fundedAt = new Date();
     return { success: true };
   }
 
-  submitMilestone(contractId: string, milestoneId: string, sellerId: number, evidence?: string): { success: boolean; error?: string } {
+  submitMilestone(
+    contractId: string,
+    milestoneId: string,
+    sellerId: number,
+    evidence?: string
+  ): { success: boolean; error?: string } {
     const contract = this.contracts.get(contractId);
-    if (!contract || contract.sellerId !== sellerId) return { success: false, error: "Contract not found" };
+    if (!contract || contract.sellerId !== sellerId)
+      return { success: false, error: "Contract not found" };
     const milestone = contract.milestones?.find(m => m.id === milestoneId);
     if (!milestone) return { success: false, error: "Milestone not found" };
-    if (milestone.status !== "pending") return { success: false, error: "Milestone already submitted" };
+    if (milestone.status !== "pending")
+      return { success: false, error: "Milestone already submitted" };
     milestone.status = "submitted";
     milestone.submittedAt = new Date();
     milestone.evidence = evidence;
@@ -399,15 +461,23 @@ class EscrowEngine {
     return { success: true };
   }
 
-  approveMilestone(contractId: string, milestoneId: string, buyerId: number): { success: boolean; paid?: number; error?: string } {
+  approveMilestone(
+    contractId: string,
+    milestoneId: string,
+    buyerId: number
+  ): { success: boolean; paid?: number; error?: string } {
     const contract = this.contracts.get(contractId);
-    if (!contract || contract.buyerId !== buyerId) return { success: false, error: "Contract not found" };
+    if (!contract || contract.buyerId !== buyerId)
+      return { success: false, error: "Contract not found" };
     const milestone = contract.milestones?.find(m => m.id === milestoneId);
-    if (!milestone || milestone.status !== "submitted") return { success: false, error: "Milestone not ready for approval" };
+    if (!milestone || milestone.status !== "submitted")
+      return { success: false, error: "Milestone not ready for approval" };
     milestone.status = "approved";
     milestone.approvedAt = new Date();
     payoutLedger.credit(contract.sellerId, milestone.amount, contract.currency);
-    const allApproved = contract.milestones?.every(m => m.status === "approved");
+    const allApproved = contract.milestones?.every(
+      m => m.status === "approved"
+    );
     if (allApproved) {
       contract.status = "released";
       contract.releasedAt = new Date();
@@ -417,10 +487,15 @@ class EscrowEngine {
     return { success: true, paid: milestone.amount };
   }
 
-  releaseContract(contractId: string, buyerId: number): { success: boolean; released?: number; error?: string } {
+  releaseContract(
+    contractId: string,
+    buyerId: number
+  ): { success: boolean; released?: number; error?: string } {
     const contract = this.contracts.get(contractId);
-    if (!contract || contract.buyerId !== buyerId) return { success: false, error: "Contract not found" };
-    if (!["funded", "in_progress"].includes(contract.status)) return { success: false, error: "Contract cannot be released" };
+    if (!contract || contract.buyerId !== buyerId)
+      return { success: false, error: "Contract not found" };
+    if (!["funded", "in_progress"].includes(contract.status))
+      return { success: false, error: "Contract cannot be released" };
     const netAmount = contract.amount - contract.platformFee;
     payoutLedger.credit(contract.sellerId, netAmount, contract.currency);
     contract.status = "released";
@@ -428,16 +503,26 @@ class EscrowEngine {
     return { success: true, released: netAmount };
   }
 
-  openDispute(contractId: string, userId: number, reason: string): { success: boolean; error?: string } {
+  openDispute(
+    contractId: string,
+    userId: number,
+    reason: string
+  ): { success: boolean; error?: string } {
     const contract = this.contracts.get(contractId);
     if (!contract) return { success: false, error: "Contract not found" };
-    if (contract.buyerId !== userId && contract.sellerId !== userId) return { success: false, error: "Not a party to this contract" };
+    if (contract.buyerId !== userId && contract.sellerId !== userId)
+      return { success: false, error: "Not a party to this contract" };
     contract.status = "disputed";
     contract.disputeReason = reason;
     return { success: true };
   }
 
-  resolveDispute(contractId: string, adminId: number, resolution: "release_to_seller" | "refund_to_buyer" | "split", splitPercent?: number): { success: boolean } {
+  resolveDispute(
+    contractId: string,
+    adminId: number,
+    resolution: "release_to_seller" | "refund_to_buyer" | "split",
+    splitPercent?: number
+  ): { success: boolean } {
     const contract = this.contracts.get(contractId);
     if (!contract || contract.status !== "disputed") return { success: false };
     if (resolution === "release_to_seller") {
@@ -464,11 +549,15 @@ class EscrowEngine {
   }
 
   getUserContracts(userId: number): EscrowContract[] {
-    return Array.from(this.contracts.values()).filter(c => c.buyerId === userId || c.sellerId === userId);
+    return Array.from(this.contracts.values()).filter(
+      c => c.buyerId === userId || c.sellerId === userId
+    );
   }
 
   getDisputedContracts(): EscrowContract[] {
-    return Array.from(this.contracts.values()).filter(c => c.status === "disputed");
+    return Array.from(this.contracts.values()).filter(
+      c => c.status === "disputed"
+    );
   }
 }
 
@@ -476,25 +565,58 @@ class EscrowEngine {
 
 class SubscriptionEngine {
   private subscriptions = new Map<string, Subscription>();
-  private plans = new Map<string, { id: string; name: string; amount: number; currency: Currency; cycle: Subscription["billingCycle"]; perks: string[] }>();
+  private plans = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      amount: number;
+      currency: Currency;
+      cycle: Subscription["billingCycle"];
+      perks: string[];
+    }
+  >();
 
-  createPlan(creatorId: number, name: string, amount: number, currency: Currency, cycle: Subscription["billingCycle"], perks: string[]): string {
+  createPlan(
+    creatorId: number,
+    name: string,
+    amount: number,
+    currency: Currency,
+    cycle: Subscription["billingCycle"],
+    perks: string[]
+  ): string {
     const planId = `plan_${creatorId}_${Date.now()}`;
-    this.plans.set(planId, { id: planId, name, amount, currency, cycle, perks });
+    this.plans.set(planId, {
+      id: planId,
+      name,
+      amount,
+      currency,
+      cycle,
+      perks,
+    });
     return planId;
   }
 
-  subscribe(subscriberId: number, creatorId: number, planId: string, trialDays = 0): { success: boolean; subscription?: Subscription; error?: string } {
+  subscribe(
+    subscriberId: number,
+    creatorId: number,
+    planId: string,
+    trialDays = 0
+  ): { success: boolean; subscription?: Subscription; error?: string } {
     const plan = this.plans.get(planId);
     if (!plan) return { success: false, error: "Plan not found" };
     const existing = Array.from(this.subscriptions.values()).find(
-      s => s.subscriberId === subscriberId && s.creatorId === creatorId && s.status === "active"
+      s =>
+        s.subscriberId === subscriberId &&
+        s.creatorId === creatorId &&
+        s.status === "active"
     );
     if (existing) return { success: false, error: "Already subscribed" };
     const now = new Date();
     const periodEnd = new Date(now);
     if (plan.cycle === "monthly") periodEnd.setMonth(periodEnd.getMonth() + 1);
-    else if (plan.cycle === "quarterly") periodEnd.setMonth(periodEnd.getMonth() + 3);
+    else if (plan.cycle === "quarterly")
+      periodEnd.setMonth(periodEnd.getMonth() + 3);
     else periodEnd.setFullYear(periodEnd.getFullYear() + 1);
     const sub: Subscription = {
       id: `sub_${Date.now()}_${subscriberId}`,
@@ -509,7 +631,10 @@ class SubscriptionEngine {
       currentPeriodStart: now,
       currentPeriodEnd: periodEnd,
       cancelAtPeriodEnd: false,
-      trialEnd: trialDays > 0 ? new Date(now.getTime() + trialDays * 86400000) : undefined,
+      trialEnd:
+        trialDays > 0
+          ? new Date(now.getTime() + trialDays * 86400000)
+          : undefined,
       totalPaid: trialDays > 0 ? 0 : plan.amount,
       renewalCount: 0,
       createdAt: now,
@@ -521,9 +646,14 @@ class SubscriptionEngine {
     return { success: true, subscription: sub };
   }
 
-  cancel(subscriptionId: string, userId: number, immediately = false): { success: boolean; error?: string } {
+  cancel(
+    subscriptionId: string,
+    userId: number,
+    immediately = false
+  ): { success: boolean; error?: string } {
     const sub = this.subscriptions.get(subscriptionId);
-    if (!sub || sub.subscriberId !== userId) return { success: false, error: "Subscription not found" };
+    if (!sub || sub.subscriberId !== userId)
+      return { success: false, error: "Subscription not found" };
     if (immediately) {
       sub.status = "cancelled";
       sub.cancelledAt = new Date();
@@ -546,11 +676,15 @@ class SubscriptionEngine {
         continue;
       }
       const plan = this.plans.get(sub.planId);
-      if (!plan) { failed++; continue; }
+      if (!plan) {
+        failed++;
+        continue;
+      }
       sub.currentPeriodStart = sub.currentPeriodEnd;
       const newEnd = new Date(sub.currentPeriodEnd);
       if (plan.cycle === "monthly") newEnd.setMonth(newEnd.getMonth() + 1);
-      else if (plan.cycle === "quarterly") newEnd.setMonth(newEnd.getMonth() + 3);
+      else if (plan.cycle === "quarterly")
+        newEnd.setMonth(newEnd.getMonth() + 3);
       else newEnd.setFullYear(newEnd.getFullYear() + 1);
       sub.currentPeriodEnd = newEnd;
       sub.status = "active";
@@ -563,11 +697,15 @@ class SubscriptionEngine {
   }
 
   getUserSubscriptions(userId: number): Subscription[] {
-    return Array.from(this.subscriptions.values()).filter(s => s.subscriberId === userId);
+    return Array.from(this.subscriptions.values()).filter(
+      s => s.subscriberId === userId
+    );
   }
 
   getCreatorSubscribers(creatorId: number): Subscription[] {
-    return Array.from(this.subscriptions.values()).filter(s => s.creatorId === creatorId && s.status === "active");
+    return Array.from(this.subscriptions.values()).filter(
+      s => s.creatorId === creatorId && s.status === "active"
+    );
   }
 
   getSubscription(subscriptionId: string): Subscription | undefined {
@@ -592,7 +730,9 @@ class InvoiceGenerator {
     toUserId?: number
   ): Invoice {
     const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
-    const taxableAmount = lineItems.filter(i => i.taxable).reduce((sum, i) => sum + i.total, 0);
+    const taxableAmount = lineItems
+      .filter(i => i.taxable)
+      .reduce((sum, i) => sum + i.total, 0);
     const taxAmount = taxableAmount * taxRate;
     const total = subtotal + taxAmount;
     const invoice: Invoice = {
@@ -621,7 +761,8 @@ class InvoiceGenerator {
   sendInvoice(invoiceId: string): { success: boolean; error?: string } {
     const invoice = this.invoices.get(invoiceId);
     if (!invoice) return { success: false, error: "Invoice not found" };
-    if (invoice.status !== "draft") return { success: false, error: "Invoice already sent" };
+    if (invoice.status !== "draft")
+      return { success: false, error: "Invoice already sent" };
     invoice.status = "sent";
     return { success: true };
   }
@@ -643,7 +784,9 @@ class InvoiceGenerator {
 
   getOverdueInvoices(): Invoice[] {
     const now = new Date();
-    return Array.from(this.invoices.values()).filter(i => i.status === "sent" && i.dueDate < now);
+    return Array.from(this.invoices.values()).filter(
+      i => i.status === "sent" && i.dueDate < now
+    );
   }
 }
 
@@ -652,7 +795,12 @@ class InvoiceGenerator {
 class TaxEngine {
   private records = new Map<string, TaxRecord>(); // key: `${userId}_${year}`
 
-  recordEarning(userId: number, amount: number, currency: Currency, country = "US"): void {
+  recordEarning(
+    userId: number,
+    amount: number,
+    currency: Currency,
+    country = "US"
+  ): void {
     const year = new Date().getFullYear();
     const key = `${userId}_${year}`;
     const usdAmount = exchangeRates.toUSD(amount, currency);
@@ -673,7 +821,8 @@ class TaxEngine {
     }
     const record = this.records.get(key)!;
     record.totalEarnings += usdAmount;
-    record.netEarnings = record.totalEarnings - record.platformFeesPaid - record.withholdingTax;
+    record.netEarnings =
+      record.totalEarnings - record.platformFeesPaid - record.withholdingTax;
   }
 
   recordFee(userId: number, feeAmount: number, currency: Currency): void {
@@ -683,7 +832,8 @@ class TaxEngine {
     const record = this.records.get(key);
     if (record) {
       record.platformFeesPaid += usdAmount;
-      record.netEarnings = record.totalEarnings - record.platformFeesPaid - record.withholdingTax;
+      record.netEarnings =
+        record.totalEarnings - record.platformFeesPaid - record.withholdingTax;
     }
   }
 
@@ -692,7 +842,9 @@ class TaxEngine {
   }
 
   getUsers1099Eligible(year: number): TaxRecord[] {
-    return Array.from(this.records.values()).filter(r => r.year === year && r.totalEarnings >= 600 && !r.form1099Issued);
+    return Array.from(this.records.values()).filter(
+      r => r.year === year && r.totalEarnings >= 600 && !r.form1099Issued
+    );
   }
 
   issue1099(userId: number, year: number): boolean {
@@ -756,9 +908,20 @@ class RefundEngine {
   private requests: RefundRequest[] = [];
   private readonly REFUND_WINDOW_DAYS = 30;
 
-  requestRefund(transactionId: string, requesterId: number, amount: number, reason: string): { success: boolean; request?: RefundRequest; error?: string } {
-    const existing = this.requests.find(r => r.transactionId === transactionId && r.requesterId === requesterId);
-    if (existing) return { success: false, error: "Refund already requested for this transaction" };
+  requestRefund(
+    transactionId: string,
+    requesterId: number,
+    amount: number,
+    reason: string
+  ): { success: boolean; request?: RefundRequest; error?: string } {
+    const existing = this.requests.find(
+      r => r.transactionId === transactionId && r.requesterId === requesterId
+    );
+    if (existing)
+      return {
+        success: false,
+        error: "Refund already requested for this transaction",
+      };
     const request: RefundRequest = {
       id: `refund_${Date.now()}_${requesterId}`,
       transactionId,
@@ -772,9 +935,15 @@ class RefundEngine {
     return { success: true, request };
   }
 
-  reviewRefund(requestId: string, adminId: number, approved: boolean, notes?: string): { success: boolean; error?: string } {
+  reviewRefund(
+    requestId: string,
+    adminId: number,
+    approved: boolean,
+    notes?: string
+  ): { success: boolean; error?: string } {
     const request = this.requests.find(r => r.id === requestId);
-    if (!request || request.status !== "pending") return { success: false, error: "Request not found or already reviewed" };
+    if (!request || request.status !== "pending")
+      return { success: false, error: "Request not found or already reviewed" };
     request.reviewedBy = adminId;
     request.reviewNotes = notes;
     request.status = approved ? "approved" : "rejected";
@@ -799,7 +968,9 @@ class RefundEngine {
 class PaymentAnalytics {
   private transactions: PaymentTransaction[] = [];
 
-  recordTransaction(tx: Omit<PaymentTransaction, "id" | "createdAt">): PaymentTransaction {
+  recordTransaction(
+    tx: Omit<PaymentTransaction, "id" | "createdAt">
+  ): PaymentTransaction {
     const transaction: PaymentTransaction = {
       ...tx,
       id: `tx_${Date.now()}_${Math.random().toString(36).slice(2)}`,
@@ -813,9 +984,15 @@ class PaymentAnalytics {
     return transaction;
   }
 
-  getPlatformRevenue(days = 30): { total: number; byType: Record<string, number>; byCurrency: Record<string, number> } {
+  getPlatformRevenue(days = 30): {
+    total: number;
+    byType: Record<string, number>;
+    byCurrency: Record<string, number>;
+  } {
     const since = new Date(Date.now() - days * 86400000);
-    const recent = this.transactions.filter(t => t.createdAt >= since && t.status === "completed");
+    const recent = this.transactions.filter(
+      t => t.createdAt >= since && t.status === "completed"
+    );
     const byType: Record<string, number> = {};
     const byCurrency: Record<string, number> = {};
     let total = 0;
@@ -828,9 +1005,16 @@ class PaymentAnalytics {
     return { total, byType, byCurrency };
   }
 
-  getUserTransactions(userId: number, type?: PaymentTransaction["type"]): PaymentTransaction[] {
+  getUserTransactions(
+    userId: number,
+    type?: PaymentTransaction["type"]
+  ): PaymentTransaction[] {
     return this.transactions
-      .filter(t => (t.fromUserId === userId || t.toUserId === userId) && (!type || t.type === type))
+      .filter(
+        t =>
+          (t.fromUserId === userId || t.toUserId === userId) &&
+          (!type || t.type === type)
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
@@ -848,9 +1032,18 @@ class PaymentAnalytics {
       totalTransactions: this.transactions.length,
       completedTransactions: completed.length,
       failedTransactions: failed.length,
-      successRate: this.transactions.length > 0 ? (completed.length / this.transactions.length) * 100 : 0,
-      totalGMV: completed.reduce((sum, t) => sum + exchangeRates.toUSD(t.amount, t.currency), 0),
-      totalPlatformRevenue: completed.reduce((sum, t) => sum + exchangeRates.toUSD(t.platformFee, t.currency), 0),
+      successRate:
+        this.transactions.length > 0
+          ? (completed.length / this.transactions.length) * 100
+          : 0,
+      totalGMV: completed.reduce(
+        (sum, t) => sum + exchangeRates.toUSD(t.amount, t.currency),
+        0
+      ),
+      totalPlatformRevenue: completed.reduce(
+        (sum, t) => sum + exchangeRates.toUSD(t.platformFee, t.currency),
+        0
+      ),
     };
   }
 }

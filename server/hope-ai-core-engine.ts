@@ -1,7 +1,7 @@
 /**
  * HOPE AI Core Engine
  * Advanced AI reasoning engine that EXCEEDS Manus 1.6 capabilities
- * 
+ *
  * Features:
  * - Advanced reasoning with multi-step inference
  * - Persistent memory and context management
@@ -23,7 +23,7 @@ export interface ReasoningTrace {
 
 export interface MemoryEntry {
   id: string;
-  type: 'fact' | 'pattern' | 'insight' | 'decision';
+  type: "fact" | "pattern" | "insight" | "decision";
   content: string;
   context: Record<string, any>;
   timestamp: Date;
@@ -51,22 +51,29 @@ export class HOPEAICore {
    * Advanced reasoning with multi-step inference
    * EXCEEDS: Manus single-pass reasoning
    */
-  async reason(query: string, context: Record<string, any> = {}): Promise<AIResponse> {
+  async reason(
+    query: string,
+    context: Record<string, any> = {}
+  ): Promise<AIResponse> {
     const cacheKey = `${query}_${JSON.stringify(context)}`;
     if (this.reasoningCache.has(cacheKey)) {
       return this.reasoningCache.get(cacheKey)!;
     }
 
     const traces: ReasoningTrace[] = [];
-    let currentContext = { ...context, query };
+    const currentContext = { ...context, query };
 
     // Step 1: Problem decomposition
     traces.push({
       step: 1,
       reasoning: `Decomposing query: "${query}" into sub-problems`,
       confidence: 0.95,
-      alternatives: ['Direct answer', 'Multi-step reasoning', 'Analogical reasoning'],
-      decision: 'Multi-step reasoning selected for optimal accuracy',
+      alternatives: [
+        "Direct answer",
+        "Multi-step reasoning",
+        "Analogical reasoning",
+      ],
+      decision: "Multi-step reasoning selected for optimal accuracy",
     });
 
     // Step 2: Retrieve relevant memories
@@ -75,7 +82,11 @@ export class HOPEAICore {
       step: 2,
       reasoning: `Retrieved ${relevantMemories.length} relevant memories from persistent store`,
       confidence: 0.9,
-      alternatives: ['Use only current context', 'Retrieve more memories', 'Ignore memories'],
+      alternatives: [
+        "Use only current context",
+        "Retrieve more memories",
+        "Ignore memories",
+      ],
       decision: `Using top ${Math.min(5, relevantMemories.length)} memories for context`,
     });
 
@@ -85,18 +96,29 @@ export class HOPEAICore {
       step: 3,
       reasoning: `Generated ${hypotheses.length} hypotheses for evaluation`,
       confidence: 0.85,
-      alternatives: ['Single hypothesis', 'More hypotheses', 'Different approach'],
+      alternatives: [
+        "Single hypothesis",
+        "More hypotheses",
+        "Different approach",
+      ],
       decision: `Evaluating ${hypotheses.length} hypotheses in parallel`,
     });
 
     // Step 4: Evaluate and rank
-    const rankedHypotheses = this.evaluateHypotheses(hypotheses, currentContext);
+    const rankedHypotheses = this.evaluateHypotheses(
+      hypotheses,
+      currentContext
+    );
     traces.push({
       step: 4,
       reasoning: `Ranked hypotheses by confidence and relevance`,
       confidence: 0.92,
-      alternatives: ['Use top hypothesis only', 'Ensemble approach', 'Weighted voting'],
-      decision: 'Using ensemble of top 3 hypotheses with weighted voting',
+      alternatives: [
+        "Use top hypothesis only",
+        "Ensemble approach",
+        "Weighted voting",
+      ],
+      decision: "Using ensemble of top 3 hypotheses with weighted voting",
     });
 
     // Step 5: Synthesize answer
@@ -105,13 +127,17 @@ export class HOPEAICore {
       step: 5,
       reasoning: `Synthesized final answer from top hypotheses`,
       confidence: 0.88,
-      alternatives: ['Different synthesis method', 'More conservative answer', 'More aggressive answer'],
-      decision: 'Balanced synthesis with confidence weighting',
+      alternatives: [
+        "Different synthesis method",
+        "More conservative answer",
+        "More aggressive answer",
+      ],
+      decision: "Balanced synthesis with confidence weighting",
     });
 
     // Step 6: Generate alternatives
     const alternatives = this.generateAlternatives(rankedHypotheses);
-    
+
     // Step 7: Generate follow-up questions
     const followUpQuestions = this.generateFollowUpQuestions(query, answer);
 
@@ -137,7 +163,9 @@ export class HOPEAICore {
   /**
    * Persistent memory system - EXCEEDS Manus stateless approach
    */
-  async storeMemory(entry: Omit<MemoryEntry, 'id' | 'timestamp'>): Promise<MemoryEntry> {
+  async storeMemory(
+    entry: Omit<MemoryEntry, "id" | "timestamp">
+  ): Promise<MemoryEntry> {
     const memory: MemoryEntry = {
       ...entry,
       id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -145,7 +173,7 @@ export class HOPEAICore {
     };
 
     this.memory.set(memory.id, memory);
-    
+
     // Update relationships
     this.updateMemoryRelationships(memory);
 
@@ -155,9 +183,12 @@ export class HOPEAICore {
   /**
    * Retrieve memories with semantic similarity
    */
-  private retrieveRelevantMemories(query: string, limit: number = 10): MemoryEntry[] {
+  private retrieveRelevantMemories(
+    query: string,
+    limit: number = 10
+  ): MemoryEntry[] {
     const memories = Array.from(this.memory.values());
-    
+
     // Score memories by relevance
     const scored = memories.map(m => ({
       memory: m,
@@ -180,19 +211,21 @@ export class HOPEAICore {
     hypotheses.push(`Direct answer based on query: ${query}`);
 
     // Pattern-based hypothesis
-    const patterns = memories.filter(m => m.type === 'pattern');
+    const patterns = memories.filter(m => m.type === "pattern");
     if (patterns.length > 0) {
       hypotheses.push(`Pattern-based answer: ${patterns[0].content}`);
     }
 
     // Insight-based hypothesis
-    const insights = memories.filter(m => m.type === 'insight');
+    const insights = memories.filter(m => m.type === "insight");
     if (insights.length > 0) {
       hypotheses.push(`Insight-based answer: ${insights[0].content}`);
     }
 
     // Analogical hypothesis
-    hypotheses.push(`Analogical reasoning: Apply similar patterns to new context`);
+    hypotheses.push(
+      `Analogical reasoning: Apply similar patterns to new context`
+    );
 
     // Counterfactual hypothesis
     hypotheses.push(`Counterfactual: What if the opposite were true?`);
@@ -203,7 +236,10 @@ export class HOPEAICore {
   /**
    * Evaluate hypotheses with confidence scoring
    */
-  private evaluateHypotheses(hypotheses: string[], context: Record<string, any>): Array<{hypothesis: string; confidence: number}> {
+  private evaluateHypotheses(
+    hypotheses: string[],
+    context: Record<string, any>
+  ): Array<{ hypothesis: string; confidence: number }> {
     return hypotheses.map(h => ({
       hypothesis: h,
       confidence: Math.random() * 0.4 + 0.6, // Simulate confidence 0.6-1.0
@@ -213,8 +249,10 @@ export class HOPEAICore {
   /**
    * Synthesize final answer from top hypotheses
    */
-  private synthesizeAnswer(rankedHypotheses: Array<{hypothesis: string; confidence: number}>): string {
-    if (rankedHypotheses.length === 0) return 'Unable to generate answer';
+  private synthesizeAnswer(
+    rankedHypotheses: Array<{ hypothesis: string; confidence: number }>
+  ): string {
+    if (rankedHypotheses.length === 0) return "Unable to generate answer";
 
     const topHypothesis = rankedHypotheses[0];
     return `Based on multi-step reasoning: ${topHypothesis.hypothesis}`;
@@ -223,7 +261,9 @@ export class HOPEAICore {
   /**
    * Generate alternative answers
    */
-  private generateAlternatives(rankedHypotheses: Array<{hypothesis: string; confidence: number}>): string[] {
+  private generateAlternatives(
+    rankedHypotheses: Array<{ hypothesis: string; confidence: number }>
+  ): string[] {
     return rankedHypotheses
       .slice(1, 4)
       .map(h => `Alternative: ${h.hypothesis}`);
@@ -268,8 +308,11 @@ export class HOPEAICore {
    */
   private generateExplanation(traces: ReasoningTrace[]): string {
     return traces
-      .map((t, i) => `Step ${i + 1}: ${t.reasoning} (Confidence: ${(t.confidence * 100).toFixed(1)}%)`)
-      .join('\n');
+      .map(
+        (t, i) =>
+          `Step ${i + 1}: ${t.reasoning} (Confidence: ${(t.confidence * 100).toFixed(1)}%)`
+      )
+      .join("\n");
   }
 
   /**
@@ -277,9 +320,12 @@ export class HOPEAICore {
    */
   private updateMemoryRelationships(newMemory: MemoryEntry): void {
     const allMemories = Array.from(this.memory.values());
-    
+
     for (const existingMemory of allMemories) {
-      const similarity = this.calculateSemanticSimilarity(newMemory.content, existingMemory.content);
+      const similarity = this.calculateSemanticSimilarity(
+        newMemory.content,
+        existingMemory.content
+      );
       if (similarity > 0.5) {
         newMemory.relationships.push(existingMemory.id);
         existingMemory.relationships.push(newMemory.id);
@@ -290,10 +336,14 @@ export class HOPEAICore {
   /**
    * Learn from interactions - EXCEEDS Manus stateless approach
    */
-  private async learn(query: string, answer: string, confidence: number): Promise<void> {
+  private async learn(
+    query: string,
+    answer: string,
+    confidence: number
+  ): Promise<void> {
     // Store as learning memory
     await this.storeMemory({
-      type: 'decision',
+      type: "decision",
       content: `Query: ${query} -> Answer: ${answer}`,
       context: { query, answer },
       importance: confidence,
@@ -301,7 +351,10 @@ export class HOPEAICore {
     });
 
     // Adjust learning rate based on confidence
-    this.learningRate = Math.min(0.2, this.learningRate + (confidence - 0.5) * 0.01);
+    this.learningRate = Math.min(
+      0.2,
+      this.learningRate + (confidence - 0.5) * 0.01
+    );
   }
 
   /**
@@ -312,14 +365,15 @@ export class HOPEAICore {
     return {
       totalMemories: memories.length,
       byType: {
-        fact: memories.filter(m => m.type === 'fact').length,
-        pattern: memories.filter(m => m.type === 'pattern').length,
-        insight: memories.filter(m => m.type === 'insight').length,
-        decision: memories.filter(m => m.type === 'decision').length,
+        fact: memories.filter(m => m.type === "fact").length,
+        pattern: memories.filter(m => m.type === "pattern").length,
+        insight: memories.filter(m => m.type === "insight").length,
+        decision: memories.filter(m => m.type === "decision").length,
       },
-      averageImportance: memories.length > 0 
-        ? memories.reduce((sum, m) => sum + m.importance, 0) / memories.length
-        : 0,
+      averageImportance:
+        memories.length > 0
+          ? memories.reduce((sum, m) => sum + m.importance, 0) / memories.length
+          : 0,
       contextWindowUsed: `${(this.contextWindow / 32000) * 100}%`,
       learningRate: this.learningRate,
     };

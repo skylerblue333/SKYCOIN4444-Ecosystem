@@ -132,27 +132,36 @@ export class ManiusOrchestrator {
       const report = await economyEngine.getHealthReport();
       if (report.overallHealth === "CRITICAL") economyHealth = "critical";
       else if (report.overallHealth === "WARNING") economyHealth = "warning";
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
 
     // Security threat level — use moderation_logs as proxy for fraud signals
-    let securityThreatLevel: PlatformIntelligenceState["securityThreatLevel"] = "low";
+    let securityThreatLevel: PlatformIntelligenceState["securityThreatLevel"] =
+      "low";
     try {
       const db = await getDb();
       if (db) {
         const recentFlags = await db.select().from(moderationLogs).limit(50);
-        if (recentFlags.length > 20) securityThreatLevel = "high" as typeof securityThreatLevel;
-        else if (recentFlags.length > 10) securityThreatLevel = "medium" as typeof securityThreatLevel;
+        if (recentFlags.length > 20)
+          securityThreatLevel = "high" as typeof securityThreatLevel;
+        else if (recentFlags.length > 10)
+          securityThreatLevel = "medium" as typeof securityThreatLevel;
       }
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
 
     // Free will engine goals
     let activeGoalCount = 0;
     let aiEngineStatus: PlatformIntelligenceState["aiEngineStatus"] = "idle";
     try {
       const goals = freeWillEngine.getGoals();
-      activeGoalCount = goals.filter((g) => g.status === "active").length;
+      activeGoalCount = goals.filter(g => g.status === "active").length;
       aiEngineStatus = activeGoalCount > 0 ? "running" : "idle";
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
 
     // User retention risk (simple heuristic from platform metrics)
     let userRetentionRisk: "low" | "medium" | "high" = "low";
@@ -170,39 +179,84 @@ export class ManiusOrchestrator {
           else if (val < 40) userRetentionRisk = "medium";
         }
       }
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
 
     // Governance activity — use a simple try/catch with raw SQL
-    let governanceActivity: PlatformIntelligenceState["governanceActivity"] = "inactive";
+    let governanceActivity: PlatformIntelligenceState["governanceActivity"] =
+      "inactive";
     try {
       const db = await getDb();
       type CountRow = { cnt: number };
-      const rows = await (db as unknown as { execute: (q: string) => Promise<CountRow[]> })
-        .execute(`SELECT COUNT(*) as cnt FROM governance_proposals WHERE status = 'active'`);
+      const rows = await (
+        db as unknown as { execute: (q: string) => Promise<CountRow[]> }
+      ).execute(
+        `SELECT COUNT(*) as cnt FROM governance_proposals WHERE status = 'active'`
+      );
       const cnt = Number(rows[0]?.cnt ?? 0);
       if (cnt > 5) governanceActivity = "urgent";
       else if (cnt > 0) governanceActivity = "active";
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
 
     // Platform score (0-100)
     const scores = {
-      economy: economyHealth === "healthy" ? 100 : economyHealth === "warning" ? 60 : 20,
-      security: (securityThreatLevel as string) === "low" ? 100 : (securityThreatLevel as string) === "medium" ? 70 : (securityThreatLevel as string) === "high" ? 40 : 10,
-      retention: (userRetentionRisk as string) === "low" ? 100 : (userRetentionRisk as string) === "medium" ? 65 : 30,
+      economy:
+        economyHealth === "healthy"
+          ? 100
+          : economyHealth === "warning"
+            ? 60
+            : 20,
+      security:
+        (securityThreatLevel as string) === "low"
+          ? 100
+          : (securityThreatLevel as string) === "medium"
+            ? 70
+            : (securityThreatLevel as string) === "high"
+              ? 40
+              : 10,
+      retention:
+        (userRetentionRisk as string) === "low"
+          ? 100
+          : (userRetentionRisk as string) === "medium"
+            ? 65
+            : 30,
       ai: aiEngineStatus === "running" ? 90 : 70,
     };
     const platformScore = Math.round(
-      (scores.economy * 0.3 + scores.security * 0.3 + scores.retention * 0.25 + scores.ai * 0.15)
+      scores.economy * 0.3 +
+        scores.security * 0.3 +
+        scores.retention * 0.25 +
+        scores.ai * 0.15
     );
 
     // Recommendations
     const recommendations: string[] = [];
-    if (economyHealth !== "healthy") recommendations.push("Economy needs attention — check token emission rates");
-    if ((securityThreatLevel as string) === "high" || (securityThreatLevel as string) === "critical") recommendations.push("Elevated fraud signals — review security dashboard");
-    if (userRetentionRisk === "high") recommendations.push("Retention risk high — trigger engagement campaign");
-    if (governanceActivity === "urgent") recommendations.push("Multiple governance proposals active — drive voter participation");
-    if (activeGoalCount === 0) recommendations.push("No active AI goals — run Free Will Engine cycle");
-    if (recommendations.length === 0) recommendations.push("Platform operating normally — maintain current trajectory");
+    if (economyHealth !== "healthy")
+      recommendations.push(
+        "Economy needs attention — check token emission rates"
+      );
+    if (
+      (securityThreatLevel as string) === "high" ||
+      (securityThreatLevel as string) === "critical"
+    )
+      recommendations.push(
+        "Elevated fraud signals — review security dashboard"
+      );
+    if (userRetentionRisk === "high")
+      recommendations.push("Retention risk high — trigger engagement campaign");
+    if (governanceActivity === "urgent")
+      recommendations.push(
+        "Multiple governance proposals active — drive voter participation"
+      );
+    if (activeGoalCount === 0)
+      recommendations.push("No active AI goals — run Free Will Engine cycle");
+    if (recommendations.length === 0)
+      recommendations.push(
+        "Platform operating normally — maintain current trajectory"
+      );
 
     return {
       timestamp,
@@ -220,7 +274,9 @@ export class ManiusOrchestrator {
 
   // ─── Action Generation ────────────────────────────────────────────────────
 
-  private async generateActions(state: PlatformIntelligenceState): Promise<OrchestratorAction[]> {
+  private async generateActions(
+    state: PlatformIntelligenceState
+  ): Promise<OrchestratorAction[]> {
     const actions: OrchestratorAction[] = [];
     const now = Date.now();
 
@@ -231,8 +287,12 @@ export class ManiusOrchestrator {
         category: "security_response",
         priority: "critical",
         targetAll: true,
-        payload: { action: "heightened_monitoring", threatLevel: state.securityThreatLevel },
-        reasoning: "Critical fraud signal threshold exceeded — activating heightened monitoring",
+        payload: {
+          action: "heightened_monitoring",
+          threatLevel: state.securityThreatLevel,
+        },
+        reasoning:
+          "Critical fraud signal threshold exceeded — activating heightened monitoring",
         scheduledAt: now,
       });
     }
@@ -244,8 +304,12 @@ export class ManiusOrchestrator {
         category: "economy_event",
         priority: "high",
         targetAll: true,
-        payload: { event: "emergency_sink_activation", reason: "critical_economy_health" },
-        reasoning: "Economy health critical — activating emergency token sink to reduce inflation",
+        payload: {
+          event: "emergency_sink_activation",
+          reason: "critical_economy_health",
+        },
+        reasoning:
+          "Economy health critical — activating emergency token sink to reduce inflation",
         scheduledAt: now,
       });
     }
@@ -257,8 +321,13 @@ export class ManiusOrchestrator {
         category: "retention_intervention",
         priority: "high",
         targetAll: true,
-        payload: { campaign: "engagement_boost", bonusXp: 500, message: "We miss you — come back for a bonus!" },
-        reasoning: "7-day retention below 20% — triggering re-engagement campaign",
+        payload: {
+          campaign: "engagement_boost",
+          bonusXp: 500,
+          message: "We miss you — come back for a bonus!",
+        },
+        reasoning:
+          "7-day retention below 20% — triggering re-engagement campaign",
         scheduledAt: now,
       });
     }
@@ -270,8 +339,12 @@ export class ManiusOrchestrator {
         category: "notification",
         priority: "medium",
         targetAll: true,
-        payload: { type: "governance_reminder", message: "Active proposals need your vote — your voice matters" },
-        reasoning: "Multiple active governance proposals — driving voter participation",
+        payload: {
+          type: "governance_reminder",
+          message: "Active proposals need your vote — your voice matters",
+        },
+        reasoning:
+          "Multiple active governance proposals — driving voter participation",
         scheduledAt: now,
       });
     }
@@ -287,7 +360,8 @@ export class ManiusOrchestrator {
         platformScore: state.platformScore,
         recommendations: state.recommendations,
       },
-      reasoning: "Daily orchestrator cycle — generating personalized HOPE AI briefings",
+      reasoning:
+        "Daily orchestrator cycle — generating personalized HOPE AI briefings",
       scheduledAt: now,
     });
 
@@ -300,7 +374,9 @@ export class ManiusOrchestrator {
     // Priority sort: critical > high > medium > low
     const priorityWeight = { critical: 0, high: 1, medium: 2, low: 3 };
     this.actionQueue.push(action);
-    this.actionQueue.sort((a, b) => priorityWeight[a.priority] - priorityWeight[b.priority]);
+    this.actionQueue.sort(
+      (a, b) => priorityWeight[a.priority] - priorityWeight[b.priority]
+    );
   }
 
   private async flushQueue(): Promise<void> {
@@ -349,7 +425,9 @@ export class ManiusOrchestrator {
           isAiAction: true,
           confidence: "0.95",
         });
-      } catch { /* non-blocking */ }
+      } catch {
+        /* non-blocking */
+      }
     }
   }
 
@@ -362,12 +440,16 @@ export class ManiusOrchestrator {
     try {
       const profile = await behaviorEngine.getBehaviorProfile(userId);
       archetype = profile?.archetype ?? "explorer";
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
 
     try {
       const report = await securityEngine.getFraudReport(userId);
       riskScore = report.riskScore;
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
 
     // Retention risk based on risk score and archetype
     const retentionRisk: UserIntelligenceContext["retentionRisk"] =
@@ -384,35 +466,51 @@ export class ManiusOrchestrator {
       analyst: "New platform analytics report is ready",
     };
 
-    const suggestedAction = archetypeSuggestions[archetype] ?? "Explore what's new on the platform today";
+    const suggestedAction =
+      archetypeSuggestions[archetype] ??
+      "Explore what's new on the platform today";
 
     // HOPE AI message
     const hopeMessages: Record<string, string> = {
-      trader: "Your trading patterns show strong momentum. The market is moving — want me to analyze your portfolio?",
-      creator: "Your content reach grew 23% this week. I have 3 ideas for your next post based on what's trending.",
-      governor: "There's an active proposal that aligns with your voting history. Your vote could be the deciding one.",
-      explorer: "I found 7 communities you'd love based on your interests. Want me to show you the most active ones?",
-      builder: "You've been building for 3 days straight. I noticed a pattern — want me to suggest the next feature?",
-      guardian: "The platform trust score improved 4% this week. Your moderation work is making a real difference.",
-      analyst: "Platform DAU is up 12%. I've prepared a full breakdown — want the detailed report?",
+      trader:
+        "Your trading patterns show strong momentum. The market is moving — want me to analyze your portfolio?",
+      creator:
+        "Your content reach grew 23% this week. I have 3 ideas for your next post based on what's trending.",
+      governor:
+        "There's an active proposal that aligns with your voting history. Your vote could be the deciding one.",
+      explorer:
+        "I found 7 communities you'd love based on your interests. Want me to show you the most active ones?",
+      builder:
+        "You've been building for 3 days straight. I noticed a pattern — want me to suggest the next feature?",
+      guardian:
+        "The platform trust score improved 4% this week. Your moderation work is making a real difference.",
+      analyst:
+        "Platform DAU is up 12%. I've prepared a full breakdown — want the detailed report?",
     };
 
-    const hopeAiMessage = hopeMessages[archetype] ?? "Good to see you. What would you like to accomplish today?";
+    const hopeAiMessage =
+      hopeMessages[archetype] ??
+      "Good to see you. What would you like to accomplish today?";
 
     // Economy opportunity
     let economyOpportunity: string | undefined;
     try {
       const report = await economyEngine.getHealthReport();
-      const bestToken = report.tokens.sort((a, b) => b.liquidityScore - a.liquidityScore)[0];
+      const bestToken = report.tokens.sort(
+        (a, b) => b.liquidityScore - a.liquidityScore
+      )[0];
       if (bestToken && bestToken.liquidityScore > 0.8) {
         economyOpportunity = `${bestToken.token} liquidity score is at ${(bestToken.liquidityScore * 100).toFixed(0)}% — high staking APY available`;
       }
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
 
     // Urgent alert
     let urgentAlert: string | undefined;
     if (riskScore > 70) {
-      urgentAlert = "Unusual activity detected on your account. Please review your recent transactions.";
+      urgentAlert =
+        "Unusual activity detected on your account. Please review your recent transactions.";
     }
 
     return {
@@ -438,7 +536,9 @@ export class ManiusOrchestrator {
         value: String(state.platformScore),
         category: "orchestrator",
       });
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
   }
 
   // ─── Public Accessors ─────────────────────────────────────────────────────

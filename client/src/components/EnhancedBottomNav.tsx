@@ -1,7 +1,12 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
-  Home, Compass, ShoppingCart, Users, User, MoreHorizontal
+  Home,
+  Compass,
+  ShoppingCart,
+  Users,
+  User,
+  MoreHorizontal,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,7 +40,7 @@ export function EnhancedBottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
       <div className="flex items-center justify-between px-2 py-2">
-        {bottomNavItems.map((item) => {
+        {bottomNavItems.map(item => {
           const Icon = item.icon;
           return (
             <Link key={item.path} href={item.path}>
@@ -68,7 +73,7 @@ export function EnhancedBottomNav() {
           <DropdownMenuContent align="end" className="w-48 mb-20">
             <DropdownMenuLabel>Quick Access</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {moreItems.map((item) => (
+            {moreItems.map(item => (
               <Link key={item.path} href={item.path}>
                 <a>
                   <DropdownMenuItem className="cursor-pointer text-xs">

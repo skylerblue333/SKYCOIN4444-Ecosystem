@@ -21,12 +21,23 @@ export function LivePriceTicker() {
             href={`/crypto?token=${coin.symbol}`}
             className="inline-flex items-center gap-2 px-4 py-1.5 hover:bg-secondary/30 transition-colors shrink-0"
           >
-            <span className="text-xs font-bold text-foreground uppercase">{coin.symbol}</span>
-            <span className="text-xs font-mono text-foreground">
-              ${coin.current_price < 1 ? coin.current_price.toFixed(4) : coin.current_price.toLocaleString()}
+            <span className="text-xs font-bold text-foreground uppercase">
+              {coin.symbol}
             </span>
-            <span className={`text-xs flex items-center gap-0.5 ${coin.price_change_percentage_24h >= 0 ? "text-success" : "text-destructive"}`}>
-              {coin.price_change_percentage_24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+            <span className="text-xs font-mono text-foreground">
+              $
+              {coin.current_price < 1
+                ? coin.current_price.toFixed(4)
+                : coin.current_price.toLocaleString()}
+            </span>
+            <span
+              className={`text-xs flex items-center gap-0.5 ${coin.price_change_percentage_24h >= 0 ? "text-success" : "text-destructive"}`}
+            >
+              {coin.price_change_percentage_24h >= 0 ? (
+                <TrendingUp className="w-3 h-3" />
+              ) : (
+                <TrendingDown className="w-3 h-3" />
+              )}
               {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
             </span>
           </Link>

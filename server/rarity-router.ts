@@ -5,9 +5,9 @@ export const rarityRouter = router({
     const uniqueFeatures = 444; // 444 upgrades
     const integrationDepth = 50; // 50 systems integrated
     const userCount = Math.floor(Math.random() * 50000 + 1000);
-    
+
     const rarityScore = (uniqueFeatures * integrationDepth * userCount) / 1000;
-    
+
     return {
       rarityScore: Math.floor(rarityScore),
       baseline: 0,

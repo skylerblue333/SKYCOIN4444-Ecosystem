@@ -1,8 +1,21 @@
 import React from "react";
 import { Link } from "wouter";
 import {
-  Home, Zap, Heart, Gamepad2, BookOpen, Sparkles, Radio, Share2, Wallet,
-  TrendingUp, Lightbulb, Users, Settings, HelpCircle, LogOut
+  Home,
+  Zap,
+  Heart,
+  Gamepad2,
+  BookOpen,
+  Sparkles,
+  Radio,
+  Share2,
+  Wallet,
+  TrendingUp,
+  Lightbulb,
+  Users,
+  Settings,
+  HelpCircle,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -32,7 +45,7 @@ export default function BottomSidebar() {
       {/* Scrollable nav items */}
       <div className="overflow-x-auto">
         <div className="flex gap-2 p-3 min-w-max">
-          {NAV_ITEMS.map((item) => (
+          {NAV_ITEMS.map(item => (
             <Link key={item.href} href={item.href}>
               <Button
                 variant="ghost"
@@ -44,7 +57,7 @@ export default function BottomSidebar() {
               </Button>
             </Link>
           ))}
-          
+
           {user && (
             <Button
               onClick={logout}

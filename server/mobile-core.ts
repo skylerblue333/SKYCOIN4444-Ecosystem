@@ -18,7 +18,15 @@
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 export type PushPlatform = "web" | "fcm" | "apns";
-export type NotificationCategory = "social" | "stream" | "crypto" | "marketplace" | "community" | "system" | "creator" | "charity";
+export type NotificationCategory =
+  | "social"
+  | "stream"
+  | "crypto"
+  | "marketplace"
+  | "community"
+  | "system"
+  | "creator"
+  | "charity";
 
 export interface PushSubscription {
   id: string;
@@ -77,7 +85,14 @@ export interface PushNotification {
 export interface OfflineSyncItem {
   id: string;
   userId: number;
-  action: "create_post" | "send_message" | "like" | "follow" | "stake" | "vote" | "purchase";
+  action:
+    | "create_post"
+    | "send_message"
+    | "like"
+    | "follow"
+    | "stake"
+    | "vote"
+    | "purchase";
   payload: Record<string, unknown>;
   createdAt: Date;
   syncedAt?: Date;
@@ -103,7 +118,12 @@ export interface MobileStreamSession {
 export interface MobileWalletSession {
   sessionId: string;
   userId: number;
-  walletType: "walletconnect" | "metamask_mobile" | "coinbase_wallet" | "trust_wallet" | "rainbow";
+  walletType:
+    | "walletconnect"
+    | "metamask_mobile"
+    | "coinbase_wallet"
+    | "trust_wallet"
+    | "rainbow";
   walletAddress: string;
   chainId: number;
   isConnected: boolean;
@@ -147,7 +167,11 @@ export interface CrashReport {
   deviceModel: string;
   errorMessage: string;
   stackTrace: string;
-  breadcrumbs: { timestamp: Date; action: string; data?: Record<string, unknown> }[];
+  breadcrumbs: {
+    timestamp: Date;
+    action: string;
+    data?: Record<string, unknown>;
+  }[];
   reportedAt: Date;
   resolved: boolean;
 }
@@ -165,7 +189,17 @@ class PushNotificationService {
     endpoint: string,
     deviceId: string,
     deviceType: PushSubscription["deviceType"],
-    options: Partial<Pick<PushSubscription, "auth" | "p256dh" | "fcmToken" | "apnsToken" | "appVersion" | "osVersion">> = {}
+    options: Partial<
+      Pick<
+        PushSubscription,
+        | "auth"
+        | "p256dh"
+        | "fcmToken"
+        | "apnsToken"
+        | "appVersion"
+        | "osVersion"
+      >
+    > = {}
   ): PushSubscription {
     const subscription: PushSubscription = {
       id: `sub_${Date.now()}_${userId}`,
@@ -198,7 +232,11 @@ class PushNotificationService {
     return subscription;
   }
 
-  updatePreferences(userId: number, deviceId: string, preferences: Partial<NotificationPreferences>): boolean {
+  updatePreferences(
+    userId: number,
+    deviceId: string,
+    preferences: Partial<NotificationPreferences>
+  ): boolean {
     const userSubs = this.subscriptions.get(userId) || [];
     const sub = userSubs.find(s => s.deviceId === deviceId);
     if (!sub) return false;
@@ -211,9 +249,15 @@ class PushNotificationService {
     category: NotificationCategory,
     title: string,
     body: string,
-    options: Partial<Pick<PushNotification, "icon" | "image" | "data" | "actionUrl" | "actions" | "priority" | "ttl">> = {}
+    options: Partial<
+      Pick<
+        PushNotification,
+        "icon" | "image" | "data" | "actionUrl" | "actions" | "priority" | "ttl"
+      >
+    > = {}
   ): Promise<{ sent: number; failed: number }> {
-    const userSubs = this.subscriptions.get(userId)?.filter(s => s.isActive) || [];
+    const userSubs =
+      this.subscriptions.get(userId)?.filter(s => s.isActive) || [];
     if (userSubs.length === 0) return { sent: 0, failed: 0 };
 
     const todayCount = this.dailyCounts.get(userId) || 0;
@@ -222,7 +266,8 @@ class PushNotificationService {
 
     for (const sub of userSubs) {
       if (!sub.preferences[category]) continue;
-      if (sub.preferences.maxPerDay && todayCount >= sub.preferences.maxPerDay) continue;
+      if (sub.preferences.maxPerDay && todayCount >= sub.preferences.maxPerDay)
+        continue;
       if (this.isInQuietHours(sub.preferences)) continue;
 
       const notification: PushNotification = {
@@ -251,7 +296,10 @@ class PushNotificationService {
     return { sent, failed };
   }
 
-  private async deliverToDevice(sub: PushSubscription, notification: PushNotification): Promise<void> {
+  private async deliverToDevice(
+    sub: PushSubscription,
+    notification: PushNotification
+  ): Promise<void> {
     // In production: call Web Push API, FCM, or APNs
     // Web Push: use web-push library with VAPID keys
     // FCM: POST to https://fcm.googleapis.com/fcm/send
@@ -260,7 +308,11 @@ class PushNotificationService {
   }
 
   private isInQuietHours(prefs: NotificationPreferences): boolean {
-    if (prefs.quietHoursStart === undefined || prefs.quietHoursEnd === undefined) return false;
+    if (
+      prefs.quietHoursStart === undefined ||
+      prefs.quietHoursEnd === undefined
+    )
+      return false;
     const hour = new Date().getHours();
     if (prefs.quietHoursStart < prefs.quietHoursEnd) {
       return hour >= prefs.quietHoursStart && hour < prefs.quietHoursEnd;
@@ -273,12 +325,20 @@ class PushNotificationService {
     category: NotificationCategory,
     title: string,
     body: string,
-    options: Partial<Pick<PushNotification, "icon" | "data" | "actionUrl" | "priority">> = {}
+    options: Partial<
+      Pick<PushNotification, "icon" | "data" | "actionUrl" | "priority">
+    > = {}
   ): Promise<{ totalSent: number; totalFailed: number }> {
     let totalSent = 0;
     let totalFailed = 0;
     for (const userId of userIds) {
-      const result = await this.sendNotification(userId, category, title, body, options);
+      const result = await this.sendNotification(
+        userId,
+        category,
+        title,
+        body,
+        options
+      );
       totalSent += result.sent;
       totalFailed += result.failed;
     }
@@ -287,16 +347,29 @@ class PushNotificationService {
 
   recordClick(notificationId: string): void {
     const notif = this.notifications.find(n => n.id === notificationId);
-    if (notif) { notif.status = "clicked"; notif.clickedAt = new Date(); }
+    if (notif) {
+      notif.status = "clicked";
+      notif.clickedAt = new Date();
+    }
   }
 
-  getDeliveryStats(userId: number, days = 7): { sent: number; delivered: number; clicked: number; ctr: number } {
+  getDeliveryStats(
+    userId: number,
+    days = 7
+  ): { sent: number; delivered: number; clicked: number; ctr: number } {
     const since = new Date(Date.now() - days * 86400000);
-    const userNotifs = this.notifications.filter(n => n.userId === userId && n.sentAt && n.sentAt >= since);
+    const userNotifs = this.notifications.filter(
+      n => n.userId === userId && n.sentAt && n.sentAt >= since
+    );
     const sent = userNotifs.length;
     const delivered = userNotifs.filter(n => n.deliveredAt).length;
     const clicked = userNotifs.filter(n => n.clickedAt).length;
-    return { sent, delivered, clicked, ctr: sent > 0 ? (clicked / sent) * 100 : 0 };
+    return {
+      sent,
+      delivered,
+      clicked,
+      ctr: sent > 0 ? (clicked / sent) * 100 : 0,
+    };
   }
 
   getUserDevices(userId: number): PushSubscription[] {
@@ -335,7 +408,9 @@ class OfflineSyncManager {
     return item;
   }
 
-  async processPendingItems(userId: number): Promise<{ processed: number; failed: number; conflicts: number }> {
+  async processPendingItems(
+    userId: number
+  ): Promise<{ processed: number; failed: number; conflicts: number }> {
     const userQueue = this.queue.get(userId) || [];
     const pending = userQueue.filter(i => i.status === "pending");
     let processed = 0;
@@ -364,7 +439,9 @@ class OfflineSyncManager {
     return { processed, failed, conflicts };
   }
 
-  private async processItem(item: OfflineSyncItem): Promise<"success" | "conflict"> {
+  private async processItem(
+    item: OfflineSyncItem
+  ): Promise<"success" | "conflict"> {
     // In production: dispatch to appropriate handler based on action type
     // Check for conflicts (e.g., post deleted while offline)
     return "success";
@@ -375,10 +452,15 @@ class OfflineSyncManager {
   }
 
   getPendingCount(userId: number): number {
-    return (this.queue.get(userId) || []).filter(i => i.status === "pending").length;
+    return (this.queue.get(userId) || []).filter(i => i.status === "pending")
+      .length;
   }
 
-  resolveConflict(itemId: string, userId: number, resolution: "keep_local" | "keep_remote" | "merge"): void {
+  resolveConflict(
+    itemId: string,
+    userId: number,
+    resolution: "keep_local" | "keep_remote" | "merge"
+  ): void {
     const userQueue = this.queue.get(userId) || [];
     const item = userQueue.find(i => i.id === itemId);
     if (!item || item.status !== "conflict") return;
@@ -395,7 +477,13 @@ class OfflineSyncManager {
     return {
       version: "5.0",
       cacheName: "shadowchat-v5",
-      staticAssets: ["/", "/index.html", "/manifest.json", "/icons/icon-192.png", "/icons/icon-512.png"],
+      staticAssets: [
+        "/",
+        "/index.html",
+        "/manifest.json",
+        "/icons/icon-192.png",
+        "/icons/icon-512.png",
+      ],
       dynamicCacheStrategies: {
         "/api/trpc/feed": "network-first",
         "/api/trpc/notifications": "network-first",
@@ -431,23 +519,66 @@ class OfflineSyncManager {
         { src: "/icons/icon-128.png", sizes: "128x128", type: "image/png" },
         { src: "/icons/icon-144.png", sizes: "144x144", type: "image/png" },
         { src: "/icons/icon-152.png", sizes: "152x152", type: "image/png" },
-        { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+        {
+          src: "/icons/icon-192.png",
+          sizes: "192x192",
+          type: "image/png",
+          purpose: "any maskable",
+        },
         { src: "/icons/icon-384.png", sizes: "384x384", type: "image/png" },
-        { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+        {
+          src: "/icons/icon-512.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "any maskable",
+        },
       ],
       shortcuts: [
-        { name: "Feed", url: "/", icons: [{ src: "/icons/shortcut-feed.png", sizes: "96x96" }] },
-        { name: "Messages", url: "/messages", icons: [{ src: "/icons/shortcut-messages.png", sizes: "96x96" }] },
-        { name: "Streams", url: "/streaming", icons: [{ src: "/icons/shortcut-stream.png", sizes: "96x96" }] },
-        { name: "Wallet", url: "/wallet", icons: [{ src: "/icons/shortcut-wallet.png", sizes: "96x96" }] },
+        {
+          name: "Feed",
+          url: "/",
+          icons: [{ src: "/icons/shortcut-feed.png", sizes: "96x96" }],
+        },
+        {
+          name: "Messages",
+          url: "/messages",
+          icons: [{ src: "/icons/shortcut-messages.png", sizes: "96x96" }],
+        },
+        {
+          name: "Streams",
+          url: "/streaming",
+          icons: [{ src: "/icons/shortcut-stream.png", sizes: "96x96" }],
+        },
+        {
+          name: "Wallet",
+          url: "/wallet",
+          icons: [{ src: "/icons/shortcut-wallet.png", sizes: "96x96" }],
+        },
       ],
       screenshots: [
-        { src: "/screenshots/feed.png", sizes: "390x844", type: "image/png", label: "Home Feed" },
-        { src: "/screenshots/stream.png", sizes: "390x844", type: "image/png", label: "Live Streaming" },
+        {
+          src: "/screenshots/feed.png",
+          sizes: "390x844",
+          type: "image/png",
+          label: "Home Feed",
+        },
+        {
+          src: "/screenshots/stream.png",
+          sizes: "390x844",
+          type: "image/png",
+          label: "Live Streaming",
+        },
       ],
       related_applications: [
-        { platform: "play", url: "https://play.google.com/store/apps/details?id=app.shadowchat", id: "app.shadowchat" },
-        { platform: "itunes", url: "https://apps.apple.com/app/shadowchat/id123456789" },
+        {
+          platform: "play",
+          url: "https://play.google.com/store/apps/details?id=app.shadowchat",
+          id: "app.shadowchat",
+        },
+        {
+          platform: "itunes",
+          url: "https://apps.apple.com/app/shadowchat/id123456789",
+        },
       ],
       prefer_related_applications: false,
     };
@@ -459,7 +590,10 @@ class OfflineSyncManager {
 class MobileStreamingAdapter {
   private sessions = new Map<string, MobileStreamSession>();
 
-  private readonly QUALITY_PRESETS: Record<string, { bitrate: number; resolution: string }> = {
+  private readonly QUALITY_PRESETS: Record<
+    string,
+    { bitrate: number; resolution: string }
+  > = {
     "1080p": { bitrate: 6000, resolution: "1920x1080" },
     "720p": { bitrate: 3000, resolution: "1280x720" },
     "480p": { bitrate: 1500, resolution: "854x480" },
@@ -482,7 +616,8 @@ class MobileStreamingAdapter {
   ): MobileStreamSession {
     const sessionId = `mstream_${Date.now()}_${userId}`;
     const quality = this.selectInitialQuality(networkType, batteryLevel);
-    const preset = this.QUALITY_PRESETS[quality] || this.QUALITY_PRESETS["480p"];
+    const preset =
+      this.QUALITY_PRESETS[quality] || this.QUALITY_PRESETS["480p"];
     const session: MobileStreamSession = {
       sessionId,
       userId,
@@ -499,7 +634,10 @@ class MobileStreamingAdapter {
     return session;
   }
 
-  private selectInitialQuality(networkType: string, batteryLevel?: number): string {
+  private selectInitialQuality(
+    networkType: string,
+    batteryLevel?: number
+  ): string {
     let quality = this.NETWORK_QUALITY_MAP[networkType] || "360p";
     if (batteryLevel !== undefined && batteryLevel < 20) {
       const qualities = ["240p", "360p", "480p", "720p", "1080p"];
@@ -516,7 +654,12 @@ class MobileStreamingAdapter {
     batteryLevel?: number
   ): { newQuality: string; newBitrate: number; reason: string } {
     const session = this.sessions.get(sessionId);
-    if (!session) return { newQuality: "480p", newBitrate: 1500, reason: "session_not_found" };
+    if (!session)
+      return {
+        newQuality: "480p",
+        newBitrate: 1500,
+        reason: "session_not_found",
+      };
 
     const qualities = ["240p", "360p", "480p", "720p", "1080p"];
     let targetQuality = session.quality as string;
@@ -524,18 +667,28 @@ class MobileStreamingAdapter {
 
     if (bufferHealth < 5) {
       const idx = qualities.indexOf(targetQuality);
-      if (idx > 0) { targetQuality = qualities[idx - 1]; reason = "low_buffer"; }
+      if (idx > 0) {
+        targetQuality = qualities[idx - 1];
+        reason = "low_buffer";
+      }
     } else if (bufferHealth > 30 && networkSpeed > 5000) {
       const idx = qualities.indexOf(targetQuality);
-      if (idx < qualities.length - 1) { targetQuality = qualities[idx + 1]; reason = "good_conditions"; }
+      if (idx < qualities.length - 1) {
+        targetQuality = qualities[idx + 1];
+        reason = "good_conditions";
+      }
     }
 
     if (batteryLevel !== undefined && batteryLevel < 15) {
       const idx = qualities.indexOf(targetQuality);
-      if (idx > 0) { targetQuality = qualities[idx - 1]; reason = "battery_saver"; }
+      if (idx > 0) {
+        targetQuality = qualities[idx - 1];
+        reason = "battery_saver";
+      }
     }
 
-    const preset = this.QUALITY_PRESETS[targetQuality] || this.QUALITY_PRESETS["480p"];
+    const preset =
+      this.QUALITY_PRESETS[targetQuality] || this.QUALITY_PRESETS["480p"];
     session.quality = targetQuality as MobileStreamSession["quality"];
     session.bitrate = preset.bitrate;
     session.lastQualityChange = new Date();
@@ -549,7 +702,11 @@ class MobileStreamingAdapter {
   }
 
   getDataSavingMode(networkType: string, batteryLevel?: number): boolean {
-    return networkType === "3g" || networkType === "2g" || (batteryLevel !== undefined && batteryLevel < 20);
+    return (
+      networkType === "3g" ||
+      networkType === "2g" ||
+      (batteryLevel !== undefined && batteryLevel < 20)
+    );
   }
 
   endSession(sessionId: string): MobileStreamSession | null {
@@ -568,7 +725,10 @@ class MobileStreamingAdapter {
 class MobileWalletManager {
   private sessions = new Map<string, MobileWalletSession>();
 
-  generateWalletConnectUri(userId: number, chainId = 1): { uri: string; sessionId: string; qrCode: string } {
+  generateWalletConnectUri(
+    userId: number,
+    chainId = 1
+  ): { uri: string; sessionId: string; qrCode: string } {
     const sessionId = `mwallet_${Date.now()}_${userId}`;
     const wcUri = `wc:${sessionId}@2?relay-protocol=irn&symKey=${Math.random().toString(36).slice(2)}`;
     const qrCode = `data:image/svg+xml;base64,${Buffer.from(`<svg>QR:${wcUri}</svg>`).toString("base64")}`;
@@ -597,7 +757,10 @@ class MobileWalletManager {
     return session;
   }
 
-  generateDeepLink(walletType: MobileWalletSession["walletType"], wcUri: string): string {
+  generateDeepLink(
+    walletType: MobileWalletSession["walletType"],
+    wcUri: string
+  ): string {
     const deepLinks: Record<string, string> = {
       metamask_mobile: `metamask://wc?uri=${encodeURIComponent(wcUri)}`,
       coinbase_wallet: `cbwallet://wc?uri=${encodeURIComponent(wcUri)}`,
@@ -610,17 +773,26 @@ class MobileWalletManager {
 
   addPendingTransaction(sessionId: string, txHash: string): void {
     const session = this.sessions.get(sessionId);
-    if (session) { session.pendingTransactions.push(txHash); session.lastActivityAt = new Date(); }
+    if (session) {
+      session.pendingTransactions.push(txHash);
+      session.lastActivityAt = new Date();
+    }
   }
 
   removePendingTransaction(sessionId: string, txHash: string): void {
     const session = this.sessions.get(sessionId);
-    if (session) session.pendingTransactions = session.pendingTransactions.filter(tx => tx !== txHash);
+    if (session)
+      session.pendingTransactions = session.pendingTransactions.filter(
+        tx => tx !== txHash
+      );
   }
 
   disconnectWallet(sessionId: string): void {
     const session = this.sessions.get(sessionId);
-    if (session) { session.isConnected = false; this.sessions.delete(sessionId); }
+    if (session) {
+      session.isConnected = false;
+      this.sessions.delete(sessionId);
+    }
   }
 
   getUserWalletSession(userId: number): MobileWalletSession | null {
@@ -630,7 +802,12 @@ class MobileWalletManager {
     return null;
   }
 
-  generateQRPaymentCode(amount: number, currency: string, recipientAddress: string, memo?: string): string {
+  generateQRPaymentCode(
+    amount: number,
+    currency: string,
+    recipientAddress: string,
+    memo?: string
+  ): string {
     const payload = { amount, currency, to: recipientAddress, memo };
     return `shadowchat://pay?${new URLSearchParams(Object.entries(payload).map(([k, v]) => [k, String(v)])).toString()}`;
   }
@@ -659,11 +836,17 @@ class DeepLinkManager {
     return link;
   }
 
-  resolve(url: string): { path: string; params: Record<string, string> } | null {
+  resolve(
+    url: string
+  ): { path: string; params: Record<string, string> } | null {
     try {
-      const parsed = new URL(url.replace("shadowchat://", "https://shadowchat.app/"));
+      const parsed = new URL(
+        url.replace("shadowchat://", "https://shadowchat.app/")
+      );
       const params: Record<string, string> = {};
-      parsed.searchParams.forEach((value, key) => { params[key] = value; });
+      parsed.searchParams.forEach((value, key) => {
+        params[key] = value;
+      });
       return { path: parsed.pathname, params };
     } catch {
       return null;
@@ -675,12 +858,19 @@ class DeepLinkManager {
     if (link) link.clickCount++;
   }
 
-  generateShareLink(contentType: "post" | "reel" | "stream" | "profile" | "community" | "nft", contentId: string): DeepLink {
+  generateShareLink(
+    contentType: "post" | "reel" | "stream" | "profile" | "community" | "nft",
+    contentId: string
+  ): DeepLink {
     return this.create(`/${contentType}/${contentId}`, { ref: "share" });
   }
 
   generateReferralLink(userId: number): DeepLink {
-    return this.create("/join", { ref: String(userId), utm_source: "referral", utm_medium: "share" });
+    return this.create("/join", {
+      ref: String(userId),
+      utm_source: "referral",
+      utm_medium: "share",
+    });
   }
 }
 
@@ -693,7 +883,14 @@ class MobileAnalyticsService {
   trackEvent(
     eventType: string,
     properties: Record<string, unknown>,
-    deviceInfo: { deviceId: string; appVersion: string; osVersion: string; deviceModel: string; networkType: string; batteryLevel?: number },
+    deviceInfo: {
+      deviceId: string;
+      appVersion: string;
+      osVersion: string;
+      deviceModel: string;
+      networkType: string;
+      batteryLevel?: number;
+    },
     userId?: number,
     sessionId?: string
   ): void {
@@ -735,7 +932,12 @@ class MobileAnalyticsService {
     return report;
   }
 
-  getCrashStats(): { total: number; unresolved: number; byVersion: Record<string, number>; byDevice: Record<string, number> } {
+  getCrashStats(): {
+    total: number;
+    unresolved: number;
+    byVersion: Record<string, number>;
+    byDevice: Record<string, number>;
+  } {
     const unresolved = this.crashes.filter(c => !c.resolved);
     const byVersion: Record<string, number> = {};
     const byDevice: Record<string, number> = {};
@@ -743,19 +945,33 @@ class MobileAnalyticsService {
       byVersion[crash.appVersion] = (byVersion[crash.appVersion] || 0) + 1;
       byDevice[crash.deviceModel] = (byDevice[crash.deviceModel] || 0) + 1;
     }
-    return { total: this.crashes.length, unresolved: unresolved.length, byVersion, byDevice };
+    return {
+      total: this.crashes.length,
+      unresolved: unresolved.length,
+      byVersion,
+      byDevice,
+    };
   }
 
   getTopEvents(days = 7, limit = 20): { eventType: string; count: number }[] {
     const since = new Date(Date.now() - days * 86400000);
     const counts = new Map<string, number>();
     for (const event of this.events) {
-      if (event.timestamp >= since) counts.set(event.eventType, (counts.get(event.eventType) || 0) + 1);
+      if (event.timestamp >= since)
+        counts.set(event.eventType, (counts.get(event.eventType) || 0) + 1);
     }
-    return Array.from(counts.entries()).map(([eventType, count]) => ({ eventType, count })).sort((a, b) => b.count - a.count).slice(0, limit);
+    return Array.from(counts.entries())
+      .map(([eventType, count]) => ({ eventType, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit);
   }
 
-  getDeviceBreakdown(): { ios: number; android: number; webMobile: number; webDesktop: number } {
+  getDeviceBreakdown(): {
+    ios: number;
+    android: number;
+    webMobile: number;
+    webDesktop: number;
+  } {
     const breakdown = { ios: 0, android: 0, webMobile: 0, webDesktop: 0 };
     const deviceIds = new Set<string>();
     for (const event of this.events) {

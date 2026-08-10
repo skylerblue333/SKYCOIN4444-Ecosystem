@@ -43,13 +43,24 @@ export const gamingGamificationRouter = router({
   // Tournaments
   getTournaments: publicProcedure.query(async () => ({
     active: [
-      { id: "1", name: "Trading Championship", prize: "$10,000", participants: 1000 },
+      {
+        id: "1",
+        name: "Trading Championship",
+        prize: "$10,000",
+        participants: 1000,
+      },
     ],
   })),
 
   // Betting system
   placeBet: protectedProcedure
-    .input(z.object({ eventId: z.string(), amount: z.number(), prediction: z.string() }))
+    .input(
+      z.object({
+        eventId: z.string(),
+        amount: z.number(),
+        prediction: z.string(),
+      })
+    )
     .mutation(async ({ input }) => ({
       success: true,
       betId: `bet-${Date.now()}`,

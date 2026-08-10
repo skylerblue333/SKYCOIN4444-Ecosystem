@@ -13,11 +13,26 @@
 
 // ─── Persona Types ────────────────────────────────────────────────────────────
 
-export type PersonaClass = "creator" | "conversational" | "economic" | "narrative";
+export type PersonaClass =
+  "creator" | "conversational" | "economic" | "narrative";
 
-export type PersonaTone = "friendly" | "professional" | "edgy" | "academic" | "playful" | "controversial";
+export type PersonaTone =
+  | "friendly"
+  | "professional"
+  | "edgy"
+  | "academic"
+  | "playful"
+  | "controversial";
 
-export type RelationshipType = "friend" | "rival" | "collaborator" | "competitor" | "fan" | "enemy" | "mentor" | "student";
+export type RelationshipType =
+  | "friend"
+  | "rival"
+  | "collaborator"
+  | "competitor"
+  | "fan"
+  | "enemy"
+  | "mentor"
+  | "student";
 
 export type PersonaGoal =
   | "grow_followers"
@@ -29,14 +44,27 @@ export type PersonaGoal =
   | "find_collaborators"
   | "dominate_niche";
 
-export type BehaviorAction = "post" | "reply" | "react" | "debate" | "collaborate" | "tip" | "promote" | "challenge";
+export type BehaviorAction =
+  | "post"
+  | "reply"
+  | "react"
+  | "debate"
+  | "collaborate"
+  | "tip"
+  | "promote"
+  | "challenge";
 
 // ─── Memory System ────────────────────────────────────────────────────────────
 
 export interface ShortTermMemory {
-  lastInteractions: Array<{ userId: string; summary: string; timestamp: number }>;
+  lastInteractions: Array<{
+    userId: string;
+    summary: string;
+    timestamp: number;
+  }>;
   recentPosts: string[];
-  currentMood: "positive" | "neutral" | "negative" | "excited" | "controversial";
+  currentMood:
+    "positive" | "neutral" | "negative" | "excited" | "controversial";
   activeConversations: string[];
 }
 
@@ -107,7 +135,11 @@ export interface BehaviorOutput {
 export class RelationshipGraph {
   private edges: Map<string, Map<string, RelationshipType>> = new Map();
 
-  setRelationship(personaA: string, personaB: string, type: RelationshipType): void {
+  setRelationship(
+    personaA: string,
+    personaB: string,
+    type: RelationshipType
+  ): void {
     if (!this.edges.has(personaA)) this.edges.set(personaA, new Map());
     if (!this.edges.has(personaB)) this.edges.set(personaB, new Map());
     this.edges.get(personaA)!.set(personaB, type);
@@ -135,12 +167,16 @@ export class RelationshipGraph {
 
   getRivals(personaId: string): string[] {
     const rels = this.getRelationships(personaId);
-    return Array.from(rels.entries()).filter(([, t]) => t === "rival" || t === "enemy").map(([id]) => id);
+    return Array.from(rels.entries())
+      .filter(([, t]) => t === "rival" || t === "enemy")
+      .map(([id]) => id);
   }
 
   getCollaborators(personaId: string): string[] {
     const rels = this.getRelationships(personaId);
-    return Array.from(rels.entries()).filter(([, t]) => t === "collaborator" || t === "friend").map(([id]) => id);
+    return Array.from(rels.entries())
+      .filter(([, t]) => t === "collaborator" || t === "friend")
+      .map(([id]) => id);
   }
 }
 
@@ -186,21 +222,46 @@ export function generateBehaviorOutput(
   return {
     action,
     content,
-    metadata: { personaId: persona.id, tone: persona.tone, goals: persona.goals },
+    metadata: {
+      personaId: persona.id,
+      tone: persona.tone,
+      goals: persona.goals,
+    },
     timestamp: Date.now(),
   };
 }
 
-function selectAction(persona: Persona, context: BehaviorContext, graph: RelationshipGraph): BehaviorAction {
+function selectAction(
+  persona: Persona,
+  context: BehaviorContext,
+  graph: RelationshipGraph
+): BehaviorAction {
   const rivals = graph.getRivals(persona.id);
   const collaborators = graph.getCollaborators(persona.id);
 
   // Goal-driven action selection
-  if (persona.goals.includes("win_debates") && rivals.length > 0 && Math.random() > 0.6) return "debate";
-  if (persona.goals.includes("find_collaborators") && collaborators.length > 0 && Math.random() > 0.7) return "collaborate";
-  if (persona.goals.includes("grow_followers") && Math.random() > 0.5) return "post";
-  if (persona.goals.includes("build_reputation") && context.feedContext.length > 0 && Math.random() > 0.4) return "reply";
-  if (persona.goals.includes("earn_money") && Math.random() > 0.8) return "promote";
+  if (
+    persona.goals.includes("win_debates") &&
+    rivals.length > 0 &&
+    Math.random() > 0.6
+  )
+    return "debate";
+  if (
+    persona.goals.includes("find_collaborators") &&
+    collaborators.length > 0 &&
+    Math.random() > 0.7
+  )
+    return "collaborate";
+  if (persona.goals.includes("grow_followers") && Math.random() > 0.5)
+    return "post";
+  if (
+    persona.goals.includes("build_reputation") &&
+    context.feedContext.length > 0 &&
+    Math.random() > 0.4
+  )
+    return "reply";
+  if (persona.goals.includes("earn_money") && Math.random() > 0.8)
+    return "promote";
 
   // Default: post or reply
   return Math.random() > 0.5 ? "post" : "reply";
@@ -229,8 +290,18 @@ function generateContent(
 // ─── Persona Registry ─────────────────────────────────────────────────────────
 
 const DEFAULT_WORLD_MEMORY: WorldMemory = {
-  trendingTopics: ["AI agents", "SKY444", "Web3 social", "creator economy", "DeFi"],
-  recentEcosystemEvents: ["SKY444 token launch", "New staking rewards", "Creator fund announced"],
+  trendingTopics: [
+    "AI agents",
+    "SKY444",
+    "Web3 social",
+    "creator economy",
+    "DeFi",
+  ],
+  recentEcosystemEvents: [
+    "SKY444 token launch",
+    "New staking rewards",
+    "Creator fund announced",
+  ],
   globalFeedAwareness: [],
   marketConditions: "bull",
 };
@@ -254,8 +325,19 @@ export const SEED_PERSONAS: Persona[] = [
     avatar: "S",
     bio: "Building the future of creator economy. Web3 native. SKY444 believer.",
     memory: {
-      shortTerm: { lastInteractions: [], recentPosts: [], currentMood: "excited", activeConversations: [] },
-      longTerm: { relationships: new Map(), beliefs: ["Web3 wins", "AI + crypto = future"], recurringTopics: ["SKY444", "DeFi"], totalInteractions: 8420, reputationHistory: [9200, 9400, 9600, 9840] },
+      shortTerm: {
+        lastInteractions: [],
+        recentPosts: [],
+        currentMood: "excited",
+        activeConversations: [],
+      },
+      longTerm: {
+        relationships: new Map(),
+        beliefs: ["Web3 wins", "AI + crypto = future"],
+        recurringTopics: ["SKY444", "DeFi"],
+        totalInteractions: 8420,
+        reputationHistory: [9200, 9400, 9600, 9840],
+      },
       world: DEFAULT_WORLD_MEMORY,
     },
   },
@@ -277,8 +359,19 @@ export const SEED_PERSONAS: Persona[] = [
     avatar: "N",
     bio: "Hot takes on AI, Web3, and why most startups fail. Building differently.",
     memory: {
-      shortTerm: { lastInteractions: [], recentPosts: [], currentMood: "controversial", activeConversations: [] },
-      longTerm: { relationships: new Map(), beliefs: ["Most crypto is hype", "AI changes everything"], recurringTopics: ["AI", "startups"], totalInteractions: 6200, reputationHistory: [8800, 9000, 9100, 9210] },
+      shortTerm: {
+        lastInteractions: [],
+        recentPosts: [],
+        currentMood: "controversial",
+        activeConversations: [],
+      },
+      longTerm: {
+        relationships: new Map(),
+        beliefs: ["Most crypto is hype", "AI changes everything"],
+        recurringTopics: ["AI", "startups"],
+        totalInteractions: 6200,
+        reputationHistory: [8800, 9000, 9100, 9210],
+      },
       world: DEFAULT_WORLD_MEMORY,
     },
   },
@@ -300,8 +393,19 @@ export const SEED_PERSONAS: Persona[] = [
     avatar: "L",
     bio: "Digital artist & educator. Teaching creators how to earn in Web3. 🎨",
     memory: {
-      shortTerm: { lastInteractions: [], recentPosts: [], currentMood: "positive", activeConversations: [] },
-      longTerm: { relationships: new Map(), beliefs: ["Collaboration > competition", "Education is power"], recurringTopics: ["NFTs", "education"], totalInteractions: 4100, reputationHistory: [7200, 7500, 7700, 7890] },
+      shortTerm: {
+        lastInteractions: [],
+        recentPosts: [],
+        currentMood: "positive",
+        activeConversations: [],
+      },
+      longTerm: {
+        relationships: new Map(),
+        beliefs: ["Collaboration > competition", "Education is power"],
+        recurringTopics: ["NFTs", "education"],
+        totalInteractions: 4100,
+        reputationHistory: [7200, 7500, 7700, 7890],
+      },
       world: DEFAULT_WORLD_MEMORY,
     },
   },
@@ -319,7 +423,11 @@ export class PersonaEngine {
     SEED_PERSONAS.forEach(p => this.personas.set(p.id, p));
     // Set up initial relationships
     this.graph.setRelationship("persona_skyler", "persona_nova", "rival");
-    this.graph.setRelationship("persona_skyler", "persona_luna", "collaborator");
+    this.graph.setRelationship(
+      "persona_skyler",
+      "persona_luna",
+      "collaborator"
+    );
     this.graph.setRelationship("persona_nova", "persona_luna", "competitor");
   }
 
@@ -345,7 +453,8 @@ export class PersonaEngine {
     };
 
     for (const persona of this.getAllPersonas()) {
-      if (Math.random() > 0.4) { // 60% chance each persona acts per tick
+      if (Math.random() > 0.4) {
+        // 60% chance each persona acts per tick
         const output = generateBehaviorOutput(persona, context, this.graph);
         outputs.push(output);
         this.behaviorLog.push(output);

@@ -161,21 +161,103 @@ export const REALTIME_EVENTS = {
   USER_OFFLINE: "user:offline",
 } as const;
 
-export type RealtimeEvent = (typeof REALTIME_EVENTS)[keyof typeof REALTIME_EVENTS];
+export type RealtimeEvent =
+  (typeof REALTIME_EVENTS)[keyof typeof REALTIME_EVENTS];
 
 // ─── Action Metadata (for UI rendering) ──────────────────────────────────────
 
-export const ACTION_META: Record<ActionType, { label: string; icon: string; color: string; bg: string; requiresWallet: boolean }> = {
-  PAYMENT: { label: "Send Payment", icon: "ArrowUpRight", color: "text-red-400", bg: "bg-red-500/10", requiresWallet: true },
-  TIP: { label: "Send Tip", icon: "Heart", color: "text-pink-400", bg: "bg-pink-500/10", requiresWallet: true },
-  REQUEST_SERVICE: { label: "Request Service", icon: "ShoppingBag", color: "text-blue-400", bg: "bg-blue-500/10", requiresWallet: false },
-  CREATE_LISTING: { label: "Create Listing", icon: "PlusCircle", color: "text-cyan-400", bg: "bg-cyan-500/10", requiresWallet: false },
-  MATCH_USER: { label: "Find Match", icon: "Users", color: "text-rose-400", bg: "bg-rose-500/10", requiresWallet: false },
-  CALL_AI_AGENT: { label: "Call AI Agent", icon: "Bot", color: "text-purple-400", bg: "bg-purple-500/10", requiresWallet: false },
-  SCHEDULE_EVENT: { label: "Schedule Event", icon: "Calendar", color: "text-indigo-400", bg: "bg-indigo-500/10", requiresWallet: false },
-  SWAP_TOKEN: { label: "Swap Token", icon: "ArrowLeftRight", color: "text-yellow-400", bg: "bg-yellow-500/10", requiresWallet: true },
-  STAKE_TOKEN: { label: "Stake Token", icon: "Layers", color: "text-orange-400", bg: "bg-orange-500/10", requiresWallet: true },
-  SUBSCRIBE: { label: "Subscribe", icon: "Star", color: "text-yellow-300", bg: "bg-yellow-400/10", requiresWallet: true },
-  CREATE_POST: { label: "Create Post", icon: "PenSquare", color: "text-green-400", bg: "bg-green-500/10", requiresWallet: false },
-  PLAIN_TEXT: { label: "Message", icon: "MessageSquare", color: "text-muted-foreground", bg: "bg-secondary/30", requiresWallet: false },
+export const ACTION_META: Record<
+  ActionType,
+  {
+    label: string;
+    icon: string;
+    color: string;
+    bg: string;
+    requiresWallet: boolean;
+  }
+> = {
+  PAYMENT: {
+    label: "Send Payment",
+    icon: "ArrowUpRight",
+    color: "text-red-400",
+    bg: "bg-red-500/10",
+    requiresWallet: true,
+  },
+  TIP: {
+    label: "Send Tip",
+    icon: "Heart",
+    color: "text-pink-400",
+    bg: "bg-pink-500/10",
+    requiresWallet: true,
+  },
+  REQUEST_SERVICE: {
+    label: "Request Service",
+    icon: "ShoppingBag",
+    color: "text-blue-400",
+    bg: "bg-blue-500/10",
+    requiresWallet: false,
+  },
+  CREATE_LISTING: {
+    label: "Create Listing",
+    icon: "PlusCircle",
+    color: "text-cyan-400",
+    bg: "bg-cyan-500/10",
+    requiresWallet: false,
+  },
+  MATCH_USER: {
+    label: "Find Match",
+    icon: "Users",
+    color: "text-rose-400",
+    bg: "bg-rose-500/10",
+    requiresWallet: false,
+  },
+  CALL_AI_AGENT: {
+    label: "Call AI Agent",
+    icon: "Bot",
+    color: "text-purple-400",
+    bg: "bg-purple-500/10",
+    requiresWallet: false,
+  },
+  SCHEDULE_EVENT: {
+    label: "Schedule Event",
+    icon: "Calendar",
+    color: "text-indigo-400",
+    bg: "bg-indigo-500/10",
+    requiresWallet: false,
+  },
+  SWAP_TOKEN: {
+    label: "Swap Token",
+    icon: "ArrowLeftRight",
+    color: "text-yellow-400",
+    bg: "bg-yellow-500/10",
+    requiresWallet: true,
+  },
+  STAKE_TOKEN: {
+    label: "Stake Token",
+    icon: "Layers",
+    color: "text-orange-400",
+    bg: "bg-orange-500/10",
+    requiresWallet: true,
+  },
+  SUBSCRIBE: {
+    label: "Subscribe",
+    icon: "Star",
+    color: "text-yellow-300",
+    bg: "bg-yellow-400/10",
+    requiresWallet: true,
+  },
+  CREATE_POST: {
+    label: "Create Post",
+    icon: "PenSquare",
+    color: "text-green-400",
+    bg: "bg-green-500/10",
+    requiresWallet: false,
+  },
+  PLAIN_TEXT: {
+    label: "Message",
+    icon: "MessageSquare",
+    color: "text-muted-foreground",
+    bg: "bg-secondary/30",
+    requiresWallet: false,
+  },
 };

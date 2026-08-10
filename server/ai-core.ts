@@ -22,10 +22,28 @@ import { invokeLLM } from "./_core/llm";
 // TYPES & INTERFACES
 // ═══════════════════════════════════════════════════════════════
 
-export type ModerationAction = "allow" | "flag" | "remove" | "shadow_ban" | "escalate";
-export type ContentCategory = "safe" | "spam" | "hate_speech" | "harassment" | "nsfw" | "violence" | "misinformation" | "scam" | "self_harm";
-export type FraudType = "account_fraud" | "payment_fraud" | "bot_activity" | "wash_trading" | "sybil_attack" | "phishing" | "fake_engagement";
-export type SentimentLabel = "very_positive" | "positive" | "neutral" | "negative" | "very_negative";
+export type ModerationAction =
+  "allow" | "flag" | "remove" | "shadow_ban" | "escalate";
+export type ContentCategory =
+  | "safe"
+  | "spam"
+  | "hate_speech"
+  | "harassment"
+  | "nsfw"
+  | "violence"
+  | "misinformation"
+  | "scam"
+  | "self_harm";
+export type FraudType =
+  | "account_fraud"
+  | "payment_fraud"
+  | "bot_activity"
+  | "wash_trading"
+  | "sybil_attack"
+  | "phishing"
+  | "fake_engagement";
+export type SentimentLabel =
+  "very_positive" | "positive" | "neutral" | "negative" | "very_negative";
 
 export interface ModerationResult {
   contentId: string;
@@ -153,7 +171,9 @@ export class ContentModerationAI {
         contentId: params.contentId,
         contentType: params.contentType,
         action: ruleResult.action,
-        categories: [{ category: ruleResult.category, confidence: ruleResult.confidence }],
+        categories: [
+          { category: ruleResult.category, confidence: ruleResult.confidence },
+        ],
         primaryCategory: ruleResult.category,
         confidence: ruleResult.confidence,
         reasoning: ruleResult.reason,
@@ -190,7 +210,9 @@ Respond with this exact JSON structure:
 
       let parsed: any;
       try {
-        const jsonMatch = (response.choices[0]?.message?.content as string)?.match(/\{[\s\S]*\}/);
+        const jsonMatch = (
+          response.choices[0]?.message?.content as string
+        )?.match(/\{[\s\S]*\}/);
         parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
       } catch {
         parsed = null;
@@ -201,7 +223,12 @@ Respond with this exact JSON structure:
           contentId: params.contentId,
           contentType: params.contentType,
           action: parsed.action || "allow",
-          categories: [{ category: parsed.primaryCategory || "safe", confidence: parsed.confidence || 0.5 }],
+          categories: [
+            {
+              category: parsed.primaryCategory || "safe",
+              confidence: parsed.confidence || 0.5,
+            },
+          ],
           primaryCategory: parsed.primaryCategory || "safe",
           confidence: parsed.confidence || 0.5,
           reasoning: parsed.reasoning || "AI moderation",
@@ -235,7 +262,14 @@ Respond with this exact JSON structure:
     return fallback;
   }
 
-  async batchModerate(items: { contentId: string; contentType: ModerationResult["contentType"]; text: string; authorId: number }[]): Promise<ModerationResult[]> {
+  async batchModerate(
+    items: {
+      contentId: string;
+      contentType: ModerationResult["contentType"];
+      text: string;
+      authorId: number;
+    }[]
+  ): Promise<ModerationResult[]> {
     return Promise.all(items.map(item => this.moderateContent(item)));
   }
 
@@ -247,53 +281,99 @@ Respond with this exact JSON structure:
     humanReviewQueue: number;
   }> {
     const results = Array.from(this.moderationCache.values());
-    const actionBreakdown = results.reduce((acc, r) => {
-      acc[r.action] = (acc[r.action] || 0) + 1;
-      return acc;
-    }, {} as Record<ModerationAction, number>);
+    const actionBreakdown = results.reduce(
+      (acc, r) => {
+        acc[r.action] = (acc[r.action] || 0) + 1;
+        return acc;
+      },
+      {} as Record<ModerationAction, number>
+    );
 
-    const categoryBreakdown = results.reduce((acc, r) => {
-      acc[r.primaryCategory] = (acc[r.primaryCategory] || 0) + 1;
-      return acc;
-    }, {} as Record<ContentCategory, number>);
+    const categoryBreakdown = results.reduce(
+      (acc, r) => {
+        acc[r.primaryCategory] = (acc[r.primaryCategory] || 0) + 1;
+        return acc;
+      },
+      {} as Record<ContentCategory, number>
+    );
 
     return {
       totalModerated: results.length,
       actionBreakdown,
       categoryBreakdown,
-      avgProcessingMs: results.reduce((sum, r) => sum + r.processingMs, 0) / Math.max(1, results.length),
+      avgProcessingMs:
+        results.reduce((sum, r) => sum + r.processingMs, 0) /
+        Math.max(1, results.length),
       humanReviewQueue: results.filter(r => r.requiresHumanReview).length,
     };
   }
 
-  private ruleBasedScreening(text: string): { action: ModerationAction; category: ContentCategory; confidence: number; reason: string } {
+  private ruleBasedScreening(text: string): {
+    action: ModerationAction;
+    category: ContentCategory;
+    confidence: number;
+    reason: string;
+  } {
     const lower = text.toLowerCase();
 
     // Spam patterns
-    const spamPatterns = [/buy now/i, /click here/i, /free money/i, /\b(crypto|bitcoin)\s+giveaway/i];
+    const spamPatterns = [
+      /buy now/i,
+      /click here/i,
+      /free money/i,
+      /\b(crypto|bitcoin)\s+giveaway/i,
+    ];
     for (const pattern of spamPatterns) {
       if (pattern.test(text)) {
-        return { action: "flag", category: "spam", confidence: 0.85, reason: "Spam pattern detected" };
+        return {
+          action: "flag",
+          category: "spam",
+          confidence: 0.85,
+          reason: "Spam pattern detected",
+        };
       }
     }
 
     // Scam patterns
-    const scamPatterns = [/send\s+\d+\s+(eth|btc|sol)/i, /double your/i, /guaranteed returns/i];
+    const scamPatterns = [
+      /send\s+\d+\s+(eth|btc|sol)/i,
+      /double your/i,
+      /guaranteed returns/i,
+    ];
     for (const pattern of scamPatterns) {
       if (pattern.test(text)) {
-        return { action: "remove", category: "scam", confidence: 0.95, reason: "Crypto scam pattern" };
+        return {
+          action: "remove",
+          category: "scam",
+          confidence: 0.95,
+          reason: "Crypto scam pattern",
+        };
       }
     }
 
     // Phishing
-    const phishingPatterns = [/verify your wallet/i, /enter your seed phrase/i, /private key/i];
+    const phishingPatterns = [
+      /verify your wallet/i,
+      /enter your seed phrase/i,
+      /private key/i,
+    ];
     for (const pattern of phishingPatterns) {
       if (pattern.test(text)) {
-        return { action: "remove", category: "scam", confidence: 0.97, reason: "Phishing attempt" };
+        return {
+          action: "remove",
+          category: "scam",
+          confidence: 0.97,
+          reason: "Phishing attempt",
+        };
       }
     }
 
-    return { action: "allow", category: "safe", confidence: 0.6, reason: "No rule violations" };
+    return {
+      action: "allow",
+      category: "safe",
+      confidence: 0.6,
+      reason: "No rule violations",
+    };
   }
 }
 
@@ -303,16 +383,22 @@ Respond with this exact JSON structure:
 
 export class TrendIntelligenceAI {
   private trendSignals: Map<string, TrendSignal> = new Map();
-  private topicHistory: Map<string, { timestamp: Date; count: number }[]> = new Map();
+  private topicHistory: Map<string, { timestamp: Date; count: number }[]> =
+    new Map();
 
-  async analyzeTrend(topic: string, recentPosts: string[]): Promise<TrendSignal> {
+  async analyzeTrend(
+    topic: string,
+    recentPosts: string[]
+  ): Promise<TrendSignal> {
     const history = this.topicHistory.get(topic) || [];
     const now = new Date();
     history.push({ timestamp: now, count: recentPosts.length });
     this.topicHistory.set(topic, history.slice(-24)); // Keep 24 hours
 
     // Calculate velocity
-    const lastHour = history.filter(h => now.getTime() - h.timestamp.getTime() < 3600000);
+    const lastHour = history.filter(
+      h => now.getTime() - h.timestamp.getTime() < 3600000
+    );
     const prevHour = history.filter(h => {
       const age = now.getTime() - h.timestamp.getTime();
       return age >= 3600000 && age < 7200000;
@@ -320,7 +406,8 @@ export class TrendIntelligenceAI {
 
     const currentVelocity = lastHour.reduce((sum, h) => sum + h.count, 0);
     const prevVelocity = prevHour.reduce((sum, h) => sum + h.count, 0);
-    const velocityGrowth = prevVelocity > 0 ? (currentVelocity - prevVelocity) / prevVelocity : 0;
+    const velocityGrowth =
+      prevVelocity > 0 ? (currentVelocity - prevVelocity) / prevVelocity : 0;
 
     // AI sentiment analysis on sample posts
     let sentiment: SentimentLabel = "neutral";
@@ -331,14 +418,18 @@ export class TrendIntelligenceAI {
         const samplePosts = recentPosts.slice(0, 5).join("\n---\n");
         const response = await invokeLLM({
           model: "gpt-4o-mini",
-          messages: [{
-            role: "user",
-            content: `Analyze the sentiment of these social media posts about "${topic}". Respond with JSON only: {"sentiment": "very_positive"|"positive"|"neutral"|"negative"|"very_negative", "score": -1.0 to 1.0, "relatedTopics": ["topic1", "topic2"], "category": "crypto|gaming|creator|community|general"}\n\nPosts:\n${samplePosts}`,
-          }],
+          messages: [
+            {
+              role: "user",
+              content: `Analyze the sentiment of these social media posts about "${topic}". Respond with JSON only: {"sentiment": "very_positive"|"positive"|"neutral"|"negative"|"very_negative", "score": -1.0 to 1.0, "relatedTopics": ["topic1", "topic2"], "category": "crypto|gaming|creator|community|general"}\n\nPosts:\n${samplePosts}`,
+            },
+          ],
           maxTokens: 150,
         });
 
-        const jsonMatch = (response.choices[0]?.message?.content as string)?.match(/\{[\s\S]*\}/);
+        const jsonMatch = (
+          response.choices[0]?.message?.content as string
+        )?.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           sentiment = parsed.sentiment || "neutral";
@@ -373,7 +464,10 @@ export class TrendIntelligenceAI {
       .slice(0, limit);
   }
 
-  async predictViralContent(postText: string, authorFollowers: number): Promise<{
+  async predictViralContent(
+    postText: string,
+    authorFollowers: number
+  ): Promise<{
     viralProbability: number;
     predictedReach: number;
     peakTimeHours: number;
@@ -382,18 +476,22 @@ export class TrendIntelligenceAI {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `Predict the viral potential of this social media post. Author has ${authorFollowers} followers.
+        messages: [
+          {
+            role: "user",
+            content: `Predict the viral potential of this social media post. Author has ${authorFollowers} followers.
 
 Post: "${postText.slice(0, 300)}"
 
 Respond with JSON only: {"viralProbability": 0.0-1.0, "predictedReach": number, "peakTimeHours": number, "reasoning": "brief explanation"}`,
-        }],
+          },
+        ],
         maxTokens: 200,
       });
 
-      const jsonMatch = (response.choices[0]?.message?.content as string)?.match(/\{[\s\S]*\}/);
+      const jsonMatch = (
+        response.choices[0]?.message?.content as string
+      )?.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0]);
       }
@@ -416,40 +514,65 @@ Respond with JSON only: {"viralProbability": 0.0-1.0, "predictedReach": number, 
 
 export class FraudDetectionAI {
   private fraudSignals: Map<number, FraudSignal[]> = new Map();
-  private behaviorProfiles: Map<number, {
-    loginCount: number;
-    postCount: number;
-    likeCount: number;
-    followCount: number;
-    reportCount: number;
-    avgTimeBetweenActions: number;
-    ipAddresses: Set<string>;
-    deviceFingerprints: Set<string>;
-    firstSeen: Date;
-    lastSeen: Date;
-  }> = new Map();
+  private behaviorProfiles: Map<
+    number,
+    {
+      loginCount: number;
+      postCount: number;
+      likeCount: number;
+      followCount: number;
+      reportCount: number;
+      avgTimeBetweenActions: number;
+      ipAddresses: Set<string>;
+      deviceFingerprints: Set<string>;
+      firstSeen: Date;
+      lastSeen: Date;
+    }
+  > = new Map();
 
-  async recordBehavior(userId: number, action: string, metadata: {
-    ipAddress?: string;
-    deviceFingerprint?: string;
-    timestamp?: Date;
-  } = {}): Promise<void> {
+  async recordBehavior(
+    userId: number,
+    action: string,
+    metadata: {
+      ipAddress?: string;
+      deviceFingerprint?: string;
+      timestamp?: Date;
+    } = {}
+  ): Promise<void> {
     const profile = this.behaviorProfiles.get(userId) || {
-      loginCount: 0, postCount: 0, likeCount: 0, followCount: 0, reportCount: 0,
-      avgTimeBetweenActions: 0, ipAddresses: new Set(), deviceFingerprints: new Set(),
-      firstSeen: new Date(), lastSeen: new Date(),
+      loginCount: 0,
+      postCount: 0,
+      likeCount: 0,
+      followCount: 0,
+      reportCount: 0,
+      avgTimeBetweenActions: 0,
+      ipAddresses: new Set(),
+      deviceFingerprints: new Set(),
+      firstSeen: new Date(),
+      lastSeen: new Date(),
     };
 
     if (metadata.ipAddress) profile.ipAddresses.add(metadata.ipAddress);
-    if (metadata.deviceFingerprint) profile.deviceFingerprints.add(metadata.deviceFingerprint);
+    if (metadata.deviceFingerprint)
+      profile.deviceFingerprints.add(metadata.deviceFingerprint);
     profile.lastSeen = metadata.timestamp || new Date();
 
     switch (action) {
-      case "login": profile.loginCount++; break;
-      case "post": profile.postCount++; break;
-      case "like": profile.likeCount++; break;
-      case "follow": profile.followCount++; break;
-      case "report": profile.reportCount++; break;
+      case "login":
+        profile.loginCount++;
+        break;
+      case "post":
+        profile.postCount++;
+        break;
+      case "like":
+        profile.likeCount++;
+        break;
+      case "follow":
+        profile.followCount++;
+        break;
+      case "report":
+        profile.reportCount++;
+        break;
     }
 
     this.behaviorProfiles.set(userId, profile);
@@ -464,8 +587,11 @@ export class FraudDetectionAI {
     let fraudType: FraudType = "bot_activity";
 
     // Bot detection signals
-    const accountAgeDays = (Date.now() - profile.firstSeen.getTime()) / 86400000;
-    const actionsPerDay = (profile.postCount + profile.likeCount + profile.followCount) / Math.max(1, accountAgeDays);
+    const accountAgeDays =
+      (Date.now() - profile.firstSeen.getTime()) / 86400000;
+    const actionsPerDay =
+      (profile.postCount + profile.likeCount + profile.followCount) /
+      Math.max(1, accountAgeDays);
 
     if (actionsPerDay > 500) {
       signals.push("Extremely high action rate (>500/day)");
@@ -496,7 +622,14 @@ export class FraudDetectionAI {
       riskScore: Math.min(100, riskScore),
       confidence: Math.min(0.95, riskScore / 100),
       signals,
-      recommendedAction: riskScore >= 80 ? "ban" : riskScore >= 60 ? "restrict" : riskScore >= 40 ? "flag" : "monitor",
+      recommendedAction:
+        riskScore >= 80
+          ? "ban"
+          : riskScore >= 60
+            ? "restrict"
+            : riskScore >= 40
+              ? "flag"
+              : "monitor",
       evidence: {
         actionsPerDay,
         accountAgeDays,
@@ -512,7 +645,15 @@ export class FraudDetectionAI {
     return signal;
   }
 
-  async detectWashTrading(userId: number, trades: { buyerId: number; sellerId: number; amount: number; timestamp: Date }[]): Promise<{
+  async detectWashTrading(
+    userId: number,
+    trades: {
+      buyerId: number;
+      sellerId: number;
+      amount: number;
+      timestamp: Date;
+    }[]
+  ): Promise<{
     isWashTrading: boolean;
     confidence: number;
     patterns: string[];
@@ -521,8 +662,12 @@ export class FraudDetectionAI {
     let suspicionScore = 0;
 
     // Check for circular trades
-    const userTrades = trades.filter(t => t.buyerId === userId || t.sellerId === userId);
-    const counterparties = new Set(userTrades.map(t => t.buyerId === userId ? t.sellerId : t.buyerId));
+    const userTrades = trades.filter(
+      t => t.buyerId === userId || t.sellerId === userId
+    );
+    const counterparties = new Set(
+      userTrades.map(t => (t.buyerId === userId ? t.sellerId : t.buyerId))
+    );
 
     if (counterparties.size === 1 && userTrades.length > 5) {
       patterns.push("Repeated trades with single counterparty");
@@ -530,10 +675,15 @@ export class FraudDetectionAI {
     }
 
     // Check for rapid back-and-forth
-    const sortedTrades = userTrades.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sortedTrades = userTrades.sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+    );
     for (let i = 1; i < sortedTrades.length; i++) {
-      const timeDiff = sortedTrades[i].timestamp.getTime() - sortedTrades[i-1].timestamp.getTime();
-      if (timeDiff < 60000) { // Less than 1 minute
+      const timeDiff =
+        sortedTrades[i].timestamp.getTime() -
+        sortedTrades[i - 1].timestamp.getTime();
+      if (timeDiff < 60000) {
+        // Less than 1 minute
         patterns.push("Rapid consecutive trades (<1 min apart)");
         suspicionScore += 20;
         break;
@@ -575,17 +725,21 @@ export class SentimentAnalysisAI {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `Analyze the sentiment of this text. Respond with JSON only:
+        messages: [
+          {
+            role: "user",
+            content: `Analyze the sentiment of this text. Respond with JSON only:
 {"label": "very_positive"|"positive"|"neutral"|"negative"|"very_negative", "score": -1.0 to 1.0, "emotions": [{"emotion": "joy"|"anger"|"fear"|"sadness"|"surprise"|"disgust", "intensity": 0.0-1.0}], "topics": ["topic1"]}
 
 Text: "${text.slice(0, 500)}"`,
-        }],
+          },
+        ],
         maxTokens: 200,
       });
 
-      const jsonMatch = (response.choices[0]?.message?.content as string)?.match(/\{[\s\S]*\}/);
+      const jsonMatch = (
+        response.choices[0]?.message?.content as string
+      )?.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         return {
@@ -611,58 +765,153 @@ Text: "${text.slice(0, 500)}"`,
     engagementQuality: "low" | "medium" | "high";
     alerts: string[];
   }> {
-        if (recentMessages.length === 0) {
-      return { overallSentiment: "neutral", toxicityRate: 0, positivityRate: 0, engagementQuality: "low", alerts: [] };
+    if (recentMessages.length === 0) {
+      return {
+        overallSentiment: "neutral",
+        toxicityRate: 0,
+        positivityRate: 0,
+        engagementQuality: "low",
+        alerts: [],
+      };
     }
     const sample = recentMessages.slice(0, 20).join("\n");
     // Rule-based for small samples (deterministic, no LLM cost)
     if (recentMessages.length <= 5) {
-      const positiveWords = ["great", "awesome", "love", "amazing", "excellent", "good", "best", "happy", "thanks", "help"];
-      const negativeWords = ["bad", "terrible", "hate", "awful", "worst", "horrible", "scam", "toxic", "broken"];
+      const positiveWords = [
+        "great",
+        "awesome",
+        "love",
+        "amazing",
+        "excellent",
+        "good",
+        "best",
+        "happy",
+        "thanks",
+        "help",
+      ];
+      const negativeWords = [
+        "bad",
+        "terrible",
+        "hate",
+        "awful",
+        "worst",
+        "horrible",
+        "scam",
+        "toxic",
+        "broken",
+      ];
       const lower = sample.toLowerCase();
       const posCount = positiveWords.filter(w => lower.includes(w)).length;
       const negCount = negativeWords.filter(w => lower.includes(w)).length;
       const score = (posCount - negCount) / Math.max(1, posCount + negCount);
-      const overallSentiment: SentimentLabel = score > 0.5 ? "very_positive" : score > 0.1 ? "positive" : score < -0.5 ? "very_negative" : score < -0.1 ? "negative" : "neutral";
-      const toxicityRate = negCount / Math.max(1, recentMessages.length) * 0.3;
-      const positivityRate = posCount / Math.max(1, recentMessages.length) * 0.5;
-      const engagementQuality: "low" | "medium" | "high" = score > 0.3 ? "high" : score > -0.1 ? "medium" : "low";
-      return { overallSentiment, toxicityRate, positivityRate, engagementQuality, alerts: [] };
+      const overallSentiment: SentimentLabel =
+        score > 0.5
+          ? "very_positive"
+          : score > 0.1
+            ? "positive"
+            : score < -0.5
+              ? "very_negative"
+              : score < -0.1
+                ? "negative"
+                : "neutral";
+      const toxicityRate =
+        (negCount / Math.max(1, recentMessages.length)) * 0.3;
+      const positivityRate =
+        (posCount / Math.max(1, recentMessages.length)) * 0.5;
+      const engagementQuality: "low" | "medium" | "high" =
+        score > 0.3 ? "high" : score > -0.1 ? "medium" : "low";
+      return {
+        overallSentiment,
+        toxicityRate,
+        positivityRate,
+        engagementQuality,
+        alerts: [],
+      };
     }
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `Analyze the health of this community conversation. Respond with JSON only:
+        messages: [
+          {
+            role: "user",
+            content: `Analyze the health of this community conversation. Respond with JSON only:
 {"overallSentiment": "very_positive"|"positive"|"neutral"|"negative"|"very_negative", "toxicityRate": 0.0-1.0, "positivityRate": 0.0-1.0, "engagementQuality": "low"|"medium"|"high", "alerts": ["alert1"]}
 
 Messages:\n${sample}`,
-        }],
+          },
+        ],
         maxTokens: 300,
       });
 
-      const jsonMatch = (response.choices[0]?.message?.content as string)?.match(/\{[\s\S]*\}/);
+      const jsonMatch = (
+        response.choices[0]?.message?.content as string
+      )?.match(/\{[\s\S]*\}/);
       if (jsonMatch) return JSON.parse(jsonMatch[0]);
     } catch {
       // Fall through
     }
 
-    return { overallSentiment: "neutral", toxicityRate: 0.1, positivityRate: 0.5, engagementQuality: "medium", alerts: [] };
+    return {
+      overallSentiment: "neutral",
+      toxicityRate: 0.1,
+      positivityRate: 0.5,
+      engagementQuality: "medium",
+      alerts: [],
+    };
   }
 
   private quickSentiment(text: string, startTime: number): SentimentResult {
-    const positiveWords = ["great", "awesome", "love", "amazing", "excellent", "fantastic", "good", "best", "happy", "🎉", "🚀", "💎"];
-    const negativeWords = ["bad", "terrible", "hate", "awful", "worst", "horrible", "scam", "fake", "broken", "fail"];
+    const positiveWords = [
+      "great",
+      "awesome",
+      "love",
+      "amazing",
+      "excellent",
+      "fantastic",
+      "good",
+      "best",
+      "happy",
+      "🎉",
+      "🚀",
+      "💎",
+    ];
+    const negativeWords = [
+      "bad",
+      "terrible",
+      "hate",
+      "awful",
+      "worst",
+      "horrible",
+      "scam",
+      "fake",
+      "broken",
+      "fail",
+    ];
 
     const lower = text.toLowerCase();
     const posCount = positiveWords.filter(w => lower.includes(w)).length;
     const negCount = negativeWords.filter(w => lower.includes(w)).length;
 
     const score = (posCount - negCount) / Math.max(1, posCount + negCount);
-    const label: SentimentLabel = score > 0.5 ? "very_positive" : score > 0.1 ? "positive" : score < -0.5 ? "very_negative" : score < -0.1 ? "negative" : "neutral";
+    const label: SentimentLabel =
+      score > 0.5
+        ? "very_positive"
+        : score > 0.1
+          ? "positive"
+          : score < -0.5
+            ? "very_negative"
+            : score < -0.1
+              ? "negative"
+              : "neutral";
 
-    return { text, label, score, emotions: [], topics: [], processingMs: Date.now() - startTime };
+    return {
+      text,
+      label,
+      score,
+      emotions: [],
+      topics: [],
+      processingMs: Date.now() - startTime,
+    };
   }
 }
 
@@ -686,17 +935,21 @@ export class ContentSummaryAI {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `Summarize this social media post. Respond with JSON only:
+        messages: [
+          {
+            role: "user",
+            content: `Summarize this social media post. Respond with JSON only:
 {"summary": "2-3 sentence summary", "keyPoints": ["point1", "point2"], "sentiment": "very_positive"|"positive"|"neutral"|"negative"|"very_negative", "topics": ["topic1"]}
 
 Post: "${text.slice(0, 2000)}"`,
-        }],
+          },
+        ],
         maxTokens: 300,
       });
 
-      const jsonMatch = (response.choices[0]?.message?.content as string)?.match(/\{[\s\S]*\}/);
+      const jsonMatch = (
+        response.choices[0]?.message?.content as string
+      )?.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         return {
@@ -722,7 +975,9 @@ Post: "${text.slice(0, 2000)}"`,
     };
   }
 
-  async summarizeThread(messages: { authorId: number; content: string; timestamp: Date }[]): Promise<ContentSummary> {
+  async summarizeThread(
+    messages: { authorId: number; content: string; timestamp: Date }[]
+  ): Promise<ContentSummary> {
     const combined = messages.map(m => m.content).join("\n\n");
     return this.summarizePost(combined);
   }
@@ -751,9 +1006,10 @@ export class CreatorInsightsAI {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `You are a creator growth advisor for a Web3 social platform. Analyze this creator's metrics and provide actionable insights.
+        messages: [
+          {
+            role: "user",
+            content: `You are a creator growth advisor for a Web3 social platform. Analyze this creator's metrics and provide actionable insights.
 
 Metrics (${params.period}):
 - Followers: ${metrics.followerCount} (${metrics.followerGrowth > 0 ? "+" : ""}${metrics.followerGrowth}%)
@@ -772,11 +1028,14 @@ Respond with JSON only:
   "revenueOptimizations": ["optimization1", "optimization2"],
   "competitorAnalysis": ["analysis1"]
 }`,
-        }],
+          },
+        ],
         maxTokens: 600,
       });
 
-      const jsonMatch = (response.choices[0]?.message?.content as string)?.match(/\{[\s\S]*\}/);
+      const jsonMatch = (
+        response.choices[0]?.message?.content as string
+      )?.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         return {
@@ -798,11 +1057,24 @@ Respond with JSON only:
     return {
       creatorId: params.creatorId,
       period: params.period,
-      growthOpportunities: ["Post more consistently", "Engage with comments within 1 hour", "Collaborate with other creators"],
-      contentRecommendations: ["Try short-form video content", "Share behind-the-scenes content"],
-      optimalPostTimes: [{ dayOfWeek: 2, hour: 10, score: 0.9 }, { dayOfWeek: 4, hour: 14, score: 0.85 }],
+      growthOpportunities: [
+        "Post more consistently",
+        "Engage with comments within 1 hour",
+        "Collaborate with other creators",
+      ],
+      contentRecommendations: [
+        "Try short-form video content",
+        "Share behind-the-scenes content",
+      ],
+      optimalPostTimes: [
+        { dayOfWeek: 2, hour: 10, score: 0.9 },
+        { dayOfWeek: 4, hour: 14, score: 0.85 },
+      ],
       audienceInsights: ["Your audience is most active on weekdays"],
-      revenueOptimizations: ["Enable premium content subscriptions", "Set up creator memberships"],
+      revenueOptimizations: [
+        "Enable premium content subscriptions",
+        "Set up creator memberships",
+      ],
       competitorAnalysis: ["Top creators in your niche post 3-5x per week"],
       generatedAt: new Date(),
     };
@@ -831,7 +1103,9 @@ export class PredictiveAnalyticsAI {
     if (params.daysSinceLastLogin > 30) {
       churnProbability += 0.4;
       churnReasons.push("30+ days inactive");
-      retentionActions.push("Send re-engagement email with personalized content");
+      retentionActions.push(
+        "Send re-engagement email with personalized content"
+      );
     } else if (params.daysSinceLastLogin > 14) {
       churnProbability += 0.2;
       churnReasons.push("14+ days inactive");
@@ -861,9 +1135,13 @@ export class PredictiveAnalyticsAI {
 
     churnProbability = Math.min(0.99, churnProbability);
     const riskLevel: ChurnPrediction["riskLevel"] =
-      churnProbability >= 0.75 ? "critical" :
-      churnProbability >= 0.5 ? "high" :
-      churnProbability >= 0.25 ? "medium" : "low";
+      churnProbability >= 0.75
+        ? "critical"
+        : churnProbability >= 0.5
+          ? "high"
+          : churnProbability >= 0.25
+            ? "medium"
+            : "low";
 
     return {
       userId: params.userId,
@@ -883,7 +1161,12 @@ export class PredictiveAnalyticsAI {
     newUserAcquisitionRate: number;
     avgRevenuePerUser: number;
   }): Promise<{ month: number; mrr: number; arr: number; users: number }[]> {
-    const forecast: { month: number; mrr: number; arr: number; users: number }[] = [];
+    const forecast: {
+      month: number;
+      mrr: number;
+      arr: number;
+      users: number;
+    }[] = [];
     let mrr = params.currentMRR;
     let users = mrr / Math.max(0.01, params.avgRevenuePerUser);
 
@@ -912,7 +1195,11 @@ export class PredictiveAnalyticsAI {
 export class TranslationAI {
   private translationCache: Map<string, string> = new Map();
 
-  async translate(text: string, targetLanguage: string, sourceLanguage = "auto"): Promise<string> {
+  async translate(
+    text: string,
+    targetLanguage: string,
+    sourceLanguage = "auto"
+  ): Promise<string> {
     const cacheKey = `${text.slice(0, 50)}_${targetLanguage}`;
     const cached = this.translationCache.get(cacheKey);
     if (cached) return cached;
@@ -920,14 +1207,18 @@ export class TranslationAI {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `Translate the following text to ${targetLanguage}. Return only the translated text, nothing else.\n\nText: "${text}"`,
-        }],
+        messages: [
+          {
+            role: "user",
+            content: `Translate the following text to ${targetLanguage}. Return only the translated text, nothing else.\n\nText: "${text}"`,
+          },
+        ],
         maxTokens: Math.min(500, text.length * 2),
       });
 
-      const translated = (response.choices[0]?.message?.content as string)?.trim();
+      const translated = (
+        response.choices[0]?.message?.content as string
+      )?.trim();
       this.translationCache.set(cacheKey, translated);
       return translated;
     } catch {
@@ -939,13 +1230,18 @@ export class TranslationAI {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `Detect the language of this text. Respond with only the ISO 639-1 language code (e.g., "en", "es", "zh").\n\nText: "${text.slice(0, 200)}"`,
-        }],
+        messages: [
+          {
+            role: "user",
+            content: `Detect the language of this text. Respond with only the ISO 639-1 language code (e.g., "en", "es", "zh").\n\nText: "${text.slice(0, 200)}"`,
+          },
+        ],
         maxTokens: 10,
       });
-      return (response.choices[0]?.message?.content as string)?.trim().toLowerCase().slice(0, 5);
+      return (response.choices[0]?.message?.content as string)
+        ?.trim()
+        .toLowerCase()
+        .slice(0, 5);
     } catch {
       return "en";
     }

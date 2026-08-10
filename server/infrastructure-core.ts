@@ -17,7 +17,14 @@
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type JobStatus = "pending" | "processing" | "completed" | "failed" | "dead" | "scheduled" | "cancelled";
+export type JobStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "dead"
+  | "scheduled"
+  | "cancelled";
 export type JobPriority = "critical" | "high" | "normal" | "low" | "background";
 export type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
 export type CircuitState = "closed" | "open" | "half_open";
@@ -148,20 +155,35 @@ class JobQueueSystem {
   private handlers = new Map<string, (job: Job) => Promise<unknown>>();
   private isRunning = false;
 
-  private readonly PRIORITY_ORDER: JobPriority[] = ["critical", "high", "normal", "low", "background"];
+  private readonly PRIORITY_ORDER: JobPriority[] = [
+    "critical",
+    "high",
+    "normal",
+    "low",
+    "background",
+  ];
 
   constructor() {
     for (const priority of this.PRIORITY_ORDER) this.queues.set(priority, []);
   }
 
-  registerHandler(jobType: string, handler: (job: Job) => Promise<unknown>): void {
+  registerHandler(
+    jobType: string,
+    handler: (job: Job) => Promise<unknown>
+  ): void {
     this.handlers.set(jobType, handler);
   }
 
   enqueue(
     type: string,
     payload: Record<string, unknown>,
-    options: { priority?: JobPriority; maxAttempts?: number; scheduledAt?: Date; timeout?: number; tags?: string[] } = {}
+    options: {
+      priority?: JobPriority;
+      maxAttempts?: number;
+      scheduledAt?: Date;
+      timeout?: number;
+      tags?: string[];
+    } = {}
   ): Job {
     const job: Job = {
       id: `job_${Date.now()}_${Math.random().toString(36).slice(2)}`,
@@ -193,7 +215,10 @@ class JobQueueSystem {
   private async runWorker(): Promise<void> {
     while (this.isRunning) {
       const job = this.dequeue();
-      if (!job) { await new Promise(r => setTimeout(r, 100)); continue; }
+      if (!job) {
+        await new Promise(r => setTimeout(r, 100));
+        continue;
+      }
       await this.processJob(job);
     }
   }
@@ -202,7 +227,9 @@ class JobQueueSystem {
     for (const priority of this.PRIORITY_ORDER) {
       const queue = this.queues.get(priority) || [];
       const now = new Date();
-      const idx = queue.findIndex(j => j.status === "pending" && (!j.scheduledAt || j.scheduledAt <= now));
+      const idx = queue.findIndex(
+        j => j.status === "pending" && (!j.scheduledAt || j.scheduledAt <= now)
+      );
       if (idx >= 0) {
         const [job] = queue.splice(idx, 1);
         return job;
@@ -227,7 +254,9 @@ class JobQueueSystem {
     this.processing.set(job.id, job);
 
     try {
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Job timeout")), job.timeout || 30000));
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Job timeout")), job.timeout || 30000)
+      );
       job.result = await Promise.race([handler(job), timeoutPromise]);
       job.status = "completed";
       job.completedAt = new Date();
@@ -250,12 +279,22 @@ class JobQueueSystem {
     }
   }
 
-  stop(): void { this.isRunning = false; }
+  stop(): void {
+    this.isRunning = false;
+  }
 
-  getStats(): { pending: number; processing: number; completed: number; failed: number; dead: number; byPriority: Record<string, number> } {
+  getStats(): {
+    pending: number;
+    processing: number;
+    completed: number;
+    failed: number;
+    dead: number;
+    byPriority: Record<string, number>;
+  } {
     const allJobs = Array.from(this.queues.values()).flat();
     const byPriority: Record<string, number> = {};
-    for (const priority of this.PRIORITY_ORDER) byPriority[priority] = (this.queues.get(priority) || []).length;
+    for (const priority of this.PRIORITY_ORDER)
+      byPriority[priority] = (this.queues.get(priority) || []).length;
     return {
       pending: allJobs.filter(j => j.status === "pending").length,
       processing: this.processing.size,
@@ -287,7 +326,10 @@ class DeadLetterQueue {
       reviewed: false,
     };
     this.items.push(item);
-    if (this.items.filter(i => !i.reviewed).length >= this.alertThreshold && !item.alertSent) {
+    if (
+      this.items.filter(i => !i.reviewed).length >= this.alertThreshold &&
+      !item.alertSent
+    ) {
       item.alertSent = true;
       // In production: send alert to ops team
     }
@@ -303,10 +345,19 @@ class DeadLetterQueue {
     if (item) item.reviewed = true;
   }
 
-  getStats(): { total: number; unreviewed: number; byJobType: Record<string, number> } {
+  getStats(): {
+    total: number;
+    unreviewed: number;
+    byJobType: Record<string, number>;
+  } {
     const byJobType: Record<string, number> = {};
-    for (const item of this.items) byJobType[item.jobType] = (byJobType[item.jobType] || 0) + 1;
-    return { total: this.items.length, unreviewed: this.items.filter(i => !i.reviewed).length, byJobType };
+    for (const item of this.items)
+      byJobType[item.jobType] = (byJobType[item.jobType] || 0) + 1;
+    return {
+      total: this.items.length,
+      unreviewed: this.items.filter(i => !i.reviewed).length,
+      byJobType,
+    };
   }
 }
 
@@ -327,16 +378,38 @@ class AutoscalingManager {
   evaluate(): ScalingDecision {
     const now = new Date();
     if (now.getTime() - this.lastDecisionAt.getTime() < this.COOLDOWN_MS) {
-      return { action: "no_action", currentInstances: this.currentInstances, targetInstances: this.currentInstances, reason: "cooldown", timestamp: now, cooldownUntil: new Date(this.lastDecisionAt.getTime() + this.COOLDOWN_MS) };
+      return {
+        action: "no_action",
+        currentInstances: this.currentInstances,
+        targetInstances: this.currentInstances,
+        reason: "cooldown",
+        timestamp: now,
+        cooldownUntil: new Date(
+          this.lastDecisionAt.getTime() + this.COOLDOWN_MS
+        ),
+      };
     }
 
-    const recent = this.metrics.filter(m => now.getTime() - m.timestamp.getTime() < 60000);
-    if (recent.length === 0) return { action: "no_action", currentInstances: this.currentInstances, targetInstances: this.currentInstances, reason: "no_data", timestamp: now, cooldownUntil: now };
+    const recent = this.metrics.filter(
+      m => now.getTime() - m.timestamp.getTime() < 60000
+    );
+    if (recent.length === 0)
+      return {
+        action: "no_action",
+        currentInstances: this.currentInstances,
+        targetInstances: this.currentInstances,
+        reason: "no_data",
+        timestamp: now,
+        cooldownUntil: now,
+      };
 
     const avgCPU = recent.reduce((s, m) => s + m.cpuUsage, 0) / recent.length;
-    const avgMemory = recent.reduce((s, m) => s + m.memoryUsage, 0) / recent.length;
-    const avgRPS = recent.reduce((s, m) => s + m.requestsPerSecond, 0) / recent.length;
-    const avgP99 = recent.reduce((s, m) => s + m.responseTimeP99, 0) / recent.length;
+    const avgMemory =
+      recent.reduce((s, m) => s + m.memoryUsage, 0) / recent.length;
+    const avgRPS =
+      recent.reduce((s, m) => s + m.requestsPerSecond, 0) / recent.length;
+    const avgP99 =
+      recent.reduce((s, m) => s + m.responseTimeP99, 0) / recent.length;
 
     let action: ScalingDecision["action"] = "no_action";
     let targetInstances = this.currentInstances;
@@ -346,7 +419,12 @@ class AutoscalingManager {
       action = "scale_up";
       targetInstances = Math.min(20, Math.ceil(this.currentInstances * 1.5));
       reason = `High load: CPU=${avgCPU.toFixed(0)}% MEM=${avgMemory.toFixed(0)}% P99=${avgP99.toFixed(0)}ms`;
-    } else if (avgCPU < 20 && avgMemory < 30 && avgRPS < 10 && this.currentInstances > 1) {
+    } else if (
+      avgCPU < 20 &&
+      avgMemory < 30 &&
+      avgRPS < 10 &&
+      this.currentInstances > 1
+    ) {
       action = "scale_down";
       targetInstances = Math.max(1, Math.floor(this.currentInstances * 0.7));
       reason = `Low load: CPU=${avgCPU.toFixed(0)}% MEM=${avgMemory.toFixed(0)}% RPS=${avgRPS.toFixed(0)}`;
@@ -373,29 +451,52 @@ class AutoscalingManager {
     return this.decisions.slice(-limit);
   }
 
-  getCurrentInstances(): number { return this.currentInstances; }
+  getCurrentInstances(): number {
+    return this.currentInstances;
+  }
 }
 
 // ─── OBSERVABILITY SYSTEM ─────────────────────────────────────────────────────
 
 class ObservabilitySystem {
-  private logs: { timestamp: Date; level: LogLevel; service: string; message: string; data?: Record<string, unknown> }[] = [];
+  private logs: {
+    timestamp: Date;
+    level: LogLevel;
+    service: string;
+    message: string;
+    data?: Record<string, unknown>;
+  }[] = [];
   private healthChecks = new Map<string, HealthCheck>();
   private counters = new Map<string, number>();
   private gauges = new Map<string, number>();
   private histograms = new Map<string, number[]>();
 
-  log(level: LogLevel, service: string, message: string, data?: Record<string, unknown>): void {
+  log(
+    level: LogLevel,
+    service: string,
+    message: string,
+    data?: Record<string, unknown>
+  ): void {
     this.logs.push({ timestamp: new Date(), level, service, message, data });
     if (this.logs.length > 10000) this.logs.shift();
   }
 
-  incrementCounter(name: string, value = 1, labels?: Record<string, string>): void {
-    const key = labels ? `${name}{${Object.entries(labels).map(([k, v]) => `${k}="${v}"`).join(",")}}` : name;
+  incrementCounter(
+    name: string,
+    value = 1,
+    labels?: Record<string, string>
+  ): void {
+    const key = labels
+      ? `${name}{${Object.entries(labels)
+          .map(([k, v]) => `${k}="${v}"`)
+          .join(",")}}`
+      : name;
     this.counters.set(key, (this.counters.get(key) || 0) + value);
   }
 
-  setGauge(name: string, value: number): void { this.gauges.set(name, value); }
+  setGauge(name: string, value: number): void {
+    this.gauges.set(name, value);
+  }
 
   recordHistogram(name: string, value: number): void {
     const values = this.histograms.get(name) || [];
@@ -412,17 +513,38 @@ class ObservabilitySystem {
     return sorted[Math.max(0, idx)];
   }
 
-  updateHealthCheck(service: string, status: HealthCheck["status"], latency: number, details?: Record<string, unknown>): void {
+  updateHealthCheck(
+    service: string,
+    status: HealthCheck["status"],
+    latency: number,
+    details?: Record<string, unknown>
+  ): void {
     const existing = this.healthChecks.get(service);
-    const consecutiveFailures = status === "unhealthy" ? (existing?.consecutiveFailures || 0) + 1 : 0;
-    this.healthChecks.set(service, { service, status, latency, lastChecked: new Date(), details, consecutiveFailures });
+    const consecutiveFailures =
+      status === "unhealthy" ? (existing?.consecutiveFailures || 0) + 1 : 0;
+    this.healthChecks.set(service, {
+      service,
+      status,
+      latency,
+      lastChecked: new Date(),
+      details,
+      consecutiveFailures,
+    });
   }
 
-  getHealthStatus(): { overall: "healthy" | "degraded" | "unhealthy"; services: HealthCheck[] } {
+  getHealthStatus(): {
+    overall: "healthy" | "degraded" | "unhealthy";
+    services: HealthCheck[];
+  } {
     const checks = Array.from(this.healthChecks.values());
     const unhealthy = checks.filter(c => c.status === "unhealthy");
     const degraded = checks.filter(c => c.status === "degraded");
-    const overall = unhealthy.length > 0 ? "unhealthy" : degraded.length > 0 ? "degraded" : "healthy";
+    const overall =
+      unhealthy.length > 0
+        ? "unhealthy"
+        : degraded.length > 0
+          ? "degraded"
+          : "healthy";
     return { overall, services: checks };
   }
 
@@ -439,7 +561,12 @@ class ObservabilitySystem {
   }
 
   getLogs(level?: LogLevel, service?: string, limit = 100): typeof this.logs {
-    return this.logs.filter(l => (!level || l.level === level) && (!service || l.service === service)).slice(-limit);
+    return this.logs
+      .filter(
+        l =>
+          (!level || l.level === level) && (!service || l.service === service)
+      )
+      .slice(-limit);
   }
 }
 
@@ -457,7 +584,8 @@ class DistributedTracer {
     traceId?: string
   ): TraceSpan {
     const span: TraceSpan = {
-      traceId: traceId || `trace_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      traceId:
+        traceId || `trace_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       spanId: `span_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       parentSpanId,
       operationName,
@@ -471,7 +599,11 @@ class DistributedTracer {
     return span;
   }
 
-  finishSpan(spanId: string, status: "ok" | "error" = "ok", error?: string): void {
+  finishSpan(
+    spanId: string,
+    status: "ok" | "error" = "ok",
+    error?: string
+  ): void {
     const span = this.spans.get(spanId);
     if (!span) return;
     span.endTime = new Date();
@@ -498,24 +630,58 @@ class DistributedTracer {
   }
 
   getSlowSpans(thresholdMs = 1000): TraceSpan[] {
-    return this.completedSpans.filter(s => s.duration && s.duration > thresholdMs).sort((a, b) => (b.duration || 0) - (a.duration || 0)).slice(0, 100);
+    return this.completedSpans
+      .filter(s => s.duration && s.duration > thresholdMs)
+      .sort((a, b) => (b.duration || 0) - (a.duration || 0))
+      .slice(0, 100);
   }
 
-  setSampleRate(rate: number): void { this.sampleRate = Math.max(0, Math.min(1, rate)); }
+  setSampleRate(rate: number): void {
+    this.sampleRate = Math.max(0, Math.min(1, rate));
+  }
 }
 
 // ─── BACKUP SYSTEM ────────────────────────────────────────────────────────────
 
 class BackupSystem {
   private jobs: BackupJob[] = [];
-  private schedule: { type: BackupJob["type"]; target: BackupJob["target"]; cronExpression: string; retentionDays: number }[] = [
-    { type: "full", target: "database", cronExpression: "0 2 * * 0", retentionDays: 30 },
-    { type: "incremental", target: "database", cronExpression: "0 2 * * 1-6", retentionDays: 7 },
-    { type: "snapshot", target: "media", cronExpression: "0 3 * * *", retentionDays: 14 },
-    { type: "full", target: "config", cronExpression: "0 4 * * *", retentionDays: 90 },
+  private schedule: {
+    type: BackupJob["type"];
+    target: BackupJob["target"];
+    cronExpression: string;
+    retentionDays: number;
+  }[] = [
+    {
+      type: "full",
+      target: "database",
+      cronExpression: "0 2 * * 0",
+      retentionDays: 30,
+    },
+    {
+      type: "incremental",
+      target: "database",
+      cronExpression: "0 2 * * 1-6",
+      retentionDays: 7,
+    },
+    {
+      type: "snapshot",
+      target: "media",
+      cronExpression: "0 3 * * *",
+      retentionDays: 14,
+    },
+    {
+      type: "full",
+      target: "config",
+      cronExpression: "0 4 * * *",
+      retentionDays: 90,
+    },
   ];
 
-  async triggerBackup(type: BackupJob["type"], target: BackupJob["target"], retentionDays = 30): Promise<BackupJob> {
+  async triggerBackup(
+    type: BackupJob["type"],
+    target: BackupJob["target"],
+    retentionDays = 30
+  ): Promise<BackupJob> {
     const job: BackupJob = {
       id: `backup_${Date.now()}_${type}_${target}`,
       type,
@@ -556,14 +722,23 @@ class BackupSystem {
   }
 
   getBackupHistory(target?: BackupJob["target"]): BackupJob[] {
-    return this.jobs.filter(j => !target || j.target === target).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return this.jobs
+      .filter(j => !target || j.target === target)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   getLatestBackup(target: BackupJob["target"]): BackupJob | null {
-    return this.jobs.filter(j => j.target === target && j.status === "verified").sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] || null;
+    return (
+      this.jobs
+        .filter(j => j.target === target && j.status === "verified")
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] ||
+      null
+    );
   }
 
-  getSchedule(): typeof this.schedule { return this.schedule; }
+  getSchedule(): typeof this.schedule {
+    return this.schedule;
+  }
 
   cleanupExpired(): number {
     const now = new Date();
@@ -578,7 +753,12 @@ class BackupSystem {
 class CircuitBreakerManager {
   private breakers = new Map<string, CircuitBreaker>();
 
-  register(name: string, failureThreshold = 5, successThreshold = 2, timeoutMs = 60000): CircuitBreaker {
+  register(
+    name: string,
+    failureThreshold = 5,
+    successThreshold = 2,
+    timeoutMs = 60000
+  ): CircuitBreaker {
     const breaker: CircuitBreaker = {
       name,
       state: "closed",
@@ -592,13 +772,20 @@ class CircuitBreakerManager {
     return breaker;
   }
 
-  async execute<T>(name: string, fn: () => Promise<T>, fallback?: () => T): Promise<T> {
+  async execute<T>(
+    name: string,
+    fn: () => Promise<T>,
+    fallback?: () => T
+  ): Promise<T> {
     const breaker = this.breakers.get(name);
     if (!breaker) throw new Error(`Circuit breaker ${name} not registered`);
 
     if (breaker.state === "open") {
       const now = Date.now();
-      if (breaker.openedAt && now - breaker.openedAt.getTime() > breaker.timeout) {
+      if (
+        breaker.openedAt &&
+        now - breaker.openedAt.getTime() > breaker.timeout
+      ) {
         breaker.state = "half_open";
         breaker.halfOpenAt = new Date();
       } else {
@@ -633,15 +820,22 @@ class CircuitBreakerManager {
   private onFailure(breaker: CircuitBreaker): void {
     breaker.failureCount++;
     breaker.lastFailureAt = new Date();
-    if (breaker.state === "half_open" || breaker.failureCount >= breaker.failureThreshold) {
+    if (
+      breaker.state === "half_open" ||
+      breaker.failureCount >= breaker.failureThreshold
+    ) {
       breaker.state = "open";
       breaker.openedAt = new Date();
       breaker.successCount = 0;
     }
   }
 
-  getStatus(name: string): CircuitBreaker | null { return this.breakers.get(name) || null; }
-  getAllStatus(): CircuitBreaker[] { return Array.from(this.breakers.values()); }
+  getStatus(name: string): CircuitBreaker | null {
+    return this.breakers.get(name) || null;
+  }
+  getAllStatus(): CircuitBreaker[] {
+    return Array.from(this.breakers.values());
+  }
 }
 
 // ─── FEATURE FLAG SYSTEM ──────────────────────────────────────────────────────
@@ -649,7 +843,13 @@ class CircuitBreakerManager {
 class FeatureFlagSystem {
   private flags = new Map<string, FeatureFlag>();
 
-  define(key: string, enabled: boolean, rolloutPercentage = 100, description = "", environments = ["production"]): FeatureFlag {
+  define(
+    key: string,
+    enabled: boolean,
+    rolloutPercentage = 100,
+    description = "",
+    environments = ["production"]
+  ): FeatureFlag {
     const flag: FeatureFlag = {
       key,
       enabled,
@@ -678,13 +878,28 @@ class FeatureFlagSystem {
     return Math.random() * 100 < flag.rolloutPercentage;
   }
 
-  update(key: string, updates: Partial<Pick<FeatureFlag, "enabled" | "rolloutPercentage" | "userIds" | "expiresAt">>): void {
+  update(
+    key: string,
+    updates: Partial<
+      Pick<
+        FeatureFlag,
+        "enabled" | "rolloutPercentage" | "userIds" | "expiresAt"
+      >
+    >
+  ): void {
     const flag = this.flags.get(key);
-    if (flag) { Object.assign(flag, updates); flag.updatedAt = new Date(); }
+    if (flag) {
+      Object.assign(flag, updates);
+      flag.updatedAt = new Date();
+    }
   }
 
-  getAll(): FeatureFlag[] { return Array.from(this.flags.values()); }
-  get(key: string): FeatureFlag | null { return this.flags.get(key) || null; }
+  getAll(): FeatureFlag[] {
+    return Array.from(this.flags.values());
+  }
+  get(key: string): FeatureFlag | null {
+    return this.flags.get(key) || null;
+  }
 }
 
 // ─── SINGLETON EXPORTS ────────────────────────────────────────────────────────
@@ -701,14 +916,29 @@ export const featureFlags = new FeatureFlagSystem();
 // ─── INITIALIZE DEFAULT FEATURE FLAGS ────────────────────────────────────────
 
 featureFlags.define("ai_feed_ranking", true, 100, "AI-powered feed ranking");
-featureFlags.define("websocket_realtime", true, 100, "WebSocket real-time updates");
+featureFlags.define(
+  "websocket_realtime",
+  true,
+  100,
+  "WebSocket real-time updates"
+);
 featureFlags.define("nft_minting", true, 100, "NFT minting and marketplace");
 featureFlags.define("defi_swaps", true, 80, "DeFi token swaps");
-featureFlags.define("creator_marketplace", true, 100, "Creator services marketplace");
+featureFlags.define(
+  "creator_marketplace",
+  true,
+  100,
+  "Creator services marketplace"
+);
 featureFlags.define("mobile_push", true, 100, "Mobile push notifications");
 featureFlags.define("ad_network", true, 50, "Internal ad network");
 featureFlags.define("governance_voting", true, 100, "DAO governance voting");
-featureFlags.define("charity_campaigns", true, 100, "Charity campaign creation");
+featureFlags.define(
+  "charity_campaigns",
+  true,
+  100,
+  "Charity campaign creation"
+);
 featureFlags.define("stream_battles", true, 75, "Live stream battle mode");
 
 // ─── INITIALIZE DEFAULT CIRCUIT BREAKERS ─────────────────────────────────────

@@ -32,7 +32,11 @@ export interface FraudReport {
   highSeverityCount: number;
   riskScore: number;
   quarantineRecommended: boolean;
-  signals: Array<{ signalType: string; severity: FraudSeverity; detectedAt: Date }>;
+  signals: Array<{
+    signalType: string;
+    severity: FraudSeverity;
+    detectedAt: Date;
+  }>;
 }
 
 // ─── Security Engine ──────────────────────────────────────────────────────────
@@ -58,7 +62,11 @@ export class SecurityEngine {
     if (!rateLimitOk) {
       flags.push(`Rate limit exceeded for ${action}`);
       riskScore += 20;
-      eventBus.publish("RATE_LIMIT_HIT", { userId, action, maxPerMinute }, userId);
+      eventBus.publish(
+        "RATE_LIMIT_HIT",
+        { userId, action, maxPerMinute },
+        userId
+      );
     }
 
     // 2. Fraud risk check
@@ -67,8 +75,17 @@ export class SecurityEngine {
 
     if (riskScore >= this.QUARANTINE_THRESHOLD) {
       flags.push("High fraud risk score — action blocked");
-      eventBus.publish("SUSPICIOUS_PATTERN_FLAGGED", { userId, riskScore, action }, userId);
-      return { allowed: false, reason: "Security block: high risk score", riskScore, flags };
+      eventBus.publish(
+        "SUSPICIOUS_PATTERN_FLAGGED",
+        { userId, riskScore, action },
+        userId
+      );
+      return {
+        allowed: false,
+        reason: "Security block: high risk score",
+        riskScore,
+        flags,
+      };
     }
 
     if (flags.length > 0) {
@@ -98,14 +115,22 @@ export class SecurityEngine {
       detectedAt: new Date(),
     });
 
-    eventBus.publish("FRAUD_SIGNAL_DETECTED", { userId, signalType, severity, details }, userId);
+    eventBus.publish(
+      "FRAUD_SIGNAL_DETECTED",
+      { userId, signalType, severity, details },
+      userId
+    );
 
     // Check if this triggers a spike
     await this.checkFraudSpike();
 
     // Auto-quarantine on critical signal
     if (severity === "critical") {
-      eventBus.publish("ACCOUNT_QUARANTINED", { userId, reason: signalType }, userId);
+      eventBus.publish(
+        "ACCOUNT_QUARANTINED",
+        { userId, reason: signalType },
+        userId
+      );
     }
   }
 
@@ -115,7 +140,14 @@ export class SecurityEngine {
   async getFraudReport(userId: number): Promise<FraudReport> {
     const db = await getDb();
     if (!db) {
-      return { userId, totalSignals: 0, highSeverityCount: 0, riskScore: 0, quarantineRecommended: false, signals: [] };
+      return {
+        userId,
+        totalSignals: 0,
+        highSeverityCount: 0,
+        riskScore: 0,
+        quarantineRecommended: false,
+        signals: [],
+      };
     }
 
     const signals = await db
@@ -126,7 +158,7 @@ export class SecurityEngine {
       .limit(50);
 
     const highSeverityCount = signals.filter(
-      (s) => s.severity === "high" || s.severity === "critical"
+      s => s.severity === "high" || s.severity === "critical"
     ).length;
 
     const riskScore = this.computeRiskScore(signals);
@@ -138,7 +170,7 @@ export class SecurityEngine {
       highSeverityCount,
       riskScore,
       quarantineRecommended,
-      signals: signals.map((s) => ({
+      signals: signals.map(s => ({
         signalType: s.signalType,
         severity: s.severity as FraudSeverity,
         detectedAt: s.detectedAt,
@@ -153,10 +185,20 @@ export class SecurityEngine {
     totalFraudSignals24h: number;
     highRiskUsers: number;
     fraudSpike: boolean;
-    recentSignals: Array<{ signalType: string; severity: string; count: number }>;
+    recentSignals: Array<{
+      signalType: string;
+      severity: string;
+      count: number;
+    }>;
   }> {
     const db = await getDb();
-    if (!db) return { totalFraudSignals24h: 0, highRiskUsers: 0, fraudSpike: false, recentSignals: [] };
+    if (!db)
+      return {
+        totalFraudSignals24h: 0,
+        highRiskUsers: 0,
+        fraudSpike: false,
+        recentSignals: [],
+      };
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
@@ -217,7 +259,12 @@ export class SecurityEngine {
       await db
         .update(rateLimitBuckets)
         .set({ count: 1, windowStart: new Date(), updatedAt: new Date() })
-        .where(and(eq(rateLimitBuckets.userId, userId), eq(rateLimitBuckets.action, action)));
+        .where(
+          and(
+            eq(rateLimitBuckets.userId, userId),
+            eq(rateLimitBuckets.action, action)
+          )
+        );
       return true;
     }
 
@@ -228,7 +275,12 @@ export class SecurityEngine {
     await db
       .update(rateLimitBuckets)
       .set({ count: existing.count + 1, updatedAt: new Date() })
-      .where(and(eq(rateLimitBuckets.userId, userId), eq(rateLimitBuckets.action, action)));
+      .where(
+        and(
+          eq(rateLimitBuckets.userId, userId),
+          eq(rateLimitBuckets.action, action)
+        )
+      );
 
     return true;
   }
@@ -243,7 +295,10 @@ export class SecurityEngine {
       .where(
         and(
           eq(fraudSignals.userId, userId),
-          gte(fraudSignals.detectedAt, new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
+          gte(
+            fraudSignals.detectedAt,
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          )
         )
       )
       .limit(20);
@@ -251,11 +306,17 @@ export class SecurityEngine {
     return this.computeRiskScore(recent);
   }
 
-  private computeRiskScore(
-    signals: Array<{ severity: string }>
-  ): number {
-    const weights: Record<string, number> = { low: 5, medium: 15, high: 30, critical: 50 };
-    return Math.min(100, signals.reduce((acc, s) => acc + (weights[s.severity] ?? 0), 0));
+  private computeRiskScore(signals: Array<{ severity: string }>): number {
+    const weights: Record<string, number> = {
+      low: 5,
+      medium: 15,
+      high: 30,
+      critical: 50,
+    };
+    return Math.min(
+      100,
+      signals.reduce((acc, s) => acc + (weights[s.severity] ?? 0), 0)
+    );
   }
 
   private async checkFraudSpike(): Promise<void> {

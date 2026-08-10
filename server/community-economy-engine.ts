@@ -31,7 +31,12 @@ export interface CommunityTreasury {
 export interface TreasuryTransaction {
   id: string;
   communityId: string;
-  type: "deposit" | "withdrawal" | "reward_distribution" | "quest_payout" | "store_revenue";
+  type:
+    | "deposit"
+    | "withdrawal"
+    | "reward_distribution"
+    | "quest_payout"
+    | "store_revenue";
   amount: number;
   tokenAmount?: number;
   fromUserId?: number;
@@ -52,7 +57,8 @@ export interface SpendingProposal {
   description: string;
   amount: number;
   recipient: number; // userId
-  category: "reward" | "event" | "infrastructure" | "charity" | "marketing" | "other";
+  category:
+    "reward" | "event" | "infrastructure" | "charity" | "marketing" | "other";
   votes: { userId: number; approve: boolean; timestamp: Date }[];
   status: "voting" | "approved" | "rejected" | "executed";
   votingDeadline: Date;
@@ -112,7 +118,8 @@ export interface CommunityQuest {
   title: string;
   description: string;
   type: "daily" | "weekly" | "monthly" | "one_time" | "chain";
-  category: "content" | "engagement" | "social" | "trading" | "charity" | "gaming";
+  category:
+    "content" | "engagement" | "social" | "trading" | "charity" | "gaming";
   objectives: QuestObjective[];
   rewards: QuestReward[];
   maxParticipants?: number;
@@ -215,14 +222,62 @@ export interface GuildProduct {
 // ─── XP LEVEL TABLE ───────────────────────────────────────────────────────────
 
 const XP_LEVELS: XPLevel[] = [
-  { level: 1, xpRequired: 0, title: "Newcomer", perks: ["Basic posting"], badge: "newcomer" },
-  { level: 2, xpRequired: 100, title: "Member", perks: ["Create polls", "Join quests"], badge: "member" },
-  { level: 3, xpRequired: 300, title: "Active Member", perks: ["Custom reactions", "Extended posts"], badge: "active" },
-  { level: 4, xpRequired: 700, title: "Contributor", perks: ["Pin messages", "Create events"], badge: "contributor" },
-  { level: 5, xpRequired: 1500, title: "Regular", perks: ["Slow mode bypass", "Priority support"], badge: "regular" },
-  { level: 6, xpRequired: 3000, title: "Veteran", perks: ["Moderator nomination", "Custom title"], badge: "veteran" },
-  { level: 7, xpRequired: 6000, title: "Elder", perks: ["Community proposals", "Treasury view"], badge: "elder" },
-  { level: 8, xpRequired: 12000, title: "Legend", perks: ["All perks", "Honorary role", "Treasury vote"], badge: "legend" },
+  {
+    level: 1,
+    xpRequired: 0,
+    title: "Newcomer",
+    perks: ["Basic posting"],
+    badge: "newcomer",
+  },
+  {
+    level: 2,
+    xpRequired: 100,
+    title: "Member",
+    perks: ["Create polls", "Join quests"],
+    badge: "member",
+  },
+  {
+    level: 3,
+    xpRequired: 300,
+    title: "Active Member",
+    perks: ["Custom reactions", "Extended posts"],
+    badge: "active",
+  },
+  {
+    level: 4,
+    xpRequired: 700,
+    title: "Contributor",
+    perks: ["Pin messages", "Create events"],
+    badge: "contributor",
+  },
+  {
+    level: 5,
+    xpRequired: 1500,
+    title: "Regular",
+    perks: ["Slow mode bypass", "Priority support"],
+    badge: "regular",
+  },
+  {
+    level: 6,
+    xpRequired: 3000,
+    title: "Veteran",
+    perks: ["Moderator nomination", "Custom title"],
+    badge: "veteran",
+  },
+  {
+    level: 7,
+    xpRequired: 6000,
+    title: "Elder",
+    perks: ["Community proposals", "Treasury view"],
+    badge: "elder",
+  },
+  {
+    level: 8,
+    xpRequired: 12000,
+    title: "Legend",
+    perks: ["All perks", "Honorary role", "Treasury vote"],
+    badge: "legend",
+  },
 ];
 
 const XP_REWARDS: Record<string, number> = {
@@ -247,7 +302,11 @@ export class CommunityTreasuryService {
   private txCounter = 0;
   private propCounter = 0;
 
-  async initializeTreasury(communityId: string, signers: number[], requiredSignatures = 2): Promise<CommunityTreasury> {
+  async initializeTreasury(
+    communityId: string,
+    signers: number[],
+    requiredSignatures = 2
+  ): Promise<CommunityTreasury> {
     const treasury: CommunityTreasury = {
       communityId,
       balance: 0,
@@ -264,7 +323,12 @@ export class CommunityTreasuryService {
     return treasury;
   }
 
-  async deposit(communityId: string, fromUserId: number, amount: number, description = "Deposit"): Promise<TreasuryTransaction> {
+  async deposit(
+    communityId: string,
+    fromUserId: number,
+    amount: number,
+    description = "Deposit"
+  ): Promise<TreasuryTransaction> {
     const treasury = this.treasuries.get(communityId);
     if (!treasury) throw new Error("Treasury not found");
 
@@ -304,7 +368,8 @@ export class CommunityTreasuryService {
   }): Promise<SpendingProposal> {
     const treasury = this.treasuries.get(params.communityId);
     if (!treasury) throw new Error("Treasury not found");
-    if (treasury.balance < params.amount) throw new Error("Insufficient treasury balance");
+    if (treasury.balance < params.amount)
+      throw new Error("Insufficient treasury balance");
 
     const proposal: SpendingProposal = {
       id: `prop_${++this.propCounter}`,
@@ -317,7 +382,9 @@ export class CommunityTreasuryService {
       category: params.category,
       votes: [],
       status: "voting",
-      votingDeadline: new Date(Date.now() + (params.votingDurationHours || 72) * 3600000),
+      votingDeadline: new Date(
+        Date.now() + (params.votingDurationHours || 72) * 3600000
+      ),
       createdAt: new Date(),
     };
 
@@ -326,11 +393,16 @@ export class CommunityTreasuryService {
     return proposal;
   }
 
-  async voteOnProposal(proposalId: string, userId: number, approve: boolean): Promise<{ status: string; approvals: number; rejections: number }> {
+  async voteOnProposal(
+    proposalId: string,
+    userId: number,
+    approve: boolean
+  ): Promise<{ status: string; approvals: number; rejections: number }> {
     const proposal = this.proposals.get(proposalId);
     if (!proposal) throw new Error("Proposal not found");
     if (proposal.status !== "voting") throw new Error("Voting closed");
-    if (new Date() > proposal.votingDeadline) throw new Error("Voting deadline passed");
+    if (new Date() > proposal.votingDeadline)
+      throw new Error("Voting deadline passed");
 
     const treasury = this.treasuries.get(proposal.communityId);
     if (!treasury) throw new Error("Treasury not found");
@@ -355,7 +427,9 @@ export class CommunityTreasuryService {
     return { status: proposal.status, approvals, rejections };
   }
 
-  async executeProposal(proposalId: string): Promise<TreasuryTransaction | null> {
+  async executeProposal(
+    proposalId: string
+  ): Promise<TreasuryTransaction | null> {
     const proposal = this.proposals.get(proposalId);
     if (!proposal || proposal.status !== "approved") return null;
 
@@ -398,9 +472,14 @@ export class CommunityTreasuryService {
       .slice(0, limit);
   }
 
-  getProposals(communityId: string, status?: SpendingProposal["status"]): SpendingProposal[] {
+  getProposals(
+    communityId: string,
+    status?: SpendingProposal["status"]
+  ): SpendingProposal[] {
     return Array.from(this.proposals.values())
-      .filter(p => p.communityId === communityId && (!status || p.status === status))
+      .filter(
+        p => p.communityId === communityId && (!status || p.status === status)
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 }
@@ -410,7 +489,10 @@ export class CommunityTreasuryService {
 export class TokenizedCommunityService {
   private tokens = new Map<string, CommunityToken>();
   private holders = new Map<string, TokenHolder>(); // `${communityId}:${userId}`
-  private transferHistory = new Map<string, { from: number; to: number; amount: number; timestamp: Date }[]>();
+  private transferHistory = new Map<
+    string,
+    { from: number; to: number; amount: number; timestamp: Date }[]
+  >();
 
   async createToken(params: {
     communityId: string;
@@ -444,10 +526,16 @@ export class TokenizedCommunityService {
     return token;
   }
 
-  async mintTokens(communityId: string, toUserId: number, amount: number, reason: string): Promise<TokenHolder> {
+  async mintTokens(
+    communityId: string,
+    toUserId: number,
+    amount: number,
+    reason: string
+  ): Promise<TokenHolder> {
     const token = this.tokens.get(communityId);
     if (!token) throw new Error("Token not found");
-    if (token.circulatingSupply + amount > token.totalSupply) throw new Error("Exceeds total supply");
+    if (token.circulatingSupply + amount > token.totalSupply)
+      throw new Error("Exceeds total supply");
 
     const key = `${communityId}:${toUserId}`;
     const existing = this.holders.get(key);
@@ -475,9 +563,15 @@ export class TokenizedCommunityService {
     return this.holders.get(key)!;
   }
 
-  async transferTokens(communityId: string, fromUserId: number, toUserId: number, amount: number): Promise<boolean> {
+  async transferTokens(
+    communityId: string,
+    fromUserId: number,
+    toUserId: number,
+    amount: number
+  ): Promise<boolean> {
     const token = this.tokens.get(communityId);
-    if (!token || !token.isTransferable) throw new Error("Token not transferable");
+    if (!token || !token.isTransferable)
+      throw new Error("Token not transferable");
 
     const fromKey = `${communityId}:${fromUserId}`;
     const fromHolder = this.holders.get(fromKey);
@@ -509,7 +603,12 @@ export class TokenizedCommunityService {
     }
 
     const history = this.transferHistory.get(communityId) || [];
-    history.push({ from: fromUserId, to: toUserId, amount, timestamp: new Date() });
+    history.push({
+      from: fromUserId,
+      to: toUserId,
+      amount,
+      timestamp: new Date(),
+    });
     this.transferHistory.set(communityId, history);
 
     return true;
@@ -536,9 +635,17 @@ export class TokenizedCommunityService {
 export class RewardPoolService {
   private pools = new Map<string, RewardPool>();
   private poolCounter = 0;
-  private distributions = new Map<string, { userId: number; amount: number; timestamp: Date }[]>();
+  private distributions = new Map<
+    string,
+    { userId: number; amount: number; timestamp: Date }[]
+  >();
 
-  async createPool(params: Omit<RewardPool, "id" | "distributedFunds" | "remainingFunds" | "createdAt">): Promise<RewardPool> {
+  async createPool(
+    params: Omit<
+      RewardPool,
+      "id" | "distributedFunds" | "remainingFunds" | "createdAt"
+    >
+  ): Promise<RewardPool> {
     const id = `pool_${++this.poolCounter}`;
     const pool: RewardPool = {
       id,
@@ -551,12 +658,18 @@ export class RewardPoolService {
     return pool;
   }
 
-  async distributeRewards(poolId: string, recipients: { userId: number; contribution: number }[]): Promise<{ userId: number; amount: number }[]> {
+  async distributeRewards(
+    poolId: string,
+    recipients: { userId: number; contribution: number }[]
+  ): Promise<{ userId: number; amount: number }[]> {
     const pool = this.pools.get(poolId);
     if (!pool || !pool.isActive || pool.remainingFunds <= 0) return [];
 
     const distributions: { userId: number; amount: number }[] = [];
-    const totalContribution = recipients.reduce((sum, r) => sum + r.contribution, 0);
+    const totalContribution = recipients.reduce(
+      (sum, r) => sum + r.contribution,
+      0
+    );
 
     for (const recipient of recipients) {
       let amount = 0;
@@ -566,9 +679,14 @@ export class RewardPoolService {
           amount = Math.floor(pool.remainingFunds / recipients.length);
           break;
         case "proportional":
-          amount = totalContribution > 0
-            ? Math.floor((recipient.contribution / totalContribution) * pool.remainingFunds * 0.9)
-            : 0;
+          amount =
+            totalContribution > 0
+              ? Math.floor(
+                  (recipient.contribution / totalContribution) *
+                    pool.remainingFunds *
+                    0.9
+                )
+              : 0;
           break;
         case "top_n":
           // Only top 10 get rewards
@@ -576,7 +694,9 @@ export class RewardPoolService {
             .sort((a, b) => b.contribution - a.contribution)
             .findIndex(r => r.userId === recipient.userId);
           if (rank < 10) {
-            amount = Math.floor(pool.remainingFunds / Math.min(10, recipients.length));
+            amount = Math.floor(
+              pool.remainingFunds / Math.min(10, recipients.length)
+            );
           }
           break;
         case "threshold":
@@ -592,7 +712,11 @@ export class RewardPoolService {
         distributions.push({ userId: recipient.userId, amount });
 
         const distHistory = this.distributions.get(poolId) || [];
-        distHistory.push({ userId: recipient.userId, amount, timestamp: new Date() });
+        distHistory.push({
+          userId: recipient.userId,
+          amount,
+          timestamp: new Date(),
+        });
         this.distributions.set(poolId, distHistory);
       }
     }
@@ -618,7 +742,12 @@ export class CommunityQuestService {
   private progress = new Map<string, QuestProgress>(); // `${questId}:${userId}`
   private questCounter = 0;
 
-  async createQuest(params: Omit<CommunityQuest, "id" | "currentParticipants" | "completionCount">): Promise<CommunityQuest> {
+  async createQuest(
+    params: Omit<
+      CommunityQuest,
+      "id" | "currentParticipants" | "completionCount"
+    >
+  ): Promise<CommunityQuest> {
     const id = `quest_${++this.questCounter}`;
     const quest: CommunityQuest = {
       id,
@@ -630,10 +759,17 @@ export class CommunityQuestService {
     return quest;
   }
 
-  async joinQuest(questId: string, userId: number): Promise<QuestProgress | null> {
+  async joinQuest(
+    questId: string,
+    userId: number
+  ): Promise<QuestProgress | null> {
     const quest = this.quests.get(questId);
     if (!quest || !quest.isActive) return null;
-    if (quest.maxParticipants && quest.currentParticipants >= quest.maxParticipants) return null;
+    if (
+      quest.maxParticipants &&
+      quest.currentParticipants >= quest.maxParticipants
+    )
+      return null;
     if (new Date() > quest.endDate) return null;
 
     const key = `${questId}:${userId}`;
@@ -644,7 +780,9 @@ export class CommunityQuestService {
       userId,
       communityId: quest.communityId,
       startedAt: new Date(),
-      objectiveProgress: Object.fromEntries(quest.objectives.map(o => [o.id, 0])),
+      objectiveProgress: Object.fromEntries(
+        quest.objectives.map(o => [o.id, 0])
+      ),
       isCompleted: false,
       rewardsClaimed: false,
     };
@@ -654,7 +792,12 @@ export class CommunityQuestService {
     return progress;
   }
 
-  async updateObjectiveProgress(questId: string, userId: number, objectiveId: string, value: number): Promise<{ progress: QuestProgress; newlyCompleted: boolean }> {
+  async updateObjectiveProgress(
+    questId: string,
+    userId: number,
+    objectiveId: string,
+    value: number
+  ): Promise<{ progress: QuestProgress; newlyCompleted: boolean }> {
     const key = `${questId}:${userId}`;
     const progress = this.progress.get(key);
     if (!progress) throw new Error("Not participating in quest");
@@ -682,7 +825,8 @@ export class CommunityQuestService {
   async claimRewards(questId: string, userId: number): Promise<QuestReward[]> {
     const key = `${questId}:${userId}`;
     const progress = this.progress.get(key);
-    if (!progress || !progress.isCompleted || progress.rewardsClaimed) return [];
+    if (!progress || !progress.isCompleted || progress.rewardsClaimed)
+      return [];
 
     const quest = this.quests.get(questId);
     if (!quest) return [];
@@ -697,13 +841,18 @@ export class CommunityQuestService {
 
   getCommunityQuests(communityId: string, activeOnly = true): CommunityQuest[] {
     return Array.from(this.quests.values())
-      .filter(q => q.communityId === communityId && (!activeOnly || (q.isActive && new Date() <= q.endDate)))
+      .filter(
+        q =>
+          q.communityId === communityId &&
+          (!activeOnly || (q.isActive && new Date() <= q.endDate))
+      )
       .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
   }
 
   getUserProgress(userId: number, communityId: string): QuestProgress[] {
-    return Array.from(this.progress.values())
-      .filter(p => p.userId === userId && p.communityId === communityId);
+    return Array.from(this.progress.values()).filter(
+      p => p.userId === userId && p.communityId === communityId
+    );
   }
 }
 
@@ -712,7 +861,12 @@ export class CommunityQuestService {
 export class CommunityXPService {
   private records = new Map<string, CommunityXPRecord>(); // `${communityId}:${userId}`
 
-  private calculateLevel(totalXP: number): { level: number; currentLevelXP: number; nextLevelXP: number; title: string } {
+  private calculateLevel(totalXP: number): {
+    level: number;
+    currentLevelXP: number;
+    nextLevelXP: number;
+    title: string;
+  } {
     let level = 1;
     for (let i = XP_LEVELS.length - 1; i >= 0; i--) {
       if (totalXP >= XP_LEVELS[i].xpRequired) {
@@ -732,7 +886,16 @@ export class CommunityXPService {
     };
   }
 
-  async awardXP(communityId: string, userId: number, action: string, customAmount?: number): Promise<{ record: CommunityXPRecord; leveledUp: boolean; newLevel?: number }> {
+  async awardXP(
+    communityId: string,
+    userId: number,
+    action: string,
+    customAmount?: number
+  ): Promise<{
+    record: CommunityXPRecord;
+    leveledUp: boolean;
+    newLevel?: number;
+  }> {
     const amount = customAmount || XP_REWARDS[action] || 1;
     const key = `${communityId}:${userId}`;
 
@@ -765,7 +928,11 @@ export class CommunityXPService {
     this.records.set(key, record);
 
     const leveledUp = record.level > previousLevel;
-    return { record, leveledUp, newLevel: leveledUp ? record.level : undefined };
+    return {
+      record,
+      leveledUp,
+      newLevel: leveledUp ? record.level : undefined,
+    };
   }
 
   getRecord(communityId: string, userId: number): CommunityXPRecord | null {
@@ -778,7 +945,9 @@ export class CommunityXPService {
       .sort((a, b) => b.totalXP - a.totalXP)
       .slice(0, limit);
 
-    records.forEach((r, i) => { r.rank = i + 1; });
+    records.forEach((r, i) => {
+      r.rank = i + 1;
+    });
     return records;
   }
 
@@ -801,7 +970,10 @@ export class CommunityReputationService {
     return "newcomer";
   }
 
-  async initializeReputation(communityId: string, userId: number): Promise<CommunityReputation> {
+  async initializeReputation(
+    communityId: string,
+    userId: number
+  ): Promise<CommunityReputation> {
     const key = `${communityId}:${userId}`;
     if (this.reputations.has(key)) return this.reputations.get(key)!;
 
@@ -823,7 +995,12 @@ export class CommunityReputationService {
     return rep;
   }
 
-  async adjustReputation(communityId: string, userId: number, delta: number, reason: string): Promise<CommunityReputation> {
+  async adjustReputation(
+    communityId: string,
+    userId: number,
+    delta: number,
+    reason: string
+  ): Promise<CommunityReputation> {
     const key = `${communityId}:${userId}`;
     let rep = this.reputations.get(key);
 
@@ -841,8 +1018,18 @@ export class CommunityReputationService {
     return rep;
   }
 
-  async endorseUser(communityId: string, endorserId: number, targetUserId: number, specialization: string): Promise<CommunityReputation> {
-    const rep = await this.adjustReputation(communityId, targetUserId, 10, `Endorsed by ${endorserId}`);
+  async endorseUser(
+    communityId: string,
+    endorserId: number,
+    targetUserId: number,
+    specialization: string
+  ): Promise<CommunityReputation> {
+    const rep = await this.adjustReputation(
+      communityId,
+      targetUserId,
+      10,
+      `Endorsed by ${endorserId}`
+    );
     rep.endorsements++;
     if (!rep.specializations.includes(specialization)) {
       rep.specializations.push(specialization);
@@ -850,13 +1037,24 @@ export class CommunityReputationService {
     return rep;
   }
 
-  async reportUser(communityId: string, targetUserId: number): Promise<CommunityReputation> {
-    const rep = await this.adjustReputation(communityId, targetUserId, -20, "Reported by community member");
+  async reportUser(
+    communityId: string,
+    targetUserId: number
+  ): Promise<CommunityReputation> {
+    const rep = await this.adjustReputation(
+      communityId,
+      targetUserId,
+      -20,
+      "Reported by community member"
+    );
     rep.reportCount++;
     return rep;
   }
 
-  getReputation(communityId: string, userId: number): CommunityReputation | null {
+  getReputation(
+    communityId: string,
+    userId: number
+  ): CommunityReputation | null {
     return this.reputations.get(`${communityId}:${userId}`) || null;
   }
 
@@ -873,11 +1071,16 @@ export class CommunityReputationService {
 export class GuildStoreService {
   private stores = new Map<string, GuildStore>();
   private products = new Map<string, GuildProduct>();
-  private purchases = new Map<string, { userId: number; productId: number; timestamp: Date; pricePaid: number }[]>();
+  private purchases = new Map<
+    string,
+    { userId: number; productId: number; timestamp: Date; pricePaid: number }[]
+  >();
   private storeCounter = 0;
   private productCounter = 0;
 
-  async createStore(params: Omit<GuildStore, "id" | "products" | "totalRevenue" | "createdAt">): Promise<GuildStore> {
+  async createStore(
+    params: Omit<GuildStore, "id" | "products" | "totalRevenue" | "createdAt">
+  ): Promise<GuildStore> {
     const id = `store_${++this.storeCounter}`;
     const store: GuildStore = {
       id,
@@ -890,7 +1093,10 @@ export class GuildStoreService {
     return store;
   }
 
-  async addProduct(storeId: string, params: Omit<GuildProduct, "id" | "storeId" | "sold" | "createdAt">): Promise<GuildProduct> {
+  async addProduct(
+    storeId: string,
+    params: Omit<GuildProduct, "id" | "storeId" | "sold" | "createdAt">
+  ): Promise<GuildProduct> {
     const store = this.stores.get(storeId);
     if (!store) throw new Error("Store not found");
 
@@ -908,23 +1114,41 @@ export class GuildStoreService {
     return product;
   }
 
-  async purchaseProduct(storeId: string, productId: string, userId: number, payWithTokens = false): Promise<{ success: boolean; product?: GuildProduct; reason?: string }> {
+  async purchaseProduct(
+    storeId: string,
+    productId: string,
+    userId: number,
+    payWithTokens = false
+  ): Promise<{ success: boolean; product?: GuildProduct; reason?: string }> {
     const store = this.stores.get(storeId);
     const product = this.products.get(productId);
 
     if (!store || !product) return { success: false, reason: "Not found" };
-    if (!product.isActive) return { success: false, reason: "Product not available" };
-    if (product.stock !== undefined && product.stock !== null && product.sold >= product.stock) {
+    if (!product.isActive)
+      return { success: false, reason: "Product not available" };
+    if (
+      product.stock !== undefined &&
+      product.stock !== null &&
+      product.sold >= product.stock
+    ) {
       return { success: false, reason: "Out of stock" };
     }
 
-    const price = payWithTokens && product.priceTokens ? product.priceTokens : product.priceCoins;
+    const price =
+      payWithTokens && product.priceTokens
+        ? product.priceTokens
+        : product.priceCoins;
 
     product.sold++;
     store.totalRevenue += product.priceCoins;
 
     const purchaseList = this.purchases.get(storeId) || [];
-    purchaseList.push({ userId, productId: parseInt(productId), timestamp: new Date(), pricePaid: price });
+    purchaseList.push({
+      userId,
+      productId: parseInt(productId),
+      timestamp: new Date(),
+      pricePaid: price,
+    });
     this.purchases.set(storeId, purchaseList);
 
     return { success: true, product };
@@ -935,12 +1159,17 @@ export class GuildStoreService {
   }
 
   getCommunityStore(communityId: string): GuildStore | null {
-    return Array.from(this.stores.values()).find(s => s.communityId === communityId) || null;
+    return (
+      Array.from(this.stores.values()).find(
+        s => s.communityId === communityId
+      ) || null
+    );
   }
 
   getStoreProducts(storeId: string, activeOnly = true): GuildProduct[] {
-    return Array.from(this.products.values())
-      .filter(p => p.storeId === storeId && (!activeOnly || p.isActive));
+    return Array.from(this.products.values()).filter(
+      p => p.storeId === storeId && (!activeOnly || p.isActive)
+    );
   }
 }
 
@@ -956,9 +1185,30 @@ export const guildStoreService = new GuildStoreService();
 
 // ─── ROUTER COMPATIBILITY METHOD ALIASES ─────────────────────────────────────
 // CommunityTreasuryService aliases
-(CommunityTreasuryService.prototype as any).getBalance = function(communityId: number) {
-  return this.getTreasury(String(communityId)) || { communityId, balance: 0, currency: "SKY444" };
+(CommunityTreasuryService.prototype as any).getBalance = function (
+  communityId: number
+) {
+  return (
+    this.getTreasury(String(communityId)) || {
+      communityId,
+      balance: 0,
+      currency: "SKY444",
+    }
+  );
 };
-(CommunityTreasuryService.prototype as any).proposeSpend = function(communityId: number, userId: number, amount: number, purpose: string, description: string) {
-  return this.createSpendingProposal({ communityId: String(communityId), proposerId: userId, amount, purpose: purpose as any, description, recipientId: String(userId) });
+(CommunityTreasuryService.prototype as any).proposeSpend = function (
+  communityId: number,
+  userId: number,
+  amount: number,
+  purpose: string,
+  description: string
+) {
+  return this.createSpendingProposal({
+    communityId: String(communityId),
+    proposerId: userId,
+    amount,
+    purpose: purpose as any,
+    description,
+    recipientId: String(userId),
+  });
 };

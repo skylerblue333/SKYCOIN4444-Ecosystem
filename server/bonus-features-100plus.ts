@@ -11,10 +11,15 @@ const adminProcedure = protectedProcedure;
 
 export const bonusFeaturesRouter = router({
   // ============ AI AUTONOMY (20 features) ============
-  
+
   // Autonomous trading
   deployAutonomousTrader: protectedProcedure
-    .input(z.object({ capital: z.number(), riskLevel: z.enum(["low", "medium", "high"]) }))
+    .input(
+      z.object({
+        capital: z.number(),
+        riskLevel: z.enum(["low", "medium", "high"]),
+      })
+    )
     .mutation(async ({ input }) => ({
       traderId: `trader-${Date.now()}`,
       status: "active",
@@ -42,16 +47,12 @@ export const bonusFeaturesRouter = router({
 
   // Anomaly detection
   detectAnomalies: adminProcedure.query(async () => ({
-    anomalies: [
-      { type: "unusual_volume", severity: "high", asset: "SKY444" },
-    ],
+    anomalies: [{ type: "unusual_volume", severity: "high", asset: "SKY444" }],
   })),
 
   // Pattern recognition
   findPatterns: publicProcedure.query(async () => ({
-    patterns: [
-      { name: "Cup and Handle", confidence: 0.92, asset: "BTC" },
-    ],
+    patterns: [{ name: "Cup and Handle", confidence: 0.92, asset: "BTC" }],
   })),
 
   // Whale watching
@@ -77,9 +78,7 @@ export const bonusFeaturesRouter = router({
 
   // Flash loan opportunities
   getFlashLoanOps: publicProcedure.query(async () => ({
-    opportunities: [
-      { protocol: "Aave", available: 1000000, fee: 0.05 },
-    ],
+    opportunities: [{ protocol: "Aave", available: 1000000, fee: 0.05 }],
   })),
 
   // MEV protection
@@ -115,7 +114,12 @@ export const bonusFeaturesRouter = router({
 
   // Social sharing hooks
   shareToSocial: protectedProcedure
-    .input(z.object({ platform: z.enum(["twitter", "discord", "telegram"]), message: z.string() }))
+    .input(
+      z.object({
+        platform: z.enum(["twitter", "discord", "telegram"]),
+        message: z.string(),
+      })
+    )
     .mutation(async ({ input }) => ({
       success: true,
       url: "https://twitter.com/...",
@@ -261,23 +265,23 @@ export const bonusFeaturesRouter = router({
   // Self-healing infrastructure
   enableSelfHealing: adminProcedure.mutation(async () => ({
     status: "active",
-      detection: "real-time",
-      recovery: "automatic",
-    })),
+    detection: "real-time",
+    recovery: "automatic",
+  })),
 
   // Predictive scaling
   enablePredictiveScaling: adminProcedure.mutation(async () => ({
-      status: "active",
-      model: "ML-based",
-      accuracy: 0.92,
-    })),
+    status: "active",
+    model: "ML-based",
+    accuracy: 0.92,
+  })),
 
   // Chaos engineering
   runChaosTest: adminProcedure.mutation(async () => ({
-      testId: `chaos-${Date.now()}`,
-      status: "running",
-      resilience: "high",
-    })),
+    testId: `chaos-${Date.now()}`,
+    status: "running",
+    resilience: "high",
+  })),
 
   // Zero-knowledge proofs
   generateZKProof: protectedProcedure
@@ -289,9 +293,9 @@ export const bonusFeaturesRouter = router({
 
   // Quantum-resistant encryption
   enableQuantumResistance: adminProcedure.mutation(async () => ({
-      status: "active",
-      algorithm: "lattice-based",
-    })),
+    status: "active",
+    algorithm: "lattice-based",
+  })),
 
   // Decentralized governance
   createGovernanceProposal: protectedProcedure
@@ -304,13 +308,13 @@ export const bonusFeaturesRouter = router({
 
   // DAO treasury
   getTreasuryBalance: publicProcedure.query(async () => ({
-      balance: Math.random() * 100000000,
-      allocation: {
-        development: 0.4,
-        marketing: 0.3,
-        reserves: 0.3,
-      },
-    })),
+    balance: Math.random() * 100000000,
+    allocation: {
+      development: 0.4,
+      marketing: 0.3,
+      reserves: 0.3,
+    },
+  })),
 
   // Cross-chain bridges
   bridgeAssets: protectedProcedure
@@ -322,7 +326,7 @@ export const bonusFeaturesRouter = router({
 
   // Interoperability layer
   getInteropStatus: publicProcedure.query(async () => ({
-      chains: ["Ethereum", "Polygon", "Arbitrum", "Optimism", "Solana"],
-      status: "connected",
-    })),
+    chains: ["Ethereum", "Polygon", "Arbitrum", "Optimism", "Solana"],
+    status: "connected",
+  })),
 });

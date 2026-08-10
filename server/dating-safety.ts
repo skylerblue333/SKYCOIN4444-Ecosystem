@@ -1,14 +1,14 @@
-import { db } from './db';
-import { datingBlocks, datingReports, datingProfiles } from '../drizzle/schema';
-import { eq, and, or } from 'drizzle-orm';
+import { db } from "./db";
+import { datingBlocks, datingReports, datingProfiles } from "../drizzle/schema";
+import { eq, and, or } from "drizzle-orm";
 
-export type ReportReason = 
-  | 'inappropriate_photos'
-  | 'fake_profile'
-  | 'harassment'
-  | 'spam'
-  | 'underage'
-  | 'other';
+export type ReportReason =
+  | "inappropriate_photos"
+  | "fake_profile"
+  | "harassment"
+  | "spam"
+  | "underage"
+  | "other";
 
 export interface BlockUser {
   blockerId: number;
@@ -39,18 +39,17 @@ export async function blockUser(data: BlockUser) {
       );
 
     if (existing.length > 0) {
-      throw new Error('User already blocked');
+      throw new Error("User already blocked");
     }
 
-    const result = await db
-      .insert(datingBlocks)
-      .values(data)
-      .returning();
+    const result = await db.insert(datingBlocks).values(data).returning();
 
-    console.log(`[Safety] User ${data.blockerId} blocked ${data.blockedUserId}`);
+    console.log(
+      `[Safety] User ${data.blockerId} blocked ${data.blockedUserId}`
+    );
     return result[0];
   } catch (error) {
-    console.error('[Block User] Error:', error);
+    console.error("[Block User] Error:", error);
     throw error;
   }
 }
@@ -72,7 +71,7 @@ export async function unblockUser(blockerId: number, blockedUserId: number) {
     console.log(`[Safety] User ${blockerId} unblocked ${blockedUserId}`);
     return result;
   } catch (error) {
-    console.error('[Unblock User] Error:', error);
+    console.error("[Unblock User] Error:", error);
     throw error;
   }
 }
@@ -80,7 +79,10 @@ export async function unblockUser(blockerId: number, blockedUserId: number) {
 /**
  * Check if a user is blocked
  */
-export async function isUserBlocked(blockerId: number, userId: number): Promise<boolean> {
+export async function isUserBlocked(
+  blockerId: number,
+  userId: number
+): Promise<boolean> {
   try {
     const blocked = await db
       .select()
@@ -94,7 +96,7 @@ export async function isUserBlocked(blockerId: number, userId: number): Promise<
 
     return blocked.length > 0;
   } catch (error) {
-    console.error('[Check Block] Error:', error);
+    console.error("[Check Block] Error:", error);
     return false;
   }
 }
@@ -111,7 +113,7 @@ export async function getBlockedUsers(userId: number) {
 
     return blocks;
   } catch (error) {
-    console.error('[Get Blocked Users] Error:', error);
+    console.error("[Get Blocked Users] Error:", error);
     throw error;
   }
 }
@@ -133,14 +135,14 @@ export async function reportUser(data: ReportUser) {
       );
 
     if (existing.length > 0) {
-      throw new Error('User already reported');
+      throw new Error("User already reported");
     }
 
     const result = await db
       .insert(datingReports)
       .values({
         ...data,
-        status: 'pending',
+        status: "pending",
       })
       .returning();
 
@@ -158,7 +160,7 @@ export async function reportUser(data: ReportUser) {
 
     return result[0];
   } catch (error) {
-    console.error('[Report User] Error:', error);
+    console.error("[Report User] Error:", error);
     throw error;
   }
 }
@@ -171,12 +173,12 @@ export async function getPendingReports(limit = 50) {
     const reports = await db
       .select()
       .from(datingReports)
-      .where(eq(datingReports.status, 'pending'))
+      .where(eq(datingReports.status, "pending"))
       .limit(limit);
 
     return reports;
   } catch (error) {
-    console.error('[Get Pending Reports] Error:', error);
+    console.error("[Get Pending Reports] Error:", error);
     throw error;
   }
 }
@@ -193,7 +195,7 @@ export async function getUserReports(userId: number) {
 
     return reports;
   } catch (error) {
-    console.error('[Get User Reports] Error:', error);
+    console.error("[Get User Reports] Error:", error);
     throw error;
   }
 }
@@ -203,20 +205,20 @@ export async function getUserReports(userId: number) {
  */
 export async function resolveReport(
   reportId: number,
-  action: 'approved' | 'dismissed',
+  action: "approved" | "dismissed",
   moderatorNotes?: string
 ) {
   try {
     const result = await db
       .update(datingReports)
       .set({
-        status: (action === 'approved' ? 'resolved' : 'dismissed') as const,
+        status: (action === "approved" ? "resolved" : "dismissed") as const,
         moderatorNotes,
         resolvedAt: new Date(),
       })
       .where(eq(datingReports.id, reportId));
 
-    if (action === 'approved') {
+    if (action === "approved") {
       // Suspend the user's profile
       await db
         .update(datingProfiles)
@@ -226,9 +228,12 @@ export async function resolveReport(
       console.log(`[Safety] User profile suspended`);
     }
 
-    return { id: reportId, status: action === 'approved' ? 'resolved' : 'dismissed' };
+    return {
+      id: reportId,
+      status: action === "approved" ? "resolved" : "dismissed",
+    };
   } catch (error) {
-    console.error('[Resolve Report] Error:', error);
+    console.error("[Resolve Report] Error:", error);
     throw error;
   }
 }
@@ -249,7 +254,7 @@ export async function suspendProfile(userId: number, reason: string) {
     console.log(`[Safety] User ${userId} profile suspended: ${reason}`);
     return result[0];
   } catch (error) {
-    console.error('[Suspend Profile] Error:', error);
+    console.error("[Suspend Profile] Error:", error);
     throw error;
   }
 }
@@ -270,7 +275,7 @@ export async function unsuspendProfile(userId: number) {
     console.log(`[Safety] User ${userId} profile unsuspended`);
     return result[0];
   } catch (error) {
-    console.error('[Unsuspend Profile] Error:', error);
+    console.error("[Unsuspend Profile] Error:", error);
     throw error;
   }
 }
@@ -287,7 +292,7 @@ export async function isProfileSuspended(userId: number): Promise<boolean> {
 
     return profile.length > 0 && profile[0].suspended === true;
   } catch (error) {
-    console.error('[Check Suspension] Error:', error);
+    console.error("[Check Suspension] Error:", error);
     return false;
   }
 }
@@ -300,17 +305,17 @@ export async function getModerationStats() {
     const pendingReports = await db
       .select()
       .from(datingReports)
-      .where(eq(datingReports.status, 'pending'));
+      .where(eq(datingReports.status, "pending"));
 
     const approvedReports = await db
       .select()
       .from(datingReports)
-      .where(eq(datingReports.status, 'approved'));
+      .where(eq(datingReports.status, "approved"));
 
     const dismissedReports = await db
       .select()
       .from(datingReports)
-      .where(eq(datingReports.status, 'dismissed'));
+      .where(eq(datingReports.status, "dismissed"));
 
     // Note: suspended field doesn't exist in schema, using isActive instead
     const suspendedProfiles = await db
@@ -325,7 +330,7 @@ export async function getModerationStats() {
       suspendedProfiles: suspendedProfiles.length,
     };
   } catch (error) {
-    console.error('[Moderation Stats] Error:', error);
+    console.error("[Moderation Stats] Error:", error);
     throw error;
   }
 }

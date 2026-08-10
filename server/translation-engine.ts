@@ -50,7 +50,8 @@ export async function detectLanguage(text: string): Promise<string> {
       messages: [
         {
           role: "system",
-          content: "You are a language detection expert. Respond with ONLY the language code (e.g., 'en', 'zh', 'es'). No explanation.",
+          content:
+            "You are a language detection expert. Respond with ONLY the language code (e.g., 'en', 'zh', 'es'). No explanation.",
         },
         {
           role: "user",
@@ -60,7 +61,8 @@ export async function detectLanguage(text: string): Promise<string> {
     });
 
     const content = response.choices[0]?.message?.content;
-    const detected = (typeof content === "string" ? content : "").trim().toLowerCase() || "en";
+    const detected =
+      (typeof content === "string" ? content : "").trim().toLowerCase() || "en";
     return Object.keys(LANGUAGE_CODES).includes(detected) ? detected : "en";
   } catch (error) {
     console.error("[Translation] Language detection error:", error);
@@ -71,7 +73,9 @@ export async function detectLanguage(text: string): Promise<string> {
 /**
  * Translate text using LLM
  */
-export async function translateText(request: TranslationRequest): Promise<TranslationResult> {
+export async function translateText(
+  request: TranslationRequest
+): Promise<TranslationResult> {
   const { text, targetLang, context } = request;
 
   try {
@@ -107,7 +111,8 @@ Maintain tone, style, and meaning. Respond with ONLY the translated text, no exp
     });
 
     const content = response.choices[0]?.message?.content;
-    const translated = (typeof content === "string" ? content : "").trim() || text;
+    const translated =
+      (typeof content === "string" ? content : "").trim() || text;
 
     return {
       original: text,
@@ -158,7 +163,12 @@ export async function createBilingualMessage(
   text: string,
   primaryLang: string,
   secondaryLang: string
-): Promise<{ primary: string; secondary: string; primaryLang: string; secondaryLang: string }> {
+): Promise<{
+  primary: string;
+  secondary: string;
+  primaryLang: string;
+  secondaryLang: string;
+}> {
   const translation = await translateText({
     text,
     sourceLang: primaryLang,

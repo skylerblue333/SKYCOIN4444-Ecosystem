@@ -6,7 +6,10 @@ export const verificationRouter = router({
   verifyMetric: publicProcedure
     .input(z.object({ metricId: z.string(), value: z.number() }))
     .query(async ({ input }) => {
-      const hash = crypto.createHash("sha256").update(JSON.stringify(input)).digest("hex");
+      const hash = crypto
+        .createHash("sha256")
+        .update(JSON.stringify(input))
+        .digest("hex");
       return {
         metricId: input.metricId,
         value: input.value,
@@ -17,7 +20,11 @@ export const verificationRouter = router({
         dataHash: hash,
         verified: true,
         auditTrail: [
-          { action: "queried", timestamp: new Date().toISOString(), user: "system" },
+          {
+            action: "queried",
+            timestamp: new Date().toISOString(),
+            user: "system",
+          },
         ],
       };
     }),

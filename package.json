@@ -9,7 +9,7 @@
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
-    "test": "vitest run",
+    "test": "STRIPE_API_KEY=sk_test_51MockKeyForTestingOnly00000000 OPENAI_API_KEY=sk-proj-MockKeyForTestingOnly00000000000000000000 ADMIN_WALLET_ADDRESS=0x16188a203a715de6b131e273b3a9bcf6d09e7d0a DATABASE_URL=mysql://root:root@localhost:3306/skycoin vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },
   "dependencies": {
@@ -108,6 +108,7 @@
   },
   "devDependencies": {
     "@builder.io/vite-plugin-jsx-loc": "^0.1.1",
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.2",
     "@types/compression": "^1.8.1",
@@ -123,6 +124,9 @@
     "autoprefixer": "^10.5.2",
     "drizzle-kit": "^0.31.10",
     "esbuild": "^0.28.1",
+    "eslint": "^10.8.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
     "pnpm": "^11.9.0",
     "postcss": "^8.5.16",
     "prettier": "^3.9.4",
@@ -130,6 +134,7 @@
     "tsx": "^4.22.5",
     "tw-animate-css": "^1.4.0",
     "typescript": "6.0.3",
+    "typescript-eslint": "^8.66.0",
     "vite": "^8.1.3",
     "vite-plugin-manus-runtime": "0.0.59",
     "vitest": "^4.1.9"
@@ -137,22 +142,9 @@
   "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af",
   "pnpm": {
     "overrides": {
-      "tailwindcss>nanoid": "3.3.7",
-      "esbuild@<=0.24.2": ">=0.25.0",
-      "dompurify@>=3.1.3 <=3.3.1": ">=3.3.2",
-      "dompurify@<=3.3.1": ">=3.3.2",
-      "dompurify@<=3.3.3": ">=3.4.0",
-      "dompurify@<3.4.0": ">=3.4.0",
-      "dompurify@>=1.0.10 <3.4.0": ">=3.4.0",
-      "dompurify@>=3.0.1 <3.4.0": ">=3.4.0",
-      "dompurify@<3.3.2": ">=3.3.2",
-      "uuid@<11.1.1": ">=11.1.1",
-      "dompurify@<3.4.7": ">=3.4.7",
-      "dompurify@<=3.4.5": ">=3.4.6",
-      "dompurify@<3.4.9": ">=3.4.9",
-      "dompurify@>=3.0.0 <=3.4.7": ">=3.4.8",
-      "dompurify@<=3.4.6": ">=3.4.7",
-      "dompurify@<=3.4.10": ">=3.4.11"
+      "dompurify": ">=3.4.12",
+      "postcss": ">=8.5.17",
+      "nanoid": ">=3.3.18"
     }
   }
 }

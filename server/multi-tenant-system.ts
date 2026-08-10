@@ -1,6 +1,6 @@
 /**
  * Multi-Tenant System for SKYCOIN4444
- * 
+ *
  * Enables:
  * - Tenant isolation
  * - Data segregation
@@ -8,7 +8,7 @@
  * - Billing & usage tracking
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // Tenant schema
 export const TenantSchema = z.object({
@@ -16,18 +16,20 @@ export const TenantSchema = z.object({
   name: z.string(),
   slug: z.string(),
   domain: z.string().optional(),
-  status: z.enum(['active', 'suspended', 'deleted']),
-  tier: z.enum(['free', 'pro', 'enterprise']),
+  status: z.enum(["active", "suspended", "deleted"]),
+  tier: z.enum(["free", "pro", "enterprise"]),
   createdAt: z.number(),
   updatedAt: z.number(),
   config: z.record(z.string(), z.any()).optional(),
-  limits: z.object({
-    users: z.number(),
-    storage: z.number(), // GB
-    apiCalls: z.number(), // per month
-    experiments: z.number(),
-    connectors: z.number(),
-  }).optional(),
+  limits: z
+    .object({
+      users: z.number(),
+      storage: z.number(), // GB
+      apiCalls: z.number(), // per month
+      experiments: z.number(),
+      connectors: z.number(),
+    })
+    .optional(),
   features: z.array(z.string()).optional(),
   metadata: z.record(z.string(), z.any()).optional(),
 });
@@ -42,7 +44,7 @@ export const TenantTiers = {
     apiCalls: 10000, // 10k per month
     experiments: 2,
     connectors: 1,
-    features: ['basic_analytics', 'feedback_hub'],
+    features: ["basic_analytics", "feedback_hub"],
     price: 0,
   },
   pro: {
@@ -52,16 +54,16 @@ export const TenantTiers = {
     experiments: 20,
     connectors: 5,
     features: [
-      'basic_analytics',
-      'feedback_hub',
-      'adaptive_roadmap',
-      'agent_debate',
-      'competitive_radar',
-      'behavioral_intelligence',
-      'experiment_factory',
-      'narrative_engine',
-      'connector_intelligence',
-      'product_brain',
+      "basic_analytics",
+      "feedback_hub",
+      "adaptive_roadmap",
+      "agent_debate",
+      "competitive_radar",
+      "behavioral_intelligence",
+      "experiment_factory",
+      "narrative_engine",
+      "connector_intelligence",
+      "product_brain",
     ],
     price: 99,
   },
@@ -72,18 +74,18 @@ export const TenantTiers = {
     experiments: 1000,
     connectors: 50,
     features: [
-      'all_features',
-      'custom_integrations',
-      'dedicated_support',
-      'sso',
-      'audit_logs',
-      'custom_domain',
-      'white_label',
-      'api_access',
-      'webhooks',
-      'advanced_security',
+      "all_features",
+      "custom_integrations",
+      "dedicated_support",
+      "sso",
+      "audit_logs",
+      "custom_domain",
+      "white_label",
+      "api_access",
+      "webhooks",
+      "advanced_security",
     ],
-    price: 'custom',
+    price: "custom",
   },
 };
 
@@ -92,7 +94,7 @@ export interface TenantContext {
   tenantId: string;
   tenant: Tenant;
   userId: string;
-  role: 'admin' | 'user' | 'viewer';
+  role: "admin" | "user" | "viewer";
 }
 
 // Usage tracking
@@ -113,15 +115,15 @@ export function createTenantMiddleware() {
     const tenantId = extractTenantId(req);
 
     if (!tenantId) {
-      return res.status(400).json({ error: 'Tenant not specified' });
+      return res.status(400).json({ error: "Tenant not specified" });
     }
 
     try {
       // Load tenant configuration
       const tenant = await loadTenant(tenantId);
 
-      if (!tenant || tenant.status !== 'active') {
-        return res.status(403).json({ error: 'Tenant not found or inactive' });
+      if (!tenant || tenant.status !== "active") {
+        return res.status(403).json({ error: "Tenant not found or inactive" });
       }
 
       // Attach tenant context to request
@@ -129,15 +131,15 @@ export function createTenantMiddleware() {
         tenantId,
         tenant,
         userId: req.user?.id,
-        role: req.user?.role || 'viewer',
+        role: req.user?.role || "viewer",
       };
 
       // Set tenant-specific headers
-      res.setHeader('X-Tenant-ID', tenantId);
+      res.setHeader("X-Tenant-ID", tenantId);
 
       next();
     } catch (error) {
-      res.status(500).json({ error: 'Failed to load tenant' });
+      res.status(500).json({ error: "Failed to load tenant" });
     }
   };
 }
@@ -149,7 +151,7 @@ function extractTenantId(req: any): string | null {
   if (subdomain) return subdomain;
 
   // Try header (e.g., X-Tenant-ID)
-  const header = req.headers['x-tenant-id'];
+  const header = req.headers["x-tenant-id"];
   if (header) return header;
 
   // Try path (e.g., /api/tenant/acme/...)
@@ -167,8 +169,8 @@ async function loadTenant(tenantId: string): Promise<Tenant | null> {
     id: tenantId,
     name: `Tenant ${tenantId}`,
     slug: tenantId,
-    status: 'active',
-    tier: 'pro',
+    status: "active",
+    tier: "pro",
     createdAt: Date.now(),
     updatedAt: Date.now(),
     config: {},
@@ -192,7 +194,10 @@ export class TenantDataIsolation {
   /**
    * Ensure user belongs to tenant
    */
-  static async verifyUserTenant(userId: string, tenantId: string): Promise<boolean> {
+  static async verifyUserTenant(
+    userId: string,
+    tenantId: string
+  ): Promise<boolean> {
     // In production, query database to verify relationship
     return true;
   }
@@ -245,7 +250,10 @@ export class TenantUsageTracker {
     return this.usage.get(this.getUsageKey(tenantId)) || null;
   }
 
-  checkLimits(tenantId: string, tenant: Tenant): { exceeded: boolean; violations: string[] } {
+  checkLimits(
+    tenantId: string,
+    tenant: Tenant
+  ): { exceeded: boolean; violations: string[] } {
     const usage = this.getUsage(tenantId);
     if (!usage || !tenant.limits) {
       return { exceeded: false, violations: [] };
@@ -254,16 +262,16 @@ export class TenantUsageTracker {
     const violations: string[] = [];
 
     if (usage.apiCalls > tenant.limits.apiCalls) {
-      violations.push('API call limit exceeded');
+      violations.push("API call limit exceeded");
     }
     if (usage.storage > tenant.limits.storage * 1024 * 1024 * 1024) {
-      violations.push('Storage limit exceeded');
+      violations.push("Storage limit exceeded");
     }
     if (usage.experiments > tenant.limits.experiments) {
-      violations.push('Experiment limit exceeded');
+      violations.push("Experiment limit exceeded");
     }
     if (usage.activeUsers > tenant.limits.users) {
-      violations.push('User limit exceeded');
+      violations.push("User limit exceeded");
     }
 
     return {
@@ -274,13 +282,13 @@ export class TenantUsageTracker {
 
   private getUsageKey(tenantId: string): string {
     const now = new Date();
-    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     return `${tenantId}:${month}`;
   }
 
   private createUsageRecord(tenantId: string): TenantUsage {
     const now = new Date();
-    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     return {
       tenantId,
       month,
@@ -300,8 +308,9 @@ export class TenantBilling {
    */
   static calculateBill(tenant: Tenant, usage: TenantUsage): number {
     const tierConfig = TenantTiers[tenant.tier];
-    const basePrice = typeof tierConfig.price === 'number' ? tierConfig.price : 0;
-    if (tierConfig.price === 'custom') {
+    const basePrice =
+      typeof tierConfig.price === "number" ? tierConfig.price : 0;
+    if (tierConfig.price === "custom") {
       return 0; // Custom pricing handled separately
     }
 
@@ -340,7 +349,7 @@ export class TenantBilling {
       overages: this.calculateOverages(tenant, usage),
       total: bill,
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      status: 'pending',
+      status: "pending",
     };
   }
 
@@ -349,11 +358,12 @@ export class TenantBilling {
     const overages: Record<string, number> = {};
 
     if (usage.apiCalls > tierConfig.apiCalls) {
-      overages['apiCalls'] = (usage.apiCalls - tierConfig.apiCalls) / 1000000 * 10;
+      overages["apiCalls"] =
+        ((usage.apiCalls - tierConfig.apiCalls) / 1000000) * 10;
     }
 
     if (usage.storage > tierConfig.storage) {
-      overages['storage'] = (usage.storage - tierConfig.storage) * 0.1;
+      overages["storage"] = (usage.storage - tierConfig.storage) * 0.1;
     }
 
     return overages;

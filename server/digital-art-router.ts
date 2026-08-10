@@ -25,7 +25,7 @@ export const digitalArtRouter = router({
       const catalog = generatePrintCatalog();
       let filtered = catalog;
       if (input.series) {
-        filtered = filtered.filter((p) => p.series === input.series);
+        filtered = filtered.filter(p => p.series === input.series);
       }
       return filtered;
     }),
@@ -46,7 +46,7 @@ export const digitalArtRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const catalog = generatePrintCatalog();
-      const print = catalog.find((p) => p.id === input.printId);
+      const print = catalog.find(p => p.id === input.printId);
       if (!print) throw new Error("Print not found");
       return generateCOA(print, ctx.user!.id);
     }),
@@ -59,13 +59,13 @@ export const digitalArtRouter = router({
   // ─── Series List ─────────────────────────────────────────────────────────
   getSeries: publicProcedure.query(() => {
     const catalog = generatePrintCatalog();
-    const series = [...new Set(catalog.map((p) => p.series))];
-    return series.map((s) => ({
+    const series = [...new Set(catalog.map(p => p.series))];
+    return series.map(s => ({
       name: s,
-      count: catalog.filter((p) => p.series === s).length,
+      count: catalog.filter(p => p.series === s).length,
       priceRange: {
-        min: Math.min(...catalog.filter((p) => p.series === s).map((p) => p.price)),
-        max: Math.max(...catalog.filter((p) => p.series === s).map((p) => p.price)),
+        min: Math.min(...catalog.filter(p => p.series === s).map(p => p.price)),
+        max: Math.max(...catalog.filter(p => p.series === s).map(p => p.price)),
       },
     }));
   }),
@@ -87,8 +87,11 @@ export const digitalArtRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const total = input.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const itemNames = input.items.map((i) => i.title).join(", ");
+      const total = input.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+      const itemNames = input.items.map(i => i.title).join(", ");
 
       // Notify owner of new art store purchase
       await notifyOwner({

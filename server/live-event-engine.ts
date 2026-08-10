@@ -11,7 +11,16 @@ export interface LiveEvent {
   creatorId: number;
   title: string;
   description: string;
-  type: "concert" | "conference" | "workshop" | "tournament" | "charity" | "product_launch" | "ama" | "space" | "class";
+  type:
+    | "concert"
+    | "conference"
+    | "workshop"
+    | "tournament"
+    | "charity"
+    | "product_launch"
+    | "ama"
+    | "space"
+    | "class";
   status: "draft" | "published" | "live" | "ended" | "cancelled";
   scheduledAt: Date;
   endedAt?: Date;
@@ -42,11 +51,25 @@ const _events = new Map<string, LiveEvent>();
 const _tickets = new Map<string, EventTicket>();
 
 export const liveEventEngine = {
-  createEvent(creatorId: number, data: Omit<LiveEvent, "id" | "creatorId" | "status" | "currentAttendees" | "createdAt"> & { category?: string; ticketPrice?: number }): LiveEvent & { hostId: number } {
+  createEvent(
+    creatorId: number,
+    data: Omit<
+      LiveEvent,
+      "id" | "creatorId" | "status" | "currentAttendees" | "createdAt"
+    > & { category?: string; ticketPrice?: number }
+  ): LiveEvent & { hostId: number } {
     const { category, ticketPrice, ...rest } = data as any;
     const id = `event_${creatorId}_${Date.now()}`;
     const type = rest.type ?? category ?? "ama";
-    const event: LiveEvent = { id, creatorId, status: "draft", currentAttendees: 0, createdAt: new Date(), ...rest, type };
+    const event: LiveEvent = {
+      id,
+      creatorId,
+      status: "draft",
+      currentAttendees: 0,
+      createdAt: new Date(),
+      ...rest,
+      type,
+    };
     (event as any).hostId = creatorId;
     (event as any).category = category ?? type;
     if (ticketPrice !== undefined) (event as any).ticketPrice = ticketPrice;
@@ -54,15 +77,23 @@ export const liveEventEngine = {
     return { ...event, hostId: creatorId };
   },
 
-  publishEvent(eventId: string): { success: boolean; event?: LiveEvent; error?: string } {
+  publishEvent(eventId: string): {
+    success: boolean;
+    event?: LiveEvent;
+    error?: string;
+  } {
     const event = _events.get(eventId);
     if (!event) return { success: false, error: "Event not found" };
-    if (event.status !== "draft") return { success: false, error: "Event is not in draft status" };
+    if (event.status !== "draft")
+      return { success: false, error: "Event is not in draft status" };
     event.status = "published";
     return { success: true, event };
   },
 
-  startEvent(eventId: string, streamUrl: string): { success: boolean; event?: LiveEvent; error?: string } {
+  startEvent(
+    eventId: string,
+    streamUrl: string
+  ): { success: boolean; event?: LiveEvent; error?: string } {
     const event = _events.get(eventId);
     if (!event) return { success: false, error: "Event not found" };
     event.status = "live";
@@ -70,7 +101,10 @@ export const liveEventEngine = {
     return { success: true, event };
   },
 
-  endEvent(eventId: string, replayUrl?: string): { success: boolean; event?: LiveEvent } {
+  endEvent(
+    eventId: string,
+    replayUrl?: string
+  ): { success: boolean; event?: LiveEvent } {
     const event = _events.get(eventId);
     if (!event) return { success: false };
     event.status = "ended";
@@ -79,7 +113,12 @@ export const liveEventEngine = {
     return { success: true, event };
   },
 
-  purchaseTicket(eventIdOrUserId: string | number, userIdOrEventId: number | string, tier: EventTicket["tier"] = "free", currency: "USD" | "SKY" = "USD"): EventTicket & { success?: boolean } {
+  purchaseTicket(
+    eventIdOrUserId: string | number,
+    userIdOrEventId: number | string,
+    tier: EventTicket["tier"] = "free",
+    currency: "USD" | "SKY" = "USD"
+  ): EventTicket & { success?: boolean } {
     // Support both (eventId, userId) and (userId, eventId, tier, currency) signatures
     let userId: number;
     let eventId: string;
@@ -91,14 +130,22 @@ export const liveEventEngine = {
       eventId = userIdOrEventId as string;
     }
     const result = this._purchaseTicketImpl(userId, eventId, tier, currency);
-    if ("ticket" in result && result.ticket) return { ...result.ticket, success: result.success };
+    if ("ticket" in result && result.ticket)
+      return { ...result.ticket, success: result.success };
     return result as any;
   },
-  _purchaseTicketImpl(userId: number, eventId: string, tier: EventTicket["tier"], currency: "USD" | "SKY"): EventTicket | { success: boolean; ticket?: EventTicket; error?: string } {
+  _purchaseTicketImpl(
+    userId: number,
+    eventId: string,
+    tier: EventTicket["tier"],
+    currency: "USD" | "SKY"
+  ): EventTicket | { success: boolean; ticket?: EventTicket; error?: string } {
     const event = _events.get(eventId);
     if (!event) return { success: false, error: "Event not found" };
-    if (event.status === "cancelled" || event.status === "ended") return { success: false, error: "Event is not available" };
-    if (event.currentAttendees >= event.maxAttendees) return { success: false, error: "Event is sold out" };
+    if (event.status === "cancelled" || event.status === "ended")
+      return { success: false, error: "Event is not available" };
+    if (event.currentAttendees >= event.maxAttendees)
+      return { success: false, error: "Event is sold out" };
 
     const prices: Record<EventTicket["tier"], { USD: number; SKY: number }> = {
       free: { USD: 0, SKY: 0 },
@@ -109,10 +156,15 @@ export const liveEventEngine = {
 
     const id = `ticket_${userId}_${eventId}_${Date.now()}`;
     const ticket: EventTicket = {
-      id, eventId, userId, tier,
+      id,
+      eventId,
+      userId,
+      tier,
       price: prices[tier][currency],
-      currency, purchasedAt: new Date(),
-      checkedIn: false, refunded: false,
+      currency,
+      purchasedAt: new Date(),
+      checkedIn: false,
+      refunded: false,
     };
     _tickets.set(id, ticket);
     event.currentAttendees++;
@@ -122,18 +174,25 @@ export const liveEventEngine = {
   checkIn(ticketId: string): { success: boolean; error?: string } {
     const ticket = _tickets.get(ticketId);
     if (!ticket) return { success: false, error: "Ticket not found" };
-    if (ticket.checkedIn) return { success: false, error: "Already checked in" };
-    if (ticket.refunded) return { success: false, error: "Ticket has been refunded" };
+    if (ticket.checkedIn)
+      return { success: false, error: "Already checked in" };
+    if (ticket.refunded)
+      return { success: false, error: "Ticket has been refunded" };
     ticket.checkedIn = true;
     ticket.checkedInAt = new Date();
     return { success: true };
   },
 
-  refundTicket(ticketId: string): { success: boolean; amount?: number; error?: string } {
+  refundTicket(ticketId: string): {
+    success: boolean;
+    amount?: number;
+    error?: string;
+  } {
     const ticket = _tickets.get(ticketId);
     if (!ticket) return { success: false, error: "Ticket not found" };
     if (ticket.refunded) return { success: false, error: "Already refunded" };
-    if (ticket.checkedIn) return { success: false, error: "Cannot refund a used ticket" };
+    if (ticket.checkedIn)
+      return { success: false, error: "Cannot refund a used ticket" };
     ticket.refunded = true;
     const event = _events.get(ticket.eventId);
     if (event) event.currentAttendees--;
@@ -144,8 +203,13 @@ export const liveEventEngine = {
     return _events.get(eventId) ?? null;
   },
 
-  getCreatorEvents(creatorId: number, status?: LiveEvent["status"]): LiveEvent[] {
-    const events = Array.from(_events.values()).filter(e => e.creatorId === creatorId);
+  getCreatorEvents(
+    creatorId: number,
+    status?: LiveEvent["status"]
+  ): LiveEvent[] {
+    const events = Array.from(_events.values()).filter(
+      e => e.creatorId === creatorId
+    );
     return status ? events.filter(e => e.status === status) : events;
   },
 
@@ -155,26 +219,59 @@ export const liveEventEngine = {
       .map(t => ({ ...t, event: _events.get(t.eventId) }));
   },
 
-  getUpcomingEvents(category?: string, limit = 50): (LiveEvent & { hostId: number })[] {
+  getUpcomingEvents(
+    category?: string,
+    limit = 50
+  ): (LiveEvent & { hostId: number })[] {
     const now = new Date();
-    let events = Array.from(_events.values()).filter(e => e.scheduledAt > now && e.status !== "cancelled");
-    if (category) events = events.filter(e => e.type === category || (e as any).category === category);
-    return events.sort((a, b) => a.scheduledAt.getTime() - b.scheduledAt.getTime()).slice(0, limit).map(e => ({ ...e, hostId: e.creatorId }));
+    let events = Array.from(_events.values()).filter(
+      e => e.scheduledAt > now && e.status !== "cancelled"
+    );
+    if (category)
+      events = events.filter(
+        e => e.type === category || (e as any).category === category
+      );
+    return events
+      .sort((a, b) => a.scheduledAt.getTime() - b.scheduledAt.getTime())
+      .slice(0, limit)
+      .map(e => ({ ...e, hostId: e.creatorId }));
   },
-  getEventAnalytics(eventId: string): { totalAttendees: number; revenue: number; checkedIn: number; byTier: Record<string, number> } {
+  getEventAnalytics(eventId: string): {
+    totalAttendees: number;
+    revenue: number;
+    checkedIn: number;
+    byTier: Record<string, number>;
+  } {
     const stats = this.getEventStats(eventId);
     const event = _events.get(eventId);
-    return { totalAttendees: event?.currentAttendees ?? 0, revenue: stats.revenue, checkedIn: stats.checkedIn, byTier: stats.byTier };
+    return {
+      totalAttendees: event?.currentAttendees ?? 0,
+      revenue: stats.revenue,
+      checkedIn: stats.checkedIn,
+      byTier: stats.byTier,
+    };
   },
-  getEventStats(eventId: string): { totalTickets: number; checkedIn: number; revenue: number; byTier: Record<string, number> } {
-    const eventTickets = Array.from(_tickets.values()).filter(t => t.eventId === eventId && !t.refunded);
+  getEventStats(eventId: string): {
+    totalTickets: number;
+    checkedIn: number;
+    revenue: number;
+    byTier: Record<string, number>;
+  } {
+    const eventTickets = Array.from(_tickets.values()).filter(
+      t => t.eventId === eventId && !t.refunded
+    );
     const byTier: Record<string, number> = {};
     let revenue = 0;
     for (const t of eventTickets) {
       byTier[t.tier] = (byTier[t.tier] ?? 0) + 1;
       revenue += t.price;
     }
-    return { totalTickets: eventTickets.length, checkedIn: eventTickets.filter(t => t.checkedIn).length, revenue, byTier };
+    return {
+      totalTickets: eventTickets.length,
+      checkedIn: eventTickets.filter(t => t.checkedIn).length,
+      revenue,
+      byTier,
+    };
   },
 };
 
@@ -182,16 +279,30 @@ export const liveEventEngine = {
 
 export interface EventLeaderboard {
   eventId: string;
-  entries: { userId: number; score: number; rank: number; displayName: string; reward?: string }[];
+  entries: {
+    userId: number;
+    score: number;
+    rank: number;
+    displayName: string;
+    reward?: string;
+  }[];
   updatedAt: Date;
 }
 
 const _leaderboards = new Map<string, EventLeaderboard>();
 
 export const eventLeaderboards = {
-  createLeaderboard(eventId: string, name: string, type: string): EventLeaderboard & { id: string; name: string; type: string } {
+  createLeaderboard(
+    eventId: string,
+    name: string,
+    type: string
+  ): EventLeaderboard & { id: string; name: string; type: string } {
     const id = `lb_${eventId}_${Date.now()}`;
-    const lb: EventLeaderboard = { eventId, entries: [], updatedAt: new Date() };
+    const lb: EventLeaderboard = {
+      eventId,
+      entries: [],
+      updatedAt: new Date(),
+    };
     _leaderboards.set(id, lb);
     _leaderboards.set(eventId, lb);
     return { ...lb, id, name, type };
@@ -201,21 +312,38 @@ export const eventLeaderboards = {
     if (!lb) return;
     const existing = lb.entries.find(e => e.userId === userId);
     if (existing) existing.score = score;
-    else lb.entries.push({ userId, score, rank: 0, displayName: `user_${userId}` });
+    else
+      lb.entries.push({
+        userId,
+        score,
+        rank: 0,
+        displayName: `user_${userId}`,
+      });
     lb.entries.sort((a, b) => b.score - a.score);
-    lb.entries.forEach((e, i) => { e.rank = i + 1; });
+    lb.entries.forEach((e, i) => {
+      e.rank = i + 1;
+    });
     lb.updatedAt = new Date();
   },
   getTopN(leaderboardId: string, n: number): EventLeaderboard["entries"] {
     return (_leaderboards.get(leaderboardId)?.entries ?? []).slice(0, n);
   },
   initLeaderboard(eventId: string): EventLeaderboard {
-    const lb: EventLeaderboard = { eventId, entries: [], updatedAt: new Date() };
+    const lb: EventLeaderboard = {
+      eventId,
+      entries: [],
+      updatedAt: new Date(),
+    };
     _leaderboards.set(eventId, lb);
     return lb;
   },
 
-  updateScore(eventId: string, userId: number, score: number, displayName: string): EventLeaderboard {
+  updateScore(
+    eventId: string,
+    userId: number,
+    score: number,
+    displayName: string
+  ): EventLeaderboard {
     const lb = _leaderboards.get(eventId) ?? this.initLeaderboard(eventId);
     const existing = lb.entries.find(e => e.userId === userId);
     if (existing) {
@@ -225,7 +353,9 @@ export const eventLeaderboards = {
       lb.entries.push({ userId, score, rank: 0, displayName });
     }
     lb.entries.sort((a, b) => b.score - a.score);
-    lb.entries.forEach((e, i) => { e.rank = i + 1; });
+    lb.entries.forEach((e, i) => {
+      e.rank = i + 1;
+    });
     lb.updatedAt = new Date();
     return lb;
   },
@@ -234,7 +364,10 @@ export const eventLeaderboards = {
     return (_leaderboards.get(eventId)?.entries ?? []).slice(0, limit);
   },
 
-  setRewards(eventId: string, rewards: { rank: number; reward: string }[]): void {
+  setRewards(
+    eventId: string,
+    rewards: { rank: number; reward: string }[]
+  ): void {
     const lb = _leaderboards.get(eventId);
     if (!lb) return;
     for (const { rank, reward } of rewards) {
@@ -267,7 +400,11 @@ const _raffleEntries = new Map<string, { userId: number; tickets: number }[]>();
 
 export const liveRaffles = {
   // Wrapper: createRaffle(eventId, creatorId, data) — test-friendly signature
-  createRaffle(eventIdOrCreatorId: string | number, creatorIdOrData: number | object, dataOrUndefined?: object): Raffle {
+  createRaffle(
+    eventIdOrCreatorId: string | number,
+    creatorIdOrData: number | object,
+    dataOrUndefined?: object
+  ): Raffle {
     let creatorId: number;
     let eventId: string | undefined;
     let data: any;
@@ -281,9 +418,19 @@ export const liveRaffles = {
     }
     const id = `raffle_${creatorId}_${Date.now()}`;
     const raffle: Raffle = {
-      id, creatorId, soldTickets: 0, status: "open", createdAt: new Date(),
+      id,
+      creatorId,
+      soldTickets: 0,
+      status: "open",
+      createdAt: new Date(),
       title: (data as any).prize ?? "Raffle",
-      prizes: [{ rank: 1, description: (data as any).prize ?? "Prize", value: (data as any).ticketPrice ?? 0 }],
+      prizes: [
+        {
+          rank: 1,
+          description: (data as any).prize ?? "Prize",
+          value: (data as any).ticketPrice ?? 0,
+        },
+      ],
       ticketPrice: (data as any).ticketPrice ?? 0,
       currency: (data as any).currency ?? "USD",
       maxTickets: (data as any).maxTickets ?? 100,
@@ -296,7 +443,10 @@ export const liveRaffles = {
     _raffleEntries.set(id, []);
     return raffle;
   },
-  purchaseTicket(raffleId: string, userId: number): { raffleId: string; userId: number; ticketNumber: number } {
+  purchaseTicket(
+    raffleId: string,
+    userId: number
+  ): { raffleId: string; userId: number; ticketNumber: number } {
     const raffle = _raffles.get(raffleId);
     if (raffle) {
       const entries = _raffleEntries.get(raffleId) ?? [];
@@ -322,19 +472,38 @@ export const liveRaffles = {
     raffle.winners = [{ userId: winnerId, prize: raffle.title, rank: 1 }];
     return { winnerId, prize: raffle.title };
   },
-  _createRaffleRaw(creatorId: number, data: Omit<Raffle, "id" | "creatorId" | "soldTickets" | "status" | "createdAt">): Raffle {
+  _createRaffleRaw(
+    creatorId: number,
+    data: Omit<
+      Raffle,
+      "id" | "creatorId" | "soldTickets" | "status" | "createdAt"
+    >
+  ): Raffle {
     const id = `raffle_${creatorId}_${Date.now()}`;
-    const raffle: Raffle = { id, creatorId, soldTickets: 0, status: "open", createdAt: new Date(), ...data };
+    const raffle: Raffle = {
+      id,
+      creatorId,
+      soldTickets: 0,
+      status: "open",
+      createdAt: new Date(),
+      ...data,
+    };
     _raffles.set(id, raffle);
     _raffleEntries.set(id, []);
     return raffle;
   },
 
-  buyTickets(raffleId: string, userId: number, quantity: number): { success: boolean; tickets?: number; error?: string } {
+  buyTickets(
+    raffleId: string,
+    userId: number,
+    quantity: number
+  ): { success: boolean; tickets?: number; error?: string } {
     const raffle = _raffles.get(raffleId);
     if (!raffle) return { success: false, error: "Raffle not found" };
-    if (raffle.status !== "open") return { success: false, error: "Raffle is not open" };
-    if (raffle.soldTickets + quantity > raffle.maxTickets) return { success: false, error: "Not enough tickets remaining" };
+    if (raffle.status !== "open")
+      return { success: false, error: "Raffle is not open" };
+    if (raffle.soldTickets + quantity > raffle.maxTickets)
+      return { success: false, error: "Not enough tickets remaining" };
 
     const entries = _raffleEntries.get(raffleId) ?? [];
     const existing = entries.find(e => e.userId === userId);
@@ -345,10 +514,15 @@ export const liveRaffles = {
     return { success: true, tickets: quantity };
   },
 
-  drawWinners(raffleId: string): { success: boolean; winners?: Raffle["winners"]; error?: string } {
+  drawWinners(raffleId: string): {
+    success: boolean;
+    winners?: Raffle["winners"];
+    error?: string;
+  } {
     const raffle = _raffles.get(raffleId);
     if (!raffle) return { success: false, error: "Raffle not found" };
-    if (raffle.status !== "open" && raffle.status !== "closed") return { success: false, error: "Raffle cannot be drawn" };
+    if (raffle.status !== "open" && raffle.status !== "closed")
+      return { success: false, error: "Raffle cannot be drawn" };
 
     const entries = _raffleEntries.get(raffleId) ?? [];
     const pool: number[] = [];
@@ -367,7 +541,11 @@ export const liveRaffles = {
       } while (usedIndices.has(idx) && attempts < 1000);
       if (pool[idx] !== undefined) {
         usedIndices.add(idx);
-        winners.push({ userId: pool[idx], prize: prize.description, rank: prize.rank });
+        winners.push({
+          userId: pool[idx],
+          prize: prize.description,
+          rank: prize.rank,
+        });
       }
     }
 
@@ -401,36 +579,78 @@ export interface EventMerchDrop {
 }
 
 const _eventMerchDrops = new Map<string, EventMerchDrop>();
-const _eventMerchPurchases: { dropId: string; userId: number; quantity: number; purchasedAt: Date }[] = [];
+const _eventMerchPurchases: {
+  dropId: string;
+  userId: number;
+  quantity: number;
+  purchasedAt: Date;
+}[] = [];
 
 export const eventMerchDrops = {
-  createDrop(creatorId: number, eventId: string, data: Omit<EventMerchDrop, "id" | "creatorId" | "eventId" | "sold" | "createdAt">): EventMerchDrop {
+  createDrop(
+    creatorId: number,
+    eventId: string,
+    data: Omit<
+      EventMerchDrop,
+      "id" | "creatorId" | "eventId" | "sold" | "createdAt"
+    >
+  ): EventMerchDrop {
     const id = `emd_${eventId}_${Date.now()}`;
-    const drop: EventMerchDrop = { id, creatorId, eventId, sold: 0, createdAt: new Date(), ...data };
+    const drop: EventMerchDrop = {
+      id,
+      creatorId,
+      eventId,
+      sold: 0,
+      createdAt: new Date(),
+      ...data,
+    };
     _eventMerchDrops.set(id, drop);
     return drop;
   },
 
-  purchase(userId: number, dropId: string, quantity: number, hasTicket: boolean): { success: boolean; error?: string } {
+  purchase(
+    userId: number,
+    dropId: string,
+    quantity: number,
+    hasTicket: boolean
+  ): { success: boolean; error?: string } {
     const drop = _eventMerchDrops.get(dropId);
     if (!drop) return { success: false, error: "Drop not found" };
-    if (drop.exclusiveToAttendees && !hasTicket) return { success: false, error: "Exclusive to event attendees" };
+    if (drop.exclusiveToAttendees && !hasTicket)
+      return { success: false, error: "Exclusive to event attendees" };
     const now = new Date();
-    if (now < drop.availableFrom || now > drop.availableUntil) return { success: false, error: "Drop is not currently available" };
-    if (drop.sold + quantity > drop.supply) return { success: false, error: "Insufficient supply" };
+    if (now < drop.availableFrom || now > drop.availableUntil)
+      return { success: false, error: "Drop is not currently available" };
+    if (drop.sold + quantity > drop.supply)
+      return { success: false, error: "Insufficient supply" };
     drop.sold += quantity;
-    _eventMerchPurchases.push({ dropId, userId, quantity, purchasedAt: new Date() });
+    _eventMerchPurchases.push({
+      dropId,
+      userId,
+      quantity,
+      purchasedAt: new Date(),
+    });
     return { success: true };
   },
 
   getEventDrops(eventId: string): EventMerchDrop[] {
-    return Array.from(_eventMerchDrops.values()).filter(d => d.eventId === eventId);
+    return Array.from(_eventMerchDrops.values()).filter(
+      d => d.eventId === eventId
+    );
   },
 
-  getDropStats(dropId: string): { sold: number; remaining: number; revenue: number } {
+  getDropStats(dropId: string): {
+    sold: number;
+    remaining: number;
+    revenue: number;
+  } {
     const drop = _eventMerchDrops.get(dropId);
     if (!drop) return { sold: 0, remaining: 0, revenue: 0 };
-    return { sold: drop.sold, remaining: drop.supply - drop.sold, revenue: drop.sold * drop.price };
+    return {
+      sold: drop.sold,
+      remaining: drop.supply - drop.sold,
+      revenue: drop.sold * drop.price,
+    };
   },
 };
 
@@ -460,18 +680,45 @@ export interface PremiumSpace {
 const _spaces = new Map<string, PremiumSpace>();
 
 export const premiumSpaces = {
-  createSpace(hostId: number, data: Omit<PremiumSpace, "id" | "hostId" | "status" | "currentParticipants" | "speakerIds" | "listenerIds" | "createdAt">): PremiumSpace {
+  createSpace(
+    hostId: number,
+    data: Omit<
+      PremiumSpace,
+      | "id"
+      | "hostId"
+      | "status"
+      | "currentParticipants"
+      | "speakerIds"
+      | "listenerIds"
+      | "createdAt"
+    >
+  ): PremiumSpace {
     const id = `space_${hostId}_${Date.now()}`;
-    const space: PremiumSpace = { id, hostId, status: "scheduled", currentParticipants: 0, speakerIds: [hostId], listenerIds: [], createdAt: new Date(), ...data };
+    const space: PremiumSpace = {
+      id,
+      hostId,
+      status: "scheduled",
+      currentParticipants: 0,
+      speakerIds: [hostId],
+      listenerIds: [],
+      createdAt: new Date(),
+      ...data,
+    };
     _spaces.set(id, space);
     return space;
   },
 
-  joinSpace(spaceId: string, userId: number, role: "speaker" | "listener"): { success: boolean; error?: string } {
+  joinSpace(
+    spaceId: string,
+    userId: number,
+    role: "speaker" | "listener"
+  ): { success: boolean; error?: string } {
     const space = _spaces.get(spaceId);
     if (!space) return { success: false, error: "Space not found" };
-    if (space.status !== "live") return { success: false, error: "Space is not live" };
-    if (space.currentParticipants >= space.maxParticipants) return { success: false, error: "Space is full" };
+    if (space.status !== "live")
+      return { success: false, error: "Space is not live" };
+    if (space.currentParticipants >= space.maxParticipants)
+      return { success: false, error: "Space is full" };
     if (role === "speaker") {
       if (!space.speakerIds.includes(userId)) space.speakerIds.push(userId);
     } else {

@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Crown, Zap, Star, CheckCircle, ArrowRight, CreditCard, Users, TrendingUp, Shield, Sparkles } from "lucide-react";
+import {
+  Crown,
+  Zap,
+  Star,
+  CheckCircle,
+  ArrowRight,
+  CreditCard,
+  Users,
+  TrendingUp,
+  Shield,
+  Sparkles,
+} from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
@@ -69,12 +80,30 @@ const PLATFORM_TIERS = [
 ];
 
 const CREATOR_SUBS = [
-  { creator: "NOVA AI",    handle: "nova_ai",    tier: "Premium", price: "$4.99/mo", since: "Jan 2026", avatar: "N", color: "from-purple-500 to-pink-500",  perks: ["Exclusive AI posts", "Monthly drops", "Discord access"] },
-  { creator: "CryptoKing", handle: "cryptoking", tier: "VIP",     price: "$9.99/mo", since: "Mar 2026", avatar: "C", color: "from-yellow-500 to-orange-500", perks: ["Alpha signals", "Private group", "1-on-1 sessions"] },
+  {
+    creator: "NOVA AI",
+    handle: "nova_ai",
+    tier: "Premium",
+    price: "$4.99/mo",
+    since: "Jan 2026",
+    avatar: "N",
+    color: "from-purple-500 to-pink-500",
+    perks: ["Exclusive AI posts", "Monthly drops", "Discord access"],
+  },
+  {
+    creator: "CryptoKing",
+    handle: "cryptoking",
+    tier: "VIP",
+    price: "$9.99/mo",
+    since: "Mar 2026",
+    avatar: "C",
+    color: "from-yellow-500 to-orange-500",
+    perks: ["Alpha signals", "Private group", "1-on-1 sessions"],
+  },
 ];
 
 const TABS = ["Platform", "Creators", "Billing"] as const;
-type Tab = typeof TABS[number];
+type Tab = (typeof TABS)[number];
 
 export default function Subscriptions() {
   const [tab, setTab] = useState<Tab>("Platform");
@@ -89,9 +118,24 @@ export default function Subscriptions() {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <StatCard icon={Crown} label="Current Plan" value="Free" color="primary" />
-        <StatCard icon={Users} label="Creator Subs" value={CREATOR_SUBS.length.toString()} color="success" />
-        <StatCard icon={TrendingUp} label="Monthly Spend" value="$14.98" color="accent" />
+        <StatCard
+          icon={Crown}
+          label="Current Plan"
+          value="Free"
+          color="primary"
+        />
+        <StatCard
+          icon={Users}
+          label="Creator Subs"
+          value={CREATOR_SUBS.length.toString()}
+          color="success"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Monthly Spend"
+          value="$14.98"
+          color="accent"
+        />
         <StatCard icon={Zap} label="SKY Bonus" value="0/mo" color="warning" />
       </div>
 
@@ -102,7 +146,9 @@ export default function Subscriptions() {
             key={t}
             onClick={() => setTab(t)}
             className={`flex-1 py-2.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97] ${
-              tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              tab === t
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t}
@@ -113,7 +159,10 @@ export default function Subscriptions() {
       {tab === "Platform" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {PLATFORM_TIERS.map(tier => (
-            <div key={tier.id} className={`card p-5 flex flex-col border-2 ${tier.color} relative`}>
+            <div
+              key={tier.id}
+              className={`card p-5 flex flex-col border-2 ${tier.color} relative`}
+            >
               {tier.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <Badge className="text-xs px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-0">
@@ -123,15 +172,27 @@ export default function Subscriptions() {
               )}
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-1">
-                  {tier.id === "elite" && <Crown className="w-4 h-4 text-yellow-400" />}
-                  {tier.id === "pro" && <Sparkles className="w-4 h-4 text-cyan-400" />}
-                  {tier.id === "free" && <Shield className="w-4 h-4 text-slate-400" />}
+                  {tier.id === "elite" && (
+                    <Crown className="w-4 h-4 text-yellow-400" />
+                  )}
+                  {tier.id === "pro" && (
+                    <Sparkles className="w-4 h-4 text-cyan-400" />
+                  )}
+                  {tier.id === "free" && (
+                    <Shield className="w-4 h-4 text-slate-400" />
+                  )}
                   <h3 className="font-bold text-base">{tier.name}</h3>
-                  {tier.current && <Badge variant="outline" className="text-[10px]">Current</Badge>}
+                  {tier.current && (
+                    <Badge variant="outline" className="text-[10px]">
+                      Current
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-black">{tier.price}</span>
-                  <span className="text-xs text-muted-foreground">{tier.period}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {tier.period}
+                  </span>
                 </div>
               </div>
               <ul className="space-y-2 flex-1 mb-5">
@@ -157,7 +218,9 @@ export default function Subscriptions() {
       {tab === "Creators" && (
         <div className="space-y-3">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="font-semibold text-sm">Active Creator Subscriptions</h3>
+            <h3 className="font-semibold text-sm">
+              Active Creator Subscriptions
+            </h3>
             <Link href="/explore">
               <Button size="sm" variant="outline" className="text-xs gap-1">
                 <Star className="w-3 h-3" /> Find Creators
@@ -167,27 +230,42 @@ export default function Subscriptions() {
           {CREATOR_SUBS.map(sub => (
             <div key={sub.handle} className="card p-4">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${sub.color} flex items-center justify-center text-white font-bold shrink-0`}>
+                <div
+                  className={`w-12 h-12 rounded-full bg-gradient-to-br ${sub.color} flex items-center justify-center text-white font-bold shrink-0`}
+                >
                   {sub.avatar}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm">{sub.creator}</span>
-                    <Badge variant="secondary" className="text-[10px]">{sub.tier}</Badge>
+                    <Badge variant="secondary" className="text-[10px]">
+                      {sub.tier}
+                    </Badge>
                   </div>
-                  <div className="text-xs text-muted-foreground">@{sub.handle} · Since {sub.since}</div>
+                  <div className="text-xs text-muted-foreground">
+                    @{sub.handle} · Since {sub.since}
+                  </div>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {sub.perks.map(p => (
-                      <span key={p} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground border border-slate-700/30">
+                      <span
+                        key={p}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground border border-slate-700/30"
+                      >
                         {p}
                       </span>
                     ))}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-semibold text-sm text-primary">{sub.price}</div>
+                  <div className="font-semibold text-sm text-primary">
+                    {sub.price}
+                  </div>
                   <Link href={`/creator/${sub.handle}`}>
-                    <Button size="sm" variant="ghost" className="text-xs gap-1 text-primary mt-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-xs gap-1 text-primary mt-1"
+                    >
                       View <ArrowRight className="w-3 h-3" />
                     </Button>
                   </Link>
@@ -196,7 +274,9 @@ export default function Subscriptions() {
             </div>
           ))}
           <div className="card p-5 border-dashed border-slate-700/50 text-center">
-            <p className="text-sm text-muted-foreground mb-3">Discover more creators to subscribe to</p>
+            <p className="text-sm text-muted-foreground mb-3">
+              Discover more creators to subscribe to
+            </p>
             <Link href="/explore">
               <Button className="btn-primary gap-2 text-xs">
                 <Star className="w-3.5 h-3.5" /> Browse Creators
@@ -218,20 +298,47 @@ export default function Subscriptions() {
               </div>
               <div className="flex-1">
                 <div className="text-sm font-medium">•••• •••• •••• 4242</div>
-                <div className="text-xs text-muted-foreground">Expires 12/27</div>
+                <div className="text-xs text-muted-foreground">
+                  Expires 12/27
+                </div>
               </div>
-              <Button size="sm" variant="outline" className="text-xs">Update</Button>
+              <Button size="sm" variant="outline" className="text-xs">
+                Update
+              </Button>
             </div>
           </div>
           <div className="card p-5">
             <h3 className="font-semibold text-sm mb-4">Billing History</h3>
             {[
-              { date: "Jun 1, 2026", desc: "NOVA AI — Premium",    amount: "$4.99", status: "Paid" },
-              { date: "Jun 1, 2026", desc: "CryptoKing — VIP",     amount: "$9.99", status: "Paid" },
-              { date: "May 1, 2026", desc: "NOVA AI — Premium",    amount: "$4.99", status: "Paid" },
-              { date: "May 1, 2026", desc: "CryptoKing — VIP",     amount: "$9.99", status: "Paid" },
+              {
+                date: "Jun 1, 2026",
+                desc: "NOVA AI — Premium",
+                amount: "$4.99",
+                status: "Paid",
+              },
+              {
+                date: "Jun 1, 2026",
+                desc: "CryptoKing — VIP",
+                amount: "$9.99",
+                status: "Paid",
+              },
+              {
+                date: "May 1, 2026",
+                desc: "NOVA AI — Premium",
+                amount: "$4.99",
+                status: "Paid",
+              },
+              {
+                date: "May 1, 2026",
+                desc: "CryptoKing — VIP",
+                amount: "$9.99",
+                status: "Paid",
+              },
             ].map((b, i) => (
-              <div key={i} className="flex items-center justify-between py-2.5 border-b border-slate-700/30 last:border-0">
+              <div
+                key={i}
+                className="flex items-center justify-between py-2.5 border-b border-slate-700/30 last:border-0"
+              >
                 <div>
                   <div className="text-sm font-medium">{b.desc}</div>
                   <div className="text-xs text-muted-foreground">{b.date}</div>

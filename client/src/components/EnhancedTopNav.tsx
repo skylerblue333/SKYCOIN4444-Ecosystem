@@ -10,9 +10,30 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  ShoppingCart, BarChart3, Building2, Briefcase, FileText, Users, Megaphone,
-  BookOpen, Headphones, Code2, Zap, DollarSign, Plane, Heart, Home, Gamepad2,
-  Settings, Smartphone, Plug, Lock, Brain, Wallet, Menu, X
+  ShoppingCart,
+  BarChart3,
+  Building2,
+  Briefcase,
+  FileText,
+  Users,
+  Megaphone,
+  BookOpen,
+  Headphones,
+  Code2,
+  Zap,
+  DollarSign,
+  Plane,
+  Heart,
+  Home,
+  Gamepad2,
+  Settings,
+  Smartphone,
+  Plug,
+  Lock,
+  Brain,
+  Wallet,
+  Menu,
+  X,
 } from "lucide-react";
 
 const navCategories = [
@@ -235,7 +256,7 @@ export function EnhancedTopNav() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1 overflow-x-auto flex-1">
-            {navCategories.map((category) => {
+            {navCategories.map(category => {
               const Icon = category.icon;
               return (
                 <DropdownMenu key={category.label}>
@@ -252,7 +273,7 @@ export function EnhancedTopNav() {
                   <DropdownMenuContent align="start" className="w-48">
                     <DropdownMenuLabel>{category.label}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {category.items.map((item) => (
+                    {category.items.map(item => (
                       <Link key={item.path} href={item.path}>
                         <a>
                           <DropdownMenuItem className="cursor-pointer text-xs">
@@ -303,7 +324,7 @@ export function EnhancedTopNav() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 grid grid-cols-2 gap-2">
-            {navCategories.map((category) => {
+            {navCategories.map(category => {
               const Icon = category.icon;
               return (
                 <Link key={category.label} href={category.items[0].path}>

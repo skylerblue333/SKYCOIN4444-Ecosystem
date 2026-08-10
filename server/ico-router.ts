@@ -81,7 +81,7 @@ export const ICO_TIERS = [
 
 // ─── REFERRAL BONUS CONFIG ────────────────────────────────────────────────────
 const REFERRAL_BONUS_PERCENT = 5; // 5% extra tokens for referrer
-const REFEREE_BONUS_PERCENT = 3;  // 3% extra tokens for referee
+const REFEREE_BONUS_PERCENT = 3; // 3% extra tokens for referee
 
 // ─── DB HELPERS ───────────────────────────────────────────────────────────────
 async function ensureIcoTables() {
@@ -153,7 +153,10 @@ export const icoRouter = router({
       ...tier,
       raisedUSD: raised[tier.id] ?? 0,
       raisedTokens: (raised[tier.id] ?? 0) / tier.priceUSD,
-      percentFilled: Math.min(100, ((raised[tier.id] ?? 0) / (tier.allocation * tier.priceUSD)) * 100),
+      percentFilled: Math.min(
+        100,
+        ((raised[tier.id] ?? 0) / (tier.allocation * tier.priceUSD)) * 100
+      ),
     }));
   }),
 
@@ -161,7 +164,13 @@ export const icoRouter = router({
   getStats: publicProcedure.query(async () => {
     await ensureIcoTables();
     const db = await getDb();
-    if (!db) return { totalRaisedUSD: 0, totalParticipants: 0, totalTokensSold: 0, activeTier: "presale" };
+    if (!db)
+      return {
+        totalRaisedUSD: 0,
+        totalParticipants: 0,
+        totalTokensSold: 0,
+        activeTier: "presale",
+      };
     try {
       const rows = await db.execute(
         `SELECT COALESCE(SUM(usd_amount),0) as total_usd, COUNT(DISTINCT user_id) as participants, COALESCE(SUM(token_amount + bonus_tokens),0) as total_tokens FROM ico_purchases WHERE status = 'paid'`
@@ -174,7 +183,12 @@ export const icoRouter = router({
         activeTier: "presale",
       };
     } catch {
-      return { totalRaisedUSD: 0, totalParticipants: 0, totalTokensSold: 0, activeTier: "presale" };
+      return {
+        totalRaisedUSD: 0,
+        totalParticipants: 0,
+        totalTokensSold: 0,
+        activeTier: "presale",
+      };
     }
   }),
 
@@ -189,7 +203,11 @@ export const icoRouter = router({
       );
       if ((existing as any).rows?.length > 0) {
         const r = (existing as any).rows[0];
-        return { code: r.code, uses: r.uses, totalBonusEarned: parseFloat(r.total_bonus_earned ?? "0") };
+        return {
+          code: r.code,
+          uses: r.uses,
+          totalBonusEarned: parseFloat(r.total_bonus_earned ?? "0"),
+        };
       }
       // Generate unique code
       const code = `SKY${ctx.user.id.toString(36).toUpperCase()}${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
@@ -217,7 +235,8 @@ export const icoRouter = router({
         usdAmount: parseFloat(r.usd_amount ?? "0"),
         tokenAmount: parseFloat(r.token_amount ?? "0"),
         bonusTokens: parseFloat(r.bonus_tokens ?? "0"),
-        totalTokens: parseFloat(r.token_amount ?? "0") + parseFloat(r.bonus_tokens ?? "0"),
+        totalTokens:
+          parseFloat(r.token_amount ?? "0") + parseFloat(r.bonus_tokens ?? "0"),
         status: r.status,
         vestingStart: r.vesting_start,
         vestingEnd: r.vesting_end,
@@ -235,19 +254,23 @@ export const icoRouter = router({
 
   // Create Stripe checkout session for ICO purchase
   createCheckout: protectedProcedure
-    .input(z.object({
-      tierId: z.string(),
-      usdAmount: z.number().min(10).max(100_000),
-      referralCode: z.string().optional(),
-      origin: z.string(),
-    }))
+    .input(
+      z.object({
+        tierId: z.string(),
+        usdAmount: z.number().min(10).max(100_000),
+        referralCode: z.string().optional(),
+        origin: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       await ensureIcoTables();
       const tier = ICO_TIERS.find(t => t.id === input.tierId);
       if (!tier) throw new Error("Invalid tier");
       if (tier.status === "closed") throw new Error("This tier is closed");
-      if (input.usdAmount < tier.minPurchaseUSD) throw new Error(`Minimum purchase is $${tier.minPurchaseUSD}`);
-      if (input.usdAmount > tier.maxPurchaseUSD) throw new Error(`Maximum purchase is $${tier.maxPurchaseUSD}`);
+      if (input.usdAmount < tier.minPurchaseUSD)
+        throw new Error(`Minimum purchase is $${tier.minPurchaseUSD}`);
+      if (input.usdAmount > tier.maxPurchaseUSD)
+        throw new Error(`Maximum purchase is $${tier.maxPurchaseUSD}`);
 
       const db = await getDb();
       if (!db) throw new Error("Database unavailable");
@@ -262,14 +285,17 @@ export const icoRouter = router({
           );
           if ((refRows as any).rows?.length > 0) {
             referralUserId = (refRows as any).rows[0].user_id;
-            refereeBonus = (input.usdAmount / tier.priceUSD) * (REFEREE_BONUS_PERCENT / 100);
+            refereeBonus =
+              (input.usdAmount / tier.priceUSD) * (REFEREE_BONUS_PERCENT / 100);
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
 
       // Calculate tokens
       const baseTokens = input.usdAmount / tier.priceUSD;
-      const bonusTokens = (baseTokens * tier.bonus / 100) + refereeBonus;
+      const bonusTokens = (baseTokens * tier.bonus) / 100 + refereeBonus;
       const now = Date.now();
       const vestingStart = now;
       const cliffEnd = now + tier.cliffMonths * 30 * 24 * 60 * 60 * 1000;
@@ -279,25 +305,31 @@ export const icoRouter = router({
       // Insert pending purchase
       const insertResult = await db.execute(
         `INSERT INTO ico_purchases (user_id, tier_id, usd_amount, token_amount, bonus_tokens, referral_code, status, vesting_start, vesting_end, cliff_end, tge_released, tokens_released, created_at, updated_at)
-         VALUES (${ctx.user.id}, '${tier.id}', ${input.usdAmount}, ${baseTokens}, ${bonusTokens}, ${input.referralCode ? `'${input.referralCode}'` : 'NULL'}, 'pending', ${vestingStart}, ${vestingEnd}, ${cliffEnd}, ${tgeReleased}, 0, ${now}, ${now})`
+         VALUES (${ctx.user.id}, '${tier.id}', ${input.usdAmount}, ${baseTokens}, ${bonusTokens}, ${input.referralCode ? `'${input.referralCode}'` : "NULL"}, 'pending', ${vestingStart}, ${vestingEnd}, ${cliffEnd}, ${tgeReleased}, 0, ${now}, ${now})`
       );
       const purchaseId = (insertResult as any).insertId ?? 0;
 
       // Try Stripe checkout
       try {
         const stripeModule = await import("./stripe-skycoin");
-          const session = await stripeModule.createCheckoutSession(
-            purchaseId,
-            ctx.user.id,
-            input.usdAmount,
-            `${input.origin}/ico?success=1&purchase=${purchaseId}`,
-            `${input.origin}/ico?cancelled=1`
-          );
+        const session = await stripeModule.createCheckoutSession(
+          purchaseId,
+          ctx.user.id,
+          input.usdAmount,
+          `${input.origin}/ico?success=1&purchase=${purchaseId}`,
+          `${input.origin}/ico?cancelled=1`
+        );
         if (session?.url) {
           await db.execute(
             `UPDATE ico_purchases SET stripe_session_id = '${session.id}' WHERE id = ${purchaseId}`
           );
-          return { checkoutUrl: session.url, purchaseId, baseTokens, bonusTokens, totalTokens: baseTokens + bonusTokens };
+          return {
+            checkoutUrl: session.url,
+            purchaseId,
+            baseTokens,
+            bonusTokens,
+            totalTokens: baseTokens + bonusTokens,
+          };
         }
       } catch (e) {
         console.error("[ICO] Stripe checkout failed:", e);
@@ -311,8 +343,16 @@ export const icoRouter = router({
       try {
         const { upsertTokenBalance, createTransaction } = await import("./db");
         await upsertTokenBalance(ctx.user.id, "SKY444", tgeReleased);
-        await createTransaction({ userId: ctx.user.id, token: "SKY444", amount: tgeReleased, type: "credit", description: `ICO TGE release — ${tier.name}` });
-      } catch { /* ignore */ }
+        await createTransaction({
+          userId: ctx.user.id,
+          token: "SKY444",
+          amount: tgeReleased,
+          type: "credit",
+          description: `ICO TGE release — ${tier.name}`,
+        });
+      } catch {
+        /* ignore */
+      }
 
       return {
         checkoutUrl: null,
@@ -327,7 +367,9 @@ export const icoRouter = router({
 
   // Webhook: confirm Stripe payment and release TGE tokens
   confirmPayment: protectedProcedure
-    .input(z.object({ purchaseId: z.number(), sessionId: z.string().optional() }))
+    .input(
+      z.object({ purchaseId: z.number(), sessionId: z.string().optional() })
+    )
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return { success: false };
@@ -336,7 +378,8 @@ export const icoRouter = router({
       );
       const purchase = (rows as any).rows?.[0];
       if (!purchase) return { success: false, error: "Purchase not found" };
-      if (purchase.status === "paid") return { success: true, alreadyPaid: true };
+      if (purchase.status === "paid")
+        return { success: true, alreadyPaid: true };
 
       await db.execute(
         `UPDATE ico_purchases SET status = 'paid', tokens_released = ${parseFloat(purchase.tge_released ?? "0")}, updated_at = ${Date.now()} WHERE id = ${input.purchaseId}`
@@ -347,9 +390,17 @@ export const icoRouter = router({
         const tge = parseFloat(purchase.tge_released ?? "0");
         if (tge > 0) {
           await upsertTokenBalance(ctx.user.id, "SKY444", tge);
-          await createTransaction({ userId: ctx.user.id, token: "SKY444", amount: tge, type: "credit", description: "ICO TGE release" });
+          await createTransaction({
+            userId: ctx.user.id,
+            token: "SKY444",
+            amount: tge,
+            type: "credit",
+            description: "ICO TGE release",
+          });
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       return { success: true };
     }),
 
@@ -366,17 +417,27 @@ export const icoRouter = router({
       if (!purchase) return { success: false, claimed: 0 };
 
       const claimable = computeClaimable(purchase);
-      if (claimable <= 0) return { success: false, claimed: 0, message: "Nothing to claim yet" };
+      if (claimable <= 0)
+        return { success: false, claimed: 0, message: "Nothing to claim yet" };
 
-      const newReleased = parseFloat(purchase.tokens_released ?? "0") + claimable;
+      const newReleased =
+        parseFloat(purchase.tokens_released ?? "0") + claimable;
       await db.execute(
         `UPDATE ico_purchases SET tokens_released = ${newReleased}, updated_at = ${Date.now()} WHERE id = ${input.purchaseId}`
       );
       try {
         const { upsertTokenBalance, createTransaction } = await import("./db");
         await upsertTokenBalance(ctx.user.id, "SKY444", claimable);
-        await createTransaction({ userId: ctx.user.id, token: "SKY444", amount: claimable, type: "credit", description: "ICO vesting claim" });
-      } catch { /* ignore */ }
+        await createTransaction({
+          userId: ctx.user.id,
+          token: "SKY444",
+          amount: claimable,
+          type: "credit",
+          description: "ICO vesting claim",
+        });
+      } catch {
+        /* ignore */
+      }
       return { success: true, claimed: claimable };
     }),
 
@@ -391,18 +452,20 @@ export const icoRouter = router({
         messages: [
           {
             role: "system",
-            content: "You are a crypto investment analyst for SKYCOIN4444 (SKY444). Provide concise, honest analysis. Be specific with numbers.",
+            content:
+              "You are a crypto investment analyst for SKYCOIN4444 (SKY444). Provide concise, honest analysis. Be specific with numbers.",
           },
           {
             role: "user",
-            content: `Analyze a $${input.investmentUSD} investment in the ${tier.name} at $${tier.priceUSD}/token. This gives ${tokens.toLocaleString()} SKY444 tokens plus ${tier.bonus}% bonus (${(tokens * tier.bonus / 100).toLocaleString()} extra). Vesting: ${tier.vestingMonths} months with ${tier.cliffMonths} month cliff, ${tier.tgePercent}% at TGE. Platform: AI-powered Web3 social ecosystem combining social media, DeFi, gaming, streaming, marketplace, and charity. Target: $0.10/token at public launch (20x from presale). Provide: 1) ROI scenarios (bear/base/bull), 2) Risk factors, 3) Best strategy for this amount, 4) Vesting impact on liquidity. Keep it under 200 words.`,
+            content: `Analyze a $${input.investmentUSD} investment in the ${tier.name} at $${tier.priceUSD}/token. This gives ${tokens.toLocaleString()} SKY444 tokens plus ${tier.bonus}% bonus (${((tokens * tier.bonus) / 100).toLocaleString()} extra). Vesting: ${tier.vestingMonths} months with ${tier.cliffMonths} month cliff, ${tier.tgePercent}% at TGE. Platform: AI-powered Web3 social ecosystem combining social media, DeFi, gaming, streaming, marketplace, and charity. Target: $0.10/token at public launch (20x from presale). Provide: 1) ROI scenarios (bear/base/bull), 2) Risk factors, 3) Best strategy for this amount, 4) Vesting impact on liquidity. Keep it under 200 words.`,
           },
         ],
       });
       return {
-        analysis: response.choices?.[0]?.message?.content ?? "Analysis unavailable",
+        analysis:
+          response.choices?.[0]?.message?.content ?? "Analysis unavailable",
         tokens,
-        bonusTokens: tokens * tier.bonus / 100,
+        bonusTokens: (tokens * tier.bonus) / 100,
         totalTokens: tokens * (1 + tier.bonus / 100),
         tier,
       };
@@ -438,7 +501,9 @@ function computeClaimable(purchase: any): number {
   const vestingStart = parseInt(purchase.vesting_start ?? "0");
   const vestingEnd = parseInt(purchase.vesting_end ?? "0");
   const cliffEnd = parseInt(purchase.cliff_end ?? "0");
-  const totalTokens = parseFloat(purchase.token_amount ?? "0") + parseFloat(purchase.bonus_tokens ?? "0");
+  const totalTokens =
+    parseFloat(purchase.token_amount ?? "0") +
+    parseFloat(purchase.bonus_tokens ?? "0");
   const tgeReleased = parseFloat(purchase.tge_released ?? "0");
   const alreadyReleased = parseFloat(purchase.tokens_released ?? "0");
 
@@ -447,7 +512,8 @@ function computeClaimable(purchase: any): number {
 
   const elapsed = Math.min(now - vestingStart, vestingEnd - vestingStart);
   const vestingProgress = elapsed / (vestingEnd - vestingStart);
-  const totalVested = tgeReleased + (totalTokens - tgeReleased) * vestingProgress;
+  const totalVested =
+    tgeReleased + (totalTokens - tgeReleased) * vestingProgress;
   const claimable = Math.max(0, totalVested - alreadyReleased);
   return Math.floor(claimable * 1000) / 1000; // Round to 3 decimals
 }

@@ -10,8 +10,8 @@ export interface AdRevenueSplit {
   creatorId: number;
   period: string;
   totalAdRevenue: number;
-  platformCut: number;     // 30%
-  creatorShare: number;    // 70%
+  platformCut: number; // 30%
+  creatorShare: number; // 70%
   impressions: number;
   clicks: number;
   cpm: number;
@@ -86,7 +86,14 @@ export interface DigitalProduct {
   description: string;
   price: number;
   currency: "USD" | "SKY444" | "ETH";
-  productType: "ebook" | "template" | "preset" | "plugin" | "course" | "nft_pack" | "other";
+  productType:
+    | "ebook"
+    | "template"
+    | "preset"
+    | "plugin"
+    | "course"
+    | "nft_pack"
+    | "other";
   downloadUrl: string;
   thumbnailUrl: string;
   salesCount: number;
@@ -158,7 +165,16 @@ export interface TippingUpgrade {
 
 export interface PlatformFeeRecord {
   id: string;
-  transactionType: "subscription" | "ppv" | "digital_product" | "nft_sale" | "sponsorship" | "tip" | "premium_dm" | "marketplace" | "swap";
+  transactionType:
+    | "subscription"
+    | "ppv"
+    | "digital_product"
+    | "nft_sale"
+    | "sponsorship"
+    | "tip"
+    | "premium_dm"
+    | "marketplace"
+    | "swap";
   transactionId: string;
   grossAmount: number;
   feeRate: number;
@@ -180,14 +196,22 @@ export interface AdCampaign {
     regions?: string[];
     creatorCategories?: string[];
   };
-  adType: "banner" | "video" | "sponsored_post" | "promoted_stream" | "promoted_community" | "featured_nft" | "creator_boost";
+  adType:
+    | "banner"
+    | "video"
+    | "sponsored_post"
+    | "promoted_stream"
+    | "promoted_community"
+    | "featured_nft"
+    | "creator_boost";
   cpm: number;
   impressions: number;
   clicks: number;
   conversions: number;
   ctr: number;
   conversionRate: number;
-  status: "draft" | "pending_review" | "active" | "paused" | "completed" | "rejected";
+  status:
+    "draft" | "pending_review" | "active" | "paused" | "completed" | "rejected";
   startDate: Date;
   endDate: Date;
   createdAt: Date;
@@ -195,7 +219,8 @@ export interface AdCampaign {
 
 export interface PromotedContent {
   id: string;
-  contentType: "post" | "stream" | "community" | "marketplace_listing" | "nft" | "creator";
+  contentType:
+    "post" | "stream" | "community" | "marketplace_listing" | "nft" | "creator";
   contentId: string;
   promoterId: number;
   budget: number;
@@ -286,15 +311,27 @@ const _creatorPayouts = new Map<string, CreatorPayoutSummary>();
 
 export const creatorRevenueEngine = {
   // Ad Revenue Splits
-  calculateAdRevenueSplit(creatorId: number, period: string, totalAdRevenue: number, impressions: number, clicks: number): AdRevenueSplit {
+  calculateAdRevenueSplit(
+    creatorId: number,
+    period: string,
+    totalAdRevenue: number,
+    impressions: number,
+    clicks: number
+  ): AdRevenueSplit {
     const id = `ads_${creatorId}_${period}`;
-    const platformCut = Math.round(totalAdRevenue * 0.30 * 100) / 100;
-    const creatorShare = Math.round(totalAdRevenue * 0.70 * 100) / 100;
+    const platformCut = Math.round(totalAdRevenue * 0.3 * 100) / 100;
+    const creatorShare = Math.round(totalAdRevenue * 0.7 * 100) / 100;
     const cpm = impressions > 0 ? (totalAdRevenue / impressions) * 1000 : 0;
     const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
     const split: AdRevenueSplit = {
-      creatorId, period, totalAdRevenue, platformCut, creatorShare,
-      impressions, clicks, cpm: Math.round(cpm * 100) / 100,
+      creatorId,
+      period,
+      totalAdRevenue,
+      platformCut,
+      creatorShare,
+      impressions,
+      clicks,
+      cpm: Math.round(cpm * 100) / 100,
       ctr: Math.round(ctr * 10000) / 10000,
       paidOut: false,
     };
@@ -315,10 +352,16 @@ export const creatorRevenueEngine = {
   },
 
   // Subscription Tiers
-  createSubscriptionTier(params: Omit<SubscriptionTier, "id" | "subscriberCount" | "mrr" | "createdAt">): SubscriptionTier {
+  createSubscriptionTier(
+    params: Omit<
+      SubscriptionTier,
+      "id" | "subscriberCount" | "mrr" | "createdAt"
+    >
+  ): SubscriptionTier {
     const id = `tier_${params.creatorId}_${Date.now()}`;
     const tier: SubscriptionTier = {
-      ...params, id,
+      ...params,
+      id,
       subscriberCount: 0,
       mrr: 0,
       createdAt: new Date(),
@@ -328,10 +371,15 @@ export const creatorRevenueEngine = {
   },
 
   getSubscriptionTiers(creatorId: number): SubscriptionTier[] {
-    return Array.from(_subscriptionTiers.values()).filter(t => t.creatorId === creatorId);
+    return Array.from(_subscriptionTiers.values()).filter(
+      t => t.creatorId === creatorId
+    );
   },
 
-  updateSubscriberCount(tierId: string, delta: number): SubscriptionTier | null {
+  updateSubscriberCount(
+    tierId: string,
+    delta: number
+  ): SubscriptionTier | null {
     const tier = _subscriptionTiers.get(tierId);
     if (!tier) return null;
     tier.subscriberCount = Math.max(0, tier.subscriberCount + delta);
@@ -340,10 +388,16 @@ export const creatorRevenueEngine = {
   },
 
   // Premium Vaults
-  createPremiumVault(params: Omit<CreatorPremiumVault, "id" | "purchaseCount" | "totalRevenue" | "createdAt">): CreatorPremiumVault {
+  createPremiumVault(
+    params: Omit<
+      CreatorPremiumVault,
+      "id" | "purchaseCount" | "totalRevenue" | "createdAt"
+    >
+  ): CreatorPremiumVault {
     const id = `vault_${params.creatorId}_${Date.now()}`;
     const vault: CreatorPremiumVault = {
-      ...params, id,
+      ...params,
+      id,
       purchaseCount: 0,
       totalRevenue: 0,
       createdAt: new Date(),
@@ -361,14 +415,22 @@ export const creatorRevenueEngine = {
   },
 
   getCreatorVaults(creatorId: number): CreatorPremiumVault[] {
-    return Array.from(_premiumVaults.values()).filter(v => v.creatorId === creatorId);
+    return Array.from(_premiumVaults.values()).filter(
+      v => v.creatorId === creatorId
+    );
   },
 
   // PPV Streams
-  createPPVStream(params: Omit<PPVStream, "id" | "purchaseCount" | "totalRevenue" | "createdAt">): PPVStream {
+  createPPVStream(
+    params: Omit<
+      PPVStream,
+      "id" | "purchaseCount" | "totalRevenue" | "createdAt"
+    >
+  ): PPVStream {
     const id = `ppv_${params.creatorId}_${Date.now()}`;
     const ppv: PPVStream = {
-      ...params, id,
+      ...params,
+      id,
       purchaseCount: 0,
       totalRevenue: 0,
       createdAt: new Date(),
@@ -385,7 +447,10 @@ export const creatorRevenueEngine = {
     return ppv;
   },
 
-  updatePPVStatus(ppvId: string, status: PPVStream["status"]): PPVStream | null {
+  updatePPVStatus(
+    ppvId: string,
+    status: PPVStream["status"]
+  ): PPVStream | null {
     const ppv = _ppvStreams.get(ppvId);
     if (!ppv) return null;
     ppv.status = status;
@@ -393,10 +458,13 @@ export const creatorRevenueEngine = {
   },
 
   // Paid Communities
-  createPaidCommunity(params: Omit<PaidCommunity, "id" | "memberCount" | "mrr" | "createdAt">): PaidCommunity {
+  createPaidCommunity(
+    params: Omit<PaidCommunity, "id" | "memberCount" | "mrr" | "createdAt">
+  ): PaidCommunity {
     const id = `pcom_${params.communityId}_${Date.now()}`;
     const community: PaidCommunity = {
-      ...params, id,
+      ...params,
+      id,
       memberCount: 0,
       mrr: 0,
       createdAt: new Date(),
@@ -414,10 +482,21 @@ export const creatorRevenueEngine = {
   },
 
   // Digital Products
-  createDigitalProduct(params: Omit<DigitalProduct, "id" | "salesCount" | "totalRevenue" | "rating" | "reviewCount" | "createdAt">): DigitalProduct {
+  createDigitalProduct(
+    params: Omit<
+      DigitalProduct,
+      | "id"
+      | "salesCount"
+      | "totalRevenue"
+      | "rating"
+      | "reviewCount"
+      | "createdAt"
+    >
+  ): DigitalProduct {
     const id = `dp_${params.creatorId}_${Date.now()}`;
     const product: DigitalProduct = {
-      ...params, id,
+      ...params,
+      id,
       salesCount: 0,
       totalRevenue: 0,
       rating: 0,
@@ -439,20 +518,30 @@ export const creatorRevenueEngine = {
   rateDigitalProduct(productId: string, rating: number): DigitalProduct | null {
     const product = _digitalProducts.get(productId);
     if (!product) return null;
-    product.rating = (product.rating * product.reviewCount + rating) / (product.reviewCount + 1);
+    product.rating =
+      (product.rating * product.reviewCount + rating) /
+      (product.reviewCount + 1);
     product.reviewCount++;
     return product;
   },
 
   getCreatorDigitalProducts(creatorId: number): DigitalProduct[] {
-    return Array.from(_digitalProducts.values()).filter(p => p.creatorId === creatorId);
+    return Array.from(_digitalProducts.values()).filter(
+      p => p.creatorId === creatorId
+    );
   },
 
   // Affiliate System
-  createAffiliateLink(params: Omit<AffiliateLink, "id" | "clicks" | "conversions" | "totalEarned" | "createdAt">): AffiliateLink {
+  createAffiliateLink(
+    params: Omit<
+      AffiliateLink,
+      "id" | "clicks" | "conversions" | "totalEarned" | "createdAt"
+    >
+  ): AffiliateLink {
     const id = `aff_${params.creatorId}_${Date.now()}`;
     const link: AffiliateLink = {
-      ...params, id,
+      ...params,
+      id,
       clicks: 0,
       conversions: 0,
       totalEarned: 0,
@@ -469,7 +558,10 @@ export const creatorRevenueEngine = {
     return link;
   },
 
-  recordAffiliateConversion(linkId: string, saleAmount: number): AffiliateLink | null {
+  recordAffiliateConversion(
+    linkId: string,
+    saleAmount: number
+  ): AffiliateLink | null {
     const link = _affiliateLinks.get(linkId);
     if (!link || !link.isActive) return null;
     link.conversions++;
@@ -478,23 +570,36 @@ export const creatorRevenueEngine = {
   },
 
   getCreatorAffiliateLinks(creatorId: number): AffiliateLink[] {
-    return Array.from(_affiliateLinks.values()).filter(l => l.creatorId === creatorId);
+    return Array.from(_affiliateLinks.values()).filter(
+      l => l.creatorId === creatorId
+    );
   },
 
   // Sponsorship Contracts
-  createSponsorshipContract(params: Omit<SponsorshipContract, "id" | "platformFee" | "creatorNet" | "createdAt">): SponsorshipContract {
+  createSponsorshipContract(
+    params: Omit<
+      SponsorshipContract,
+      "id" | "platformFee" | "creatorNet" | "createdAt"
+    >
+  ): SponsorshipContract {
     const id = `sponsor_${params.creatorId}_${Date.now()}`;
-    const platformFee = params.dealValue * 0.10;
+    const platformFee = params.dealValue * 0.1;
     const creatorNet = params.dealValue - platformFee;
     const contract: SponsorshipContract = {
-      ...params, id, platformFee, creatorNet,
+      ...params,
+      id,
+      platformFee,
+      creatorNet,
       createdAt: new Date(),
     };
     _sponsorshipContracts.set(id, contract);
     return contract;
   },
 
-  updateSponsorshipStatus(contractId: string, status: SponsorshipContract["status"]): SponsorshipContract | null {
+  updateSponsorshipStatus(
+    contractId: string,
+    status: SponsorshipContract["status"]
+  ): SponsorshipContract | null {
     const contract = _sponsorshipContracts.get(contractId);
     if (!contract) return null;
     contract.status = status;
@@ -502,14 +607,19 @@ export const creatorRevenueEngine = {
   },
 
   getCreatorSponsorships(creatorId: number): SponsorshipContract[] {
-    return Array.from(_sponsorshipContracts.values()).filter(c => c.creatorId === creatorId);
+    return Array.from(_sponsorshipContracts.values()).filter(
+      c => c.creatorId === creatorId
+    );
   },
 
   // Premium DMs
-  sendPremiumDM(params: Omit<PremiumDM, "id" | "paid" | "createdAt">): PremiumDM {
+  sendPremiumDM(
+    params: Omit<PremiumDM, "id" | "paid" | "createdAt">
+  ): PremiumDM {
     const id = `pdm_${params.senderId}_${Date.now()}`;
     const dm: PremiumDM = {
-      ...params, id,
+      ...params,
+      id,
       paid: false,
       createdAt: new Date(),
     };
@@ -532,16 +642,28 @@ export const creatorRevenueEngine = {
   },
 
   getInboxPremiumDMs(recipientId: number): PremiumDM[] {
-    return Array.from(_premiumDMs.values()).filter(d => d.recipientId === recipientId);
+    return Array.from(_premiumDMs.values()).filter(
+      d => d.recipientId === recipientId
+    );
   },
 
   // Tipping Upgrades
-  sendTip(params: { senderId: number; recipientId: number; amount: number; currency: TippingUpgrade["currency"]; message?: string }): TippingUpgrade {
+  sendTip(params: {
+    senderId: number;
+    recipientId: number;
+    amount: number;
+    currency: TippingUpgrade["currency"];
+    message?: string;
+  }): TippingUpgrade {
     const id = `tip_${params.senderId}_${Date.now()}`;
     const tier: TippingUpgrade["tier"] =
-      params.amount >= 1000 ? "legendary" :
-      params.amount >= 100 ? "mega" :
-      params.amount >= 10 ? "super" : "standard";
+      params.amount >= 1000
+        ? "legendary"
+        : params.amount >= 100
+          ? "mega"
+          : params.amount >= 10
+            ? "super"
+            : "standard";
     const multipliers = { standard: 1, super: 1.5, mega: 2, legendary: 5 };
     const multiplier = multipliers[tier];
     const platformFee = params.amount * 0.05;
@@ -564,12 +686,18 @@ export const creatorRevenueEngine = {
   },
 
   getCreatorTips(recipientId: number, since?: Date): TippingUpgrade[] {
-    return Array.from(_tippingUpgrades.values())
-      .filter(t => t.recipientId === recipientId && (!since || t.createdAt >= since));
+    return Array.from(_tippingUpgrades.values()).filter(
+      t => t.recipientId === recipientId && (!since || t.createdAt >= since)
+    );
   },
 
-  getTopTippers(recipientId: number, limit = 10): Array<{ senderId: number; totalTipped: number }> {
-    const tips = Array.from(_tippingUpgrades.values()).filter(t => t.recipientId === recipientId);
+  getTopTippers(
+    recipientId: number,
+    limit = 10
+  ): Array<{ senderId: number; totalTipped: number }> {
+    const tips = Array.from(_tippingUpgrades.values()).filter(
+      t => t.recipientId === recipientId
+    );
     const byUser = new Map<number, number>();
     for (const tip of tips) {
       byUser.set(tip.senderId, (byUser.get(tip.senderId) ?? 0) + tip.amount);
@@ -585,13 +713,18 @@ export const creatorRevenueEngine = {
 
 export const platformRevenueEngine = {
   // Platform Fees
-  recordFee(transactionType: PlatformFeeRecord["transactionType"], transactionId: string, grossAmount: number, currency: PlatformFeeRecord["currency"]): PlatformFeeRecord {
+  recordFee(
+    transactionType: PlatformFeeRecord["transactionType"],
+    transactionId: string,
+    grossAmount: number,
+    currency: PlatformFeeRecord["currency"]
+  ): PlatformFeeRecord {
     const feeRates: Record<PlatformFeeRecord["transactionType"], number> = {
       subscription: 0.05,
-      ppv: 0.10,
+      ppv: 0.1,
       digital_product: 0.08,
       nft_sale: 0.025,
-      sponsorship: 0.10,
+      sponsorship: 0.1,
       tip: 0.05,
       premium_dm: 0.15,
       marketplace: 0.08,
@@ -601,7 +734,13 @@ export const platformRevenueEngine = {
     const feeAmount = Math.round(grossAmount * feeRate * 100) / 100;
     const id = `fee_${transactionId}_${Date.now()}`;
     const fee: PlatformFeeRecord = {
-      id, transactionType, transactionId, grossAmount, feeRate, feeAmount, currency,
+      id,
+      transactionType,
+      transactionId,
+      grossAmount,
+      feeRate,
+      feeAmount,
+      currency,
       createdAt: new Date(),
     };
     _platformFees.set(id, fee);
@@ -614,15 +753,32 @@ export const platformRevenueEngine = {
       .reduce((sum, f) => sum + f.feeAmount, 0);
   },
 
-  getFeesByType(transactionType: PlatformFeeRecord["transactionType"]): PlatformFeeRecord[] {
-    return Array.from(_platformFees.values()).filter(f => f.transactionType === transactionType);
+  getFeesByType(
+    transactionType: PlatformFeeRecord["transactionType"]
+  ): PlatformFeeRecord[] {
+    return Array.from(_platformFees.values()).filter(
+      f => f.transactionType === transactionType
+    );
   },
 
   // Ad Campaigns
-  createAdCampaign(params: Omit<AdCampaign, "id" | "spent" | "impressions" | "clicks" | "conversions" | "ctr" | "conversionRate" | "createdAt">): AdCampaign {
+  createAdCampaign(
+    params: Omit<
+      AdCampaign,
+      | "id"
+      | "spent"
+      | "impressions"
+      | "clicks"
+      | "conversions"
+      | "ctr"
+      | "conversionRate"
+      | "createdAt"
+    >
+  ): AdCampaign {
     const id = `ad_${params.advertiserId}_${Date.now()}`;
     const campaign: AdCampaign = {
-      ...params, id,
+      ...params,
+      id,
       spent: 0,
       impressions: 0,
       clicks: 0,
@@ -648,7 +804,8 @@ export const platformRevenueEngine = {
     const campaign = _adCampaigns.get(campaignId);
     if (!campaign) return null;
     campaign.clicks++;
-    campaign.ctr = campaign.impressions > 0 ? campaign.clicks / campaign.impressions : 0;
+    campaign.ctr =
+      campaign.impressions > 0 ? campaign.clicks / campaign.impressions : 0;
     return campaign;
   },
 
@@ -656,11 +813,15 @@ export const platformRevenueEngine = {
     const campaign = _adCampaigns.get(campaignId);
     if (!campaign) return null;
     campaign.conversions++;
-    campaign.conversionRate = campaign.clicks > 0 ? campaign.conversions / campaign.clicks : 0;
+    campaign.conversionRate =
+      campaign.clicks > 0 ? campaign.conversions / campaign.clicks : 0;
     return campaign;
   },
 
-  updateCampaignStatus(campaignId: string, status: AdCampaign["status"]): AdCampaign | null {
+  updateCampaignStatus(
+    campaignId: string,
+    status: AdCampaign["status"]
+  ): AdCampaign | null {
     const campaign = _adCampaigns.get(campaignId);
     if (!campaign) return null;
     campaign.status = status;
@@ -672,14 +833,22 @@ export const platformRevenueEngine = {
   },
 
   getCampaignsByAdvertiser(advertiserId: number): AdCampaign[] {
-    return Array.from(_adCampaigns.values()).filter(c => c.advertiserId === advertiserId);
+    return Array.from(_adCampaigns.values()).filter(
+      c => c.advertiserId === advertiserId
+    );
   },
 
   // Promoted Content
-  promoteContent(params: Omit<PromotedContent, "id" | "spent" | "impressions" | "clicks" | "createdAt">): PromotedContent {
+  promoteContent(
+    params: Omit<
+      PromotedContent,
+      "id" | "spent" | "impressions" | "clicks" | "createdAt"
+    >
+  ): PromotedContent {
     const id = `promo_${params.contentId}_${Date.now()}`;
     const promo: PromotedContent = {
-      ...params, id,
+      ...params,
+      id,
       spent: 0,
       impressions: 0,
       clicks: 0,
@@ -703,14 +872,19 @@ export const platformRevenueEngine = {
     return promo;
   },
 
-  getActivePromotions(contentType?: PromotedContent["contentType"]): PromotedContent[] {
-    return Array.from(_promotedContent.values())
-      .filter(p => p.status === "active" && (!contentType || p.contentType === contentType));
+  getActivePromotions(
+    contentType?: PromotedContent["contentType"]
+  ): PromotedContent[] {
+    return Array.from(_promotedContent.values()).filter(
+      p =>
+        p.status === "active" && (!contentType || p.contentType === contentType)
+    );
   },
 
   getBoostMultiplier(contentId: string): number {
-    const promo = Array.from(_promotedContent.values())
-      .find(p => p.contentId === contentId && p.status === "active");
+    const promo = Array.from(_promotedContent.values()).find(
+      p => p.contentId === contentId && p.status === "active"
+    );
     return promo?.boostMultiplier ?? 1;
   },
 };
@@ -719,7 +893,9 @@ export const platformRevenueEngine = {
 
 export const treasuryIntelligence = {
   // Revenue Snapshots
-  captureSnapshot(data: Omit<TreasurySnapshot, "id" | "timestamp">): TreasurySnapshot {
+  captureSnapshot(
+    data: Omit<TreasurySnapshot, "id" | "timestamp">
+  ): TreasurySnapshot {
     const snapshot: TreasurySnapshot = {
       ...data,
       id: `snap_${Date.now()}`,
@@ -740,7 +916,9 @@ export const treasuryIntelligence = {
   },
 
   computeLiveMRR(): number {
-    const tiers = Array.from(_subscriptionTiers.values()).filter(t => t.isActive);
+    const tiers = Array.from(_subscriptionTiers.values()).filter(
+      t => t.isActive
+    );
     return tiers.reduce((sum, t) => sum + t.mrr, 0);
   },
 
@@ -761,8 +939,14 @@ export const treasuryIntelligence = {
   },
 
   // Revenue Breakdowns
-  recordRevenueBreakdown(period: string, breakdown: Omit<RevenueBreakdown, "period" | "total">): RevenueBreakdown {
-    const total = Object.values(breakdown).reduce((s, v) => s + (v as number), 0);
+  recordRevenueBreakdown(
+    period: string,
+    breakdown: Omit<RevenueBreakdown, "period" | "total">
+  ): RevenueBreakdown {
+    const total = Object.values(breakdown).reduce(
+      (s, v) => s + (v as number),
+      0
+    );
     const full: RevenueBreakdown = { period, ...breakdown, total };
     _revenueBreakdowns.set(period, full);
     return full;
@@ -785,7 +969,9 @@ export const treasuryIntelligence = {
   },
 
   // Creator Payouts
-  scheduleCreatorPayout(params: Omit<CreatorPayoutSummary, "status" | "payoutDate">): CreatorPayoutSummary {
+  scheduleCreatorPayout(
+    params: Omit<CreatorPayoutSummary, "status" | "payoutDate">
+  ): CreatorPayoutSummary {
     const key = `payout_${params.creatorId}_${params.period}`;
     const payout: CreatorPayoutSummary = {
       ...params,
@@ -795,7 +981,10 @@ export const treasuryIntelligence = {
     return payout;
   },
 
-  processCreatorPayout(creatorId: number, period: string): CreatorPayoutSummary | null {
+  processCreatorPayout(
+    creatorId: number,
+    period: string
+  ): CreatorPayoutSummary | null {
     const payout = _creatorPayouts.get(`payout_${creatorId}_${period}`);
     if (!payout) return null;
     payout.status = "paid";
@@ -804,11 +993,15 @@ export const treasuryIntelligence = {
   },
 
   getCreatorPayoutHistory(creatorId: number): CreatorPayoutSummary[] {
-    return Array.from(_creatorPayouts.values()).filter(p => p.creatorId === creatorId);
+    return Array.from(_creatorPayouts.values()).filter(
+      p => p.creatorId === creatorId
+    );
   },
 
   getPendingPayouts(): CreatorPayoutSummary[] {
-    return Array.from(_creatorPayouts.values()).filter(p => p.status === "pending");
+    return Array.from(_creatorPayouts.values()).filter(
+      p => p.status === "pending"
+    );
   },
 
   // Revenue Dashboard Data

@@ -19,9 +19,22 @@ export interface HiringPost {
   posterId: number;
   title: string;
   description: string;
-  role: "editor" | "designer" | "moderator" | "thumbnail_artist" | "social_manager" | "writer" | "developer" | "other";
+  role:
+    | "editor"
+    | "designer"
+    | "moderator"
+    | "thumbnail_artist"
+    | "social_manager"
+    | "writer"
+    | "developer"
+    | "other";
   skills: string[];
-  budget: { min: number; max: number; currency: "coins" | "usd"; type: "fixed" | "hourly" | "monthly" };
+  budget: {
+    min: number;
+    max: number;
+    currency: "coins" | "usd";
+    type: "fixed" | "hourly" | "monthly";
+  };
   duration: "one_time" | "part_time" | "full_time";
   remote: boolean;
   applicationDeadline: Date;
@@ -40,7 +53,8 @@ export interface JobApplication {
   proposedRate: number;
   portfolioLinks: string[];
   estimatedDelivery?: string;
-  status: "submitted" | "shortlisted" | "interviewing" | "accepted" | "rejected";
+  status:
+    "submitted" | "shortlisted" | "interviewing" | "accepted" | "rejected";
   submittedAt: Date;
   respondedAt?: Date;
 }
@@ -50,7 +64,19 @@ export interface ServiceListing {
   sellerId: number;
   title: string;
   description: string;
-  category: "video_editing" | "graphic_design" | "thumbnail_creation" | "community_management" | "content_writing" | "social_media" | "music_production" | "voice_over" | "animation" | "coding" | "consulting" | "other";
+  category:
+    | "video_editing"
+    | "graphic_design"
+    | "thumbnail_creation"
+    | "community_management"
+    | "content_writing"
+    | "social_media"
+    | "music_production"
+    | "voice_over"
+    | "animation"
+    | "coding"
+    | "consulting"
+    | "other";
   packages: ServicePackage[];
   portfolio: { title: string; url: string; type: "image" | "video" | "link" }[];
   rating: number;
@@ -82,7 +108,15 @@ export interface ServiceOrder {
   buyerId: number;
   sellerId: number;
   requirements: string;
-  status: "pending" | "accepted" | "in_progress" | "delivered" | "revision_requested" | "completed" | "cancelled" | "disputed";
+  status:
+    | "pending"
+    | "accepted"
+    | "in_progress"
+    | "delivered"
+    | "revision_requested"
+    | "completed"
+    | "cancelled"
+    | "disputed";
   milestones: OrderMilestone[];
   totalPrice: number;
   escrowId?: string;
@@ -113,7 +147,11 @@ export interface ServiceEscrow {
   releasedAmount: number;
   refundedAmount: number;
   status: "active" | "completed" | "disputed" | "refunded";
-  milestoneReleases: { milestoneId: string; amount: number; releasedAt: Date }[];
+  milestoneReleases: {
+    milestoneId: string;
+    amount: number;
+    releasedAt: Date;
+  }[];
   disputeId?: string;
   createdAt: Date;
 }
@@ -125,8 +163,18 @@ export interface ServiceDispute {
   initiatorId: number;
   respondentId: number;
   reason: string;
-  evidence: { type: "text" | "image" | "link"; content: string; submittedBy: number; timestamp: Date }[];
-  status: "open" | "under_review" | "resolved_buyer" | "resolved_seller" | "resolved_split";
+  evidence: {
+    type: "text" | "image" | "link";
+    content: string;
+    submittedBy: number;
+    timestamp: Date;
+  }[];
+  status:
+    | "open"
+    | "under_review"
+    | "resolved_buyer"
+    | "resolved_seller"
+    | "resolved_split";
   resolution?: { buyerRefund: number; sellerPayout: number; reason: string };
   createdAt: Date;
   resolvedAt?: Date;
@@ -140,7 +188,12 @@ export interface ServiceReview {
   rating: number; // 1-5
   title: string;
   content: string;
-  categories: { communication: number; quality: number; delivery: number; value: number };
+  categories: {
+    communication: number;
+    quality: number;
+    delivery: number;
+    value: number;
+  };
   sellerResponse?: string;
   isVerified: boolean;
   createdAt: Date;
@@ -164,7 +217,10 @@ export interface SponsorshipCampaign {
     exclusivity?: string;
   };
   deliverables: { type: string; quantity: number; deadline: Date }[];
-  compensation: { type: "fixed" | "per_post" | "revenue_share"; amount: number };
+  compensation: {
+    type: "fixed" | "per_post" | "revenue_share";
+    amount: number;
+  };
   applicationDeadline: Date;
   campaignStart: Date;
   campaignEnd: Date;
@@ -180,7 +236,11 @@ export interface CampaignApplication {
   creatorId: number;
   pitch: string;
   proposedContent: string;
-  audienceStats: { followers: number; avgViews: number; engagementRate: number };
+  audienceStats: {
+    followers: number;
+    avgViews: number;
+    engagementRate: number;
+  };
   status: "submitted" | "shortlisted" | "accepted" | "rejected" | "withdrawn";
   submittedAt: Date;
   aiMatchScore: number;
@@ -219,7 +279,9 @@ export class CreatorHiringBoardService {
   private postCounter = 0;
   private appCounter = 0;
 
-  async createPost(params: Omit<HiringPost, "id" | "applicants" | "views" | "createdAt">): Promise<HiringPost> {
+  async createPost(
+    params: Omit<HiringPost, "id" | "applicants" | "views" | "createdAt">
+  ): Promise<HiringPost> {
     const id = `job_${++this.postCounter}`;
     const post: HiringPost = {
       id,
@@ -242,7 +304,8 @@ export class CreatorHiringBoardService {
   }): Promise<JobApplication> {
     const post = this.posts.get(params.postId);
     if (!post || post.status !== "open") throw new Error("Job not available");
-    if (new Date() > post.applicationDeadline) throw new Error("Application deadline passed");
+    if (new Date() > post.applicationDeadline)
+      throw new Error("Application deadline passed");
 
     const id = `app_${++this.appCounter}`;
     const application: JobApplication = {
@@ -265,7 +328,11 @@ export class CreatorHiringBoardService {
     return application;
   }
 
-  async updateApplicationStatus(applicationId: string, posterId: number, status: JobApplication["status"]): Promise<JobApplication | null> {
+  async updateApplicationStatus(
+    applicationId: string,
+    posterId: number,
+    status: JobApplication["status"]
+  ): Promise<JobApplication | null> {
     for (const [postId, apps] of this.applications) {
       const post = this.posts.get(postId);
       if (post?.posterId !== posterId) continue;
@@ -293,16 +360,23 @@ export class CreatorHiringBoardService {
     limit?: number;
     offset?: number;
   }): Promise<HiringPost[]> {
-    let results = Array.from(this.posts.values())
-      .filter(p => p.status === "open" && new Date() <= p.applicationDeadline);
+    let results = Array.from(this.posts.values()).filter(
+      p => p.status === "open" && new Date() <= p.applicationDeadline
+    );
 
     if (filters.role) results = results.filter(p => p.role === filters.role);
-    if (filters.duration) results = results.filter(p => p.duration === filters.duration);
-    if (filters.remote !== undefined) results = results.filter(p => p.remote === filters.remote);
-    if (filters.minBudget) results = results.filter(p => p.budget.max >= filters.minBudget!);
-    if (filters.maxBudget) results = results.filter(p => p.budget.min <= filters.maxBudget!);
+    if (filters.duration)
+      results = results.filter(p => p.duration === filters.duration);
+    if (filters.remote !== undefined)
+      results = results.filter(p => p.remote === filters.remote);
+    if (filters.minBudget)
+      results = results.filter(p => p.budget.max >= filters.minBudget!);
+    if (filters.maxBudget)
+      results = results.filter(p => p.budget.min <= filters.maxBudget!);
     if (filters.skills?.length) {
-      results = results.filter(p => filters.skills!.some(s => p.skills.includes(s)));
+      results = results.filter(p =>
+        filters.skills!.some(s => p.skills.includes(s))
+      );
     }
 
     results.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -341,7 +415,12 @@ export class ServiceListingService {
   private orderCounter = 0;
   private reviewCounter = 0;
 
-  async createListing(params: Omit<ServiceListing, "id" | "rating" | "reviewCount" | "completedOrders" | "createdAt">): Promise<ServiceListing> {
+  async createListing(
+    params: Omit<
+      ServiceListing,
+      "id" | "rating" | "reviewCount" | "completedOrders" | "createdAt"
+    >
+  ): Promise<ServiceListing> {
     const id = `svc_${++this.listingCounter}`;
     const listing: ServiceListing = {
       id,
@@ -405,7 +484,12 @@ export class ServiceListingService {
     return order;
   }
 
-  async updateOrderStatus(orderId: string, userId: number, status: ServiceOrder["status"], note?: string): Promise<ServiceOrder | null> {
+  async updateOrderStatus(
+    orderId: string,
+    userId: number,
+    status: ServiceOrder["status"],
+    note?: string
+  ): Promise<ServiceOrder | null> {
     const order = this.orders.get(orderId);
     if (!order) return null;
     if (order.buyerId !== userId && order.sellerId !== userId) return null;
@@ -430,8 +514,10 @@ export class ServiceListingService {
     categories: ServiceReview["categories"];
   }): Promise<ServiceReview> {
     const order = this.orders.get(params.orderId);
-    if (!order || order.status !== "completed") throw new Error("Can only review completed orders");
-    if (order.buyerId !== params.reviewerId) throw new Error("Only buyer can review");
+    if (!order || order.status !== "completed")
+      throw new Error("Can only review completed orders");
+    if (order.buyerId !== params.reviewerId)
+      throw new Error("Only buyer can review");
 
     const id = `rev_${++this.reviewCounter}`;
     const review: ServiceReview = {
@@ -455,7 +541,8 @@ export class ServiceListingService {
     const listing = this.listings.get(order.listingId);
     if (listing) {
       const allRatings = reviewList.map(r => r.rating);
-      listing.rating = allRatings.reduce((sum, r) => sum + r, 0) / allRatings.length;
+      listing.rating =
+        allRatings.reduce((sum, r) => sum + r, 0) / allRatings.length;
       listing.reviewCount = reviewList.length;
     }
 
@@ -473,21 +560,44 @@ export class ServiceListingService {
   }): Promise<ServiceListing[]> {
     let results = Array.from(this.listings.values()).filter(l => l.isActive);
 
-    if (filters.category) results = results.filter(l => l.category === filters.category);
-    if (filters.minRating) results = results.filter(l => l.rating >= filters.minRating!);
+    if (filters.category)
+      results = results.filter(l => l.category === filters.category);
+    if (filters.minRating)
+      results = results.filter(l => l.rating >= filters.minRating!);
     if (filters.maxPrice) {
-      results = results.filter(l => l.packages.some(p => p.price <= filters.maxPrice!));
+      results = results.filter(l =>
+        l.packages.some(p => p.price <= filters.maxPrice!)
+      );
     }
     if (filters.deliveryDays) {
-      results = results.filter(l => l.packages.some(p => p.deliveryDays <= filters.deliveryDays!));
+      results = results.filter(l =>
+        l.packages.some(p => p.deliveryDays <= filters.deliveryDays!)
+      );
     }
 
     switch (filters.sortBy) {
-      case "rating": results.sort((a, b) => b.rating - a.rating); break;
-      case "price_asc": results.sort((a, b) => Math.min(...a.packages.map(p => p.price)) - Math.min(...b.packages.map(p => p.price))); break;
-      case "price_desc": results.sort((a, b) => Math.min(...b.packages.map(p => p.price)) - Math.min(...a.packages.map(p => p.price))); break;
-      case "most_orders": results.sort((a, b) => b.completedOrders - a.completedOrders); break;
-      default: results.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      case "rating":
+        results.sort((a, b) => b.rating - a.rating);
+        break;
+      case "price_asc":
+        results.sort(
+          (a, b) =>
+            Math.min(...a.packages.map(p => p.price)) -
+            Math.min(...b.packages.map(p => p.price))
+        );
+        break;
+      case "price_desc":
+        results.sort(
+          (a, b) =>
+            Math.min(...b.packages.map(p => p.price)) -
+            Math.min(...a.packages.map(p => p.price))
+        );
+        break;
+      case "most_orders":
+        results.sort((a, b) => b.completedOrders - a.completedOrders);
+        break;
+      default:
+        results.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 
     const offset = filters.offset || 0;
@@ -504,12 +614,16 @@ export class ServiceListingService {
   }
 
   getListingReviews(listingId: string): ServiceReview[] {
-    return (this.reviews.get(listingId) || []).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return (this.reviews.get(listingId) || []).sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    );
   }
 
   getUserOrders(userId: number, role: "buyer" | "seller"): ServiceOrder[] {
     return Array.from(this.orders.values())
-      .filter(o => role === "buyer" ? o.buyerId === userId : o.sellerId === userId)
+      .filter(o =>
+        role === "buyer" ? o.buyerId === userId : o.sellerId === userId
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 }
@@ -522,7 +636,12 @@ export class ServiceEscrowService {
   private escrowCounter = 0;
   private disputeCounter = 0;
 
-  async createEscrow(orderId: string, buyerId: number, sellerId: number, totalAmount: number): Promise<ServiceEscrow> {
+  async createEscrow(
+    orderId: string,
+    buyerId: number,
+    sellerId: number,
+    totalAmount: number
+  ): Promise<ServiceEscrow> {
     const id = `esc_${++this.escrowCounter}`;
     const escrow: ServiceEscrow = {
       id,
@@ -541,16 +660,25 @@ export class ServiceEscrowService {
     return escrow;
   }
 
-  async releaseMilestonePayment(escrowId: string, milestoneId: string, percentage: number): Promise<{ released: number; remaining: number }> {
+  async releaseMilestonePayment(
+    escrowId: string,
+    milestoneId: string,
+    percentage: number
+  ): Promise<{ released: number; remaining: number }> {
     const escrow = this.escrows.get(escrowId);
-    if (!escrow || escrow.status !== "active") throw new Error("Escrow not active");
+    if (!escrow || escrow.status !== "active")
+      throw new Error("Escrow not active");
 
     const amount = Math.floor(escrow.totalAmount * (percentage / 100));
     if (amount > escrow.heldAmount) throw new Error("Insufficient held amount");
 
     escrow.heldAmount -= amount;
     escrow.releasedAmount += amount;
-    escrow.milestoneReleases.push({ milestoneId, amount, releasedAt: new Date() });
+    escrow.milestoneReleases.push({
+      milestoneId,
+      amount,
+      releasedAt: new Date(),
+    });
 
     if (escrow.heldAmount === 0) {
       escrow.status = "completed";
@@ -561,10 +689,12 @@ export class ServiceEscrowService {
 
   async refundBuyer(escrowId: string, amount?: number): Promise<number> {
     const escrow = this.escrows.get(escrowId);
-    if (!escrow || escrow.status === "completed") throw new Error("Cannot refund");
+    if (!escrow || escrow.status === "completed")
+      throw new Error("Cannot refund");
 
     const refundAmount = amount || escrow.heldAmount;
-    if (refundAmount > escrow.heldAmount) throw new Error("Refund exceeds held amount");
+    if (refundAmount > escrow.heldAmount)
+      throw new Error("Refund exceeds held amount");
 
     escrow.heldAmount -= refundAmount;
     escrow.refundedAmount += refundAmount;
@@ -583,7 +713,8 @@ export class ServiceEscrowService {
     evidence: string;
   }): Promise<ServiceDispute> {
     const escrow = this.escrows.get(params.escrowId);
-    if (!escrow || escrow.status !== "active") throw new Error("Cannot dispute");
+    if (!escrow || escrow.status !== "active")
+      throw new Error("Cannot dispute");
 
     escrow.status = "disputed";
 
@@ -593,14 +724,19 @@ export class ServiceEscrowService {
       escrowId: params.escrowId,
       orderId: escrow.orderId,
       initiatorId: params.initiatorId,
-      respondentId: params.initiatorId === escrow.buyerId ? escrow.sellerId : escrow.buyerId,
+      respondentId:
+        params.initiatorId === escrow.buyerId
+          ? escrow.sellerId
+          : escrow.buyerId,
       reason: params.reason,
-      evidence: [{
-        type: "text",
-        content: params.evidence,
-        submittedBy: params.initiatorId,
-        timestamp: new Date(),
-      }],
+      evidence: [
+        {
+          type: "text",
+          content: params.evidence,
+          submittedBy: params.initiatorId,
+          timestamp: new Date(),
+        },
+      ],
       status: "open",
       createdAt: new Date(),
     };
@@ -610,7 +746,10 @@ export class ServiceEscrowService {
     return dispute;
   }
 
-  async resolveDispute(disputeId: string, resolution: ServiceDispute["resolution"]): Promise<ServiceDispute | null> {
+  async resolveDispute(
+    disputeId: string,
+    resolution: ServiceDispute["resolution"]
+  ): Promise<ServiceDispute | null> {
     const dispute = this.disputes.get(disputeId);
     if (!dispute || dispute.status !== "open") return null;
 
@@ -630,7 +769,9 @@ export class ServiceEscrowService {
     }
 
     dispute.status = resolution
-      ? (resolution.buyerRefund > resolution.sellerPayout ? "resolved_buyer" : "resolved_seller")
+      ? resolution.buyerRefund > resolution.sellerPayout
+        ? "resolved_buyer"
+        : "resolved_seller"
       : "resolved_split";
     dispute.resolvedAt = new Date();
 
@@ -642,7 +783,9 @@ export class ServiceEscrowService {
   }
 
   getEscrowByOrder(orderId: string): ServiceEscrow | null {
-    return Array.from(this.escrows.values()).find(e => e.orderId === orderId) || null;
+    return (
+      Array.from(this.escrows.values()).find(e => e.orderId === orderId) || null
+    );
   }
 
   getDispute(disputeId: string): ServiceDispute | null {
@@ -664,7 +807,12 @@ export class SponsorshipBoardService {
   private campaignCounter = 0;
   private appCounter = 0;
 
-  async createCampaign(params: Omit<SponsorshipCampaign, "id" | "budgetSpent" | "selectedCreators" | "applicantCount" | "createdAt">): Promise<SponsorshipCampaign> {
+  async createCampaign(
+    params: Omit<
+      SponsorshipCampaign,
+      "id" | "budgetSpent" | "selectedCreators" | "applicantCount" | "createdAt"
+    >
+  ): Promise<SponsorshipCampaign> {
     const id = `camp_${++this.campaignCounter}`;
     const campaign: SponsorshipCampaign = {
       id,
@@ -686,14 +834,22 @@ export class SponsorshipBoardService {
     audienceStats: CampaignApplication["audienceStats"];
   }): Promise<CampaignApplication> {
     const campaign = this.campaigns.get(params.campaignId);
-    if (!campaign || campaign.status !== "open") throw new Error("Campaign not available");
-    if (new Date() > campaign.applicationDeadline) throw new Error("Application deadline passed");
+    if (!campaign || campaign.status !== "open")
+      throw new Error("Campaign not available");
+    if (new Date() > campaign.applicationDeadline)
+      throw new Error("Application deadline passed");
 
     // Calculate AI match score
     let aiMatchScore = 0;
-    if (params.audienceStats.followers >= campaign.requirements.minFollowers) aiMatchScore += 35;
-    if (params.audienceStats.engagementRate >= campaign.requirements.minEngagementRate) aiMatchScore += 35;
-    if (params.audienceStats.avgViews > params.audienceStats.followers * 0.1) aiMatchScore += 20;
+    if (params.audienceStats.followers >= campaign.requirements.minFollowers)
+      aiMatchScore += 35;
+    if (
+      params.audienceStats.engagementRate >=
+      campaign.requirements.minEngagementRate
+    )
+      aiMatchScore += 35;
+    if (params.audienceStats.avgViews > params.audienceStats.followers * 0.1)
+      aiMatchScore += 20;
     if (params.pitch.length > 200) aiMatchScore += 10;
 
     const id = `capp_${++this.appCounter}`;
@@ -717,7 +873,10 @@ export class SponsorshipBoardService {
     return application;
   }
 
-  async selectCreator(campaignId: string, creatorId: number): Promise<SponsorshipCampaign | null> {
+  async selectCreator(
+    campaignId: string,
+    creatorId: number
+  ): Promise<SponsorshipCampaign | null> {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign) return null;
 
@@ -744,10 +903,24 @@ export class SponsorshipBoardService {
       if (new Date() > campaign.applicationDeadline) continue;
 
       let matchScore = 0;
-      if (creatorStats.followers >= campaign.requirements.minFollowers) matchScore += 35;
-      if (creatorStats.engagementRate >= campaign.requirements.minEngagementRate) matchScore += 35;
-      if (campaign.requirements.platforms.some(p => creatorStats.platforms.includes(p))) matchScore += 20;
-      if (campaign.targetAudience.interests.some(i => creatorStats.niche.toLowerCase().includes(i.toLowerCase()))) matchScore += 10;
+      if (creatorStats.followers >= campaign.requirements.minFollowers)
+        matchScore += 35;
+      if (
+        creatorStats.engagementRate >= campaign.requirements.minEngagementRate
+      )
+        matchScore += 35;
+      if (
+        campaign.requirements.platforms.some(p =>
+          creatorStats.platforms.includes(p)
+        )
+      )
+        matchScore += 20;
+      if (
+        campaign.targetAudience.interests.some(i =>
+          creatorStats.niche.toLowerCase().includes(i.toLowerCase())
+        )
+      )
+        matchScore += 10;
 
       if (matchScore >= 35) {
         results.push({ ...campaign, matchScore });
@@ -767,8 +940,9 @@ export class SponsorshipBoardService {
   }
 
   getCampaignApplications(campaignId: string): CampaignApplication[] {
-    return (this.applications.get(campaignId) || [])
-      .sort((a, b) => b.aiMatchScore - a.aiMatchScore);
+    return (this.applications.get(campaignId) || []).sort(
+      (a, b) => b.aiMatchScore - a.aiMatchScore
+    );
   }
 }
 
@@ -779,7 +953,12 @@ export class AffiliateProgramService {
   private clicks = new Map<string, AffiliateClick[]>(); // affiliateId -> clicks
   private programCounter = 0;
 
-  async createProgram(params: Omit<AffiliateProgram, "id" | "totalClicks" | "totalConversions" | "totalEarned" | "createdAt">): Promise<AffiliateProgram> {
+  async createProgram(
+    params: Omit<
+      AffiliateProgram,
+      "id" | "totalClicks" | "totalConversions" | "totalEarned" | "createdAt"
+    >
+  ): Promise<AffiliateProgram> {
     const id = `aff_${++this.programCounter}`;
     const program: AffiliateProgram = {
       id,
@@ -793,7 +972,13 @@ export class AffiliateProgramService {
     return program;
   }
 
-  async recordClick(affiliateId: string, clickData: Omit<AffiliateClick, "converted" | "conversionValue" | "commissionEarned">): Promise<void> {
+  async recordClick(
+    affiliateId: string,
+    clickData: Omit<
+      AffiliateClick,
+      "converted" | "conversionValue" | "commissionEarned"
+    >
+  ): Promise<void> {
     const program = this.programs.get(affiliateId);
     if (!program || !program.isActive) return;
 
@@ -804,7 +989,11 @@ export class AffiliateProgramService {
     program.totalClicks++;
   }
 
-  async recordConversion(affiliateId: string, conversionValue: number, clickerIp: string): Promise<number> {
+  async recordConversion(
+    affiliateId: string,
+    conversionValue: number,
+    clickerIp: string
+  ): Promise<number> {
     const program = this.programs.get(affiliateId);
     if (!program) return 0;
 
@@ -816,7 +1005,9 @@ export class AffiliateProgramService {
     if (!recentClick) return 0;
 
     // Check cookie duration
-    const cookieExpiry = new Date(recentClick.timestamp.getTime() + program.cookieDurationDays * 86400000);
+    const cookieExpiry = new Date(
+      recentClick.timestamp.getTime() + program.cookieDurationDays * 86400000
+    );
     if (new Date() > cookieExpiry) return 0;
 
     const commission = Math.floor(conversionValue * program.commissionRate);
@@ -835,18 +1026,28 @@ export class AffiliateProgramService {
   }
 
   getCreatorPrograms(creatorId: number): AffiliateProgram[] {
-    return Array.from(this.programs.values())
-      .filter(p => p.creatorId === creatorId && p.isActive);
+    return Array.from(this.programs.values()).filter(
+      p => p.creatorId === creatorId && p.isActive
+    );
   }
 
-  getAffiliateStats(affiliateId: string): { clicks: number; conversions: number; conversionRate: number; totalEarned: number } {
+  getAffiliateStats(affiliateId: string): {
+    clicks: number;
+    conversions: number;
+    conversionRate: number;
+    totalEarned: number;
+  } {
     const program = this.programs.get(affiliateId);
-    if (!program) return { clicks: 0, conversions: 0, conversionRate: 0, totalEarned: 0 };
+    if (!program)
+      return { clicks: 0, conversions: 0, conversionRate: 0, totalEarned: 0 };
 
     return {
       clicks: program.totalClicks,
       conversions: program.totalConversions,
-      conversionRate: program.totalClicks > 0 ? program.totalConversions / program.totalClicks : 0,
+      conversionRate:
+        program.totalClicks > 0
+          ? program.totalConversions / program.totalClicks
+          : 0,
       totalEarned: program.totalEarned,
     };
   }

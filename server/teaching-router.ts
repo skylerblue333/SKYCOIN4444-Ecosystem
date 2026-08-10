@@ -68,7 +68,12 @@ export const teachingRouter = router({
           students: 156,
           hourlyRate: 25,
           bio: "Professional Chinese teacher with 10+ years experience",
-          specialties: ["HSK Preparation", "Business Chinese", "Conversational", "Grammar"],
+          specialties: [
+            "HSK Preparation",
+            "Business Chinese",
+            "Conversational",
+            "Grammar",
+          ],
           availability: "Mon-Fri 6-10pm, Sat-Sun all day",
           certifications: ["CTCSOL", "HSK Examiner"],
           reviews: 342,
@@ -226,7 +231,9 @@ export const teachingRouter = router({
     .input(
       z.object({
         type: z.enum(["student", "teacher"]).optional(),
-        status: z.enum(["pending", "confirmed", "completed", "cancelled"]).optional(),
+        status: z
+          .enum(["pending", "confirmed", "completed", "cancelled"])
+          .optional(),
       })
     )
     .query(async ({ input, ctx }) => {

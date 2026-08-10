@@ -51,7 +51,10 @@ export async function sendEmail(template: EmailTemplate): Promise<boolean> {
 /**
  * Send notification to owner
  */
-export async function notifyOwner(subject: string, html: string): Promise<boolean> {
+export async function notifyOwner(
+  subject: string,
+  html: string
+): Promise<boolean> {
   return sendEmail({
     to: OWNER_EMAIL,
     subject: `[SKYCOIN4444] ${subject}`,
@@ -66,7 +69,10 @@ export async function notifyOwner(subject: string, html: string): Promise<boolea
 /**
  * User Registration Confirmation
  */
-export async function emailUserSignup(email: string, userName: string): Promise<boolean> {
+export async function emailUserSignup(
+  email: string,
+  userName: string
+): Promise<boolean> {
   return sendEmail({
     to: email,
     subject: "Welcome to SKYCOIN4444! 🚀",
@@ -317,7 +323,10 @@ export async function emailGovernanceVoteReminder(
 /**
  * Owner Notification: New User Signup
  */
-export async function notifyOwnerNewUser(userName: string, email: string): Promise<boolean> {
+export async function notifyOwnerNewUser(
+  userName: string,
+  email: string
+): Promise<boolean> {
   return notifyOwner(
     "New User Signup",
     `
@@ -352,7 +361,10 @@ export async function notifyOwnerLargeTransaction(
 /**
  * Owner Notification: System Alert
  */
-export async function notifyOwnerSystemAlert(alertType: string, message: string): Promise<boolean> {
+export async function notifyOwnerSystemAlert(
+  alertType: string,
+  message: string
+): Promise<boolean> {
   return notifyOwner(
     `System Alert: ${alertType}`,
     `

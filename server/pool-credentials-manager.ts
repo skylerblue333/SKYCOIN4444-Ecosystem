@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
 interface PoolCredential {
   id: string;
@@ -31,7 +31,8 @@ interface MinerConfig {
 export class PoolCredentialsManager {
   private credentials: Map<string, PoolCredential> = new Map();
   private minerConfigs: Map<string, MinerConfig> = new Map();
-  private encryptionKey = process.env.POOL_ENCRYPTION_KEY || 'default-key-change-in-production';
+  private encryptionKey =
+    process.env.POOL_ENCRYPTION_KEY || "default-key-change-in-production";
 
   /**
    * Add pool credentials
@@ -45,7 +46,7 @@ export class PoolCredentialsManager {
     poolPort: number
   ): PoolCredential {
     const id = `pool-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const credential: PoolCredential = {
       id,
       poolName,
@@ -234,13 +235,13 @@ export class PoolCredentialsManager {
    * Encrypt password
    */
   private encryptPassword(password: string): string {
-    const algorithm = 'aes-256-cbc';
-    const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
+    const algorithm = "aes-256-cbc";
+    const key = crypto.scryptSync(this.encryptionKey, "salt", 32);
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(algorithm, key, iv);
-    let encrypted = cipher.update(password, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return iv.toString('hex') + ':' + encrypted;
+    let encrypted = cipher.update(password, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return iv.toString("hex") + ":" + encrypted;
   }
 
   /**
@@ -248,17 +249,17 @@ export class PoolCredentialsManager {
    */
   private decryptPassword(encrypted: string): string {
     try {
-      const algorithm = 'aes-256-cbc';
-      const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
-      const parts = encrypted.split(':');
-      const iv = Buffer.from(parts[0], 'hex');
+      const algorithm = "aes-256-cbc";
+      const key = crypto.scryptSync(this.encryptionKey, "salt", 32);
+      const parts = encrypted.split(":");
+      const iv = Buffer.from(parts[0], "hex");
       const decipher = crypto.createDecipheriv(algorithm, key, iv);
-      let decrypted = decipher.update(parts[1], 'hex', 'utf8');
-      decrypted += decipher.final('utf8');
+      let decrypted = decipher.update(parts[1], "hex", "utf8");
+      decrypted += decipher.final("utf8");
       return decrypted;
     } catch (error) {
-      console.error('[Pool] Decryption error:', error);
-      return '';
+      console.error("[Pool] Decryption error:", error);
+      return "";
     }
   }
 
@@ -280,7 +281,7 @@ export class PoolCredentialsManager {
   importConfiguration(jsonData: string): boolean {
     try {
       const data = JSON.parse(jsonData);
-      
+
       // Import credentials
       for (const cred of data.credentials) {
         this.credentials.set(cred.id, cred);
@@ -291,10 +292,12 @@ export class PoolCredentialsManager {
         this.minerConfigs.set(miner.id, miner);
       }
 
-      console.log(`[Pool] Imported configuration: ${data.credentials.length} pools, ${data.miners.length} miners`);
+      console.log(
+        `[Pool] Imported configuration: ${data.credentials.length} pools, ${data.miners.length} miners`
+      );
       return true;
     } catch (error) {
-      console.error('[Pool] Import failed:', error);
+      console.error("[Pool] Import failed:", error);
       return false;
     }
   }

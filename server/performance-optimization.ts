@@ -1,5 +1,5 @@
-import compression from 'compression';
-import { Request, Response, NextFunction } from 'express';
+import compression from "compression";
+import { Request, Response, NextFunction } from "express";
 
 /**
  * Performance Optimization Module
@@ -12,31 +12,35 @@ export const setupCompression = () => {
     level: 9,
     threshold: 1024,
     filter: (req: Request, res: Response) => {
-      if (req.headers['x-no-compression']) return false;
+      if (req.headers["x-no-compression"]) return false;
       return compression.filter(req, res);
     },
   });
 };
 
 // 2. Caching Headers
-export const setCacheHeaders = (req: Request, res: Response, next: NextFunction) => {
+export const setCacheHeaders = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Static assets: 1 year
   if (req.path.match(/\.(js|css|woff2|png|jpg|svg)$/)) {
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.set("Cache-Control", "public, max-age=31536000, immutable");
   }
   // HTML: 1 hour
-  else if (req.path.endsWith('.html') || req.path === '/') {
-    res.set('Cache-Control', 'public, max-age=3600, must-revalidate');
+  else if (req.path.endsWith(".html") || req.path === "/") {
+    res.set("Cache-Control", "public, max-age=3600, must-revalidate");
   }
   // API: No cache
-  else if (req.path.startsWith('/api/')) {
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
+  else if (req.path.startsWith("/api/")) {
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
   }
   // Default: 5 minutes
   else {
-    res.set('Cache-Control', 'public, max-age=300');
+    res.set("Cache-Control", "public, max-age=300");
   }
   next();
 };
@@ -102,19 +106,14 @@ export interface LazyLoadConfig {
 
 export const getLazyLoadConfig = (): LazyLoadConfig => ({
   routeChunks: [
-    'mining',
-    'trading',
-    'social',
-    'gaming',
-    'marketplace',
-    'governance',
+    "mining",
+    "trading",
+    "social",
+    "gaming",
+    "marketplace",
+    "governance",
   ],
-  componentChunks: [
-    'charts',
-    'modals',
-    'forms',
-    'tables',
-  ],
+  componentChunks: ["charts", "modals", "forms", "tables"],
   imageOptimization: true,
   preloadCritical: true,
 });
@@ -133,7 +132,7 @@ export const createOptimizedResponse = <T>(
 ): OptimizedResponse<T> => ({
   data,
   timestamp: Date.now(),
-  version: '1.0.0',
+  version: "1.0.0",
   cached,
 });
 
@@ -167,7 +166,7 @@ export class BatchProcessor {
     if (this.queue.length === 0) return;
 
     const batch = this.queue.splice(0, this.batchSize);
-    await Promise.all(batch.map((fn) => fn().catch(console.error)));
+    await Promise.all(batch.map(fn => fn().catch(console.error)));
   }
 }
 
@@ -236,16 +235,16 @@ export class PerformanceMonitor {
 // 10. CDN Integration
 export interface CDNConfig {
   enabled: boolean;
-  provider: 'cloudflare' | 'cloudfront' | 'fastly';
+  provider: "cloudflare" | "cloudfront" | "fastly";
   cacheKey: string;
   purgeOn: string[];
 }
 
 export const getCDNConfig = (): CDNConfig => ({
   enabled: true,
-  provider: 'cloudflare',
-  cacheKey: 'skycoin-v1',
-  purgeOn: ['deployment', 'content-update'],
+  provider: "cloudflare",
+  cacheKey: "skycoin-v1",
+  purgeOn: ["deployment", "content-update"],
 });
 
 export default {

@@ -3,16 +3,58 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, ChevronDown, Zap, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  Zap,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 const TOKENS = [
-  { symbol: "SKY444", name: "SKYCOIN4444", price: 0.0847, color: "text-purple-400", bg: "bg-purple-600/10" },
-  { symbol: "BTC", name: "Bitcoin", price: 105420, color: "text-orange-400", bg: "bg-orange-500/10" },
-  { symbol: "ETH", name: "Ethereum", price: 3820, color: "text-purple-400", bg: "bg-purple-500/10" },
-  { symbol: "SOL", name: "Solana", price: 178, color: "text-blue-400", bg: "bg-blue-500/10" },
-  { symbol: "USDC", name: "USD Coin", price: 1.0, color: "text-cyan-400", bg: "bg-cyan-500/10" },
-  { symbol: "BNB", name: "BNB", price: 712, color: "text-yellow-400", bg: "bg-yellow-500/10" },
+  {
+    symbol: "SKY444",
+    name: "SKYCOIN4444",
+    price: 0.0847,
+    color: "text-purple-400",
+    bg: "bg-purple-600/10",
+  },
+  {
+    symbol: "BTC",
+    name: "Bitcoin",
+    price: 105420,
+    color: "text-orange-400",
+    bg: "bg-orange-500/10",
+  },
+  {
+    symbol: "ETH",
+    name: "Ethereum",
+    price: 3820,
+    color: "text-purple-400",
+    bg: "bg-purple-500/10",
+  },
+  {
+    symbol: "SOL",
+    name: "Solana",
+    price: 178,
+    color: "text-blue-400",
+    bg: "bg-blue-500/10",
+  },
+  {
+    symbol: "USDC",
+    name: "USD Coin",
+    price: 1.0,
+    color: "text-cyan-400",
+    bg: "bg-cyan-500/10",
+  },
+  {
+    symbol: "BNB",
+    name: "BNB",
+    price: 712,
+    color: "text-yellow-400",
+    bg: "bg-yellow-500/10",
+  },
 ];
 
 const SLIPPAGE_OPTIONS = [0.1, 0.5, 1.0, 3.0];
@@ -30,9 +72,18 @@ export function TokenSwapWidget() {
     ? ((parseFloat(fromAmount) * fromToken.price) / toToken.price).toFixed(6)
     : "";
 
-  const priceImpact = fromAmount ? Math.min(parseFloat(fromAmount) * 0.001, 5).toFixed(2) : "0.00";
-  const minReceived = toAmount ? (parseFloat(toAmount) * (1 - slippage / 100)).toFixed(6) : "0";
-  const networkFee = fromToken.symbol === "ETH" ? "~$4.20" : fromToken.symbol === "BTC" ? "~$8.50" : "~$0.12";
+  const priceImpact = fromAmount
+    ? Math.min(parseFloat(fromAmount) * 0.001, 5).toFixed(2)
+    : "0.00";
+  const minReceived = toAmount
+    ? (parseFloat(toAmount) * (1 - slippage / 100)).toFixed(6)
+    : "0";
+  const networkFee =
+    fromToken.symbol === "ETH"
+      ? "~$4.20"
+      : fromToken.symbol === "BTC"
+        ? "~$8.50"
+        : "~$0.12";
 
   const handleSwapTokens = () => {
     const tmp = fromToken;
@@ -49,7 +100,9 @@ export function TokenSwapWidget() {
     setIsSwapping(true);
     await new Promise(r => setTimeout(r, 2000));
     setIsSwapping(false);
-    toast.success(`Swapped ${fromAmount} ${fromToken.symbol} → ${toAmount} ${toToken.symbol}`);
+    toast.success(
+      `Swapped ${fromAmount} ${fromToken.symbol} → ${toAmount} ${toToken.symbol}`
+    );
     setFromAmount("");
   };
 
@@ -88,19 +141,34 @@ export function TokenSwapWidget() {
           />
           <div className="relative">
             <button
-              onClick={() => { setShowFromSelect(!showFromSelect); setShowToSelect(false); }}
+              onClick={() => {
+                setShowFromSelect(!showFromSelect);
+                setShowToSelect(false);
+              }}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl ${fromToken.bg} border border-border/30 hover:border-primary/30 transition-all whitespace-nowrap`}
             >
-              <span className={`font-bold text-sm ${fromToken.color}`}>{fromToken.symbol}</span>
+              <span className={`font-bold text-sm ${fromToken.color}`}>
+                {fromToken.symbol}
+              </span>
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </button>
             {showFromSelect && (
               <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-xl z-50 w-48 overflow-hidden">
                 {TOKENS.filter(t => t.symbol !== toToken.symbol).map(t => (
-                  <button key={t.symbol} onClick={() => { setFromToken(t); setShowFromSelect(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-primary/10 transition-colors text-left">
-                    <span className={`font-semibold text-sm ${t.color}`}>{t.symbol}</span>
-                    <span className="text-xs text-muted-foreground">{t.name}</span>
+                  <button
+                    key={t.symbol}
+                    onClick={() => {
+                      setFromToken(t);
+                      setShowFromSelect(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-primary/10 transition-colors text-left"
+                  >
+                    <span className={`font-semibold text-sm ${t.color}`}>
+                      {t.symbol}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t.name}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -108,14 +176,22 @@ export function TokenSwapWidget() {
           </div>
         </div>
         {fromAmount && (
-          <p className="text-xs text-muted-foreground mt-1">≈ ${(parseFloat(fromAmount) * fromToken.price).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            ≈ $
+            {(parseFloat(fromAmount) * fromToken.price).toLocaleString(
+              undefined,
+              { maximumFractionDigits: 2 }
+            )}
+          </p>
         )}
       </div>
 
       {/* Swap button */}
       <div className="flex justify-center my-1">
-        <button onClick={handleSwapTokens}
-          className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center hover:bg-primary/30 transition-all hover:rotate-180 duration-300">
+        <button
+          onClick={handleSwapTokens}
+          className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center hover:bg-primary/30 transition-all hover:rotate-180 duration-300"
+        >
           <ArrowUpDown className="w-4 h-4 text-primary" />
         </button>
       </div>
@@ -127,22 +203,39 @@ export function TokenSwapWidget() {
           <span className="text-xs text-muted-foreground">Balance: 12,450</span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-2xl font-bold text-purple-400 flex-1">{toAmount || "0.0"}</div>
+          <div className="text-2xl font-bold text-purple-400 flex-1">
+            {toAmount || "0.0"}
+          </div>
           <div className="relative">
             <button
-              onClick={() => { setShowToSelect(!showToSelect); setShowFromSelect(false); }}
+              onClick={() => {
+                setShowToSelect(!showToSelect);
+                setShowFromSelect(false);
+              }}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl ${toToken.bg} border border-border/30 hover:border-primary/30 transition-all whitespace-nowrap`}
             >
-              <span className={`font-bold text-sm ${toToken.color}`}>{toToken.symbol}</span>
+              <span className={`font-bold text-sm ${toToken.color}`}>
+                {toToken.symbol}
+              </span>
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </button>
             {showToSelect && (
               <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-xl z-50 w-48 overflow-hidden">
                 {TOKENS.filter(t => t.symbol !== fromToken.symbol).map(t => (
-                  <button key={t.symbol} onClick={() => { setToToken(t); setShowToSelect(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-primary/10 transition-colors text-left">
-                    <span className={`font-semibold text-sm ${t.color}`}>{t.symbol}</span>
-                    <span className="text-xs text-muted-foreground">{t.name}</span>
+                  <button
+                    key={t.symbol}
+                    onClick={() => {
+                      setToToken(t);
+                      setShowToSelect(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-primary/10 transition-colors text-left"
+                  >
+                    <span className={`font-semibold text-sm ${t.color}`}>
+                      {t.symbol}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t.name}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -150,7 +243,12 @@ export function TokenSwapWidget() {
           </div>
         </div>
         {toAmount && (
-          <p className="text-xs text-muted-foreground mt-1">≈ ${(parseFloat(toAmount) * toToken.price).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            ≈ $
+            {(parseFloat(toAmount) * toToken.price).toLocaleString(undefined, {
+              maximumFractionDigits: 2,
+            })}
+          </p>
         )}
       </div>
 
@@ -159,15 +257,26 @@ export function TokenSwapWidget() {
         <div className="bg-background/40 rounded-lg p-3 mb-4 space-y-1.5 text-xs">
           <div className="flex justify-between text-muted-foreground">
             <span>Rate</span>
-            <span className="text-foreground">1 {fromToken.symbol} = {(fromToken.price / toToken.price).toFixed(4)} {toToken.symbol}</span>
+            <span className="text-foreground">
+              1 {fromToken.symbol} ={" "}
+              {(fromToken.price / toToken.price).toFixed(4)} {toToken.symbol}
+            </span>
           </div>
           <div className="flex justify-between text-muted-foreground">
             <span>Price Impact</span>
-            <span className={parseFloat(priceImpact) > 2 ? "text-red-400" : "text-purple-400"}>{priceImpact}%</span>
+            <span
+              className={
+                parseFloat(priceImpact) > 2 ? "text-red-400" : "text-purple-400"
+              }
+            >
+              {priceImpact}%
+            </span>
           </div>
           <div className="flex justify-between text-muted-foreground">
             <span>Min. Received ({slippage}% slippage)</span>
-            <span className="text-foreground">{minReceived} {toToken.symbol}</span>
+            <span className="text-foreground">
+              {minReceived} {toToken.symbol}
+            </span>
           </div>
           <div className="flex justify-between text-muted-foreground">
             <span>Network Fee</span>
@@ -182,16 +291,21 @@ export function TokenSwapWidget() {
         disabled={isSwapping || !fromAmount}
       >
         {isSwapping ? (
-          <span className="flex items-center gap-2"><span className="animate-spin">⟳</span> Swapping...</span>
+          <span className="flex items-center gap-2">
+            <span className="animate-spin">⟳</span> Swapping...
+          </span>
         ) : !fromAmount ? (
           "Enter Amount"
         ) : (
-          <span className="flex items-center gap-2"><Zap className="w-4 h-4" /> Swap {fromToken.symbol} → {toToken.symbol}</span>
+          <span className="flex items-center gap-2">
+            <Zap className="w-4 h-4" /> Swap {fromToken.symbol} →{" "}
+            {toToken.symbol}
+          </span>
         )}
       </Button>
 
       <div className="flex items-center justify-center gap-1 mt-3 text-xs text-muted-foreground">
-        <CheckCircle2 className="w-3 h-3 text-purple-400" />
+        <CheckCircle className="w-3 h-3 text-purple-400" />
         <span>Powered by SKY444 DEX · Best price routing</span>
       </div>
     </Card>

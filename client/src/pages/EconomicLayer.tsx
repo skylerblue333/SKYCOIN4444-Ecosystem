@@ -20,7 +20,10 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
 function formatSKY(amount: number) {
-  return amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return amount.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 export default function EconomicLayer() {
@@ -43,7 +46,7 @@ export default function EconomicLayer() {
   const { data: richList } = trpc.economy.getRichList.useQuery({ limit: 20 });
 
   const claimBonus = trpc.economy.claimWelcomeBonus.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       if (data.success) {
         toast.success(data.message ?? "Welcome bonus claimed!");
         utils.economy.getBalance.invalidate();
@@ -52,11 +55,11 @@ export default function EconomicLayer() {
         toast.info(data.message ?? "Already claimed");
       }
     },
-    onError: (e) => toast.error(e.message),
+    onError: e => toast.error(e.message),
   });
 
   const chargeTest = trpc.economy.chargeActionFee.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       if (data.success) {
         toast.success(`Fee charged: ${formatSKY(data.fee)} SKY444`);
         utils.economy.getBalance.invalidate();
@@ -77,7 +80,9 @@ export default function EconomicLayer() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Economic Layer</h1>
-            <p className="text-gray-400 text-sm">SKY444 token economy — fees, ledger, treasury</p>
+            <p className="text-gray-400 text-sm">
+              SKY444 token economy — fees, ledger, treasury
+            </p>
           </div>
         </div>
         {user && (
@@ -99,20 +104,26 @@ export default function EconomicLayer() {
           <Card className="bg-gradient-to-br from-yellow-900/40 to-orange-900/20 border-yellow-800/50 col-span-2">
             <CardContent className="p-4">
               <p className="text-yellow-400 text-sm mb-1">Your Balance</p>
-              <p className="text-3xl font-bold text-white">{formatSKY(balance.balance)}</p>
+              <p className="text-3xl font-bold text-white">
+                {formatSKY(balance.balance)}
+              </p>
               <p className="text-yellow-300/70 text-xs mt-1">SKY444 tokens</p>
             </CardContent>
           </Card>
           <Card className="bg-gray-900 border-gray-800">
             <CardContent className="p-4">
               <p className="text-green-400 text-xs mb-1">Total Earned</p>
-              <p className="text-xl font-bold text-white">{formatSKY(balance.totalEarned)}</p>
+              <p className="text-xl font-bold text-white">
+                {formatSKY(balance.totalEarned)}
+              </p>
             </CardContent>
           </Card>
           <Card className="bg-gray-900 border-gray-800">
             <CardContent className="p-4">
               <p className="text-red-400 text-xs mb-1">Fees Paid</p>
-              <p className="text-xl font-bold text-white">{formatSKY(balance.totalFeesPaid)}</p>
+              <p className="text-xl font-bold text-white">
+                {formatSKY(balance.totalFeesPaid)}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -120,16 +131,28 @@ export default function EconomicLayer() {
 
       <Tabs defaultValue="ledger">
         <TabsList className="bg-gray-900 border border-gray-800 mb-6">
-          <TabsTrigger value="ledger" className="data-[state=active]:bg-yellow-600">
+          <TabsTrigger
+            value="ledger"
+            className="data-[state=active]:bg-yellow-600"
+          >
             <BarChart3 className="w-4 h-4 mr-1" /> Ledger
           </TabsTrigger>
-          <TabsTrigger value="fees" className="data-[state=active]:bg-yellow-600">
+          <TabsTrigger
+            value="fees"
+            className="data-[state=active]:bg-yellow-600"
+          >
             <Zap className="w-4 h-4 mr-1" /> Fee Schedule
           </TabsTrigger>
-          <TabsTrigger value="treasury" className="data-[state=active]:bg-yellow-600">
+          <TabsTrigger
+            value="treasury"
+            className="data-[state=active]:bg-yellow-600"
+          >
             <TrendingUp className="w-4 h-4 mr-1" /> Treasury
           </TabsTrigger>
-          <TabsTrigger value="richlist" className="data-[state=active]:bg-yellow-600">
+          <TabsTrigger
+            value="richlist"
+            className="data-[state=active]:bg-yellow-600"
+          >
             <Trophy className="w-4 h-4 mr-1" /> Rich List
           </TabsTrigger>
         </TabsList>
@@ -145,54 +168,81 @@ export default function EconomicLayer() {
             <div className="text-center py-16 text-gray-500">
               <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-40" />
               <p className="mb-4">No transactions yet</p>
-              <Button onClick={() => claimBonus.mutate()} className="bg-yellow-600 hover:bg-yellow-700">
+              <Button
+                onClick={() => claimBonus.mutate()}
+                className="bg-yellow-600 hover:bg-yellow-700"
+              >
                 <Gift className="w-4 h-4 mr-2" />
                 Claim Welcome Bonus
               </Button>
             </div>
           ) : (
             <div className="space-y-2">
-              {(ledger?.transactions ?? []).map((tx: { id: number; actionType: string; amount: number; fee: number; netAmount: number; direction: string; referenceId: string | null; referenceType: string | null; description: string | null; balanceAfter: number; createdAt: number }) => (
-                <div
-                  key={tx.id}
-                  className="flex items-center gap-3 p-3 bg-gray-900 rounded-xl border border-gray-800 hover:border-gray-700 transition-colors"
-                >
+              {(ledger?.transactions ?? []).map(
+                (tx: {
+                  id: number;
+                  actionType: string;
+                  amount: number;
+                  fee: number;
+                  netAmount: number;
+                  direction: string;
+                  referenceId: string | null;
+                  referenceType: string | null;
+                  description: string | null;
+                  balanceAfter: number;
+                  createdAt: number;
+                }) => (
                   <div
-                    className={`p-2 rounded-lg ${
-                      tx.direction === "credit" ? "bg-green-900/30" : "bg-red-900/30"
-                    }`}
+                    key={tx.id}
+                    className="flex items-center gap-3 p-3 bg-gray-900 rounded-xl border border-gray-800 hover:border-gray-700 transition-colors"
                   >
-                    {tx.direction === "credit" ? (
-                      <ArrowDownLeft className="w-4 h-4 text-green-400" />
-                    ) : (
-                      <ArrowUpRight className="w-4 h-4 text-red-400" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white capitalize">
-                      {tx.actionType.replace(/_/g, " ")}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {tx.description ?? "—"} ·{" "}
-                      {formatDistanceToNow(new Date(tx.createdAt), { addSuffix: true })}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p
-                      className={`text-sm font-bold ${
-                        tx.direction === "credit" ? "text-green-400" : "text-red-400"
+                    <div
+                      className={`p-2 rounded-lg ${
+                        tx.direction === "credit"
+                          ? "bg-green-900/30"
+                          : "bg-red-900/30"
                       }`}
                     >
-                      {tx.direction === "credit" ? "+" : "-"}
-                      {formatSKY(tx.amount)} SKY
-                    </p>
-                    {tx.fee > 0 && (
-                      <p className="text-xs text-gray-600">fee: {formatSKY(tx.fee)}</p>
-                    )}
-                    <p className="text-xs text-gray-500">bal: {formatSKY(tx.balanceAfter)}</p>
+                      {tx.direction === "credit" ? (
+                        <ArrowDownLeft className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <ArrowUpRight className="w-4 h-4 text-red-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white capitalize">
+                        {tx.actionType.replace(/_/g, " ")}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {tx.description ?? "—"} ·{" "}
+                        {formatDistanceToNow(new Date(tx.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p
+                        className={`text-sm font-bold ${
+                          tx.direction === "credit"
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {tx.direction === "credit" ? "+" : "-"}
+                        {formatSKY(tx.amount)} SKY
+                      </p>
+                      {tx.fee > 0 && (
+                        <p className="text-xs text-gray-600">
+                          fee: {formatSKY(tx.fee)}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500">
+                        bal: {formatSKY(tx.balanceAfter)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           )}
         </TabsContent>
@@ -202,7 +252,9 @@ export default function EconomicLayer() {
           <div className="space-y-4">
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
-                <CardTitle className="text-white text-base">Flat Fees (SKY444)</CardTitle>
+                <CardTitle className="text-white text-base">
+                  Flat Fees (SKY444)
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
@@ -228,23 +280,27 @@ export default function EconomicLayer() {
 
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
-                <CardTitle className="text-white text-base">Percentage Fees</CardTitle>
+                <CardTitle className="text-white text-base">
+                  Percentage Fees
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(feeSchedule?.percentageFees ?? {}).map(([action, pct]) => (
-                    <div
-                      key={action}
-                      className="flex items-center justify-between p-2 bg-gray-800 rounded-lg"
-                    >
-                      <span className="text-sm text-gray-300 capitalize">
-                        {action.replace(/_/g, " ")}
-                      </span>
-                      <Badge className="bg-orange-900/50 text-orange-300">
-                        {(pct * 100).toFixed(1)}%
-                      </Badge>
-                    </div>
-                  ))}
+                  {Object.entries(feeSchedule?.percentageFees ?? {}).map(
+                    ([action, pct]) => (
+                      <div
+                        key={action}
+                        className="flex items-center justify-between p-2 bg-gray-800 rounded-lg"
+                      >
+                        <span className="text-sm text-gray-300 capitalize">
+                          {action.replace(/_/g, " ")}
+                        </span>
+                        <Badge className="bg-orange-900/50 text-orange-300">
+                          {(pct * 100).toFixed(1)}%
+                        </Badge>
+                      </div>
+                    )
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -252,21 +308,33 @@ export default function EconomicLayer() {
             {user && (
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader>
-                  <CardTitle className="text-white text-base">Test Action Fee</CardTitle>
+                  <CardTitle className="text-white text-base">
+                    Test Action Fee
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
-                  {["post", "comment", "governance_vote", "nft_mint", "stream_start"].map((action) => (
+                  {[
+                    "post",
+                    "comment",
+                    "governance_vote",
+                    "nft_mint",
+                    "stream_start",
+                  ].map(action => (
                     <Button
                       key={action}
                       size="sm"
                       variant="outline"
                       onClick={() =>
-                        chargeTest.mutate({ actionType: action, description: `Test: ${action}` })
+                        chargeTest.mutate({
+                          actionType: action,
+                          description: `Test: ${action}`,
+                        })
                       }
                       disabled={chargeTest.isPending}
                       className="border-gray-700 text-gray-300 hover:bg-gray-800 capitalize"
                     >
-                      {action.replace(/_/g, " ")} ({formatSKY(feeSchedule?.flatFees[action] ?? 0)} SKY)
+                      {action.replace(/_/g, " ")} (
+                      {formatSKY(feeSchedule?.flatFees[action] ?? 0)} SKY)
                     </Button>
                   ))}
                 </CardContent>
@@ -282,7 +350,9 @@ export default function EconomicLayer() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Card className="bg-gray-900 border-gray-800">
                   <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold text-yellow-400">{econStats.activeWallets}</p>
+                    <p className="text-2xl font-bold text-yellow-400">
+                      {econStats.activeWallets}
+                    </p>
                     <p className="text-xs text-gray-400 mt-1">Active Wallets</p>
                   </CardContent>
                 </Card>
@@ -291,13 +361,19 @@ export default function EconomicLayer() {
                     <p className="text-2xl font-bold text-green-400">
                       {formatSKY(econStats.totalCirculating)}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">Circulating SKY</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Circulating SKY
+                    </p>
                   </CardContent>
                 </Card>
                 <Card className="bg-gray-900 border-gray-800">
                   <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold text-blue-400">{econStats.dailyTxCount}</p>
-                    <p className="text-xs text-gray-400 mt-1">Daily Transactions</p>
+                    <p className="text-2xl font-bold text-blue-400">
+                      {econStats.dailyTxCount}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Daily Transactions
+                    </p>
                   </CardContent>
                 </Card>
                 <Card className="bg-gray-900 border-gray-800">
@@ -320,22 +396,25 @@ export default function EconomicLayer() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {treasury.byAction.map((item: { action: string; total: number }) => (
-                    <div
-                      key={item.action}
-                      className="flex items-center gap-3 p-2 bg-gray-800 rounded-lg"
-                    >
-                      <span className="text-sm text-gray-300 capitalize flex-1">
-                        {item.action.replace(/_/g, " ")}
-                      </span>
-                      <span className="text-sm font-medium text-yellow-400">
-                        {formatSKY(item.total)} SKY
-                      </span>
-                    </div>
-                  ))}
+                  {treasury.byAction.map(
+                    (item: { action: string; total: number }) => (
+                      <div
+                        key={item.action}
+                        className="flex items-center gap-3 p-2 bg-gray-800 rounded-lg"
+                      >
+                        <span className="text-sm text-gray-300 capitalize flex-1">
+                          {item.action.replace(/_/g, " ")}
+                        </span>
+                        <span className="text-sm font-medium text-yellow-400">
+                          {formatSKY(item.total)} SKY
+                        </span>
+                      </div>
+                    )
+                  )}
                   {treasury.byAction.length === 0 && (
                     <p className="text-gray-500 text-sm text-center py-4">
-                      No fees collected yet. Perform actions to generate treasury revenue.
+                      No fees collected yet. Perform actions to generate
+                      treasury revenue.
                     </p>
                   )}
                 </CardContent>
@@ -347,38 +426,56 @@ export default function EconomicLayer() {
         {/* Rich List Tab */}
         <TabsContent value="richlist">
           <div className="space-y-2">
-            {(richList?.richList ?? []).map((entry: { rank: number; userId: number; name: string; username: string; balance: number; totalEarned: number }) => (
-              <div
-                key={entry.userId}
-                className="flex items-center gap-3 p-3 bg-gray-900 rounded-xl border border-gray-800"
-              >
-                <span
-                  className={`text-lg font-bold w-8 text-center ${
-                    entry.rank === 1
-                      ? "text-yellow-400"
-                      : entry.rank === 2
-                      ? "text-gray-300"
-                      : entry.rank === 3
-                      ? "text-orange-400"
-                      : "text-gray-600"
-                  }`}
+            {(richList?.richList ?? []).map(
+              (entry: {
+                rank: number;
+                userId: number;
+                name: string;
+                username: string;
+                balance: number;
+                totalEarned: number;
+              }) => (
+                <div
+                  key={entry.userId}
+                  className="flex items-center gap-3 p-3 bg-gray-900 rounded-xl border border-gray-800"
                 >
-                  #{entry.rank}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white">{entry.name}</p>
-                  <p className="text-xs text-gray-500">@{entry.username}</p>
+                  <span
+                    className={`text-lg font-bold w-8 text-center ${
+                      entry.rank === 1
+                        ? "text-yellow-400"
+                        : entry.rank === 2
+                          ? "text-gray-300"
+                          : entry.rank === 3
+                            ? "text-orange-400"
+                            : "text-gray-600"
+                    }`}
+                  >
+                    #{entry.rank}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white">
+                      {entry.name}
+                    </p>
+                    <p className="text-xs text-gray-500">@{entry.username}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-yellow-400">
+                      {formatSKY(entry.balance)} SKY
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      earned: {formatSKY(entry.totalEarned)}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-yellow-400">{formatSKY(entry.balance)} SKY</p>
-                  <p className="text-xs text-gray-500">earned: {formatSKY(entry.totalEarned)}</p>
-                </div>
-              </div>
-            ))}
+              )
+            )}
             {(richList?.richList ?? []).length === 0 && (
               <div className="text-center py-16 text-gray-500">
                 <Trophy className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                <p>No wallets yet. Claim your welcome bonus to appear on the rich list!</p>
+                <p>
+                  No wallets yet. Claim your welcome bonus to appear on the rich
+                  list!
+                </p>
               </div>
             )}
           </div>

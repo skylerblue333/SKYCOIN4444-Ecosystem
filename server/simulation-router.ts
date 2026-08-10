@@ -94,7 +94,7 @@ export const AI_PERSONAS = [
   },
 ] as const;
 
-type PersonaId = typeof AI_PERSONAS[number]["id"];
+type PersonaId = (typeof AI_PERSONAS)[number]["id"];
 
 // ─── DB Setup ─────────────────────────────────────────────────────────────────
 
@@ -104,7 +104,8 @@ async function ensureSimulationTables() {
   const db = await getDb();
   if (!db) return;
 
-  await db.execute(sql.raw(`
+  await db.execute(
+    sql.raw(`
     CREATE TABLE IF NOT EXISTS simulation_posts (
       id INT AUTO_INCREMENT PRIMARY KEY,
       persona_id VARCHAR(64) NOT NULL,
@@ -123,9 +124,11 @@ async function ensureSimulationTables() {
       INDEX idx_created (created_at),
       INDEX idx_weight (blend_weight)
     )
-  `));
+  `)
+  );
 
-  await db.execute(sql.raw(`
+  await db.execute(
+    sql.raw(`
     CREATE TABLE IF NOT EXISTS simulation_activity_log (
       id INT AUTO_INCREMENT PRIMARY KEY,
       persona_id VARCHAR(64) NOT NULL,
@@ -137,24 +140,31 @@ async function ensureSimulationTables() {
       INDEX idx_persona (persona_id),
       INDEX idx_created (created_at)
     )
-  `));
+  `)
+  );
 
-  await db.execute(sql.raw(`
+  await db.execute(
+    sql.raw(`
     CREATE TABLE IF NOT EXISTS simulation_config (
       id INT AUTO_INCREMENT PRIMARY KEY,
       key_name VARCHAR(128) NOT NULL UNIQUE,
       value TEXT NOT NULL,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
-  `));
+  `)
+  );
 
   tableEnsured = true;
 }
 
 // ─── Content Generator ────────────────────────────────────────────────────────
 
-async function generatePersonaPost(persona: typeof AI_PERSONAS[number], topic?: string): Promise<string> {
-  const selectedTopic = topic ?? persona.topics[Math.floor(Math.random() * persona.topics.length)];
+async function generatePersonaPost(
+  persona: (typeof AI_PERSONAS)[number],
+  topic?: string
+): Promise<string> {
+  const selectedTopic =
+    topic ?? persona.topics[Math.floor(Math.random() * persona.topics.length)];
   const response = await invokeLLM({
     messages: [
       {
@@ -170,26 +180,34 @@ Include relevant emojis. Reference SKYCOIN4444 or SKY444 token occasionally when
     ],
   });
   const rawContent = response.choices?.[0]?.message?.content;
-  return typeof rawContent === "string" ? rawContent.trim() : `${persona.avatar} Exciting things happening in the ${selectedTopic} space! Stay tuned.`;
+  return typeof rawContent === "string"
+    ? rawContent.trim()
+    : `${persona.avatar} Exciting things happening in the ${selectedTopic} space! Stay tuned.`;
 }
 
 // ─── Simulation Engine ────────────────────────────────────────────────────────
 
-async function runSimulationCycle(db: NonNullable<Awaited<ReturnType<typeof getDb>>>, count: number = 3) {
+async function runSimulationCycle(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  count: number = 3
+) {
   const results: { personaId: string; content: string; topic: string }[] = [];
 
   // Pick random personas weighted by postFrequency
   const weights = { high: 3, medium: 2, low: 1 };
-  const weightedPersonas: typeof AI_PERSONAS[number][] = [];
+  const weightedPersonas: (typeof AI_PERSONAS)[number][] = [];
   for (const p of AI_PERSONAS) {
     const w = weights[p.postFrequency];
     for (let i = 0; i < w; i++) weightedPersonas.push(p);
   }
 
-  const selected = [...weightedPersonas].sort(() => Math.random() - 0.5).slice(0, count);
+  const selected = [...weightedPersonas]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, count);
 
   for (const persona of selected) {
-    const topic = persona.topics[Math.floor(Math.random() * persona.topics.length)];
+    const topic =
+      persona.topics[Math.floor(Math.random() * persona.topics.length)];
     try {
       const content = await generatePersonaPost(persona, topic);
       const likes = Math.floor(Math.random() * 50) + 1;
@@ -197,18 +215,25 @@ async function runSimulationCycle(db: NonNullable<Awaited<ReturnType<typeof getD
       const shares = Math.floor(Math.random() * 8);
       const blendWeight = 0.5 + Math.random() * 0.5;
 
-      await db.execute(sql.raw(
-        `INSERT INTO simulation_posts (persona_id, persona_name, persona_handle, persona_avatar, content, topic, likes, comments, shares, blend_weight)
-         VALUES ('${persona.id}', '${persona.name.replace(/'/g, "''")}', '${persona.handle}', '${persona.avatar}', '${content.replace(/'/g, "''")}', '${topic}', ${likes}, ${comments}, ${shares}, ${blendWeight})`,
-      ));
+      await db.execute(
+        sql.raw(
+          `INSERT INTO simulation_posts (persona_id, persona_name, persona_handle, persona_avatar, content, topic, likes, comments, shares, blend_weight)
+         VALUES ('${persona.id}', '${persona.name.replace(/'/g, "''")}', '${persona.handle}', '${persona.avatar}', '${content.replace(/'/g, "''")}', '${topic}', ${likes}, ${comments}, ${shares}, ${blendWeight})`
+        )
+      );
 
-      await db.execute(sql.raw(
-        `INSERT INTO simulation_activity_log (persona_id, action_type, metadata) VALUES ('${persona.id}', 'post', '${JSON.stringify({ topic, contentLength: content.length }).replace(/'/g, "''")}')`,
-      ));
+      await db.execute(
+        sql.raw(
+          `INSERT INTO simulation_activity_log (persona_id, action_type, metadata) VALUES ('${persona.id}', 'post', '${JSON.stringify({ topic, contentLength: content.length }).replace(/'/g, "''")}')`
+        )
+      );
 
       results.push({ personaId: persona.id, content, topic });
     } catch (err) {
-      console.warn(`[Simulation] Failed to generate post for ${persona.id}:`, err);
+      console.warn(
+        `[Simulation] Failed to generate post for ${persona.id}:`,
+        err
+      );
     }
   }
 
@@ -220,11 +245,13 @@ async function runSimulationCycle(db: NonNullable<Awaited<ReturnType<typeof getD
 export const simulationRouter = router({
   /** Get blended feed (real posts + AI persona posts) */
   getBlendedFeed: publicProcedure
-    .input(z.object({
-      limit: z.number().min(1).max(100).default(20),
-      offset: z.number().default(0),
-      topic: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().default(0),
+        topic: z.string().optional(),
+      })
+    )
     .query(async ({ input }) => {
       await ensureSimulationTables();
       const db = await getDb();
@@ -235,18 +262,20 @@ export const simulationRouter = router({
         whereClause = `WHERE topic = '${input.topic.replace(/'/g, "''")}'`;
       }
 
-      const [rows] = await db.execute(sql.raw(
-        `SELECT * FROM simulation_posts ${whereClause} ORDER BY blend_weight DESC, created_at DESC LIMIT ${input.limit} OFFSET ${input.offset}`,
+      const [rows] = (await db.execute(
+        sql.raw(
+          `SELECT * FROM simulation_posts ${whereClause} ORDER BY blend_weight DESC, created_at DESC LIMIT ${input.limit} OFFSET ${input.offset}`
+        )
       )) as any[];
       const posts: any[] = Array.isArray(rows) ? rows : [];
 
-      const [countRows] = await db.execute(sql.raw(
-        `SELECT COUNT(*) as total FROM simulation_posts ${whereClause}`,
+      const [countRows] = (await db.execute(
+        sql.raw(`SELECT COUNT(*) as total FROM simulation_posts ${whereClause}`)
       )) as any[];
       const countData: any[] = Array.isArray(countRows) ? countRows : [];
 
       return {
-        posts: posts.map((p) => ({
+        posts: posts.map(p => ({
           id: p.id,
           personaId: p.persona_id,
           personaName: p.persona_name,
@@ -270,7 +299,7 @@ export const simulationRouter = router({
   getPersonas: publicProcedure.query(async () => {
     await ensureSimulationTables();
     return {
-      personas: AI_PERSONAS.map((p) => ({
+      personas: AI_PERSONAS.map(p => ({
         id: p.id,
         name: p.name,
         handle: p.handle,
@@ -285,10 +314,12 @@ export const simulationRouter = router({
 
   /** Trigger a simulation cycle (admin/system action) */
   runCycle: protectedProcedure
-    .input(z.object({
-      count: z.number().min(1).max(10).default(3),
-      topic: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        count: z.number().min(1).max(10).default(3),
+        topic: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx: _ctx, input }) => {
       await ensureSimulationTables();
       const db = await getDb();
@@ -302,39 +333,44 @@ export const simulationRouter = router({
   getStats: publicProcedure.query(async () => {
     await ensureSimulationTables();
     const db = await getDb();
-    if (!db) return { totalPosts: 0, totalActivity: 0, byPersona: [], topTopics: [] };
+    if (!db)
+      return { totalPosts: 0, totalActivity: 0, byPersona: [], topTopics: [] };
 
-    const [postRows] = await db.execute(sql.raw(
-      `SELECT persona_id, persona_name, persona_avatar, COUNT(*) as post_count, SUM(likes) as total_likes FROM simulation_posts GROUP BY persona_id, persona_name, persona_avatar ORDER BY post_count DESC`,
+    const [postRows] = (await db.execute(
+      sql.raw(
+        `SELECT persona_id, persona_name, persona_avatar, COUNT(*) as post_count, SUM(likes) as total_likes FROM simulation_posts GROUP BY persona_id, persona_name, persona_avatar ORDER BY post_count DESC`
+      )
     )) as any[];
     const byPersona: any[] = Array.isArray(postRows) ? postRows : [];
 
-    const [topicRows] = await db.execute(sql.raw(
-      `SELECT topic, COUNT(*) as cnt FROM simulation_posts GROUP BY topic ORDER BY cnt DESC LIMIT 10`,
+    const [topicRows] = (await db.execute(
+      sql.raw(
+        `SELECT topic, COUNT(*) as cnt FROM simulation_posts GROUP BY topic ORDER BY cnt DESC LIMIT 10`
+      )
     )) as any[];
     const topTopics: any[] = Array.isArray(topicRows) ? topicRows : [];
 
-    const [totalRows] = await db.execute(sql.raw(
-      `SELECT COUNT(*) as total FROM simulation_posts`,
+    const [totalRows] = (await db.execute(
+      sql.raw(`SELECT COUNT(*) as total FROM simulation_posts`)
     )) as any[];
     const totalData: any[] = Array.isArray(totalRows) ? totalRows : [];
 
-    const [activityRows] = await db.execute(sql.raw(
-      `SELECT COUNT(*) as total FROM simulation_activity_log`,
+    const [activityRows] = (await db.execute(
+      sql.raw(`SELECT COUNT(*) as total FROM simulation_activity_log`)
     )) as any[];
     const activityData: any[] = Array.isArray(activityRows) ? activityRows : [];
 
     return {
       totalPosts: Number(totalData[0]?.total ?? 0),
       totalActivity: Number(activityData[0]?.total ?? 0),
-      byPersona: byPersona.map((r) => ({
+      byPersona: byPersona.map(r => ({
         personaId: r.persona_id,
         personaName: r.persona_name,
         personaAvatar: r.persona_avatar,
         postCount: Number(r.post_count),
         totalLikes: Number(r.total_likes),
       })),
-      topTopics: topTopics.map((r) => ({ topic: r.topic, count: Number(r.cnt) })),
+      topTopics: topTopics.map(r => ({ topic: r.topic, count: Number(r.cnt) })),
     };
   }),
 
@@ -344,14 +380,18 @@ export const simulationRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database unavailable");
 
-    const [countRows] = await db.execute(sql.raw(
-      `SELECT COUNT(*) as total FROM simulation_posts`,
+    const [countRows] = (await db.execute(
+      sql.raw(`SELECT COUNT(*) as total FROM simulation_posts`)
     )) as any[];
     const countData: any[] = Array.isArray(countRows) ? countRows : [];
     const existing = Number(countData[0]?.total ?? 0);
 
     if (existing > 0) {
-      return { success: true, message: `Already seeded with ${existing} posts`, generated: 0 };
+      return {
+        success: true,
+        message: `Already seeded with ${existing} posts`,
+        generated: 0,
+      };
     }
 
     // Generate 2 posts per persona
@@ -363,10 +403,12 @@ export const simulationRouter = router({
         const likes = Math.floor(Math.random() * 100) + 10;
         const comments = Math.floor(Math.random() * 20) + 2;
         const shares = Math.floor(Math.random() * 10);
-        await db.execute(sql.raw(
-          `INSERT INTO simulation_posts (persona_id, persona_name, persona_handle, persona_avatar, content, topic, likes, comments, shares, blend_weight)
-           VALUES ('${persona.id}', '${persona.name.replace(/'/g, "''")}', '${persona.handle}', '${persona.avatar}', '${content.replace(/'/g, "''")}', '${topic}', ${likes}, ${comments}, ${shares}, ${0.7 + Math.random() * 0.3})`,
-        ));
+        await db.execute(
+          sql.raw(
+            `INSERT INTO simulation_posts (persona_id, persona_name, persona_handle, persona_avatar, content, topic, likes, comments, shares, blend_weight)
+           VALUES ('${persona.id}', '${persona.name.replace(/'/g, "''")}', '${persona.handle}', '${persona.avatar}', '${content.replace(/'/g, "''")}', '${topic}', ${likes}, ${comments}, ${shares}, ${0.7 + Math.random() * 0.3})`
+          )
+        );
         generated++;
       } catch (err) {
         console.warn(`[Simulation] Seed failed for ${persona.id}:`, err);
@@ -385,8 +427,8 @@ export async function autoSeedSimulation() {
     const db = await getDb();
     if (!db) return;
 
-    const [countRows] = await db.execute(sql.raw(
-      `SELECT COUNT(*) as total FROM simulation_posts`,
+    const [countRows] = (await db.execute(
+      sql.raw(`SELECT COUNT(*) as total FROM simulation_posts`)
     )) as any[];
     const countData: any[] = Array.isArray(countRows) ? countRows : [];
     const existing = Number(countData[0]?.total ?? 0);

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Adaptive Roadmap Engine
@@ -51,16 +51,16 @@ export class AdaptiveRoadmapEngine {
   private initializeSampleRoadmap(): void {
     this.roadmapItems = [
       {
-        id: 'item_1',
-        name: 'Mobile App',
-        description: 'Native iOS and Android apps',
+        id: "item_1",
+        name: "Mobile App",
+        description: "Native iOS and Android apps",
         currentPriority: 7,
         dynamicPriority: 9,
         feedbackScore: 0.85,
         revenueScore: 0.9,
         technicalCostScore: 0.7,
         strategicAlignmentScore: 0.95,
-        estimatedImpact: 'high',
+        estimatedImpact: "high",
         outcomePrediction: {
           retentionImpact: 0.3,
           revenueImpact: 0.4,
@@ -68,16 +68,16 @@ export class AdaptiveRoadmapEngine {
         },
       },
       {
-        id: 'item_2',
-        name: 'AI Personalization',
-        description: 'Personalized recommendations for each user',
+        id: "item_2",
+        name: "AI Personalization",
+        description: "Personalized recommendations for each user",
         currentPriority: 5,
         dynamicPriority: 8,
         feedbackScore: 0.75,
         revenueScore: 0.8,
         technicalCostScore: 0.6,
         strategicAlignmentScore: 0.85,
-        estimatedImpact: 'high',
+        estimatedImpact: "high",
         outcomePrediction: {
           retentionImpact: 0.25,
           revenueImpact: 0.3,
@@ -85,16 +85,16 @@ export class AdaptiveRoadmapEngine {
         },
       },
       {
-        id: 'item_3',
-        name: 'Scalable API',
-        description: 'REST API for enterprise customers',
+        id: "item_3",
+        name: "Scalable API",
+        description: "REST API for enterprise customers",
         currentPriority: 4,
         dynamicPriority: 6,
         feedbackScore: 0.6,
         revenueScore: 0.85,
         technicalCostScore: 0.5,
         strategicAlignmentScore: 0.7,
-        estimatedImpact: 'medium',
+        estimatedImpact: "medium",
         outcomePrediction: {
           retentionImpact: 0.1,
           revenueImpact: 0.5,
@@ -102,16 +102,16 @@ export class AdaptiveRoadmapEngine {
         },
       },
       {
-        id: 'item_4',
-        name: 'Community Features',
-        description: 'User forums, discussions, and collaboration',
+        id: "item_4",
+        name: "Community Features",
+        description: "User forums, discussions, and collaboration",
         currentPriority: 3,
         dynamicPriority: 7,
         feedbackScore: 0.9,
         revenueScore: 0.5,
         technicalCostScore: 0.4,
         strategicAlignmentScore: 0.8,
-        estimatedImpact: 'medium',
+        estimatedImpact: "medium",
         outcomePrediction: {
           retentionImpact: 0.4,
           revenueImpact: 0.15,
@@ -129,14 +129,16 @@ export class AdaptiveRoadmapEngine {
     this.updateDynamicPriorities();
 
     // Sort by dynamic priority (descending)
-    return [...this.roadmapItems].sort((a, b) => b.dynamicPriority - a.dynamicPriority);
+    return [...this.roadmapItems].sort(
+      (a, b) => b.dynamicPriority - a.dynamicPriority
+    );
   }
 
   /**
    * Update dynamic priorities based on feedback and signals
    */
   private updateDynamicPriorities(): void {
-    this.roadmapItems.forEach((item) => {
+    this.roadmapItems.forEach(item => {
       // Calculate weighted score
       const weights = {
         feedback: 0.3,
@@ -163,8 +165,8 @@ export class AdaptiveRoadmapEngine {
    * Simulate outcome of shipping a feature
    */
   async simulateOutcome(itemId: string): Promise<any> {
-    const item = this.roadmapItems.find((i) => i.id === itemId);
-    if (!item) throw new Error('Item not found');
+    const item = this.roadmapItems.find(i => i.id === itemId);
+    if (!item) throw new Error("Item not found");
 
     const prediction = item.outcomePrediction || {
       retentionImpact: 0,
@@ -184,11 +186,20 @@ export class AdaptiveRoadmapEngine {
         mau: `+${Math.round(prediction.engagementImpact * 3000)} MAU`,
       },
       riskFactors: [
-        { factor: 'Technical complexity', severity: item.technicalCostScore > 0.7 ? 'high' : 'low' },
-        { factor: 'Market demand', severity: item.feedbackScore > 0.8 ? 'low' : 'medium' },
-        { factor: 'Resource availability', severity: 'medium' },
+        {
+          factor: "Technical complexity",
+          severity: item.technicalCostScore > 0.7 ? "high" : "low",
+        },
+        {
+          factor: "Market demand",
+          severity: item.feedbackScore > 0.8 ? "low" : "medium",
+        },
+        { factor: "Resource availability", severity: "medium" },
       ],
-      recommendation: item.dynamicPriority >= 8 ? 'Ship immediately' : 'Schedule for next quarter',
+      recommendation:
+        item.dynamicPriority >= 8
+          ? "Ship immediately"
+          : "Schedule for next quarter",
     };
   }
 
@@ -200,12 +211,16 @@ export class AdaptiveRoadmapEngine {
 
     return {
       totalItems: items.length,
-      highPriorityCount: items.filter((i) => i.dynamicPriority >= 8).length,
-      averageFeedbackScore: items.reduce((sum, i) => sum + i.feedbackScore, 0) / items.length,
-      averageRevenueScore: items.reduce((sum, i) => sum + i.revenueScore, 0) / items.length,
-      averageTechnicalCost: items.reduce((sum, i) => sum + i.technicalCostScore, 0) / items.length,
+      highPriorityCount: items.filter(i => i.dynamicPriority >= 8).length,
+      averageFeedbackScore:
+        items.reduce((sum, i) => sum + i.feedbackScore, 0) / items.length,
+      averageRevenueScore:
+        items.reduce((sum, i) => sum + i.revenueScore, 0) / items.length,
+      averageTechnicalCost:
+        items.reduce((sum, i) => sum + i.technicalCostScore, 0) / items.length,
       averageStrategicAlignment:
-        items.reduce((sum, i) => sum + i.strategicAlignmentScore, 0) / items.length,
+        items.reduce((sum, i) => sum + i.strategicAlignmentScore, 0) /
+        items.length,
       lastUpdated: new Date(),
     };
   }
@@ -213,9 +228,12 @@ export class AdaptiveRoadmapEngine {
   /**
    * Add feedback signal to update priorities
    */
-  async addFeedbackSignal(itemId: string, feedbackScore: number): Promise<void> {
-    const item = this.roadmapItems.find((i) => i.id === itemId);
-    if (!item) throw new Error('Item not found');
+  async addFeedbackSignal(
+    itemId: string,
+    feedbackScore: number
+  ): Promise<void> {
+    const item = this.roadmapItems.find(i => i.id === itemId);
+    if (!item) throw new Error("Item not found");
 
     // Update feedback score (weighted average)
     item.feedbackScore = (item.feedbackScore + feedbackScore) / 2;
@@ -223,7 +241,9 @@ export class AdaptiveRoadmapEngine {
     // Trigger priority update
     this.updateDynamicPriorities();
 
-    console.log(`Updated feedback signal for ${item.name}: ${item.feedbackScore}`);
+    console.log(
+      `Updated feedback signal for ${item.name}: ${item.feedbackScore}`
+    );
   }
 
   /**
@@ -234,20 +254,20 @@ export class AdaptiveRoadmapEngine {
       timestamp: new Date(),
       changes: [
         {
-          itemId: 'item_4',
-          itemName: 'Community Features',
+          itemId: "item_4",
+          itemName: "Community Features",
           previousPriority: 3,
           newPriority: 7,
-          reason: 'High user feedback volume (0.9 score)',
-          changeType: 'priority_increase',
+          reason: "High user feedback volume (0.9 score)",
+          changeType: "priority_increase",
         },
         {
-          itemId: 'item_3',
-          itemName: 'Scalable API',
+          itemId: "item_3",
+          itemName: "Scalable API",
           previousPriority: 4,
           newPriority: 6,
-          reason: 'Strong revenue potential (0.85 score)',
-          changeType: 'priority_increase',
+          reason: "Strong revenue potential (0.85 score)",
+          changeType: "priority_increase",
         },
       ],
     };
@@ -270,7 +290,7 @@ export class AdaptiveRoadmapEngine {
           itemName: item.name,
           estimatedWeeks,
           priority: item.dynamicPriority,
-          status: 'scheduled',
+          status: "scheduled",
         });
         remainingWeeks -= estimatedWeeks;
       } else {
@@ -279,7 +299,7 @@ export class AdaptiveRoadmapEngine {
           itemName: item.name,
           estimatedWeeks,
           priority: item.dynamicPriority,
-          status: 'backlog',
+          status: "backlog",
         });
       }
     }
@@ -287,8 +307,8 @@ export class AdaptiveRoadmapEngine {
     return {
       quarterWeeks,
       utilizationRate: ((quarterWeeks - remainingWeeks) / quarterWeeks) * 100,
-      scheduledItems: forecast.filter((f) => f.status === 'scheduled'),
-      backlogItems: forecast.filter((f) => f.status === 'backlog'),
+      scheduledItems: forecast.filter(f => f.status === "scheduled"),
+      backlogItems: forecast.filter(f => f.status === "backlog"),
     };
   }
 }

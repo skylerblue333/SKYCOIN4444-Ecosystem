@@ -7,7 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
@@ -29,12 +35,12 @@ export default function Guilds() {
       setGuildName("");
       setGuildDesc("");
     },
-    onError: (err) => toast.error(err.message),
+    onError: err => toast.error(err.message),
   });
 
   const joinGuild = trpc.gamefi.joinGuild.useMutation({
     onSuccess: () => toast.success("Joined guild!"),
-    onError: (err) => toast.error(err.message),
+    onError: err => toast.error(err.message),
   });
 
   const declareWar = trpc.gamefi.declareWar.useMutation({
@@ -42,7 +48,7 @@ export default function Guilds() {
       toast.success("War declared!");
       setWarTarget("");
     },
-    onError: (err) => toast.error(err.message),
+    onError: err => toast.error(err.message),
   });
 
   return (
@@ -70,19 +76,23 @@ export default function Guilds() {
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Guild Name</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Guild Name
+                  </label>
                   <Input
                     value={guildName}
-                    onChange={(e) => setGuildName(e.target.value)}
+                    onChange={e => setGuildName(e.target.value)}
                     placeholder="Enter guild name..."
                     className="mt-1"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Description</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Description
+                  </label>
                   <Textarea
                     value={guildDesc}
-                    onChange={(e) => setGuildDesc(e.target.value)}
+                    onChange={e => setGuildDesc(e.target.value)}
                     placeholder="Describe your guild..."
                     className="mt-1"
                     rows={3}
@@ -90,7 +100,12 @@ export default function Guilds() {
                 </div>
                 <Button
                   className="w-full"
-                  onClick={() => createGuild.mutate({ name: guildName, tag: guildName.substring(0, 4).toUpperCase() })}
+                  onClick={() =>
+                    createGuild.mutate({
+                      name: guildName,
+                      tag: guildName.substring(0, 4).toUpperCase(),
+                    })
+                  }
                   disabled={!guildName || createGuild.isPending}
                 >
                   {createGuild.isPending ? "Creating..." : "Create Guild"}
@@ -111,53 +126,77 @@ export default function Guilds() {
           <TabsContent value="guilds" className="space-y-4">
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Card key={i} className="bg-card/50 border-border animate-pulse">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <Card
+                    key={i}
+                    className="bg-card/50 border-border animate-pulse"
+                  >
                     <CardContent className="p-6 h-40" />
                   </Card>
                 ))}
               </div>
             ) : guilds && guilds.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {guilds.map((guild: { id: string; name: string; description?: string; memberCount?: number; level?: number; xp?: number }) => (
-                  <Card key={guild.id} className="bg-card/50 border-border hover:border-purple-500/50 transition-colors">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{guild.name}</CardTitle>
-                        <Badge variant="outline" className="text-purple-400 border-purple-400/50">
-                          Lv.{guild.level || 1}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {guild.description || "No description"}
-                      </p>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {guild.memberCount || 0} members
-                        </span>
-                        <span className="text-purple-400">
-                          {guild.xp || 0} XP
-                        </span>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => joinGuild.mutate({ guildId: Number(guild.id) })}
-                        disabled={joinGuild.isPending}
-                      >
-                        Join Guild
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+                {guilds.map(
+                  (guild: {
+                    id: string;
+                    name: string;
+                    description?: string;
+                    memberCount?: number;
+                    level?: number;
+                    xp?: number;
+                  }) => (
+                    <Card
+                      key={guild.id}
+                      className="bg-card/50 border-border hover:border-purple-500/50 transition-colors"
+                    >
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">
+                            {guild.name}
+                          </CardTitle>
+                          <Badge
+                            variant="outline"
+                            className="text-purple-400 border-purple-400/50"
+                          >
+                            Lv.{guild.level || 1}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {guild.description || "No description"}
+                        </p>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {guild.memberCount || 0} members
+                          </span>
+                          <span className="text-purple-400">
+                            {guild.xp || 0} XP
+                          </span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() =>
+                            joinGuild.mutate({ guildId: Number(guild.id) })
+                          }
+                          disabled={joinGuild.isPending}
+                        >
+                          Join Guild
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )
+                )}
               </div>
             ) : (
               <Card className="bg-card/50 border-border">
                 <CardContent className="p-12 text-center">
-                  <p className="text-muted-foreground text-lg">No guilds yet. Be the first to create one!</p>
+                  <p className="text-muted-foreground text-lg">
+                    No guilds yet. Be the first to create one!
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -172,12 +211,18 @@ export default function Guilds() {
               <CardContent className="flex gap-3">
                 <Input
                   value={warTarget}
-                  onChange={(e) => setWarTarget(e.target.value)}
+                  onChange={e => setWarTarget(e.target.value)}
                   placeholder="Target guild ID..."
                   className="flex-1"
                 />
                 <Button
-                  onClick={() => declareWar.mutate({ attackerGuildId: 1, defenderGuildId: Number(warTarget), wager: 100 })}
+                  onClick={() =>
+                    declareWar.mutate({
+                      attackerGuildId: 1,
+                      defenderGuildId: Number(warTarget),
+                      wager: 100,
+                    })
+                  }
                   disabled={!warTarget || declareWar.isPending}
                   className="bg-red-600 hover:bg-red-700"
                 >
@@ -188,30 +233,50 @@ export default function Guilds() {
 
             {wars && wars.length > 0 ? (
               <div className="space-y-3">
-                {wars.map((war: { id: any; attacker: any; defender: any; status: any; startedAt?: any; attackerScore: number; defenderScore: number }) => (
-                  <Card key={war.id} className="bg-card/50 border-border">
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <span className="font-bold text-red-400">{war.attacker}</span>
-                        <span className="text-muted-foreground">vs</span>
-                        <span className="font-bold text-blue-400">{war.defender}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-mono">
-                          {war.attackerScore} - {war.defenderScore}
-                        </span>
-                        <Badge variant={war.status === "active" ? "default" : "secondary"}>
-                          {war.status}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                {wars.map(
+                  (war: {
+                    id: any;
+                    attacker: any;
+                    defender: any;
+                    status: any;
+                    startedAt?: any;
+                    attackerScore: number;
+                    defenderScore: number;
+                  }) => (
+                    <Card key={war.id} className="bg-card/50 border-border">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <span className="font-bold text-red-400">
+                            {war.attacker}
+                          </span>
+                          <span className="text-muted-foreground">vs</span>
+                          <span className="font-bold text-blue-400">
+                            {war.defender}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-mono">
+                            {war.attackerScore} - {war.defenderScore}
+                          </span>
+                          <Badge
+                            variant={
+                              war.status === "active" ? "default" : "secondary"
+                            }
+                          >
+                            {war.status}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                )}
               </div>
             ) : (
               <Card className="bg-card/50 border-border">
                 <CardContent className="p-12 text-center">
-                  <p className="text-muted-foreground">No active wars. Peace reigns... for now.</p>
+                  <p className="text-muted-foreground">
+                    No active wars. Peace reigns... for now.
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -230,25 +295,50 @@ export default function Guilds() {
                     <span className="text-right">Wins</span>
                   </div>
                   {leaderboard && leaderboard.length > 0 ? (
-                    leaderboard.map((entry: { rank: number; username: string; avatar: string | null; xp: number; level: number; reputation: number; verified: boolean; badge: string }, index: number) => (
-                      <div
-                        key={entry.username}
-                        className={`grid grid-cols-5 gap-4 p-4 text-sm items-center`}
-                      >
-                        <span className={`font-bold ${
-                          index === 0 ? "text-yellow-400" :
-                          index === 1 ? "text-gray-300" :
-                          index === 2 ? "text-amber-600" :
-                          "text-muted-foreground"
-                        }`}>
-                          #{entry.rank}
-                        </span>
-                        <span className="font-medium">{entry.username}</span>
-                        <span className="text-right text-purple-400">Lv.{entry.level}</span>
-                        <span className="text-right">{entry.xp.toLocaleString()}</span>
-                        <span className="text-right text-purple-400">{entry.reputation}</span>
-                      </div>
-                    ))
+                    leaderboard.map(
+                      (
+                        entry: {
+                          rank: number;
+                          username: string;
+                          avatar: string | null;
+                          xp: number;
+                          level: number;
+                          reputation: number;
+                          verified: boolean;
+                          badge: string;
+                        },
+                        index: number
+                      ) => (
+                        <div
+                          key={entry.username}
+                          className={`grid grid-cols-5 gap-4 p-4 text-sm items-center`}
+                        >
+                          <span
+                            className={`font-bold ${
+                              index === 0
+                                ? "text-yellow-400"
+                                : index === 1
+                                  ? "text-gray-300"
+                                  : index === 2
+                                    ? "text-amber-600"
+                                    : "text-muted-foreground"
+                            }`}
+                          >
+                            #{entry.rank}
+                          </span>
+                          <span className="font-medium">{entry.username}</span>
+                          <span className="text-right text-purple-400">
+                            Lv.{entry.level}
+                          </span>
+                          <span className="text-right">
+                            {entry.xp.toLocaleString()}
+                          </span>
+                          <span className="text-right text-purple-400">
+                            {entry.reputation}
+                          </span>
+                        </div>
+                      )
+                    )
                   ) : (
                     <div className="p-8 text-center text-muted-foreground">
                       No leaderboard data yet. Start playing to rank up!

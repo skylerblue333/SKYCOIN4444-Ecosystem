@@ -20,31 +20,50 @@
   --color-bg-secondary: #141829;
   --color-bg-tertiary: #1a1f3a;
   --color-bg-overlay: rgba(10, 14, 39, 0.8);
-  
+
   --color-gold-primary: #d4af37;
   --color-gold-secondary: #f4d03f;
   --color-gold-accent: #ffd700;
   --color-gold-dark: #b8860b;
-  
+
   --color-accent-primary: #6366f1;
   --color-accent-secondary: #8b5cf6;
   --color-accent-tertiary: #ec4899;
-  
+
   --color-text-primary: #ffffff;
   --color-text-secondary: #e0e0e0;
   --color-text-tertiary: #a0a0a0;
-  
+
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
-  
+
   /* Gradients */
-  --gradient-gold: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
-  --gradient-accent: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-  --gradient-dark: linear-gradient(135deg, #0a0e27 0%, #141829 50%, #1a1f3a 100%);
-  --gradient-premium: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-  
+  --gradient-gold: linear-gradient(
+    135deg,
+    #d4af37 0%,
+    #f4d03f 50%,
+    #d4af37 100%
+  );
+  --gradient-accent: linear-gradient(
+    135deg,
+    #6366f1 0%,
+    #8b5cf6 50%,
+    #ec4899 100%
+  );
+  --gradient-dark: linear-gradient(
+    135deg,
+    #0a0e27 0%,
+    #141829 50%,
+    #1a1f3a 100%
+  );
+  --gradient-premium: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.1) 0%,
+    rgba(139, 92, 246, 0.1) 100%
+  );
+
   /* Shadows - Premium */
   --shadow-sm: 0 2px 4px rgba(212, 175, 55, 0.1);
   --shadow-md: 0 4px 12px rgba(212, 175, 55, 0.15);
@@ -52,7 +71,7 @@
   --shadow-xl: 0 12px 40px rgba(212, 175, 55, 0.25);
   --shadow-2xl: 0 20px 60px rgba(212, 175, 55, 0.3);
   --shadow-glow: 0 0 20px rgba(212, 175, 55, 0.4);
-  
+
   /* Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
@@ -61,10 +80,11 @@
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
   --spacing-3xl: 4rem;
-  
+
   /* Typography */
-  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-family-display: 'Playfair Display', serif;
+  --font-family-primary:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-display: "Playfair Display", serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -74,7 +94,7 @@
   --font-size-3xl: 2rem;
   --font-size-4xl: 2.5rem;
   --font-size-5xl: 3rem;
-  
+
   /* Border Radius */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
@@ -82,13 +102,13 @@
   --radius-xl: 1.5rem;
   --radius-2xl: 2rem;
   --radius-full: 9999px;
-  
+
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slowest: 500ms cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* Z-Index */
   --z-dropdown: 1000;
   --z-sticky: 1020;
@@ -125,7 +145,12 @@ body {
    TYPOGRAPHY
    ============================================================================ */
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-family-display);
   font-weight: 700;
   line-height: 1.2;
@@ -187,7 +212,7 @@ a:hover {
 }
 
 .btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -196,7 +221,9 @@ a:hover {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   transform: translate(-50%, -50%);
-  transition: width var(--transition-base), height var(--transition-base);
+  transition:
+    width var(--transition-base),
+    height var(--transition-base);
 }
 
 .btn:hover::before {
@@ -253,7 +280,7 @@ a:hover {
 }
 
 .card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -279,7 +306,9 @@ a:hover {
    INPUTS - PREMIUM FORMS
    ============================================================================ */
 
-input, textarea, select {
+input,
+textarea,
+select {
   background: rgba(26, 31, 58, 0.5);
   border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: var(--radius-lg);
@@ -290,7 +319,9 @@ input, textarea, select {
   transition: all var(--transition-base);
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--color-gold-primary);
   box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
@@ -350,7 +381,8 @@ input::placeholder {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -359,7 +391,8 @@ input::placeholder {
 }
 
 @keyframes glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
   }
   50% {
@@ -479,12 +512,14 @@ input::placeholder {
   h1 {
     font-size: var(--font-size-3xl);
   }
-  
+
   h2 {
     font-size: var(--font-size-2xl);
   }
-  
-  .grid-2, .grid-3, .grid-4 {
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
     grid-template-columns: 1fr;
   }
 }

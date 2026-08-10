@@ -4,11 +4,11 @@
  * Supports GPT-4, GPT-4 Turbo, and GPT-3.5-Turbo models
  */
 
-import type { ChatCompletionMessageParam } from 'openai/resources/chat';
+import type { ChatCompletionMessageParam } from "openai/resources/chat";
 
 interface LLMConfig {
   apiKey: string;
-  model: 'gpt-4' | 'gpt-4-turbo' | 'gpt-3.5-turbo';
+  model: "gpt-4" | "gpt-4-turbo" | "gpt-3.5-turbo";
   temperature: number;
   maxTokens: number;
   topP: number;
@@ -30,7 +30,7 @@ export class ProductionLLMEngine {
   private maxTokens: number;
   private topP: number;
   private conversationHistory: Map<string, ChatCompletionMessageParam[]>;
-  private apiBaseUrl: string = 'https://api.openai.com/v1';
+  private apiBaseUrl: string = "https://api.openai.com/v1";
 
   constructor(config: LLMConfig) {
     this.apiKey = config.apiKey;
@@ -63,7 +63,7 @@ export class ProductionLLMEngine {
 
       // Add user message to history
       history.push({
-        role: 'user',
+        role: "user",
         content: userMessage,
       });
 
@@ -78,7 +78,7 @@ export class ProductionLLMEngine {
 
       // Add assistant response to history
       history.push({
-        role: 'assistant',
+        role: "assistant",
         content: response,
       });
 
@@ -89,7 +89,7 @@ export class ProductionLLMEngine {
 
       return response;
     } catch (error) {
-      console.error('LLM Error:', error);
+      console.error("LLM Error:", error);
       return this.getFallbackResponse(userMessage, context);
     }
   }
@@ -104,7 +104,7 @@ export class ProductionLLMEngine {
   ): Promise<string> {
     const fullMessages: ChatCompletionMessageParam[] = [
       {
-        role: 'system',
+        role: "system",
         content: systemPrompt,
       },
       ...messages,
@@ -113,9 +113,9 @@ export class ProductionLLMEngine {
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         const response = await fetch(`${this.apiBaseUrl}/chat/completions`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${this.apiKey}`,
           },
           body: JSON.stringify({
@@ -129,19 +129,23 @@ export class ProductionLLMEngine {
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(`OpenAI API Error: ${error.error?.message || 'Unknown error'}`);
+          throw new Error(
+            `OpenAI API Error: ${error.error?.message || "Unknown error"}`
+          );
         }
 
         const data = await response.json();
-        return data.choices[0]?.message?.content || 'No response generated';
+        return data.choices[0]?.message?.content || "No response generated";
       } catch (error) {
         if (attempt === retries - 1) throw error;
         // Exponential backoff
-        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        await new Promise(resolve =>
+          setTimeout(resolve, Math.pow(2, attempt) * 1000)
+        );
       }
     }
 
-    throw new Error('Failed to get response from OpenAI API');
+    throw new Error("Failed to get response from OpenAI API");
   }
 
   /**
@@ -149,31 +153,31 @@ export class ProductionLLMEngine {
    */
   private buildSystemPrompt(context: ConversationContext): string {
     const enginePrompts: Record<string, string> = {
-      'feedback-hub':
-        'You are an expert feedback analyst. Analyze user feedback, identify patterns, and provide actionable insights for product improvement.',
-      'adaptive-roadmap':
-        'You are a strategic product roadmap advisor. Help prioritize features, plan releases, and align product strategy with market demands.',
-      'agent-debate':
-        'You are a multi-perspective analyst. Present balanced viewpoints, challenge assumptions, and facilitate intelligent debate on strategic decisions.',
-      'competitive-radar':
-        'You are a competitive intelligence expert. Analyze market trends, competitor moves, and identify strategic opportunities and threats.',
-      'behavioral-intelligence':
-        'You are a behavioral scientist. Analyze user patterns, predict behaviors, and recommend engagement strategies.',
-      'experiment-factory':
-        'You are an experimentation expert. Design A/B tests, analyze results, and recommend optimization strategies.',
-      'narrative-engine':
-        'You are a storytelling expert. Craft compelling narratives, messaging strategies, and communication frameworks.',
-      'connector-intelligence':
-        'You are an integration specialist. Analyze data flows, recommend API connections, and optimize ecosystem integration.',
-      'product-brain':
-        'You are a product knowledge expert. Retrieve and synthesize product information, market insights, and strategic context.',
-      'company-simulator':
-        'You are a business simulation expert. Model scenarios, forecast outcomes, and recommend strategic decisions.',
+      "feedback-hub":
+        "You are an expert feedback analyst. Analyze user feedback, identify patterns, and provide actionable insights for product improvement.",
+      "adaptive-roadmap":
+        "You are a strategic product roadmap advisor. Help prioritize features, plan releases, and align product strategy with market demands.",
+      "agent-debate":
+        "You are a multi-perspective analyst. Present balanced viewpoints, challenge assumptions, and facilitate intelligent debate on strategic decisions.",
+      "competitive-radar":
+        "You are a competitive intelligence expert. Analyze market trends, competitor moves, and identify strategic opportunities and threats.",
+      "behavioral-intelligence":
+        "You are a behavioral scientist. Analyze user patterns, predict behaviors, and recommend engagement strategies.",
+      "experiment-factory":
+        "You are an experimentation expert. Design A/B tests, analyze results, and recommend optimization strategies.",
+      "narrative-engine":
+        "You are a storytelling expert. Craft compelling narratives, messaging strategies, and communication frameworks.",
+      "connector-intelligence":
+        "You are an integration specialist. Analyze data flows, recommend API connections, and optimize ecosystem integration.",
+      "product-brain":
+        "You are a product knowledge expert. Retrieve and synthesize product information, market insights, and strategic context.",
+      "company-simulator":
+        "You are a business simulation expert. Model scenarios, forecast outcomes, and recommend strategic decisions.",
     };
 
     const basePrompt =
       enginePrompts[context.engine] ||
-      'You are an intelligent AI assistant for the SKYCOIN4444 ecosystem. Provide helpful, accurate, and actionable responses.';
+      "You are an intelligent AI assistant for the SKYCOIN4444 ecosystem. Provide helpful, accurate, and actionable responses.";
 
     const contextualPrompt = `
 ${basePrompt}
@@ -181,7 +185,7 @@ ${basePrompt}
 Context:
 - Platform: ${context.platform}
 - User Role: ${context.userRole}
-- Recent Actions: ${context.recentActions.join(', ') || 'None'}
+- Recent Actions: ${context.recentActions.join(", ") || "None"}
 - Time: ${new Date(context.timestamp).toISOString()}
 
 Guidelines:
@@ -201,33 +205,36 @@ Guidelines:
   /**
    * Fallback response when API fails
    */
-  private getFallbackResponse(userMessage: string, context: ConversationContext): string {
+  private getFallbackResponse(
+    userMessage: string,
+    context: ConversationContext
+  ): string {
     const fallbacks: Record<string, string> = {
-      'feedback-hub':
-        'I analyzed your feedback. Key themes include user experience improvements and feature requests. Consider prioritizing based on user impact and implementation effort.',
-      'adaptive-roadmap':
-        'Based on market trends, I recommend focusing on: 1) Core feature stability, 2) User retention improvements, 3) New market opportunities.',
-      'agent-debate':
-        'Multiple perspectives exist: Conservative approach prioritizes stability, aggressive approach maximizes growth. Hybrid strategy may optimize both.',
-      'competitive-radar':
-        'Market analysis shows increasing competition in your core segments. Differentiation through unique features and superior UX is critical.',
-      'behavioral-intelligence':
-        'User patterns indicate peak engagement during evenings and weekends. Recommend scheduling notifications and features accordingly.',
-      'experiment-factory':
-        'Recommended test: Compare current UX against simplified variant. Target 10% of users for 2-week duration. Measure conversion and retention.',
-      'narrative-engine':
-        'Your brand story should emphasize: innovation, reliability, and user empowerment. Tailor messaging by audience segment.',
-      'connector-intelligence':
-        'API integration opportunities identified: payment processing, analytics, and social sharing. Prioritize based on user demand.',
-      'product-brain':
-        'Key product metrics: 10M+ users, 87% cache hit rate, <200ms API latency. Competitive advantages: AI-powered insights, real-time updates.',
-      'company-simulator':
-        'Simulation results: 30% revenue growth achievable with current strategy. Upside potential: 60% with aggressive expansion. Downside: 10% contraction if market shifts.',
+      "feedback-hub":
+        "I analyzed your feedback. Key themes include user experience improvements and feature requests. Consider prioritizing based on user impact and implementation effort.",
+      "adaptive-roadmap":
+        "Based on market trends, I recommend focusing on: 1) Core feature stability, 2) User retention improvements, 3) New market opportunities.",
+      "agent-debate":
+        "Multiple perspectives exist: Conservative approach prioritizes stability, aggressive approach maximizes growth. Hybrid strategy may optimize both.",
+      "competitive-radar":
+        "Market analysis shows increasing competition in your core segments. Differentiation through unique features and superior UX is critical.",
+      "behavioral-intelligence":
+        "User patterns indicate peak engagement during evenings and weekends. Recommend scheduling notifications and features accordingly.",
+      "experiment-factory":
+        "Recommended test: Compare current UX against simplified variant. Target 10% of users for 2-week duration. Measure conversion and retention.",
+      "narrative-engine":
+        "Your brand story should emphasize: innovation, reliability, and user empowerment. Tailor messaging by audience segment.",
+      "connector-intelligence":
+        "API integration opportunities identified: payment processing, analytics, and social sharing. Prioritize based on user demand.",
+      "product-brain":
+        "Key product metrics: 10M+ users, 87% cache hit rate, <200ms API latency. Competitive advantages: AI-powered insights, real-time updates.",
+      "company-simulator":
+        "Simulation results: 30% revenue growth achievable with current strategy. Upside potential: 60% with aggressive expansion. Downside: 10% contraction if market shifts.",
     };
 
     return (
       fallbacks[context.engine] ||
-      'I understand your question. Let me provide a thoughtful response based on available data and strategic context.'
+      "I understand your question. Let me provide a thoughtful response based on available data and strategic context."
     );
   }
 
@@ -240,10 +247,10 @@ Guidelines:
       this.conversationHistory.delete(key);
     } else {
       // Clear all conversations for user
-      const keysToDelete = Array.from(this.conversationHistory.keys()).filter((k) =>
-        k.startsWith(userId)
+      const keysToDelete = Array.from(this.conversationHistory.keys()).filter(
+        k => k.startsWith(userId)
       );
-      keysToDelete.forEach((k) => this.conversationHistory.delete(k));
+      keysToDelete.forEach(k => this.conversationHistory.delete(k));
     }
   }
 
@@ -266,7 +273,9 @@ Guidelines:
     for (let i = 0; i < messages.length; i += concurrency) {
       const batch = messages.slice(i, i + concurrency);
       const batchResults = await Promise.all(
-        batch.map((msg) => this.generateIntelligentResponse(msg.text, msg.context))
+        batch.map(msg =>
+          this.generateIntelligentResponse(msg.text, msg.context)
+        )
       );
       results.push(...batchResults);
     }
@@ -290,23 +299,23 @@ Guidelines:
       const systemPrompt = this.buildSystemPrompt(context);
 
       history.push({
-        role: 'user',
+        role: "user",
         content: userMessage,
       });
 
       const recentHistory = history.slice(-20);
       const fullMessages: ChatCompletionMessageParam[] = [
         {
-          role: 'system',
+          role: "system",
           content: systemPrompt,
         },
         ...recentHistory,
       ];
 
       const response = await fetch(`${this.apiBaseUrl}/chat/completions`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
@@ -320,13 +329,13 @@ Guidelines:
       });
 
       if (!response.ok) {
-        throw new Error('Failed to stream response');
+        throw new Error("Failed to stream response");
       }
 
       const reader = response.body?.getReader();
-      if (!reader) throw new Error('No response body');
+      if (!reader) throw new Error("No response body");
 
-      let fullResponse = '';
+      let fullResponse = "";
       const decoder = new TextDecoder();
 
       while (true) {
@@ -334,16 +343,16 @@ Guidelines:
         if (done) break;
 
         const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
+        const lines = chunk.split("\n");
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith("data: ")) {
             const data = line.slice(6);
-            if (data === '[DONE]') continue;
+            if (data === "[DONE]") continue;
 
             try {
               const parsed = JSON.parse(data);
-              const content = parsed.choices[0]?.delta?.content || '';
+              const content = parsed.choices[0]?.delta?.content || "";
               if (content) {
                 fullResponse += content;
                 yield content;
@@ -357,12 +366,12 @@ Guidelines:
 
       // Add to history
       history.push({
-        role: 'assistant',
+        role: "assistant",
         content: fullResponse,
       });
     } catch (error) {
-      console.error('Stream error:', error);
-      yield 'Error streaming response. Please try again.';
+      console.error("Stream error:", error);
+      yield "Error streaming response. Please try again.";
     }
   }
 }
@@ -373,12 +382,12 @@ Guidelines:
 export function initializeProductionLLM(): ProductionLLMEngine {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error('OPENAI_API_KEY environment variable not set');
+    throw new Error("OPENAI_API_KEY environment variable not set");
   }
 
   return new ProductionLLMEngine({
     apiKey,
-    model: 'gpt-4',
+    model: "gpt-4",
     temperature: 0.7,
     maxTokens: 2048,
     topP: 0.9,

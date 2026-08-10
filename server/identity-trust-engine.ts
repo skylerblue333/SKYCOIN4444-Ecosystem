@@ -14,14 +14,20 @@
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type VerificationTier = "none" | "email" | "phone" | "id_document" | "biometric" | "enterprise";
+export type VerificationTier =
+  "none" | "email" | "phone" | "id_document" | "biometric" | "enterprise";
 
 export interface IdentityProfile {
   userId: number;
   tier: VerificationTier;
   email: { verified: boolean; verifiedAt?: Date };
   phone: { verified: boolean; verifiedAt?: Date; countryCode?: string };
-  document: { verified: boolean; type?: "passport" | "drivers_license" | "national_id"; country?: string; verifiedAt?: Date };
+  document: {
+    verified: boolean;
+    type?: "passport" | "drivers_license" | "national_id";
+    country?: string;
+    verifiedAt?: Date;
+  };
   biometric: { verified: boolean; verifiedAt?: Date };
   linkedAccounts: LinkedAccount[];
   trustScore: number; // 0-1000
@@ -32,7 +38,14 @@ export interface IdentityProfile {
 }
 
 export interface LinkedAccount {
-  platform: "twitter" | "youtube" | "twitch" | "instagram" | "github" | "discord" | "tiktok";
+  platform:
+    | "twitter"
+    | "youtube"
+    | "twitch"
+    | "instagram"
+    | "github"
+    | "discord"
+    | "tiktok";
   platformUserId: string;
   username: string;
   followerCount: number;
@@ -71,7 +84,8 @@ export interface TrustScore {
     community: number;
     financial: number;
   };
-  tier: "untrusted" | "basic" | "trusted" | "verified" | "elite" | "institution";
+  tier:
+    "untrusted" | "basic" | "trusted" | "verified" | "elite" | "institution";
   badges: TrustBadge[];
   lastCalculatedAt: Date;
   trend: "improving" | "stable" | "declining";
@@ -81,7 +95,8 @@ export interface TrustBadge {
   id: string;
   name: string;
   description: string;
-  category: "identity" | "creator" | "trader" | "donor" | "community" | "security";
+  category:
+    "identity" | "creator" | "trader" | "donor" | "community" | "security";
   earnedAt: Date;
   expiresAt?: Date;
   isRevocable: boolean;
@@ -90,10 +105,24 @@ export interface TrustBadge {
 export interface FraudFlag {
   id: string;
   userId: number;
-  type: "spam" | "fake_engagement" | "wash_trading" | "multi_account" | "phishing" | "impersonation" | "payment_fraud" | "bot_behavior" | "collusion";
+  type:
+    | "spam"
+    | "fake_engagement"
+    | "wash_trading"
+    | "multi_account"
+    | "phishing"
+    | "impersonation"
+    | "payment_fraud"
+    | "bot_behavior"
+    | "collusion";
   severity: "low" | "medium" | "high" | "critical";
   evidence: FraudEvidence[];
-  status: "active" | "under_review" | "resolved_guilty" | "resolved_innocent" | "appealed";
+  status:
+    | "active"
+    | "under_review"
+    | "resolved_guilty"
+    | "resolved_innocent"
+    | "appealed";
   autoDetected: boolean;
   reportedBy?: number;
   reviewedBy?: number;
@@ -103,7 +132,13 @@ export interface FraudFlag {
 }
 
 export interface FraudEvidence {
-  type: "behavioral_pattern" | "ip_correlation" | "device_fingerprint" | "transaction_pattern" | "content_pattern" | "manual_report";
+  type:
+    | "behavioral_pattern"
+    | "ip_correlation"
+    | "device_fingerprint"
+    | "transaction_pattern"
+    | "content_pattern"
+    | "manual_report";
   description: string;
   confidence: number; // 0-1
   timestamp: Date;
@@ -126,15 +161,28 @@ export interface SybilCluster {
   id: string;
   userIds: number[];
   confidence: number;
-  detectionMethod: "ip_sharing" | "device_sharing" | "behavioral_similarity" | "timing_correlation" | "financial_correlation";
+  detectionMethod:
+    | "ip_sharing"
+    | "device_sharing"
+    | "behavioral_similarity"
+    | "timing_correlation"
+    | "financial_correlation";
   detectedAt: Date;
   status: "suspected" | "confirmed" | "false_positive";
 }
 
 export interface BehavioralProfile {
   userId: number;
-  sessionPatterns: { avgSessionLength: number; sessionsPerDay: number; peakHours: number[] };
-  contentPatterns: { avgPostsPerDay: number; avgLikesPerDay: number; avgCommentsPerDay: number };
+  sessionPatterns: {
+    avgSessionLength: number;
+    sessionsPerDay: number;
+    peakHours: number[];
+  };
+  contentPatterns: {
+    avgPostsPerDay: number;
+    avgLikesPerDay: number;
+    avgCommentsPerDay: number;
+  };
   engagementVelocity: number; // actions per minute
   deviceFingerprints: string[];
   ipAddresses: string[];
@@ -147,7 +195,10 @@ export interface BehavioralProfile {
 
 export class IdentityVerificationService {
   private profiles = new Map<number, IdentityProfile>();
-  private verificationQueue = new Map<string, { userId: number; type: string; data: unknown; submittedAt: Date }>();
+  private verificationQueue = new Map<
+    string,
+    { userId: number; type: string; data: unknown; submittedAt: Date }
+  >();
   private queueCounter = 0;
 
   async initializeProfile(userId: number): Promise<IdentityProfile> {
@@ -171,7 +222,10 @@ export class IdentityVerificationService {
     return profile;
   }
 
-  async verifyEmail(userId: number, email: string): Promise<{ success: boolean; tier: VerificationTier }> {
+  async verifyEmail(
+    userId: number,
+    email: string
+  ): Promise<{ success: boolean; tier: VerificationTier }> {
     const profile = await this.initializeProfile(userId);
 
     // Email verification logic (in production: send verification link)
@@ -183,7 +237,11 @@ export class IdentityVerificationService {
     return { success: true, tier: profile.tier };
   }
 
-  async verifyPhone(userId: number, phone: string, countryCode: string): Promise<{ success: boolean; tier: VerificationTier }> {
+  async verifyPhone(
+    userId: number,
+    phone: string,
+    countryCode: string
+  ): Promise<{ success: boolean; tier: VerificationTier }> {
     const profile = await this.initializeProfile(userId);
 
     profile.phone = { verified: true, verifiedAt: new Date(), countryCode };
@@ -194,7 +252,11 @@ export class IdentityVerificationService {
     return { success: true, tier: profile.tier };
   }
 
-  async submitDocumentVerification(userId: number, documentType: "passport" | "drivers_license" | "national_id", country: string): Promise<string> {
+  async submitDocumentVerification(
+    userId: number,
+    documentType: "passport" | "drivers_license" | "national_id",
+    country: string
+  ): Promise<string> {
     const queueId = `vq_${++this.queueCounter}`;
     this.verificationQueue.set(queueId, {
       userId,
@@ -205,12 +267,18 @@ export class IdentityVerificationService {
     return queueId;
   }
 
-  async approveDocumentVerification(queueId: string, approved: boolean): Promise<IdentityProfile | null> {
+  async approveDocumentVerification(
+    queueId: string,
+    approved: boolean
+  ): Promise<IdentityProfile | null> {
     const item = this.verificationQueue.get(queueId);
     if (!item) return null;
 
     const profile = await this.initializeProfile(item.userId);
-    const data = item.data as { documentType: "passport" | "drivers_license" | "national_id"; country: string };
+    const data = item.data as {
+      documentType: "passport" | "drivers_license" | "national_id";
+      country: string;
+    };
 
     if (approved) {
       profile.document = {
@@ -229,11 +297,16 @@ export class IdentityVerificationService {
     return profile;
   }
 
-  async linkSocialAccount(userId: number, account: Omit<LinkedAccount, "linkedAt" | "verificationProof">): Promise<IdentityProfile> {
+  async linkSocialAccount(
+    userId: number,
+    account: Omit<LinkedAccount, "linkedAt" | "verificationProof">
+  ): Promise<IdentityProfile> {
     const profile = await this.initializeProfile(userId);
 
     // Remove existing link for same platform
-    profile.linkedAccounts = profile.linkedAccounts.filter(a => a.platform !== account.platform);
+    profile.linkedAccounts = profile.linkedAccounts.filter(
+      a => a.platform !== account.platform
+    );
 
     const linked: LinkedAccount = {
       ...account,
@@ -244,7 +317,10 @@ export class IdentityVerificationService {
     profile.linkedAccounts.push(linked);
 
     // Boost trust score based on follower count
-    const followerBoost = Math.min(100, Math.floor(account.followerCount / 1000));
+    const followerBoost = Math.min(
+      100,
+      Math.floor(account.followerCount / 1000)
+    );
     profile.trustScore = Math.min(1000, profile.trustScore + followerBoost);
 
     if (account.isVerifiedOnPlatform) {
@@ -258,9 +334,19 @@ export class IdentityVerificationService {
     return this.profiles.get(userId) || null;
   }
 
-  getVerificationQueue(): { queueId: string; userId: number; type: string; submittedAt: Date }[] {
+  getVerificationQueue(): {
+    queueId: string;
+    userId: number;
+    type: string;
+    submittedAt: Date;
+  }[] {
     return Array.from(this.verificationQueue.entries())
-      .map(([queueId, item]) => ({ queueId, userId: item.userId, type: item.type, submittedAt: item.submittedAt }))
+      .map(([queueId, item]) => ({
+        queueId,
+        userId: item.userId,
+        type: item.type,
+        submittedAt: item.submittedAt,
+      }))
       .sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime());
   }
 }
@@ -270,7 +356,11 @@ export class IdentityVerificationService {
 export class WalletReputationService {
   private reputations = new Map<string, WalletReputation>(); // walletAddress -> reputation
 
-  private calculateTier(score: number, ageInDays: number, volumeUSD: number): WalletReputation["tier"] {
+  private calculateTier(
+    score: number,
+    ageInDays: number,
+    volumeUSD: number
+  ): WalletReputation["tier"] {
     if (volumeUSD > 1000000) return "institution";
     if (volumeUSD > 100000 && score > 700) return "whale";
     if (score > 600 && ageInDays > 365) return "trusted";
@@ -279,15 +369,19 @@ export class WalletReputationService {
     return "unknown";
   }
 
-  async analyzeWallet(walletAddress: string, chainId: number, onChainData: {
-    ageInDays: number;
-    transactionCount: number;
-    totalVolumeUSD: number;
-    uniqueContracts: number;
-    defiProtocols: string[];
-    nftCollections: number;
-    isContract: boolean;
-  }): Promise<WalletReputation> {
+  async analyzeWallet(
+    walletAddress: string,
+    chainId: number,
+    onChainData: {
+      ageInDays: number;
+      transactionCount: number;
+      totalVolumeUSD: number;
+      uniqueContracts: number;
+      defiProtocols: string[];
+      nftCollections: number;
+      isContract: boolean;
+    }
+  ): Promise<WalletReputation> {
     let score = 100;
 
     // Age scoring (max 200 points)
@@ -314,7 +408,11 @@ export class WalletReputationService {
       walletAddress,
       chainId,
       score,
-      tier: this.calculateTier(score, onChainData.ageInDays, onChainData.totalVolumeUSD),
+      tier: this.calculateTier(
+        score,
+        onChainData.ageInDays,
+        onChainData.totalVolumeUSD
+      ),
       ageInDays: onChainData.ageInDays,
       transactionCount: onChainData.transactionCount,
       totalVolumeUSD: onChainData.totalVolumeUSD,
@@ -359,52 +457,122 @@ export class TrustScoreService {
   private badges = new Map<number, TrustBadge[]>();
   private badgeCounter = 0;
 
-  private BADGE_DEFINITIONS: Omit<TrustBadge, "id" | "earnedAt" | "expiresAt">[] = [
-    { name: "Email Verified", description: "Email address confirmed", category: "identity", isRevocable: false },
-    { name: "Phone Verified", description: "Phone number confirmed", category: "identity", isRevocable: false },
-    { name: "ID Verified", description: "Government ID verified", category: "identity", isRevocable: false },
-    { name: "Top Creator", description: "Top 1% creator by engagement", category: "creator", isRevocable: true },
-    { name: "Trusted Trader", description: "100+ successful trades", category: "trader", isRevocable: true },
-    { name: "Impact Donor", description: "$1000+ donated to charity", category: "donor", isRevocable: false },
-    { name: "Community Pillar", description: "500+ reputation in 3+ communities", category: "community", isRevocable: true },
-    { name: "Security Champion", description: "Reported 10+ valid security issues", category: "security", isRevocable: false },
+  private BADGE_DEFINITIONS: Omit<
+    TrustBadge,
+    "id" | "earnedAt" | "expiresAt"
+  >[] = [
+    {
+      name: "Email Verified",
+      description: "Email address confirmed",
+      category: "identity",
+      isRevocable: false,
+    },
+    {
+      name: "Phone Verified",
+      description: "Phone number confirmed",
+      category: "identity",
+      isRevocable: false,
+    },
+    {
+      name: "ID Verified",
+      description: "Government ID verified",
+      category: "identity",
+      isRevocable: false,
+    },
+    {
+      name: "Top Creator",
+      description: "Top 1% creator by engagement",
+      category: "creator",
+      isRevocable: true,
+    },
+    {
+      name: "Trusted Trader",
+      description: "100+ successful trades",
+      category: "trader",
+      isRevocable: true,
+    },
+    {
+      name: "Impact Donor",
+      description: "$1000+ donated to charity",
+      category: "donor",
+      isRevocable: false,
+    },
+    {
+      name: "Community Pillar",
+      description: "500+ reputation in 3+ communities",
+      category: "community",
+      isRevocable: true,
+    },
+    {
+      name: "Security Champion",
+      description: "Reported 10+ valid security issues",
+      category: "security",
+      isRevocable: false,
+    },
   ];
 
-  async calculateTrustScore(userId: number, inputs: {
-    identityScore: number;
-    walletScore: number;
-    socialScore: number;
-    behavioralScore: number;
-    communityScore: number;
-    financialScore: number;
-  }): Promise<TrustScore> {
+  async calculateTrustScore(
+    userId: number,
+    inputs: {
+      identityScore: number;
+      walletScore: number;
+      socialScore: number;
+      behavioralScore: number;
+      communityScore: number;
+      financialScore: number;
+    }
+  ): Promise<TrustScore> {
     // Weighted composite score
-    const weights = { identity: 0.25, wallet: 0.20, social: 0.20, behavioral: 0.15, community: 0.10, financial: 0.10 };
+    const weights = {
+      identity: 0.25,
+      wallet: 0.2,
+      social: 0.2,
+      behavioral: 0.15,
+      community: 0.1,
+      financial: 0.1,
+    };
     const composite = Math.round(
       inputs.identityScore * weights.identity +
-      inputs.walletScore * weights.wallet +
-      inputs.socialScore * weights.social +
-      inputs.behavioralScore * weights.behavioral +
-      inputs.communityScore * weights.community +
-      inputs.financialScore * weights.financial
+        inputs.walletScore * weights.wallet +
+        inputs.socialScore * weights.social +
+        inputs.behavioralScore * weights.behavioral +
+        inputs.communityScore * weights.community +
+        inputs.financialScore * weights.financial
     );
 
-    const tier = composite >= 900 ? "institution"
-      : composite >= 750 ? "elite"
-      : composite >= 550 ? "verified"
-      : composite >= 350 ? "trusted"
-      : composite >= 150 ? "basic"
-      : "untrusted";
+    const tier =
+      composite >= 900
+        ? "institution"
+        : composite >= 750
+          ? "elite"
+          : composite >= 550
+            ? "verified"
+            : composite >= 350
+              ? "trusted"
+              : composite >= 150
+                ? "basic"
+                : "untrusted";
 
     const existing = this.scores.get(userId);
     const trend = existing
-      ? (composite > existing.composite ? "improving" : composite < existing.composite ? "declining" : "stable")
+      ? composite > existing.composite
+        ? "improving"
+        : composite < existing.composite
+          ? "declining"
+          : "stable"
       : "stable";
 
     const score: TrustScore = {
       userId,
       composite,
-      breakdown: { identity: inputs.identityScore, wallet: inputs.walletScore, social: inputs.socialScore, behavioral: inputs.behavioralScore, community: inputs.communityScore, financial: inputs.financialScore },
+      breakdown: {
+        identity: inputs.identityScore,
+        wallet: inputs.walletScore,
+        social: inputs.socialScore,
+        behavioral: inputs.behavioralScore,
+        community: inputs.communityScore,
+        financial: inputs.financialScore,
+      },
       tier,
       badges: this.badges.get(userId) || [],
       lastCalculatedAt: new Date(),
@@ -415,7 +583,11 @@ export class TrustScoreService {
     return score;
   }
 
-  async awardBadge(userId: number, badgeName: string, expiresInDays?: number): Promise<TrustBadge | null> {
+  async awardBadge(
+    userId: number,
+    badgeName: string,
+    expiresInDays?: number
+  ): Promise<TrustBadge | null> {
     const definition = this.BADGE_DEFINITIONS.find(b => b.name === badgeName);
     if (!definition) return null;
 
@@ -423,7 +595,9 @@ export class TrustScoreService {
       id: `badge_${++this.badgeCounter}`,
       ...definition,
       earnedAt: new Date(),
-      expiresAt: expiresInDays ? new Date(Date.now() + expiresInDays * 86400000) : undefined,
+      expiresAt: expiresInDays
+        ? new Date(Date.now() + expiresInDays * 86400000)
+        : undefined,
     };
 
     const userBadges = this.badges.get(userId) || [];
@@ -441,7 +615,10 @@ export class TrustScoreService {
     const badge = userBadges.find(b => b.name === badgeName);
     if (!badge || !badge.isRevocable) return false;
 
-    this.badges.set(userId, userBadges.filter(b => b.name !== badgeName));
+    this.badges.set(
+      userId,
+      userBadges.filter(b => b.name !== badgeName)
+    );
     return true;
   }
 
@@ -450,7 +627,9 @@ export class TrustScoreService {
   }
 
   getBadges(userId: number): TrustBadge[] {
-    return (this.badges.get(userId) || []).filter(b => !b.expiresAt || b.expiresAt > new Date());
+    return (this.badges.get(userId) || []).filter(
+      b => !b.expiresAt || b.expiresAt > new Date()
+    );
   }
 }
 
@@ -492,7 +671,12 @@ export class FraudFlagService {
     return flag;
   }
 
-  async reviewFlag(flagId: string, reviewerId: number, verdict: "resolved_guilty" | "resolved_innocent", notes?: string): Promise<FraudFlag | null> {
+  async reviewFlag(
+    flagId: string,
+    reviewerId: number,
+    verdict: "resolved_guilty" | "resolved_innocent",
+    notes?: string
+  ): Promise<FraudFlag | null> {
     const flag = this.flags.get(flagId);
     if (!flag || flag.status !== "active") return null;
 
@@ -503,7 +687,12 @@ export class FraudFlagService {
     return flag;
   }
 
-  async submitAppeal(flagId: string, userId: number, reason: string, evidence: string[]): Promise<FraudAppeal> {
+  async submitAppeal(
+    flagId: string,
+    userId: number,
+    reason: string,
+    evidence: string[]
+  ): Promise<FraudAppeal> {
     const flag = this.flags.get(flagId);
     if (!flag || flag.userId !== userId) throw new Error("Flag not found");
 
@@ -525,7 +714,11 @@ export class FraudFlagService {
     return appeal;
   }
 
-  async resolveAppeal(appealId: string, approved: boolean, notes: string): Promise<FraudAppeal | null> {
+  async resolveAppeal(
+    appealId: string,
+    approved: boolean,
+    notes: string
+  ): Promise<FraudAppeal | null> {
     const appeal = this.appeals.get(appealId);
     if (!appeal) return null;
 
@@ -573,19 +766,30 @@ export class SybilDetectionService {
   private profiles = new Map<number, BehavioralProfile>();
   private clusterCounter = 0;
 
-  async updateBehavioralProfile(userId: number, activity: {
-    sessionLength: number;
-    actionsPerMinute: number;
-    deviceFingerprint: string;
-    ipAddress: string;
-  }): Promise<BehavioralProfile> {
+  async updateBehavioralProfile(
+    userId: number,
+    activity: {
+      sessionLength: number;
+      actionsPerMinute: number;
+      deviceFingerprint: string;
+      ipAddress: string;
+    }
+  ): Promise<BehavioralProfile> {
     let profile = this.profiles.get(userId);
 
     if (!profile) {
       profile = {
         userId,
-        sessionPatterns: { avgSessionLength: 0, sessionsPerDay: 0, peakHours: [] },
-        contentPatterns: { avgPostsPerDay: 0, avgLikesPerDay: 0, avgCommentsPerDay: 0 },
+        sessionPatterns: {
+          avgSessionLength: 0,
+          sessionsPerDay: 0,
+          peakHours: [],
+        },
+        contentPatterns: {
+          avgPostsPerDay: 0,
+          avgLikesPerDay: 0,
+          avgCommentsPerDay: 0,
+        },
         engagementVelocity: 0,
         deviceFingerprints: [],
         ipAddresses: [],
@@ -607,9 +811,10 @@ export class SybilDetectionService {
 
     // Update session patterns
     profile.sessionPatterns.avgSessionLength =
-      (profile.sessionPatterns.avgSessionLength * 0.9) + (activity.sessionLength * 0.1);
+      profile.sessionPatterns.avgSessionLength * 0.9 +
+      activity.sessionLength * 0.1;
     profile.engagementVelocity =
-      (profile.engagementVelocity * 0.9) + (activity.actionsPerMinute * 0.1);
+      profile.engagementVelocity * 0.9 + activity.actionsPerMinute * 0.1;
 
     // Bot detection heuristics
     let botConfidence = 0;
@@ -627,7 +832,11 @@ export class SybilDetectionService {
     return profile;
   }
 
-  async detectSybilCluster(userIds: number[], method: SybilCluster["detectionMethod"], confidence: number): Promise<SybilCluster> {
+  async detectSybilCluster(
+    userIds: number[],
+    method: SybilCluster["detectionMethod"],
+    confidence: number
+  ): Promise<SybilCluster> {
     const id = `cluster_${++this.clusterCounter}`;
     const cluster: SybilCluster = {
       id,

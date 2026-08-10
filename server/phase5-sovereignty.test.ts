@@ -12,8 +12,14 @@ import { describe, it, expect, beforeEach } from "vitest";
 // ═══════════════════════════════════════════════════════════════════════════
 
 import {
-  sky444Token, stakingContract, treasuryContract, burnContract,
-  farmingContract, emissionsEngine, vestingEngine, launchpadEngine,
+  sky444Token,
+  stakingContract,
+  treasuryContract,
+  burnContract,
+  farmingContract,
+  emissionsEngine,
+  vestingEngine,
+  launchpadEngine,
 } from "./phase5-adapters";
 
 describe("SKY444 Token — Core Operations", () => {
@@ -64,7 +70,11 @@ describe("SKY444 Token — Core Operations", () => {
 
   it("should reject transfer to zero address", () => {
     sky444Token.mint("0xvalid", 100);
-    const result = sky444Token.transfer("0xvalid", "0x0000000000000000000000000000000000000000", 50);
+    const result = sky444Token.transfer(
+      "0xvalid",
+      "0x0000000000000000000000000000000000000000",
+      50
+    );
     expect(result.success).toBe(false);
   });
 });
@@ -125,14 +135,22 @@ describe("SKY444 Treasury Contract", () => {
   });
 
   it("should allocate treasury funds", () => {
-    const result = treasuryContract.allocate("development", 10000, "Q1 development budget");
+    const result = treasuryContract.allocate(
+      "development",
+      10000,
+      "Q1 development budget"
+    );
     expect(result.success).toBe(true);
     expect(result.allocationId).toBeDefined();
   });
 
   it("should reject allocation exceeding available balance", () => {
     const stats = treasuryContract.getStats();
-    const result = treasuryContract.allocate("impossible", stats.totalBalance + 1000000, "Too much");
+    const result = treasuryContract.allocate(
+      "impossible",
+      stats.totalBalance + 1000000,
+      "Too much"
+    );
     expect(result.success).toBe(false);
   });
 });
@@ -178,7 +196,11 @@ describe("SKY444 Farming Contract", () => {
   it("should harvest farming rewards", () => {
     sky444Token.mint("0xfarmer2", 10000);
     const pools = farmingContract.getPools();
-    const depositResult = farmingContract.deposit(pools[0].id, "0xfarmer2", 1000);
+    const depositResult = farmingContract.deposit(
+      pools[0].id,
+      "0xfarmer2",
+      1000
+    );
     const harvestResult = farmingContract.harvest(depositResult.positionId!);
     expect(harvestResult.success).toBe(true);
     expect(typeof harvestResult.harvested).toBe("number");
@@ -203,7 +225,13 @@ describe("SKY444 Emissions Engine", () => {
 
 describe("SKY444 Vesting Engine", () => {
   it("should create a vesting schedule", () => {
-    const result = vestingEngine.createSchedule("0xvestee", 10000, 12, 3, "team");
+    const result = vestingEngine.createSchedule(
+      "0xvestee",
+      10000,
+      12,
+      3,
+      "team"
+    );
     expect(result.success).toBe(true);
     expect(result.scheduleId).toBeDefined();
   });
@@ -215,7 +243,13 @@ describe("SKY444 Vesting Engine", () => {
   });
 
   it("should calculate claimable amount based on elapsed time", () => {
-    const result = vestingEngine.createSchedule("0xvestee3", 12000, 12, 0, "investor");
+    const result = vestingEngine.createSchedule(
+      "0xvestee3",
+      12000,
+      12,
+      0,
+      "investor"
+    );
     const claimable = vestingEngine.getClaimable(result.scheduleId!);
     expect(typeof claimable).toBe("number");
     expect(claimable).toBeGreaterThanOrEqual(0);
@@ -227,38 +261,58 @@ describe("SKY444 Vesting Engine", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 import {
-  nftMinting, creatorDrops, rarityEngine as nftRarity,
-  royaltyEngine, nftSettlement, specialNFTs, nftRegistry,
+  nftMinting,
+  creatorDrops,
+  rarityEngine as nftRarity,
+  royaltyEngine,
+  nftSettlement,
+  specialNFTs,
+  nftRegistry,
 } from "./phase5-adapters";
 
 describe("NFT Minting", () => {
   it("should mint an NFT and return token data", () => {
-    const result = nftMinting.mint(1, "collection-001", {
-      name: "Test NFT #1",
-      description: "A test NFT",
-      image: "ipfs://QmTest123",
-      attributes: [{ trait_type: "Rarity", value: "Common" }],
-    }, "0xrecipient001");
+    const result = nftMinting.mint(
+      1,
+      "collection-001",
+      {
+        name: "Test NFT #1",
+        description: "A test NFT",
+        image: "ipfs://QmTest123",
+        attributes: [{ trait_type: "Rarity", value: "Common" }],
+      },
+      "0xrecipient001"
+    );
     expect(result.success).toBe(true);
     expect(result.tokenId).toBeDefined();
     expect(result.metadataUri).toContain("ipfs://");
   });
 
   it("should reject minting with invalid metadata", () => {
-    const result = nftMinting.mint(1, "collection-001", {
-      name: "",
-      description: "Missing name",
-      image: "",
-    }, "0xrecipient002");
+    const result = nftMinting.mint(
+      1,
+      "collection-001",
+      {
+        name: "",
+        description: "Missing name",
+        image: "",
+      },
+      "0xrecipient002"
+    );
     expect(result.success).toBe(false);
   });
 
   it("should track minted NFTs in registry", () => {
-    nftMinting.mint(2, "collection-002", {
-      name: "Registry Test NFT",
-      description: "Testing registry",
-      image: "ipfs://QmRegistry",
-    }, "0xregistrytest");
+    nftMinting.mint(
+      2,
+      "collection-002",
+      {
+        name: "Registry Test NFT",
+        description: "Testing registry",
+        image: "ipfs://QmRegistry",
+      },
+      "0xregistrytest"
+    );
     const nfts = nftRegistry.getByOwner("0xregistrytest");
     expect(Array.isArray(nfts)).toBe(true);
     expect(nfts.length).toBeGreaterThan(0);
@@ -292,7 +346,11 @@ describe("Creator Drops", () => {
       endTime: new Date(Date.now() + 86400000),
       creatorAddress: "0xcreator002",
     });
-    const mintResult = creatorDrops.mintFromDrop(dropResult.dropId!, "0xminter001", 1);
+    const mintResult = creatorDrops.mintFromDrop(
+      dropResult.dropId!,
+      "0xminter001",
+      1
+    );
     expect(mintResult.success).toBe(true);
     expect(mintResult.tokenIds).toBeDefined();
     expect(mintResult.tokenIds!.length).toBe(1);
@@ -309,7 +367,11 @@ describe("Creator Drops", () => {
       endTime: new Date(Date.now() + 172800000),
       creatorAddress: "0xcreator003",
     });
-    const mintResult = creatorDrops.mintFromDrop(dropResult.dropId!, "0xearlyminter", 1);
+    const mintResult = creatorDrops.mintFromDrop(
+      dropResult.dropId!,
+      "0xearlyminter",
+      1
+    );
     expect(mintResult.success).toBe(false);
     expect(mintResult.error).toContain("not started");
   });
@@ -327,7 +389,11 @@ describe("Creator Drops", () => {
     });
     creatorDrops.mintFromDrop(dropResult.dropId!, "0xbuyer1", 1);
     creatorDrops.mintFromDrop(dropResult.dropId!, "0xbuyer2", 1);
-    const overflow = creatorDrops.mintFromDrop(dropResult.dropId!, "0xbuyer3", 1);
+    const overflow = creatorDrops.mintFromDrop(
+      dropResult.dropId!,
+      "0xbuyer3",
+      1
+    );
     expect(overflow.success).toBe(false);
     expect(overflow.error).toContain("sold out");
   });
@@ -353,7 +419,9 @@ describe("Royalty Engine", () => {
     expect(result).toHaveProperty("creatorRoyalty");
     expect(result).toHaveProperty("platformFee");
     expect(result).toHaveProperty("sellerProceeds");
-    expect(result.creatorRoyalty + result.platformFee + result.sellerProceeds).toBeCloseTo(1000, 1);
+    expect(
+      result.creatorRoyalty + result.platformFee + result.sellerProceeds
+    ).toBeCloseTo(1000, 1);
   });
 
   it("should set custom royalty percentage for a collection", () => {
@@ -370,7 +438,7 @@ describe("NFT Settlement", () => {
       "collection-001",
       "0xseller",
       "0xbuyer",
-      500,
+      500
     );
     expect(result.success).toBe(true);
     expect(result.settlementId).toBeDefined();
@@ -380,20 +448,39 @@ describe("NFT Settlement", () => {
 
 describe("Special NFTs", () => {
   it("should mint a donor NFT for a charity contribution", () => {
-    const result = specialNFTs.mintDonorNFT(1, "campaign-001", 100, "0xdonor001");
+    const result = specialNFTs.mintDonorNFT(
+      1,
+      "campaign-001",
+      100,
+      "0xdonor001"
+    );
     expect(result.success).toBe(true);
     expect(result.tokenId).toBeDefined();
     expect(result.tier).toBeDefined();
   });
 
   it("should mint a higher tier NFT for larger donations", () => {
-    const small = specialNFTs.mintDonorNFT(2, "campaign-001", 10, "0xsmalldonor");
-    const large = specialNFTs.mintDonorNFT(3, "campaign-001", 10000, "0xlargedonor");
+    const small = specialNFTs.mintDonorNFT(
+      2,
+      "campaign-001",
+      10,
+      "0xsmalldonor"
+    );
+    const large = specialNFTs.mintDonorNFT(
+      3,
+      "campaign-001",
+      10000,
+      "0xlargedonor"
+    );
     expect(large.tier).not.toBe(small.tier);
   });
 
   it("should mint an achievement NFT", () => {
-    const result = specialNFTs.mintAchievementNFT(1, "first_stream", "0xachiver");
+    const result = specialNFTs.mintAchievementNFT(
+      1,
+      "first_stream",
+      "0xachiver"
+    );
     expect(result.success).toBe(true);
     expect(result.tokenId).toBeDefined();
   });
@@ -404,27 +491,53 @@ describe("Special NFTs", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 import {
-  payoutLedger, escrowEngine, subscriptionEngine,
-  invoiceGenerator, taxEngine, revenueSplitEngine, refundEngine,
+  payoutLedger,
+  escrowEngine,
+  subscriptionEngine,
+  invoiceGenerator,
+  taxEngine,
+  revenueSplitEngine,
+  refundEngine,
 } from "./phase5-adapters";
 
 describe("Payout Ledger", () => {
   it("should create a payout request", () => {
-    const result = payoutLedger.createPayout(1, 500, "USD", "bank_transfer", "account-001", "Creator earnings");
+    const result = payoutLedger.createPayout(
+      1,
+      500,
+      "USD",
+      "bank_transfer",
+      "account-001",
+      "Creator earnings"
+    );
     expect(result.success).toBe(true);
     expect(result.payoutId).toBeDefined();
     expect(result.status).toBe("pending");
   });
 
   it("should return payout history for a user", () => {
-    payoutLedger.createPayout(2, 100, "USD", "crypto", "0xwallet", "Test payout");
+    payoutLedger.createPayout(
+      2,
+      100,
+      "USD",
+      "crypto",
+      "0xwallet",
+      "Test payout"
+    );
     const history = payoutLedger.getHistory(2);
     expect(Array.isArray(history)).toBe(true);
     expect(history.length).toBeGreaterThan(0);
   });
 
   it("should reject payout below minimum threshold", () => {
-    const result = payoutLedger.createPayout(3, 0.01, "USD", "bank_transfer", "account-003", "Too small");
+    const result = payoutLedger.createPayout(
+      3,
+      0.01,
+      "USD",
+      "bank_transfer",
+      "account-003",
+      "Too small"
+    );
     expect(result.success).toBe(false);
     expect(result.error).toContain("minimum");
   });
@@ -440,34 +553,70 @@ describe("Payout Ledger", () => {
 
 describe("Escrow Engine", () => {
   it("should create an escrow transaction", () => {
-    const result = escrowEngine.create(1, 2, 1000, "USD", "Service payment", 72);
+    const result = escrowEngine.create(
+      1,
+      2,
+      1000,
+      "USD",
+      "Service payment",
+      72
+    );
     expect(result.success).toBe(true);
     expect(result.escrowId).toBeDefined();
     expect(result.status).toBe("pending");
   });
 
   it("should release escrow to seller", () => {
-    const createResult = escrowEngine.create(3, 4, 500, "USD", "Product delivery");
+    const createResult = escrowEngine.create(
+      3,
+      4,
+      500,
+      "USD",
+      "Product delivery"
+    );
     const releaseResult = escrowEngine.release(createResult.escrowId!, 3);
     expect(releaseResult.success).toBe(true);
     expect(releaseResult.status).toBe("released");
   });
 
   it("should open a dispute on escrow", () => {
-    const createResult = escrowEngine.create(5, 6, 750, "USD", "Disputed service");
-    const disputeResult = escrowEngine.dispute(createResult.escrowId!, 5, "Service not delivered");
+    const createResult = escrowEngine.create(
+      5,
+      6,
+      750,
+      "USD",
+      "Disputed service"
+    );
+    const disputeResult = escrowEngine.dispute(
+      createResult.escrowId!,
+      5,
+      "Service not delivered"
+    );
     expect(disputeResult.success).toBe(true);
     expect(disputeResult.status).toBe("disputed");
   });
 
   it("should reject release by non-buyer", () => {
-    const createResult = escrowEngine.create(7, 8, 300, "USD", "Unauthorized release test");
+    const createResult = escrowEngine.create(
+      7,
+      8,
+      300,
+      "USD",
+      "Unauthorized release test"
+    );
     const releaseResult = escrowEngine.release(createResult.escrowId!, 999);
     expect(releaseResult.success).toBe(false);
   });
 
   it("should timeout escrow after deadline", () => {
-    const createResult = escrowEngine.create(9, 10, 200, "USD", "Timeout test", 0);
+    const createResult = escrowEngine.create(
+      9,
+      10,
+      200,
+      "USD",
+      "Timeout test",
+      0
+    );
     const status = escrowEngine.checkTimeout(createResult.escrowId!);
     expect(status).toHaveProperty("timedOut");
   });
@@ -489,8 +638,16 @@ describe("Subscription Engine", () => {
   });
 
   it("should upgrade a subscription tier", () => {
-    const subResult = subscriptionEngine.subscribe(5, 6, "tier-bronze", "crypto");
-    const upgradeResult = subscriptionEngine.upgrade(subResult.subscriptionId!, "tier-gold");
+    const subResult = subscriptionEngine.subscribe(
+      5,
+      6,
+      "tier-bronze",
+      "crypto"
+    );
+    const upgradeResult = subscriptionEngine.upgrade(
+      subResult.subscriptionId!,
+      "tier-gold"
+    );
     expect(upgradeResult.success).toBe(true);
     expect(upgradeResult.newTier).toBe("tier-gold");
   });
@@ -505,19 +662,43 @@ describe("Subscription Engine", () => {
 
 describe("Invoice Generator", () => {
   it("should generate an invoice with line items", () => {
-    const result = invoiceGenerator.generate(1, [
-      { description: "Premium subscription", quantity: 1, unitPrice: 29.99, currency: "USD" },
-      { description: "Extra storage", quantity: 2, unitPrice: 5.00, currency: "USD" },
-    ], "USD");
+    const result = invoiceGenerator.generate(
+      1,
+      [
+        {
+          description: "Premium subscription",
+          quantity: 1,
+          unitPrice: 29.99,
+          currency: "USD",
+        },
+        {
+          description: "Extra storage",
+          quantity: 2,
+          unitPrice: 5.0,
+          currency: "USD",
+        },
+      ],
+      "USD"
+    );
     expect(result.success).toBe(true);
     expect(result.invoiceId).toBeDefined();
     expect(result.total).toBeCloseTo(39.99, 2);
   });
 
   it("should apply tax to invoice total", () => {
-    const result = invoiceGenerator.generate(2, [
-      { description: "Service fee", quantity: 1, unitPrice: 100, currency: "USD" },
-    ], "USD", { taxRate: 0.1 });
+    const result = invoiceGenerator.generate(
+      2,
+      [
+        {
+          description: "Service fee",
+          quantity: 1,
+          unitPrice: 100,
+          currency: "USD",
+        },
+      ],
+      "USD",
+      { taxRate: 0.1 }
+    );
     expect(result.taxAmount).toBeCloseTo(10, 2);
     expect(result.total).toBeCloseTo(110, 2);
   });
@@ -551,7 +732,10 @@ describe("Revenue Split Engine", () => {
     ]);
     expect(result.success).toBe(true);
     expect(result.splits).toHaveLength(3);
-    const total = result.splits.reduce((sum: number, s: any) => sum + s.amount, 0);
+    const total = result.splits.reduce(
+      (sum: number, s: any) => sum + s.amount,
+      0
+    );
     expect(total).toBeCloseTo(1000, 2);
   });
 
@@ -582,7 +766,11 @@ describe("Refund Engine", () => {
 
   it("should process a partial refund", () => {
     const reqResult = refundEngine.request("txn-003", 3, "Partial issue");
-    const processResult = refundEngine.process(reqResult.refundId!, "partial", 50);
+    const processResult = refundEngine.process(
+      reqResult.refundId!,
+      "partial",
+      50
+    );
     expect(processResult.success).toBe(true);
     expect(processResult.refundedAmount).toBe(50);
   });
@@ -593,22 +781,44 @@ describe("Refund Engine", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 import {
-  eventStore, analyticsAggregator, creatorWarehouse,
-  fraudWarehouse, treasuryWarehouse, retentionWarehouse, dataExportPipeline,
+  eventStore,
+  analyticsAggregator,
+  creatorWarehouse,
+  fraudWarehouse,
+  treasuryWarehouse,
+  retentionWarehouse,
+  dataExportPipeline,
 } from "./phase5-adapters";
 
 describe("Event Store", () => {
   it("should track a user event", () => {
-    const result = eventStore.track(1, "page_view", "post", "post-001", { source: "feed" });
+    const result = eventStore.track(1, "page_view", "post", "post-001", {
+      source: "feed",
+    });
     expect(result.success).toBe(true);
     expect(result.eventId).toBeDefined();
   });
 
   it("should batch track multiple events", () => {
     const events = [
-      { userId: 1, eventType: "click", entityType: "button", entityId: "like-btn" },
-      { userId: 2, eventType: "scroll", entityType: "feed", entityId: "main-feed" },
-      { userId: 3, eventType: "video_play", entityType: "reel", entityId: "reel-001" },
+      {
+        userId: 1,
+        eventType: "click",
+        entityType: "button",
+        entityId: "like-btn",
+      },
+      {
+        userId: 2,
+        eventType: "scroll",
+        entityType: "feed",
+        entityId: "main-feed",
+      },
+      {
+        userId: 3,
+        eventType: "video_play",
+        entityType: "reel",
+        entityId: "reel-001",
+      },
     ];
     const result = eventStore.batchTrack(events);
     expect(result.tracked).toBe(3);
@@ -652,7 +862,9 @@ describe("Fraud Warehouse", () => {
   });
 
   it("should log a fraud incident", () => {
-    const result = fraudWarehouse.logIncident(1, "wash_trading", "high", { evidence: "repeated self-trades" });
+    const result = fraudWarehouse.logIncident(1, "wash_trading", "high", {
+      evidence: "repeated self-trades",
+    });
     expect(result.success).toBe(true);
     expect(result.incidentId).toBeDefined();
   });
@@ -702,8 +914,12 @@ describe("Data Export Pipeline", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 import {
-  campaignManager, rtbAuction, impressionTracker,
-  conversionTracker, sponsorshipEngine as adSponsorshipEngine, adFraudDetector,
+  campaignManager,
+  rtbAuction,
+  impressionTracker,
+  conversionTracker,
+  sponsorshipEngine as adSponsorshipEngine,
+  adFraudDetector,
 } from "./phase5-adapters";
 
 describe("Campaign Manager", () => {
@@ -766,7 +982,10 @@ describe("Campaign Manager", () => {
 
 describe("RTB Auction", () => {
   it("should run an auction for an ad placement", () => {
-    const result = rtbAuction.run("feed_top", { userId: 1, interests: ["gaming"] });
+    const result = rtbAuction.run("feed_top", {
+      userId: 1,
+      interests: ["gaming"],
+    });
     expect(result).toHaveProperty("winner");
     expect(result).toHaveProperty("clearingPrice");
   });
@@ -781,14 +1000,24 @@ describe("RTB Auction", () => {
 
 describe("Impression Tracker", () => {
   it("should record an ad impression", () => {
-    const result = impressionTracker.record("ad-001", "campaign-001", 1, "feed_top");
+    const result = impressionTracker.record(
+      "ad-001",
+      "campaign-001",
+      1,
+      "feed_top"
+    );
     expect(result.success).toBe(true);
     expect(result.impressionId).toBeDefined();
   });
 
   it("should deduplicate impressions within cooldown window", () => {
     impressionTracker.record("ad-002", "campaign-002", 2, "sidebar");
-    const duplicate = impressionTracker.record("ad-002", "campaign-002", 2, "sidebar");
+    const duplicate = impressionTracker.record(
+      "ad-002",
+      "campaign-002",
+      2,
+      "sidebar"
+    );
     expect(duplicate.deduplicated).toBe(true);
   });
 });
@@ -805,7 +1034,13 @@ describe("Ad Fraud Detector", () => {
   it("should flag high-frequency impressions from same IP", () => {
     // Simulate rapid impressions
     for (let i = 0; i < 10; i++) {
-      impressionTracker.record(`ad-fraud-${i}`, "campaign-fraud", 999, "feed", "192.168.1.1");
+      impressionTracker.record(
+        `ad-fraud-${i}`,
+        "campaign-fraud",
+        999,
+        "feed",
+        "192.168.1.1"
+      );
     }
     const result = adFraudDetector.checkIPPattern("192.168.1.1");
     expect(result.suspicious).toBe(true);
@@ -817,33 +1052,66 @@ describe("Ad Fraud Detector", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 import {
-  pushNotificationService, offlineSyncManager,
-  mobileStreamingAdapter, mobileWalletManager, deepLinkManager,
+  pushNotificationService,
+  offlineSyncManager,
+  mobileStreamingAdapter,
+  mobileWalletManager,
+  deepLinkManager,
 } from "./phase5-adapters";
 
 describe("Push Notification Service", () => {
   it("should register a device token", () => {
-    const result = pushNotificationService.registerDevice(1, "fcm-token-001", "android", "device-001");
+    const result = pushNotificationService.registerDevice(
+      1,
+      "fcm-token-001",
+      "android",
+      "device-001"
+    );
     expect(result.success).toBe(true);
     expect(result.deviceId).toBeDefined();
   });
 
   it("should update an existing device token", () => {
-    pushNotificationService.registerDevice(2, "apns-token-001", "ios", "device-002");
-    const update = pushNotificationService.registerDevice(2, "apns-token-002", "ios", "device-002");
+    pushNotificationService.registerDevice(
+      2,
+      "apns-token-001",
+      "ios",
+      "device-002"
+    );
+    const update = pushNotificationService.registerDevice(
+      2,
+      "apns-token-002",
+      "ios",
+      "device-002"
+    );
     expect(update.success).toBe(true);
     expect(update.updated).toBe(true);
   });
 
   it("should send a push notification", () => {
-    pushNotificationService.registerDevice(3, "web-token-001", "web", "device-003");
-    const result = pushNotificationService.send(3, "New Message", "You have a new DM", { type: "dm" });
+    pushNotificationService.registerDevice(
+      3,
+      "web-token-001",
+      "web",
+      "device-003"
+    );
+    const result = pushNotificationService.send(
+      3,
+      "New Message",
+      "You have a new DM",
+      { type: "dm" }
+    );
     expect(result.success).toBe(true);
     expect(result.sent).toBeGreaterThan(0);
   });
 
   it("should unregister a device", () => {
-    pushNotificationService.registerDevice(4, "token-to-remove", "android", "device-004");
+    pushNotificationService.registerDevice(
+      4,
+      "token-to-remove",
+      "android",
+      "device-004"
+    );
     const result = pushNotificationService.unregisterDevice(4, "device-004");
     expect(result.success).toBe(true);
   });
@@ -921,7 +1189,9 @@ describe("Deep Link Manager", () => {
   });
 
   it("should resolve a community deep link", () => {
-    const result = deepLinkManager.resolve("shadowchat://community/crypto-traders");
+    const result = deepLinkManager.resolve(
+      "shadowchat://community/crypto-traders"
+    );
     expect(result.type).toBe("community");
   });
 
@@ -936,19 +1206,28 @@ describe("Deep Link Manager", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 import {
-  syndicationEngine, importPipeline, rssFeedGenerator,
-  seoEngine, webhookSystem,
+  syndicationEngine,
+  importPipeline,
+  rssFeedGenerator,
+  seoEngine,
+  webhookSystem,
 } from "./phase5-adapters";
 
 describe("Syndication Engine", () => {
   it("should syndicate content to multiple platforms", () => {
-    const result = syndicationEngine.syndicate("post-001", "post", ["twitter", "farcaster"]);
+    const result = syndicationEngine.syndicate("post-001", "post", [
+      "twitter",
+      "farcaster",
+    ]);
     expect(result.success).toBe(true);
     expect(result.results).toHaveLength(2);
   });
 
   it("should handle partial syndication failures gracefully", () => {
-    const result = syndicationEngine.syndicate("post-002", "post", ["twitter", "invalid_platform"]);
+    const result = syndicationEngine.syndicate("post-002", "post", [
+      "twitter",
+      "invalid_platform",
+    ]);
     expect(result.results.some((r: any) => r.success)).toBe(true);
     expect(result.results.some((r: any) => !r.success)).toBe(true);
   });
@@ -956,14 +1235,22 @@ describe("Syndication Engine", () => {
 
 describe("Import Pipeline", () => {
   it("should initiate a content import from a platform", () => {
-    const result = importPipeline.import(1, "youtube", "https://youtube.com/@testcreator");
+    const result = importPipeline.import(
+      1,
+      "youtube",
+      "https://youtube.com/@testcreator"
+    );
     expect(result.success).toBe(true);
     expect(result.importId).toBeDefined();
     expect(result.status).toBe("queued");
   });
 
   it("should reject import from unsupported platform", () => {
-    const result = importPipeline.import(2, "unsupported_platform" as any, "https://example.com");
+    const result = importPipeline.import(
+      2,
+      "unsupported_platform" as any,
+      "https://example.com"
+    );
     expect(result.success).toBe(false);
   });
 });
@@ -1001,20 +1288,35 @@ describe("SEO Engine", () => {
 
 describe("Webhook System", () => {
   it("should register a webhook endpoint", () => {
-    const result = webhookSystem.register(1, "https://example.com/webhook", ["post.created", "stream.started"], "secret-key");
+    const result = webhookSystem.register(
+      1,
+      "https://example.com/webhook",
+      ["post.created", "stream.started"],
+      "secret-key"
+    );
     expect(result.success).toBe(true);
     expect(result.webhookId).toBeDefined();
   });
 
   it("should list webhooks for a user", () => {
-    webhookSystem.register(2, "https://example.com/hook2", ["like.created"], "secret2");
+    webhookSystem.register(
+      2,
+      "https://example.com/hook2",
+      ["like.created"],
+      "secret2"
+    );
     const hooks = webhookSystem.list(2);
     expect(Array.isArray(hooks)).toBe(true);
     expect(hooks.length).toBeGreaterThan(0);
   });
 
   it("should delete a webhook", () => {
-    const regResult = webhookSystem.register(3, "https://example.com/hook3", ["comment.created"], "secret3");
+    const regResult = webhookSystem.register(
+      3,
+      "https://example.com/hook3",
+      ["comment.created"],
+      "secret3"
+    );
     const deleteResult = webhookSystem.delete(regResult.webhookId!);
     expect(deleteResult.success).toBe(true);
   });
@@ -1025,8 +1327,13 @@ describe("Webhook System", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 import {
-  antiSybilEngine, antiBotEngine, fraudEscalationEngine,
-  walletAnomalyDetector, exploitDetector, abuseScorer, ipReputationService,
+  antiSybilEngine,
+  antiBotEngine,
+  fraudEscalationEngine,
+  walletAnomalyDetector,
+  exploitDetector,
+  abuseScorer,
+  ipReputationService,
 } from "./phase5-adapters";
 
 describe("Anti-Sybil Engine", () => {
@@ -1043,7 +1350,9 @@ describe("Anti-Sybil Engine", () => {
     antiSybilEngine.recordFingerprint(100, "fingerprint-abc");
     antiSybilEngine.recordFingerprint(101, "fingerprint-abc");
     const result = antiSybilEngine.check(101);
-    expect(result.signals.some((s: any) => s.type === "shared_fingerprint")).toBe(true);
+    expect(
+      result.signals.some((s: any) => s.type === "shared_fingerprint")
+    ).toBe(true);
   });
 
   it("should return low sybil score for established accounts", () => {
@@ -1055,50 +1364,82 @@ describe("Anti-Sybil Engine", () => {
 
 describe("Anti-Bot Engine", () => {
   it("should check a request for bot signals", () => {
-    const result = antiBotEngine.check("192.168.1.1", "Mozilla/5.0 Chrome/120", {});
+    const result = antiBotEngine.check(
+      "192.168.1.1",
+      "Mozilla/5.0 Chrome/120",
+      {}
+    );
     expect(result).toHaveProperty("isBot");
     expect(result).toHaveProperty("confidence");
     expect(result).toHaveProperty("signals");
   });
 
   it("should flag known bot user agents", () => {
-    const result = antiBotEngine.check("10.0.0.1", "python-requests/2.28.0", {});
+    const result = antiBotEngine.check(
+      "10.0.0.1",
+      "python-requests/2.28.0",
+      {}
+    );
     expect(result.isBot).toBe(true);
   });
 
   it("should flag headless browser signatures", () => {
-    const result = antiBotEngine.check("10.0.0.2", "HeadlessChrome/120", { webdriver: true });
+    const result = antiBotEngine.check("10.0.0.2", "HeadlessChrome/120", {
+      webdriver: true,
+    });
     expect(result.isBot).toBe(true);
   });
 
   it("should pass legitimate browser requests", () => {
-    const result = antiBotEngine.check("203.0.113.1", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120", { mouseMovements: 50 });
+    const result = antiBotEngine.check(
+      "203.0.113.1",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120",
+      { mouseMovements: 50 }
+    );
     expect(result.isBot).toBe(false);
   });
 });
 
 describe("Fraud Escalation Engine", () => {
   it("should escalate a fraud incident", () => {
-    const result = fraudEscalationEngine.escalate(1, "wash_trading", { evidence: "10 self-trades" }, "high");
+    const result = fraudEscalationEngine.escalate(
+      1,
+      "wash_trading",
+      { evidence: "10 self-trades" },
+      "high"
+    );
     expect(result.success).toBe(true);
     expect(result.escalationId).toBeDefined();
     expect(result.assignedTo).toBeDefined();
   });
 
   it("should auto-suspend accounts with critical fraud", () => {
-    const result = fraudEscalationEngine.escalate(2, "account_takeover", { evidence: "suspicious login" }, "critical");
+    const result = fraudEscalationEngine.escalate(
+      2,
+      "account_takeover",
+      { evidence: "suspicious login" },
+      "critical"
+    );
     expect(result.autoAction).toBe("suspend");
   });
 
   it("should queue medium severity fraud for review", () => {
-    const result = fraudEscalationEngine.escalate(3, "fake_reviews", { evidence: "5 identical reviews" }, "medium");
+    const result = fraudEscalationEngine.escalate(
+      3,
+      "fake_reviews",
+      { evidence: "5 identical reviews" },
+      "medium"
+    );
     expect(result.autoAction).toBe("review_queue");
   });
 });
 
 describe("Wallet Anomaly Detector", () => {
   it("should check a wallet for anomalies", () => {
-    const result = walletAnomalyDetector.check("0xwallet001", { amount: 100, type: "transfer" });
+    const result = walletAnomalyDetector.check("0xwallet001", {
+      amount: 100,
+      type: "transfer",
+    });
     expect(result).toHaveProperty("isAnomaly");
     expect(result).toHaveProperty("riskScore");
     expect(result.riskScore).toBeGreaterThanOrEqual(0);
@@ -1106,16 +1447,28 @@ describe("Wallet Anomaly Detector", () => {
   });
 
   it("should flag unusually large transactions", () => {
-    const result = walletAnomalyDetector.check("0xwallet002", { amount: 10000000, type: "transfer" });
+    const result = walletAnomalyDetector.check("0xwallet002", {
+      amount: 10000000,
+      type: "transfer",
+    });
     expect(result.riskScore).toBeGreaterThan(50);
   });
 
   it("should flag rapid successive transactions", () => {
     for (let i = 0; i < 5; i++) {
-      walletAnomalyDetector.check("0xrapid", { amount: 100, type: "transfer", timestamp: Date.now() + i });
+      walletAnomalyDetector.check("0xrapid", {
+        amount: 100,
+        type: "transfer",
+        timestamp: Date.now() + i,
+      });
     }
-    const result = walletAnomalyDetector.check("0xrapid", { amount: 100, type: "transfer" });
-    expect(result.signals.some((s: any) => s.type === "high_frequency")).toBe(true);
+    const result = walletAnomalyDetector.check("0xrapid", {
+      amount: 100,
+      type: "transfer",
+    });
+    expect(result.signals.some((s: any) => s.type === "high_frequency")).toBe(
+      true
+    );
   });
 });
 
@@ -1127,7 +1480,9 @@ describe("Exploit Detector", () => {
   });
 
   it("should detect XSS attempts", () => {
-    const result = exploitDetector.analyze({ body: "<script>alert('xss')</script>" });
+    const result = exploitDetector.analyze({
+      body: "<script>alert('xss')</script>",
+    });
     expect(result.detected).toBe(true);
     expect(result.type).toContain("xss");
   });
@@ -1139,7 +1494,10 @@ describe("Exploit Detector", () => {
   });
 
   it("should pass legitimate requests", () => {
-    const result = exploitDetector.analyze({ body: "Hello, this is a normal message!", path: "/api/posts" });
+    const result = exploitDetector.analyze({
+      body: "Hello, this is a normal message!",
+      path: "/api/posts",
+    });
     expect(result.detected).toBe(false);
   });
 });
@@ -1197,19 +1555,32 @@ describe("IP Reputation Service", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 import {
-  jobQueue, deadLetterQueue, autoscalingManager,
-  observability, backupSystem, circuitBreakerManager, featureFlags,
+  jobQueue,
+  deadLetterQueue,
+  autoscalingManager,
+  observability,
+  backupSystem,
+  circuitBreakerManager,
+  featureFlags,
 } from "./phase5-adapters";
 
 describe("Job Queue", () => {
   it("should enqueue a job", () => {
-    const result = jobQueue.enqueue("email_notification", { userId: 1, template: "welcome" }, { priority: "normal" });
+    const result = jobQueue.enqueue(
+      "email_notification",
+      { userId: 1, template: "welcome" },
+      { priority: "normal" }
+    );
     expect(result.success).toBe(true);
     expect(result.jobId).toBeDefined();
   });
 
   it("should enqueue high-priority jobs", () => {
-    const result = jobQueue.enqueue("fraud_check", { userId: 2 }, { priority: "high" });
+    const result = jobQueue.enqueue(
+      "fraud_check",
+      { userId: 2 },
+      { priority: "high" }
+    );
     expect(result.success).toBe(true);
     expect(result.priority).toBe("high");
   });
@@ -1229,7 +1600,11 @@ describe("Job Queue", () => {
   });
 
   it("should schedule a delayed job", () => {
-    const result = jobQueue.schedule("reminder", { userId: 3 }, new Date(Date.now() + 3600000));
+    const result = jobQueue.schedule(
+      "reminder",
+      { userId: 3 },
+      new Date(Date.now() + 3600000)
+    );
     expect(result.success).toBe(true);
     expect(result.scheduledFor).toBeDefined();
   });
@@ -1242,13 +1617,23 @@ describe("Dead Letter Queue", () => {
   });
 
   it("should add a failed job to DLQ", () => {
-    deadLetterQueue.add("failed_job_001", "email_notification", { userId: 999 }, "SMTP connection refused");
+    deadLetterQueue.add(
+      "failed_job_001",
+      "email_notification",
+      { userId: 999 },
+      "SMTP connection refused"
+    );
     const items = deadLetterQueue.getItems(false);
     expect(items.length).toBeGreaterThan(0);
   });
 
   it("should retry a DLQ item", () => {
-    deadLetterQueue.add("failed_job_002", "push_notification", { userId: 1 }, "Device not registered");
+    deadLetterQueue.add(
+      "failed_job_002",
+      "push_notification",
+      { userId: 1 },
+      "Device not registered"
+    );
     const items = deadLetterQueue.getItems(false);
     const result = deadLetterQueue.retry(items[0].id);
     expect(result.success).toBe(true);
@@ -1257,19 +1642,33 @@ describe("Dead Letter Queue", () => {
 
 describe("Autoscaling Manager", () => {
   it("should evaluate current scaling needs", () => {
-    const result = autoscalingManager.evaluate({ cpuUsage: 0.75, memoryUsage: 0.60, requestRate: 1000 });
+    const result = autoscalingManager.evaluate({
+      cpuUsage: 0.75,
+      memoryUsage: 0.6,
+      requestRate: 1000,
+    });
     expect(result).toHaveProperty("recommendation");
     expect(result).toHaveProperty("currentInstances");
-    expect(["scale_up", "scale_down", "maintain"]).toContain(result.recommendation);
+    expect(["scale_up", "scale_down", "maintain"]).toContain(
+      result.recommendation
+    );
   });
 
   it("should recommend scale-up under high load", () => {
-    const result = autoscalingManager.evaluate({ cpuUsage: 0.95, memoryUsage: 0.90, requestRate: 5000 });
+    const result = autoscalingManager.evaluate({
+      cpuUsage: 0.95,
+      memoryUsage: 0.9,
+      requestRate: 5000,
+    });
     expect(result.recommendation).toBe("scale_up");
   });
 
   it("should recommend scale-down under low load", () => {
-    const result = autoscalingManager.evaluate({ cpuUsage: 0.10, memoryUsage: 0.15, requestRate: 50 });
+    const result = autoscalingManager.evaluate({
+      cpuUsage: 0.1,
+      memoryUsage: 0.15,
+      requestRate: 50,
+    });
     expect(result.recommendation).toBe("scale_down");
   });
 
@@ -1296,7 +1695,12 @@ describe("Observability", () => {
   });
 
   it("should log a structured event", () => {
-    const result = observability.log("info", "test_event", { data: "test" }, "test-service");
+    const result = observability.log(
+      "info",
+      "test_event",
+      { data: "test" },
+      "test-service"
+    );
     expect(result.success).toBe(true);
   });
 
@@ -1307,7 +1711,9 @@ describe("Observability", () => {
   });
 
   it("should create a distributed trace", () => {
-    const trace = observability.startTrace("api_request", { path: "/api/posts" });
+    const trace = observability.startTrace("api_request", {
+      path: "/api/posts",
+    });
     expect(trace).toHaveProperty("traceId");
     expect(trace).toHaveProperty("spanId");
   });
@@ -1367,7 +1773,10 @@ describe("Feature Flags", () => {
   });
 
   it("should check if a feature is enabled", () => {
-    featureFlags.set("new_feed_algorithm", { enabled: true, rolloutPercentage: 100 });
+    featureFlags.set("new_feed_algorithm", {
+      enabled: true,
+      rolloutPercentage: 100,
+    });
     const enabled = featureFlags.isEnabled("new_feed_algorithm", 1);
     expect(enabled).toBe(true);
   });

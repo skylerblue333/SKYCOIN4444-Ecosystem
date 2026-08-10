@@ -53,7 +53,15 @@ export interface TypingState {
 export interface NotificationItem {
   id: string;
   userId: number;
-  type: "message" | "mention" | "follow" | "like" | "comment" | "tip" | "system" | "achievement";
+  type:
+    | "message"
+    | "mention"
+    | "follow"
+    | "like"
+    | "comment"
+    | "tip"
+    | "system"
+    | "achievement";
   title: string;
   body: string;
   actionUrl?: string;
@@ -87,7 +95,13 @@ export class EventBus {
     };
   }
 
-  async publish(type: string, channel: string, payload: unknown, senderId?: number, priority: RealtimeEvent["priority"] = "normal"): Promise<void> {
+  async publish(
+    type: string,
+    channel: string,
+    payload: unknown,
+    senderId?: number,
+    priority: RealtimeEvent["priority"] = "normal"
+  ): Promise<void> {
     this.eventCounter++;
     const event: RealtimeEvent = {
       id: `evt_${this.eventCounter}`,
@@ -109,7 +123,10 @@ export class EventBus {
     const handlers = this.handlers.get(type) || new Set();
     const wildcardHandlers = this.handlers.get("*") || new Set();
 
-    const allHandlers = [...Array.from(handlers), ...Array.from(wildcardHandlers)];
+    const allHandlers = [
+      ...Array.from(handlers),
+      ...Array.from(wildcardHandlers),
+    ];
     await Promise.allSettled(allHandlers.map(h => h(event)));
   }
 
@@ -133,7 +150,10 @@ export class SSEConnectionManager {
 
   constructor() {
     // Start heartbeat checker
-    this.heartbeatInterval = setInterval(() => this.cleanupStaleConnections(), 30000);
+    this.heartbeatInterval = setInterval(
+      () => this.cleanupStaleConnections(),
+      30000
+    );
   }
 
   addConnection(userId: number, send: (event: RealtimeEvent) => void): string {
@@ -280,7 +300,10 @@ export class PresenceService {
     if (state) {
       state.status = "offline";
       state.lastSeen = new Date();
-      this.eventBus.publish("presence:offline", "global", { userId, lastSeen: state.lastSeen });
+      this.eventBus.publish("presence:offline", "global", {
+        userId,
+        lastSeen: state.lastSeen,
+      });
     }
   }
 
@@ -292,7 +315,10 @@ export class PresenceService {
     };
     state.status = status;
     this.presenceMap.set(userId, state);
-    this.eventBus.publish("presence:status_change", "global", { userId, status });
+    this.eventBus.publish("presence:status_change", "global", {
+      userId,
+      status,
+    });
   }
 
   getPresence(userId: number): PresenceState | undefined {
@@ -300,7 +326,9 @@ export class PresenceService {
   }
 
   getOnlineUsers(): PresenceState[] {
-    return Array.from(this.presenceMap.values()).filter(p => p.status === "online");
+    return Array.from(this.presenceMap.values()).filter(
+      p => p.status === "online"
+    );
   }
 
   getBulkPresence(userIds: number[]): Map<number, PresenceState> {
@@ -375,12 +403,18 @@ export class NotificationPipeline {
     this.eventBus = eventBus;
   }
 
-  async send(userId: number, type: NotificationItem["type"], title: string, body: string, options?: {
-    actionUrl?: string;
-    priority?: NotificationItem["priority"];
-    metadata?: Record<string, unknown>;
-    expiresAt?: Date;
-  }): Promise<NotificationItem> {
+  async send(
+    userId: number,
+    type: NotificationItem["type"],
+    title: string,
+    body: string,
+    options?: {
+      actionUrl?: string;
+      priority?: NotificationItem["priority"];
+      metadata?: Record<string, unknown>;
+      expiresAt?: Date;
+    }
+  ): Promise<NotificationItem> {
     this.notificationCounter++;
 
     const notification: NotificationItem = {
@@ -425,7 +459,12 @@ export class NotificationPipeline {
     return notification;
   }
 
-  async sendBulk(userIds: number[], type: NotificationItem["type"], title: string, body: string): Promise<number> {
+  async sendBulk(
+    userIds: number[],
+    type: NotificationItem["type"],
+    title: string,
+    body: string
+  ): Promise<number> {
     let sent = 0;
     for (const userId of userIds) {
       await this.send(userId, type, title, body);
@@ -434,7 +473,11 @@ export class NotificationPipeline {
     return sent;
   }
 
-  getNotifications(userId: number, unreadOnly = false, limit = 50): NotificationItem[] {
+  getNotifications(
+    userId: number,
+    unreadOnly = false,
+    limit = 50
+  ): NotificationItem[] {
     const notifs = this.notifications.get(userId) || [];
     let filtered = notifs;
     if (unreadOnly) {
@@ -480,14 +523,19 @@ export class NotificationPipeline {
 // ═══════════════════════════════════════════════════════════════
 
 export class LiveActivityFeed {
-  private activities: { type: string; message: string; userId?: number; timestamp: Date }[] = [];
+  private activities: {
+    type: string;
+    message: string;
+    userId?: number;
+    timestamp: Date;
+  }[] = [];
   private eventBus: EventBus;
 
   constructor(eventBus: EventBus) {
     this.eventBus = eventBus;
 
     // Subscribe to relevant events
-    this.eventBus.subscribe("*", (event) => {
+    this.eventBus.subscribe("*", event => {
       if (event.type.startsWith("activity:")) {
         this.activities.push({
           type: event.type.replace("activity:", ""),
@@ -520,7 +568,10 @@ export const eventBus = new EventBus();
 export const sseManager = new SSEConnectionManager();
 export const presenceService = new PresenceService(eventBus);
 export const typingIndicators = new TypingIndicatorService();
-export const notificationPipeline = new NotificationPipeline(sseManager, eventBus);
+export const notificationPipeline = new NotificationPipeline(
+  sseManager,
+  eventBus
+);
 export const liveActivityFeed = new LiveActivityFeed(eventBus);
 
 // ═══════════════════════════════════════════════════════════════
@@ -551,7 +602,17 @@ export interface ChatMessage {
   senderName: string;
   senderAvatar?: string;
   content: string;
-  type: "text" | "image" | "video" | "audio" | "file" | "sticker" | "reaction" | "system" | "tip" | "poll";
+  type:
+    | "text"
+    | "image"
+    | "video"
+    | "audio"
+    | "file"
+    | "sticker"
+    | "reaction"
+    | "system"
+    | "tip"
+    | "poll";
   replyToId?: string;
   reactions: Record<string, number[]>; // emoji -> userIds
   edited: boolean;
@@ -567,7 +628,7 @@ export interface LivePoll {
   roomId: string;
   creatorId: number;
   question: string;
-  options: Array<{ id: string; text: string; votes: number[]; }>;
+  options: Array<{ id: string; text: string; votes: number[] }>;
   multipleChoice: boolean;
   endsAt: number;
   createdAt: number;
@@ -606,7 +667,12 @@ export interface StreamChatState {
   viewerCount: number;
   messageCount: number;
   reactionCount: number;
-  topDonors: Array<{ userId: number; username: string; amount: number; currency: string }>;
+  topDonors: Array<{
+    userId: number;
+    username: string;
+    amount: number;
+    currency: string;
+  }>;
   activePoll?: LivePoll;
   pinnedMessage?: ChatMessage;
   slowMode: number;
@@ -629,8 +695,12 @@ const dmRooms = new Map<string, string>(); // `${uid1}:${uid2}` -> roomId
 // ─── Room Management ──────────────────────────────────────────
 
 export function createChatRoom(params: {
-  name: string; type: ChatRoom["type"]; createdBy: number;
-  maxMembers?: number; slowMode?: number; metadata?: Record<string, unknown>;
+  name: string;
+  type: ChatRoom["type"];
+  createdBy: number;
+  maxMembers?: number;
+  slowMode?: number;
+  metadata?: Record<string, unknown>;
 }): ChatRoom {
   const room: ChatRoom = {
     id: `room_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -655,7 +725,12 @@ export function getOrCreateDMRoom(userId1: number, userId2: number): ChatRoom {
   const key = [userId1, userId2].sort((a, b) => a - b).join(":");
   const existingId = dmRooms.get(key);
   if (existingId) return chatRooms.get(existingId)!;
-  const room = createChatRoom({ name: `DM:${key}`, type: "dm", createdBy: userId1, maxMembers: 2 });
+  const room = createChatRoom({
+    name: `DM:${key}`,
+    type: "dm",
+    createdBy: userId1,
+    maxMembers: 2,
+  });
   dmRooms.set(key, room.id);
   return room;
 }
@@ -669,7 +744,12 @@ export function listChatRooms(type?: ChatRoom["type"]): ChatRoom[] {
   return type ? rooms.filter(r => r.type === type) : rooms;
 }
 
-export function updateRoomSettings(roomId: string, settings: Partial<Pick<ChatRoom, "slowMode" | "pinned" | "maxMembers" | "name">>): boolean {
+export function updateRoomSettings(
+  roomId: string,
+  settings: Partial<
+    Pick<ChatRoom, "slowMode" | "pinned" | "maxMembers" | "name">
+  >
+): boolean {
   const room = chatRooms.get(roomId);
   if (!room) return false;
   Object.assign(room, settings);
@@ -679,14 +759,20 @@ export function updateRoomSettings(roomId: string, settings: Partial<Pick<ChatRo
 // ─── Message Management ───────────────────────────────────────
 
 export function sendChatMessage(params: {
-  roomId: string; senderId: number; senderName: string; content: string;
-  type?: ChatMessage["type"]; replyToId?: string; metadata?: Record<string, unknown>;
+  roomId: string;
+  senderId: number;
+  senderName: string;
+  content: string;
+  type?: ChatMessage["type"];
+  replyToId?: string;
+  metadata?: Record<string, unknown>;
 }): { message?: ChatMessage; error?: string } {
   const room = chatRooms.get(params.roomId);
   if (!room) return { error: "Room not found" };
   if (room.memberCount >= room.maxMembers) return { error: "Room is full" };
   if (room.slowMode > 0) {
-    const timers = slowModeTimers.get(params.roomId) || new Map<number, number>();
+    const timers =
+      slowModeTimers.get(params.roomId) || new Map<number, number>();
     const lastMsg = timers.get(params.senderId) || 0;
     if (Date.now() - lastMsg < room.slowMode * 1000) {
       return { error: `Slow mode: wait ${room.slowMode}s between messages` };
@@ -716,18 +802,31 @@ export function sendChatMessage(params: {
   room.messageCount++;
   room.lastActivity = Date.now();
   recordActivity("message");
-  broadcastToChannel(params.roomId, { type: "chat_message", payload: message, priority: "normal" });
+  broadcastToChannel(params.roomId, {
+    type: "chat_message",
+    payload: message,
+    priority: "normal",
+  });
   return { message };
 }
 
-export function getChatHistory(roomId: string, limit = 50, before?: number): ChatMessage[] {
+export function getChatHistory(
+  roomId: string,
+  limit = 50,
+  before?: number
+): ChatMessage[] {
   const msgs = chatMessages.get(roomId) || [];
   let filtered = msgs.filter(m => !m.deleted);
   if (before) filtered = filtered.filter(m => m.timestamp < before);
   return filtered.slice(-limit);
 }
 
-export function reactToMessage(roomId: string, messageId: string, userId: number, emoji: string): boolean {
+export function reactToMessage(
+  roomId: string,
+  messageId: string,
+  userId: number,
+  emoji: string
+): boolean {
   const msgs = chatMessages.get(roomId) || [];
   const msg = msgs.find(m => m.id === messageId);
   if (!msg) return false;
@@ -735,75 +834,129 @@ export function reactToMessage(roomId: string, messageId: string, userId: number
   const idx = msg.reactions[emoji].indexOf(userId);
   if (idx >= 0) msg.reactions[emoji].splice(idx, 1);
   else msg.reactions[emoji].push(userId);
-  broadcastToChannel(roomId, { type: "message_reaction", payload: { messageId, emoji, reactions: msg.reactions }, priority: "low" });
+  broadcastToChannel(roomId, {
+    type: "message_reaction",
+    payload: { messageId, emoji, reactions: msg.reactions },
+    priority: "low",
+  });
   return true;
 }
 
-export function editMessage(roomId: string, messageId: string, userId: number, newContent: string): boolean {
+export function editMessage(
+  roomId: string,
+  messageId: string,
+  userId: number,
+  newContent: string
+): boolean {
   const msgs = chatMessages.get(roomId) || [];
   const msg = msgs.find(m => m.id === messageId && m.senderId === userId);
   if (!msg) return false;
   msg.content = newContent;
   msg.edited = true;
   msg.editedAt = Date.now();
-  broadcastToChannel(roomId, { type: "message_edited", payload: msg, priority: "normal" });
+  broadcastToChannel(roomId, {
+    type: "message_edited",
+    payload: msg,
+    priority: "normal",
+  });
   return true;
 }
 
-export function deleteMessage(roomId: string, messageId: string, userId: number): boolean {
+export function deleteMessage(
+  roomId: string,
+  messageId: string,
+  userId: number
+): boolean {
   const msgs = chatMessages.get(roomId) || [];
   const msg = msgs.find(m => m.id === messageId && m.senderId === userId);
   if (!msg) return false;
   msg.deleted = true;
   msg.content = "[Message deleted]";
-  broadcastToChannel(roomId, { type: "message_deleted", payload: { messageId }, priority: "normal" });
+  broadcastToChannel(roomId, {
+    type: "message_deleted",
+    payload: { messageId },
+    priority: "normal",
+  });
   return true;
 }
 
 export function pinMessage(roomId: string, messageId: string): boolean {
   const msgs = chatMessages.get(roomId) || [];
-  msgs.forEach(m => { m.pinned = m.id === messageId; });
-  broadcastToChannel(roomId, { type: "message_pinned", payload: { messageId }, priority: "normal" });
+  msgs.forEach(m => {
+    m.pinned = m.id === messageId;
+  });
+  broadcastToChannel(roomId, {
+    type: "message_pinned",
+    payload: { messageId },
+    priority: "normal",
+  });
   return true;
 }
 
 // ─── Live Polls ───────────────────────────────────────────────
 
 export function createLivePoll(params: {
-  roomId: string; creatorId: number; question: string;
-  options: string[]; multipleChoice?: boolean; durationSeconds?: number;
+  roomId: string;
+  creatorId: number;
+  question: string;
+  options: string[];
+  multipleChoice?: boolean;
+  durationSeconds?: number;
 }): LivePoll {
   const poll: LivePoll = {
     id: `poll_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     roomId: params.roomId,
     creatorId: params.creatorId,
     question: params.question,
-    options: params.options.map((text, i) => ({ id: `opt_${i}`, text, votes: [] })),
+    options: params.options.map((text, i) => ({
+      id: `opt_${i}`,
+      text,
+      votes: [],
+    })),
     multipleChoice: params.multipleChoice || false,
     endsAt: Date.now() + (params.durationSeconds || 300) * 1000,
     createdAt: Date.now(),
     totalVotes: 0,
   };
   livePolls.set(poll.id, poll);
-  broadcastToChannel(params.roomId, { type: "poll_created", payload: poll, priority: "high" });
+  broadcastToChannel(params.roomId, {
+    type: "poll_created",
+    payload: poll,
+    priority: "high",
+  });
   return poll;
 }
 
-export function votePoll(pollId: string, userId: number, optionIds: string[]): { success: boolean; poll?: LivePoll; error?: string } {
+export function votePoll(
+  pollId: string,
+  userId: number,
+  optionIds: string[]
+): { success: boolean; poll?: LivePoll; error?: string } {
   const poll = livePolls.get(pollId);
   if (!poll) return { success: false, error: "Poll not found" };
-  if (Date.now() > poll.endsAt) return { success: false, error: "Poll has ended" };
+  if (Date.now() > poll.endsAt)
+    return { success: false, error: "Poll has ended" };
   const alreadyVoted = poll.options.some(o => o.votes.includes(userId));
   if (alreadyVoted) {
-    poll.options.forEach(o => { const idx = o.votes.indexOf(userId); if (idx >= 0) o.votes.splice(idx, 1); });
+    poll.options.forEach(o => {
+      const idx = o.votes.indexOf(userId);
+      if (idx >= 0) o.votes.splice(idx, 1);
+    });
     poll.totalVotes = Math.max(0, poll.totalVotes - 1);
   }
   const targetOptions = poll.multipleChoice ? optionIds : [optionIds[0]];
   for (const optId of targetOptions) {
     const opt = poll.options.find(o => o.id === optId);
-    if (opt && !opt.votes.includes(userId)) { opt.votes.push(userId); poll.totalVotes++; }
+    if (opt && !opt.votes.includes(userId)) {
+      opt.votes.push(userId);
+      poll.totalVotes++;
+    }
   }
-  broadcastToChannel(poll.roomId, { type: "poll_updated", payload: poll, priority: "normal" });
+  broadcastToChannel(poll.roomId, {
+    type: "poll_updated",
+    payload: poll,
+    priority: "normal",
+  });
   return { success: true, poll };
 }
 
@@ -813,39 +966,87 @@ export function getLivePoll(pollId: string): LivePoll | undefined {
 
 export function getActivePolls(roomId: string): LivePoll[] {
   const now = Date.now();
-  return Array.from(livePolls.values()).filter(p => p.roomId === roomId && p.endsAt > now);
+  return Array.from(livePolls.values()).filter(
+    p => p.roomId === roomId && p.endsAt > now
+  );
 }
 
 // ─── Collaborative Cursors ────────────────────────────────────
 
-export function updateCursor(documentId: string, userId: number, username: string, x: number, y: number): void {
+export function updateCursor(
+  documentId: string,
+  userId: number,
+  username: string,
+  x: number,
+  y: number
+): void {
   const key = `${documentId}:${userId}`;
-  const colors = ["#FF6B6B","#4ECDC4","#45B7D1","#96CEB4","#FFEAA7","#DDA0DD","#98D8C8","#F7DC6F"];
+  const colors = [
+    "#FF6B6B",
+    "#4ECDC4",
+    "#45B7D1",
+    "#96CEB4",
+    "#FFEAA7",
+    "#DDA0DD",
+    "#98D8C8",
+    "#F7DC6F",
+  ];
   const color = colors[userId % colors.length];
-  collaborativeCursors.set(key, { userId, username, x, y, color, timestamp: Date.now(), documentId });
-  broadcastToChannel(`doc:${documentId}`, { type: "cursor_update", payload: { userId, username, x, y, color }, priority: "low" });
+  collaborativeCursors.set(key, {
+    userId,
+    username,
+    x,
+    y,
+    color,
+    timestamp: Date.now(),
+    documentId,
+  });
+  broadcastToChannel(`doc:${documentId}`, {
+    type: "cursor_update",
+    payload: { userId, username, x, y, color },
+    priority: "low",
+  });
 }
 
 export function getDocumentCursors(documentId: string): CollaborativeCursor[] {
   const now = Date.now();
-  return Array.from(collaborativeCursors.values())
-    .filter(c => c.documentId === documentId && now - c.timestamp < 30_000);
+  return Array.from(collaborativeCursors.values()).filter(
+    c => c.documentId === documentId && now - c.timestamp < 30_000
+  );
 }
 
 // ─── Live Reactions ───────────────────────────────────────────
 
 export function emitLiveReaction(params: {
-  userId: number; emoji: string; targetId: string; targetType: LiveReaction["targetType"]; x?: number; y?: number;
+  userId: number;
+  emoji: string;
+  targetId: string;
+  targetType: LiveReaction["targetType"];
+  x?: number;
+  y?: number;
 }): void {
   const reaction: LiveReaction = { ...params, timestamp: Date.now() };
   liveReactions.push(reaction);
   if (liveReactions.length > 10_000) liveReactions.splice(0, 1_000);
-  broadcastToChannel(`reactions:${params.targetType}:${params.targetId}`, { type: "live_reaction", payload: reaction, priority: "low" });
+  broadcastToChannel(`reactions:${params.targetType}:${params.targetId}`, {
+    type: "live_reaction",
+    payload: reaction,
+    priority: "low",
+  });
 }
 
-export function getRecentReactions(targetId: string, targetType: LiveReaction["targetType"], since = 5_000): LiveReaction[] {
+export function getRecentReactions(
+  targetId: string,
+  targetType: LiveReaction["targetType"],
+  since = 5_000
+): LiveReaction[] {
   const cutoff = Date.now() - since;
-  return liveReactions.filter(r => r.targetId === targetId && r.targetType === targetType && r.timestamp > cutoff);
+  return liveReactions.filter(
+    r =>
+      r.targetId === targetId &&
+      r.targetType === targetType &&
+      r.timestamp > cutoff
+  );
 }
 
 // ─── Activity Heatmap ─────────────────────────────────────────
@@ -853,7 +1054,12 @@ export function getRecentReactions(targetId: string, targetType: LiveReaction["t
 export function recordActivity(type: string): void {
   const now = new Date();
   const key = `${now.getDay()}:${now.getHours()}`;
-  const entry = activityHeatmap.get(key) || { hour: now.getHours(), dayOfWeek: now.getDay(), count: 0, types: {} };
+  const entry = activityHeatmap.get(key) || {
+    hour: now.getHours(),
+    dayOfWeek: now.getDay(),
+    count: 0,
+    types: {},
+  };
   entry.count++;
   entry.types[type] = (entry.types[type] || 0) + 1;
   activityHeatmap.set(key, entry);
@@ -868,38 +1074,76 @@ export function getActivityHeatmap(): ActivityHeatmapEntry[] {
 export function getOrCreateStreamChat(streamId: string): StreamChatState {
   let state = streamChatStates.get(streamId);
   if (!state) {
-    state = { streamId, viewerCount: 0, messageCount: 0, reactionCount: 0, topDonors: [], slowMode: 3, subscriberOnly: false, emoteOnly: false };
+    state = {
+      streamId,
+      viewerCount: 0,
+      messageCount: 0,
+      reactionCount: 0,
+      topDonors: [],
+      slowMode: 3,
+      subscriberOnly: false,
+      emoteOnly: false,
+    };
     streamChatStates.set(streamId, state);
   }
   return state;
 }
 
-export function updateStreamViewerCount(streamId: string, delta: number): number {
+export function updateStreamViewerCount(
+  streamId: string,
+  delta: number
+): number {
   const state = getOrCreateStreamChat(streamId);
   state.viewerCount = Math.max(0, state.viewerCount + delta);
-  broadcastToChannel(`stream:${streamId}`, { type: "viewer_count", payload: { count: state.viewerCount }, priority: "low" });
+  broadcastToChannel(`stream:${streamId}`, {
+    type: "viewer_count",
+    payload: { count: state.viewerCount },
+    priority: "low",
+  });
   return state.viewerCount;
 }
 
-export function recordStreamDonation(streamId: string, userId: number, username: string, amount: number, currency: string): void {
+export function recordStreamDonation(
+  streamId: string,
+  userId: number,
+  username: string,
+  amount: number,
+  currency: string
+): void {
   const state = getOrCreateStreamChat(streamId);
   const existing = state.topDonors.find(d => d.userId === userId);
   if (existing) existing.amount += amount;
   else state.topDonors.push({ userId, username, amount, currency });
   state.topDonors.sort((a, b) => b.amount - a.amount);
   state.topDonors = state.topDonors.slice(0, 10);
-  broadcastToChannel(`stream:${streamId}`, { type: "stream_donation", payload: { userId, username, amount, currency }, priority: "high" });
+  broadcastToChannel(`stream:${streamId}`, {
+    type: "stream_donation",
+    payload: { userId, username, amount, currency },
+    priority: "high",
+  });
 }
 
-export function setStreamChatMode(streamId: string, settings: Partial<Pick<StreamChatState, "slowMode" | "subscriberOnly" | "emoteOnly">>): void {
+export function setStreamChatMode(
+  streamId: string,
+  settings: Partial<
+    Pick<StreamChatState, "slowMode" | "subscriberOnly" | "emoteOnly">
+  >
+): void {
   const state = getOrCreateStreamChat(streamId);
   Object.assign(state, settings);
-  broadcastToChannel(`stream:${streamId}`, { type: "chat_mode_changed", payload: settings, priority: "normal" });
+  broadcastToChannel(`stream:${streamId}`, {
+    type: "chat_mode_changed",
+    payload: settings,
+    priority: "normal",
+  });
 }
 
 // ─── Broadcast Helper ─────────────────────────────────────────
 
-function broadcastToChannel(channel: string, event: Omit<RealtimeEvent, "id" | "timestamp" | "channel">): void {
+function broadcastToChannel(
+  channel: string,
+  event: Omit<RealtimeEvent, "id" | "timestamp" | "channel">
+): void {
   const full: RealtimeEvent = {
     ...event,
     id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -907,7 +1151,9 @@ function broadcastToChannel(channel: string, event: Omit<RealtimeEvent, "id" | "
     channel,
   };
   // Emit to event bus (existing system picks it up)
-  eventBus.publish(full.type, channel, full.payload, full.senderId, full.priority).catch(() => {});
+  eventBus
+    .publish(full.type, channel, full.payload, full.senderId, full.priority)
+    .catch(() => {});
 }
 
 // ─── Connection Stats ─────────────────────────────────────────
@@ -915,11 +1161,18 @@ function broadcastToChannel(channel: string, event: Omit<RealtimeEvent, "id" | "
 export function getRealtimeStats() {
   return {
     chatRooms: chatRooms.size,
-    totalMessages: Array.from(chatMessages.values()).reduce((s, m) => s + m.length, 0),
-    activePolls: Array.from(livePolls.values()).filter(p => p.endsAt > Date.now()).length,
+    totalMessages: Array.from(chatMessages.values()).reduce(
+      (s, m) => s + m.length,
+      0
+    ),
+    activePolls: Array.from(livePolls.values()).filter(
+      p => p.endsAt > Date.now()
+    ).length,
     activeCursors: collaborativeCursors.size,
     streamChats: streamChatStates.size,
-    recentReactions: liveReactions.filter(r => Date.now() - r.timestamp < 60_000).length,
+    recentReactions: liveReactions.filter(
+      r => Date.now() - r.timestamp < 60_000
+    ).length,
     activityHeatmapEntries: activityHeatmap.size,
   };
 }
@@ -929,9 +1182,13 @@ export function getRealtimeStats() {
 setInterval(() => {
   const now = Date.now();
   // Clean up expired polls
-  livePolls.forEach((p, k) => { if (now - p.endsAt > 24 * 60 * 60_000) livePolls.delete(k); });
+  livePolls.forEach((p, k) => {
+    if (now - p.endsAt > 24 * 60 * 60_000) livePolls.delete(k);
+  });
   // Clean up stale cursors
-  collaborativeCursors.forEach((c, k) => { if (now - c.timestamp > 60_000) collaborativeCursors.delete(k); });
+  collaborativeCursors.forEach((c, k) => {
+    if (now - c.timestamp > 60_000) collaborativeCursors.delete(k);
+  });
   // Clean up old reactions
   while (liveReactions.length > 5_000) liveReactions.shift();
 }, 5 * 60_000);

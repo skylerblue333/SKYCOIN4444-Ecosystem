@@ -15,8 +15,36 @@ describe("Phase 20A: Feed Intelligence V2", () => {
 
   it("should rank feed posts by multi-signal score", () => {
     const posts = [
-      { postId: "p1", authorId: 1, contentType: "video" as const, createdAt: new Date(), likes: 100, comments: 50, shares: 20, views: 1000, watchTimeSeconds: 60000, communityIds: ["c1"], topicTags: ["crypto"], isPremium: false, isSponsored: false },
-      { postId: "p2", authorId: 2, contentType: "text" as const, createdAt: new Date(Date.now() - 3600000 * 10), likes: 5, comments: 1, shares: 0, views: 10, watchTimeSeconds: 100, communityIds: [], topicTags: ["gaming"], isPremium: false, isSponsored: false },
+      {
+        postId: "p1",
+        authorId: 1,
+        contentType: "video" as const,
+        createdAt: new Date(),
+        likes: 100,
+        comments: 50,
+        shares: 20,
+        views: 1000,
+        watchTimeSeconds: 60000,
+        communityIds: ["c1"],
+        topicTags: ["crypto"],
+        isPremium: false,
+        isSponsored: false,
+      },
+      {
+        postId: "p2",
+        authorId: 2,
+        contentType: "text" as const,
+        createdAt: new Date(Date.now() - 3600000 * 10),
+        likes: 5,
+        comments: 1,
+        shares: 0,
+        views: 10,
+        watchTimeSeconds: 100,
+        communityIds: [],
+        topicTags: ["gaming"],
+        isPremium: false,
+        isSponsored: false,
+      },
     ];
     const ranked = feedIntelligenceV2.rankFeed(1, posts);
     expect(ranked).toHaveLength(2);
@@ -51,11 +79,17 @@ describe("Phase 20A: Feed Intelligence V2", () => {
     feedIntelligenceV2.recordInteraction(12, 102, "like");
     const top = feedIntelligenceV2.getTopCreatorsByAffinity(12, 5);
     expect(top.length).toBeGreaterThan(0);
-    expect(top[0].affinityScore).toBeGreaterThanOrEqual(top[top.length - 1].affinityScore);
+    expect(top[0].affinityScore).toBeGreaterThanOrEqual(
+      top[top.length - 1].affinityScore
+    );
   });
 
   it("should manage interest clusters", () => {
-    const cluster = feedIntelligenceV2.upsertInterestCluster(20, ["crypto", "defi", "nft"], 0.8);
+    const cluster = feedIntelligenceV2.upsertInterestCluster(
+      20,
+      ["crypto", "defi", "nft"],
+      0.8
+    );
     expect(cluster.clusterId).toBeDefined();
     expect(cluster.topics).toContain("crypto");
     const clusters = feedIntelligenceV2.getUserInterestClusters(20);
@@ -65,7 +99,11 @@ describe("Phase 20A: Feed Intelligence V2", () => {
   it("should manage session chains", () => {
     const session = feedIntelligenceV2.startSession(30);
     expect(session.isActive).toBe(true);
-    const updated = feedIntelligenceV2.recordSessionView(session.sessionId, "post_x", 120);
+    const updated = feedIntelligenceV2.recordSessionView(
+      session.sessionId,
+      "post_x",
+      120
+    );
     expect(updated).not.toBeNull();
     expect(updated.postsViewed).toContain("post_x");
     expect(updated.chainBonus).toBeGreaterThan(0);
@@ -120,7 +158,11 @@ describe("Phase 20B: Addiction Loops Engine", () => {
   it("should manage engagement ladders and award points", () => {
     const ladder = addictionLoopsEngine.getOrCreateLadder(60);
     expect(ladder.currentTier).toBe("bronze");
-    const updated = addictionLoopsEngine.awardPoints(60, 600, "Post engagement");
+    const updated = addictionLoopsEngine.awardPoints(
+      60,
+      600,
+      "Post engagement"
+    );
     expect(updated.currentTier).toBe("silver");
     expect(updated.currentPoints).toBeGreaterThanOrEqual(600);
     expect(updated.perks.length).toBeGreaterThan(0);
@@ -158,7 +200,12 @@ describe("Phase 20B: Addiction Loops Engine", () => {
   });
 
   it("should issue creator loyalty rewards", () => {
-    const reward = addictionLoopsEngine.issueCreatorLoyaltyReward(80, 200, 600, 250);
+    const reward = addictionLoopsEngine.issueCreatorLoyaltyReward(
+      80,
+      200,
+      600,
+      250
+    );
     expect(reward.loyaltyTier).toBe("champion");
     expect(reward.rewardAmount).toBe(75);
     const claimed = addictionLoopsEngine.claimLoyaltyReward(reward.id);
@@ -205,7 +252,11 @@ describe("Phase 20C: Retention AI Engine", () => {
   });
 
   it("should send creator comeback prompts", () => {
-    const prompt = retentionAI.sendCreatorComebackPrompt(100, "trending_topic", "Your audience is waiting!");
+    const prompt = retentionAI.sendCreatorComebackPrompt(
+      100,
+      "trending_topic",
+      "Your audience is waiting!"
+    );
     expect(prompt.id).toBeDefined();
     const opened = retentionAI.recordComebackPromptOpen(prompt.id);
     expect(opened.opened).toBe(true);
@@ -214,14 +265,24 @@ describe("Phase 20C: Retention AI Engine", () => {
   });
 
   it("should send friend re-engagement prompts", () => {
-    const prompt = retentionAI.sendFriendReEngagementPrompt(110, 111, "friend_posted", "Your friend just posted!");
+    const prompt = retentionAI.sendFriendReEngagementPrompt(
+      110,
+      111,
+      "friend_posted",
+      "Your friend just posted!"
+    );
     expect(prompt.id).toBeDefined();
     const clicked = retentionAI.recordFriendPromptClick(prompt.id);
     expect(clicked.clicked).toBe(true);
   });
 
   it("should send community revival prompts", () => {
-    const prompt = retentionAI.sendCommunityRevivalPrompt("comm_1", "new_post", [120, 121], "New activity in your community!");
+    const prompt = retentionAI.sendCommunityRevivalPrompt(
+      "comm_1",
+      "new_post",
+      [120, 121],
+      "New activity in your community!"
+    );
     expect(prompt.id).toBeDefined();
     const clicked = retentionAI.recordRevivalClick(prompt.id);
     expect(clicked.clickCount).toBe(1);
@@ -246,13 +307,19 @@ describe("Phase 21A: Creator CRM", () => {
 
   it("should upsert and retrieve fan profiles", () => {
     const fan = creatorCRM.upsertFanProfile({
-      creatorId: 1, fanUserId: 200,
+      creatorId: 1,
+      fanUserId: 200,
       subscriptionTierId: "gold",
-      totalSpent: 500, totalWatchHours: 100,
-      totalLikes: 200, totalComments: 50, totalShares: 30, totalTips: 100,
+      totalSpent: 500,
+      totalWatchHours: 100,
+      totalLikes: 200,
+      totalComments: 50,
+      totalShares: 30,
+      totalTips: 100,
       firstInteractionAt: new Date(Date.now() - 30 * 86400000),
       lastInteractionAt: new Date(),
-      notes: "", tags: [],
+      notes: "",
+      tags: [],
     });
     expect(fan.id).toBeDefined();
     expect(fan.lifetimeValue).toBeGreaterThan(0);
@@ -264,19 +331,27 @@ describe("Phase 21A: Creator CRM", () => {
 
   it("should classify high-churn-risk fans", () => {
     const fan = creatorCRM.upsertFanProfile({
-      creatorId: 1, fanUserId: 201,
-      totalSpent: 10, totalWatchHours: 5,
-      totalLikes: 2, totalComments: 0, totalShares: 0, totalTips: 0,
+      creatorId: 1,
+      fanUserId: 201,
+      totalSpent: 10,
+      totalWatchHours: 5,
+      totalLikes: 2,
+      totalComments: 0,
+      totalShares: 0,
+      totalTips: 0,
       firstInteractionAt: new Date(Date.now() - 60 * 86400000),
       lastInteractionAt: new Date(Date.now() - 35 * 86400000),
-      notes: "", tags: [],
+      notes: "",
+      tags: [],
     });
     expect(fan.churnRisk).toBe("high");
   });
 
   it("should create subscriber segments", () => {
     const segment = creatorCRM.createSubscriberSegment({
-      creatorId: 1, name: "Whales", description: "Top spenders",
+      creatorId: 1,
+      name: "Whales",
+      description: "Top spenders",
       segmentType: "spend",
       criteria: { minSpend: 500 },
     });
@@ -287,13 +362,26 @@ describe("Phase 21A: Creator CRM", () => {
 
   it("should create and track monetization funnels", () => {
     const funnel = creatorCRM.createMonetizationFunnel({
-      creatorId: 1, funnelName: "Subscriber Upsell",
-      stages: [{ stageId: "s1", name: "Follow", type: "awareness", triggerEvent: "follow", action: "send_welcome", delayHours: 0, isActive: true }],
+      creatorId: 1,
+      funnelName: "Subscriber Upsell",
+      stages: [
+        {
+          stageId: "s1",
+          name: "Follow",
+          type: "awareness",
+          triggerEvent: "follow",
+          action: "send_welcome",
+          delayHours: 0,
+          isActive: true,
+        },
+      ],
       isActive: true,
     });
     creatorCRM.recordFunnelEntry(funnel.id);
     creatorCRM.recordFunnelConversion(funnel.id, 9.99);
-    const updated = creatorCRM.getCreatorFunnels(1).find((f: any) => f.id === funnel.id);
+    const updated = creatorCRM
+      .getCreatorFunnels(1)
+      .find((f: any) => f.id === funnel.id);
     expect(updated.totalEntered).toBe(1);
     expect(updated.totalConverted).toBe(1);
     expect(updated.conversionRate).toBe(1);
@@ -301,7 +389,11 @@ describe("Phase 21A: Creator CRM", () => {
   });
 
   it("should generate payout forecasts", () => {
-    const forecast = creatorCRM.generatePayoutForecast(1, "2026-07", { "2026-04": 1000, "2026-05": 1200, "2026-06": 1100 });
+    const forecast = creatorCRM.generatePayoutForecast(1, "2026-07", {
+      "2026-04": 1000,
+      "2026-05": 1200,
+      "2026-06": 1100,
+    });
     expect(forecast.totalProjected).toBeGreaterThan(0);
     expect(forecast.confidence).toBeGreaterThan(0);
     expect(forecast.projectedSubscriptionRevenue).toBeGreaterThan(0);
@@ -311,11 +403,23 @@ describe("Phase 21A: Creator CRM", () => {
 
   it("should create and track campaign planners", () => {
     const campaign = creatorCRM.createCampaignPlanner({
-      creatorId: 1, campaignName: "Summer Launch",
-      campaignType: "launch", status: "active",
-      startDate: new Date(), endDate: new Date(Date.now() + 30 * 86400000),
-      budget: 500, targetReach: 10000, targetRevenue: 2000,
-      tasks: [{ taskId: "t1", title: "Create promo video", dueDate: new Date(), completed: false }],
+      creatorId: 1,
+      campaignName: "Summer Launch",
+      campaignType: "launch",
+      status: "active",
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 86400000),
+      budget: 500,
+      targetReach: 10000,
+      targetRevenue: 2000,
+      tasks: [
+        {
+          taskId: "t1",
+          title: "Create promo video",
+          dueDate: new Date(),
+          completed: false,
+        },
+      ],
       platforms: ["shadowchat", "youtube"],
     });
     creatorCRM.updateCampaignMetrics(campaign.id, 8000, 1800);
@@ -336,11 +440,16 @@ describe("Phase 21B: Hiring Marketplace", () => {
 
   it("should post and view jobs", () => {
     const job = hiringMarketplace.postJob({
-      creatorId: 2, title: "Video Editor",
+      creatorId: 2,
+      title: "Video Editor",
       description: "Edit weekly vlogs",
-      jobType: "editor", budget: 500, budgetType: "fixed",
-      currency: "USD", skills: ["premiere", "after_effects"],
-      experienceLevel: "mid", duration: "part_time",
+      jobType: "editor",
+      budget: 500,
+      budgetType: "fixed",
+      currency: "USD",
+      skills: ["premiere", "after_effects"],
+      experienceLevel: "mid",
+      duration: "part_time",
       status: "open",
       expiresAt: new Date(Date.now() + 30 * 86400000),
     });
@@ -351,21 +460,31 @@ describe("Phase 21B: Hiring Marketplace", () => {
 
   it("should apply to jobs and review applications", () => {
     const job = hiringMarketplace.postJob({
-      creatorId: 3, title: "Community Moderator",
+      creatorId: 3,
+      title: "Community Moderator",
       description: "Moderate community",
-      jobType: "moderator", budget: 200, budgetType: "fixed",
-      currency: "USD", skills: ["community_management"],
-      experienceLevel: "entry", duration: "part_time",
+      jobType: "moderator",
+      budget: 200,
+      budgetType: "fixed",
+      currency: "USD",
+      skills: ["community_management"],
+      experienceLevel: "entry",
+      duration: "part_time",
       status: "open",
       expiresAt: new Date(Date.now() + 30 * 86400000),
     });
     const app = hiringMarketplace.applyToJob({
-      jobId: job.id, applicantId: 300,
+      jobId: job.id,
+      applicantId: 300,
       coverLetter: "I am great at moderation",
       proposedRate: 200,
     });
     expect(app.status).toBe("pending");
-    const reviewed = hiringMarketplace.reviewApplication(app.id, "accepted", "Great candidate");
+    const reviewed = hiringMarketplace.reviewApplication(
+      app.id,
+      "accepted",
+      "Great candidate"
+    );
     expect(reviewed.status).toBe("accepted");
     // Job should be filled
     const updatedJob = hiringMarketplace.viewJob(job.id);
@@ -374,11 +493,16 @@ describe("Phase 21B: Hiring Marketplace", () => {
 
   it("should get open jobs by type", () => {
     hiringMarketplace.postJob({
-      creatorId: 4, title: "Thumbnail Artist",
+      creatorId: 4,
+      title: "Thumbnail Artist",
       description: "Create thumbnails",
-      jobType: "thumbnail_artist", budget: 100, budgetType: "per_task" as any,
-      currency: "USD", skills: ["photoshop"],
-      experienceLevel: "mid", duration: "one_time",
+      jobType: "thumbnail_artist",
+      budget: 100,
+      budgetType: "per_task" as any,
+      currency: "USD",
+      skills: ["photoshop"],
+      experienceLevel: "mid",
+      duration: "one_time",
       status: "open",
       expiresAt: new Date(Date.now() + 30 * 86400000),
     });
@@ -388,10 +512,12 @@ describe("Phase 21B: Hiring Marketplace", () => {
 
   it("should manage creator teams", () => {
     const member = hiringMarketplace.addTeamMember({
-      creatorId: 5, memberId: 400,
+      creatorId: 5,
+      memberId: 400,
       role: "editor",
       permissions: ["post", "edit"],
-      payRate: 500, payType: "fixed_monthly",
+      payRate: 500,
+      payType: "fixed_monthly",
       currency: "USD",
       startDate: new Date(),
       isActive: true,
@@ -416,7 +542,9 @@ describe("Phase 21C: Creator Expansion Engine", () => {
 
   it("should queue and process syndication jobs", () => {
     const job = creatorExpansionEngine.queueSyndication({
-      creatorId: 6, contentId: "post_123", contentType: "post",
+      creatorId: 6,
+      contentId: "post_123",
+      contentType: "post",
       targetPlatforms: ["youtube", "twitter_x", "instagram"],
     });
     expect(job.status).toBe("queued");
@@ -436,7 +564,14 @@ describe("Phase 21C: Creator Expansion Engine", () => {
   });
 
   it("should queue and process auto-translation jobs", () => {
-    const job = creatorExpansionEngine.queueAutoTranslation(8, "post_789", "post", "en", ["es", "fr", "ja"], "Hello world");
+    const job = creatorExpansionEngine.queueAutoTranslation(
+      8,
+      "post_789",
+      "post",
+      "en",
+      ["es", "fr", "ja"],
+      "Hello world"
+    );
     const processed = creatorExpansionEngine.processAutoTranslation(job.id);
     expect(processed.status).toBe("completed");
     expect(processed.translations).toHaveLength(3);
@@ -445,7 +580,12 @@ describe("Phase 21C: Creator Expansion Engine", () => {
   });
 
   it("should queue and process content repurpose jobs", () => {
-    const job = creatorExpansionEngine.queueContentRepurpose(9, "video_101", "long_video", ["short_clip", "reel", "thread"]);
+    const job = creatorExpansionEngine.queueContentRepurpose(
+      9,
+      "video_101",
+      "long_video",
+      ["short_clip", "reel", "thread"]
+    );
     const processed = creatorExpansionEngine.processContentRepurpose(job.id);
     expect(processed.status).toBe("completed");
     expect(processed.outputs).toHaveLength(3);
@@ -464,8 +604,12 @@ describe("Phase 22A: Token Utility Engine", () => {
 
   it("should record and confirm token actions", () => {
     const action = tokenUtilityEngine.recordAction({
-      actionType: "tip", userId: 500, amount: 50, currency: "SKY444",
-      targetId: "creator_1", targetType: "creator",
+      actionType: "tip",
+      userId: 500,
+      amount: 50,
+      currency: "SKY444",
+      targetId: "creator_1",
+      targetType: "creator",
     });
     expect(action.status).toBe("pending");
     const confirmed = tokenUtilityEngine.confirmAction(action.id, "0xabc123");
@@ -474,7 +618,12 @@ describe("Phase 22A: Token Utility Engine", () => {
   });
 
   it("should calculate token velocity", () => {
-    tokenUtilityEngine.recordAction({ actionType: "governance_vote", userId: 501, amount: 10, currency: "SKY444" });
+    tokenUtilityEngine.recordAction({
+      actionType: "governance_vote",
+      userId: 501,
+      amount: 10,
+      currency: "SKY444",
+    });
     tokenUtilityEngine.confirmAction(
       Array.from(Object.keys(tokenUtilityEngine)).length > 0 ? "dummy" : "dummy"
     );
@@ -504,7 +653,8 @@ describe("Phase 22A: Token Utility Engine", () => {
   it("should create proposals and cast votes", () => {
     tokenUtilityEngine.mintGovernanceTokens(610, 500);
     const proposal = tokenUtilityEngine.createProposal({
-      proposerId: 610, title: "Reduce fees",
+      proposerId: 610,
+      title: "Reduce fees",
       description: "Reduce platform fee from 5% to 3%",
       proposalType: "fee_change",
       quorumRequired: 100,
@@ -513,7 +663,12 @@ describe("Phase 22A: Token Utility Engine", () => {
       endAt: new Date(Date.now() + 86400000),
     });
     expect(proposal.status).toBe("active");
-    const vote = tokenUtilityEngine.castVote(proposal.id, 610, "for", "Good for creators");
+    const vote = tokenUtilityEngine.castVote(
+      proposal.id,
+      610,
+      "for",
+      "Good for creators"
+    );
     expect(vote).not.toBeNull();
     expect(vote.vote).toBe("for");
     expect(vote.votingPower).toBe(500);
@@ -538,9 +693,14 @@ describe("Phase 22B: Liquidity Engine", () => {
 
   it("should create liquidity pools", () => {
     const pool = liquidityEngine.createPool({
-      poolType: "treasury_lp", tokenA: "SKY444", tokenB: "USDC",
-      reserveA: 100000, reserveB: 50000,
-      totalLiquidity: 70710, feeRate: 0.003, apr: 0.15,
+      poolType: "treasury_lp",
+      tokenA: "SKY444",
+      tokenB: "USDC",
+      reserveA: 100000,
+      reserveB: 50000,
+      totalLiquidity: 70710,
+      feeRate: 0.003,
+      apr: 0.15,
     });
     expect(pool.id).toBeDefined();
     expect(pool.tokenA).toBe("SKY444");
@@ -548,9 +708,14 @@ describe("Phase 22B: Liquidity Engine", () => {
 
   it("should add liquidity and create positions", () => {
     const pool = liquidityEngine.createPool({
-      poolType: "creator_lp", tokenA: "SKY444", tokenB: "ETH",
-      reserveA: 50000, reserveB: 10,
-      totalLiquidity: 707, feeRate: 0.003, apr: 0.20,
+      poolType: "creator_lp",
+      tokenA: "SKY444",
+      tokenB: "ETH",
+      reserveA: 50000,
+      reserveB: 10,
+      totalLiquidity: 707,
+      feeRate: 0.003,
+      apr: 0.2,
     });
     const position = liquidityEngine.addLiquidity(pool.id, 700, 10000, 2);
     expect(position).not.toBeNull();
@@ -560,13 +725,22 @@ describe("Phase 22B: Liquidity Engine", () => {
 
   it("should remove liquidity", () => {
     const pool = liquidityEngine.createPool({
-      poolType: "reward_pool", tokenA: "SKY444", tokenB: "USDC",
-      reserveA: 10000, reserveB: 5000,
-      totalLiquidity: 7071, feeRate: 0.003, apr: 0.12,
+      poolType: "reward_pool",
+      tokenA: "SKY444",
+      tokenB: "USDC",
+      reserveA: 10000,
+      reserveB: 5000,
+      totalLiquidity: 7071,
+      feeRate: 0.003,
+      apr: 0.12,
     });
     liquidityEngine.addLiquidity(pool.id, 800, 5000, 2500);
     const pos = liquidityEngine.getProviderPositions(800)[0];
-    const result = liquidityEngine.removeLiquidity(pool.id, 800, pos.lpTokens / 2);
+    const result = liquidityEngine.removeLiquidity(
+      pool.id,
+      800,
+      pos.lpTokens / 2
+    );
     expect(result).not.toBeNull();
     expect(result.tokenAOut).toBeGreaterThan(0);
     expect(result.tokenBOut).toBeGreaterThan(0);
@@ -574,9 +748,14 @@ describe("Phase 22B: Liquidity Engine", () => {
 
   it("should record swaps with constant product formula", () => {
     const pool = liquidityEngine.createPool({
-      poolType: "treasury_lp", tokenA: "SKY444", tokenB: "USDC",
-      reserveA: 100000, reserveB: 50000,
-      totalLiquidity: 70710, feeRate: 0.003, apr: 0.15,
+      poolType: "treasury_lp",
+      tokenA: "SKY444",
+      tokenB: "USDC",
+      reserveA: 100000,
+      reserveB: 50000,
+      totalLiquidity: 70710,
+      feeRate: 0.003,
+      apr: 0.15,
     });
     const swap = liquidityEngine.recordSwap(pool.id, "SKY444", 1000);
     expect(swap).not.toBeNull();
@@ -587,13 +766,18 @@ describe("Phase 22B: Liquidity Engine", () => {
 
   it("should stake tokens and accrue rewards", () => {
     const pool = liquidityEngine.createPool({
-      poolType: "staking_pool", tokenA: "SKY444", tokenB: "SKY444",
-      reserveA: 0, reserveB: 0,
-      totalLiquidity: 0, feeRate: 0, apr: 0.20,
+      poolType: "staking_pool",
+      tokenA: "SKY444",
+      tokenB: "SKY444",
+      reserveA: 0,
+      reserveB: 0,
+      totalLiquidity: 0,
+      feeRate: 0,
+      apr: 0.2,
     });
     const balance = liquidityEngine.stakeTokens(pool.id, 900, 5000, 30);
     expect(balance.stakedAmount).toBe(5000);
-    expect(balance.apr).toBe(0.20);
+    expect(balance.apr).toBe(0.2);
     const accrued = liquidityEngine.accrueRewards(pool.id, 900);
     expect(accrued.pendingRewards).toBeGreaterThanOrEqual(0);
     // Force some pending rewards for the claim test
@@ -605,9 +789,14 @@ describe("Phase 22B: Liquidity Engine", () => {
 
   it("should balance staking rewards dynamically", () => {
     const pool = liquidityEngine.createPool({
-      poolType: "staking_pool", tokenA: "SKY444", tokenB: "SKY444",
-      reserveA: 0, reserveB: 0,
-      totalLiquidity: 1000000, feeRate: 0, apr: 0.12,
+      poolType: "staking_pool",
+      tokenA: "SKY444",
+      tokenB: "SKY444",
+      reserveA: 0,
+      reserveB: 0,
+      totalLiquidity: 1000000,
+      feeRate: 0,
+      apr: 0.12,
     });
     liquidityEngine.stakeTokens(pool.id, 901, 100, 0);
     const result = liquidityEngine.balanceStakingRewards(pool.id);
@@ -625,8 +814,10 @@ describe("Phase 22C: NFT Utility Engine", () => {
 
   it("should mint and use NFT passes", () => {
     const pass = nftUtilityEngine.mintPass({
-      nftId: "nft_001", passType: "creator_access",
-      creatorId: 10, holderId: 1000,
+      nftId: "nft_001",
+      passType: "creator_access",
+      creatorId: 10,
+      holderId: 1000,
       benefits: ["Exclusive content", "Discord access"],
       contentUnlocks: ["exclusive_post_1", "exclusive_post_2"],
       gameUnlocks: [],
@@ -641,27 +832,40 @@ describe("Phase 22C: NFT Utility Engine", () => {
 
   it("should check access via NFT pass", () => {
     nftUtilityEngine.mintPass({
-      nftId: "nft_002", passType: "creator_access",
-      creatorId: 11, holderId: 1001,
+      nftId: "nft_002",
+      passType: "creator_access",
+      creatorId: 11,
+      holderId: 1001,
       benefits: ["Access"],
       contentUnlocks: ["premium_content_x"],
       gameUnlocks: ["game_y"],
       eventAccess: [],
       transferable: false,
     });
-    expect(nftUtilityEngine.checkAccess(1001, "content", "premium_content_x")).toBe(true);
+    expect(
+      nftUtilityEngine.checkAccess(1001, "content", "premium_content_x")
+    ).toBe(true);
     expect(nftUtilityEngine.checkAccess(1001, "game", "game_y")).toBe(true);
-    expect(nftUtilityEngine.checkAccess(1001, "content", "other_content")).toBe(false);
-    expect(nftUtilityEngine.checkAccess(9999, "content", "premium_content_x")).toBe(false);
+    expect(nftUtilityEngine.checkAccess(1001, "content", "other_content")).toBe(
+      false
+    );
+    expect(
+      nftUtilityEngine.checkAccess(9999, "content", "premium_content_x")
+    ).toBe(false);
   });
 
   it("should mint NFT memberships", () => {
     const membership = nftUtilityEngine.mintMembership({
-      creatorId: 12, tierId: "gold", tierName: "Gold Member",
-      holderId: 1002, nftId: "nft_003",
+      creatorId: 12,
+      tierId: "gold",
+      tierName: "Gold Member",
+      holderId: 1002,
+      nftId: "nft_003",
       benefits: ["Monthly drops", "Early access"],
-      monthlyValue: 9.99, currency: "USD",
-      isActive: true, mintedAt: new Date(),
+      monthlyValue: 9.99,
+      currency: "USD",
+      isActive: true,
+      mintedAt: new Date(),
     });
     expect(membership.id).toBeDefined();
     const memberships = nftUtilityEngine.getCreatorMemberships(12);
@@ -670,7 +874,8 @@ describe("Phase 22C: NFT Utility Engine", () => {
 
   it("should create, reveal, and claim unlockables", () => {
     const unlockable = nftUtilityEngine.createUnlockable({
-      nftId: "nft_004", creatorId: 13,
+      nftId: "nft_004",
+      creatorId: 13,
       unlockableType: "exclusive_post",
       title: "Secret Post",
       description: "Only for holders",
@@ -727,14 +932,25 @@ describe("Phase 23A: Platform Agent Registry", () => {
       runIntervalMinutes: 5,
     });
     const run = platformAgentRegistry.startAgent(agent.id);
-    const decisions = [{
-      decisionId: "d1", agentType: "moderation_agent" as const,
-      decisionType: "content_removal", targetId: "post_bad",
-      targetType: "post", action: "remove",
-      reasoning: "Violates community guidelines",
-      confidence: 0.95, executedAt: new Date(), outcome: "success" as const,
-    }];
-    const completed = platformAgentRegistry.completeAgentRun(run.id, decisions, "Removed 1 violating post");
+    const decisions = [
+      {
+        decisionId: "d1",
+        agentType: "moderation_agent" as const,
+        decisionType: "content_removal",
+        targetId: "post_bad",
+        targetType: "post",
+        action: "remove",
+        reasoning: "Violates community guidelines",
+        confidence: 0.95,
+        executedAt: new Date(),
+        outcome: "success" as const,
+      },
+    ];
+    const completed = platformAgentRegistry.completeAgentRun(
+      run.id,
+      decisions,
+      "Removed 1 violating post"
+    );
     expect(completed.status).toBe("completed");
     expect(completed.actionsExecuted).toBe(1);
     expect(agent.status).toBe("idle");
@@ -750,7 +966,10 @@ describe("Phase 23A: Platform Agent Registry", () => {
       runIntervalMinutes: 1440,
     });
     const run = platformAgentRegistry.startAgent(agent.id);
-    const failed = platformAgentRegistry.failAgentRun(run.id, "Database connection error");
+    const failed = platformAgentRegistry.failAgentRun(
+      run.id,
+      "Database connection error"
+    );
     expect(failed.status).toBe("failed");
     expect(agent.status).toBe("error");
     expect(agent.failedRuns).toBe(1);
@@ -830,7 +1049,13 @@ describe("Phase 23B: Self-Healing Engine", () => {
   });
 
   it("should trigger and complete rollbacks", () => {
-    const rollback = selfHealingEngine.triggerRollback("payment-service", "v2.1.0", "v2.0.9", "Critical payment bug", "auto");
+    const rollback = selfHealingEngine.triggerRollback(
+      "payment-service",
+      "v2.1.0",
+      "v2.0.9",
+      "Critical payment bug",
+      "auto"
+    );
     expect(rollback.status).toBe("pending");
     const completed = selfHealingEngine.completeRollback(rollback.id, true);
     expect(completed.status).toBe("completed");
@@ -847,7 +1072,10 @@ describe("Phase 23B: Self-Healing Engine", () => {
       expiresAt: new Date(Date.now() + 3600000),
     });
     expect(containment.isActive).toBe(true);
-    const reviewed = selfHealingEngine.reviewContainment(containment.id, "upheld");
+    const reviewed = selfHealingEngine.reviewContainment(
+      containment.id,
+      "upheld"
+    );
     expect(reviewed.reviewOutcome).toBe("upheld");
     expect(reviewed.isActive).toBe(true);
     // Reverse it
@@ -879,7 +1107,11 @@ describe("Phase 23C: AI Decision Layer", () => {
   it("should make and log AI decisions", async () => {
     const decision = await aiDecisionLayer.makeDecision({
       category: "fraud_escalation",
-      context: { userId: 2000, riskScore: 85, signals: ["multiple_accounts", "unusual_velocity"] },
+      context: {
+        userId: 2000,
+        riskScore: 85,
+        signals: ["multiple_accounts", "unusual_velocity"],
+      },
       options: ["monitor", "flag", "restrict", "ban"],
     });
     expect(decision.id).toBeDefined();
@@ -893,7 +1125,11 @@ describe("Phase 23C: AI Decision Layer", () => {
       category: "payout_optimization",
       context: { creatorId: 2001, pendingAmount: 1000 },
     });
-    const updated = aiDecisionLayer.recordOutcome(decision.id, "payout_processed", 0.9);
+    const updated = aiDecisionLayer.recordOutcome(
+      decision.id,
+      "payout_processed",
+      0.9
+    );
     expect(updated.outcome).toBe("payout_processed");
     expect(updated.feedbackScore).toBe(0.9);
   }, 15000);
@@ -908,7 +1144,11 @@ describe("Phase 23C: AI Decision Layer", () => {
   }, 15000);
 
   it("should escalate fraud with AI decision", async () => {
-    const result = await aiDecisionLayer.escalateFraud(2003, ["bot_activity", "wash_trading"], 90);
+    const result = await aiDecisionLayer.escalateFraud(
+      2003,
+      ["bot_activity", "wash_trading"],
+      90
+    );
     expect(result.action).toBeDefined();
     expect(result.reasoning).toBeDefined();
     expect(result.confidence).toBeGreaterThan(0);
@@ -944,16 +1184,24 @@ describe("Phase 24A: Unified Identity Engine", () => {
   });
 
   it("should add verified badges", () => {
-    unifiedIdentityEngine.upsertIdentity({ userId: 3001, username: "creator_x" });
+    unifiedIdentityEngine.upsertIdentity({
+      userId: 3001,
+      username: "creator_x",
+    });
     const updated = unifiedIdentityEngine.addVerifiedBadge(3001, "creator");
     expect(updated.verifiedBadges).toContain("creator");
     // Adding same badge twice should not duplicate
     unifiedIdentityEngine.addVerifiedBadge(3001, "creator");
-    expect(updated.verifiedBadges.filter((b: string) => b === "creator").length).toBe(1);
+    expect(
+      updated.verifiedBadges.filter((b: string) => b === "creator").length
+    ).toBe(1);
   });
 
   it("should link wallets", () => {
-    unifiedIdentityEngine.upsertIdentity({ userId: 3002, username: "wallet_user" });
+    unifiedIdentityEngine.upsertIdentity({
+      userId: 3002,
+      username: "wallet_user",
+    });
     const updated = unifiedIdentityEngine.linkWallet(3002, "0xdeadbeef");
     expect(updated.primaryWalletAddress).toBe("0xdeadbeef");
     expect(updated.linkedWallets).toContain("0xdeadbeef");
@@ -962,7 +1210,10 @@ describe("Phase 24A: Unified Identity Engine", () => {
   });
 
   it("should link systems", () => {
-    unifiedIdentityEngine.upsertIdentity({ userId: 3003, username: "multi_user" });
+    unifiedIdentityEngine.upsertIdentity({
+      userId: 3003,
+      username: "multi_user",
+    });
     unifiedIdentityEngine.linkSystem(3003, "social");
     unifiedIdentityEngine.linkSystem(3003, "streaming");
     unifiedIdentityEngine.linkSystem(3003, "marketplace");
@@ -971,10 +1222,15 @@ describe("Phase 24A: Unified Identity Engine", () => {
   });
 
   it("should add verifications", () => {
-    unifiedIdentityEngine.upsertIdentity({ userId: 3004, username: "verified_user" });
+    unifiedIdentityEngine.upsertIdentity({
+      userId: 3004,
+      username: "verified_user",
+    });
     const verification = unifiedIdentityEngine.addVerification({
-      userId: 3004, verificationType: "kyc",
-      status: "verified", verifiedAt: new Date(),
+      userId: 3004,
+      verificationType: "kyc",
+      status: "verified",
+      verifiedAt: new Date(),
       metadata: { provider: "jumio" },
     });
     expect(verification.status).toBe("verified");
@@ -983,7 +1239,11 @@ describe("Phase 24A: Unified Identity Engine", () => {
   });
 
   it("should search identities", () => {
-    unifiedIdentityEngine.upsertIdentity({ userId: 3005, username: "searchable_user", displayName: "Searchable User" });
+    unifiedIdentityEngine.upsertIdentity({
+      userId: 3005,
+      username: "searchable_user",
+      displayName: "Searchable User",
+    });
     const results = unifiedIdentityEngine.searchIdentities("searchable");
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].username).toContain("searchable");
@@ -998,7 +1258,11 @@ describe("Phase 24B: Cross-System Persistence Engine", () => {
   });
 
   it("should update and retrieve activity graphs", () => {
-    const graph = crossSystemPersistence.updateActivityGraph(4000, { posts: 5, likes: 20, streams: 2 });
+    const graph = crossSystemPersistence.updateActivityGraph(4000, {
+      posts: 5,
+      likes: 20,
+      streams: 2,
+    });
     expect(graph.posts).toBe(5);
     expect(graph.likes).toBe(20);
     // Increment again
@@ -1011,8 +1275,10 @@ describe("Phase 24B: Cross-System Persistence Engine", () => {
   it("should create cross-system links", () => {
     const link = crossSystemPersistence.createCrossSystemLink({
       userId: 4001,
-      systemA: "social", entityAId: "post_1",
-      systemB: "nft", entityBId: "nft_1",
+      systemA: "social",
+      entityAId: "post_1",
+      systemB: "nft",
+      entityBId: "nft_1",
       linkType: "created_from",
       metadata: { mintedFromPost: true },
     });
@@ -1022,13 +1288,25 @@ describe("Phase 24B: Cross-System Persistence Engine", () => {
   });
 
   it("should calculate platform value scores", async () => {
-    const { unifiedIdentityEngine } = await import("./phase24-ecosystem-lockin");
+    const { unifiedIdentityEngine } =
+      await import("./phase24-ecosystem-lockin");
     unifiedIdentityEngine.upsertIdentity({
-      userId: 4002, username: "value_user",
-      isCreator: true, totalFollowers: 10000, totalEarned: 5000,
-      trustScore: 80, governanceVotingPower: 500,
+      userId: 4002,
+      username: "value_user",
+      isCreator: true,
+      totalFollowers: 10000,
+      totalEarned: 5000,
+      trustScore: 80,
+      governanceVotingPower: 500,
     });
-    crossSystemPersistence.updateActivityGraph(4002, { posts: 100, comments: 500, likes: 2000, shares: 50, totalValueTransacted: 10000, rewardsEarned: 500 });
+    crossSystemPersistence.updateActivityGraph(4002, {
+      posts: 100,
+      comments: 500,
+      likes: 2000,
+      shares: 50,
+      totalValueTransacted: 10000,
+      rewardsEarned: 500,
+    });
     const score = crossSystemPersistence.calculatePlatformValueScore(4002);
     expect(score.totalScore).toBeGreaterThan(0);
     expect(score.tier).toBeDefined();
@@ -1050,13 +1328,20 @@ describe("Phase 24C: Migration Resistance Engine", () => {
   });
 
   it("should request, generate, and download vault exports", () => {
-    const exportRecord = migrationResistanceEngine.requestVaultExport(5000, "full");
+    const exportRecord = migrationResistanceEngine.requestVaultExport(
+      5000,
+      "full"
+    );
     expect(exportRecord.status).toBe("pending");
-    const generated = migrationResistanceEngine.generateVaultExport(exportRecord.id);
+    const generated = migrationResistanceEngine.generateVaultExport(
+      exportRecord.id
+    );
     expect(generated.status).toBe("ready");
     expect(generated.fileUrl).toBeDefined();
     expect(generated.checksum).toBeDefined();
-    const downloaded = migrationResistanceEngine.downloadVaultExport(exportRecord.id);
+    const downloaded = migrationResistanceEngine.downloadVaultExport(
+      exportRecord.id
+    );
     expect(downloaded.status).toBe("downloaded");
   });
 
@@ -1084,7 +1369,8 @@ describe("Phase 24C: Migration Resistance Engine", () => {
 
   it("should register content ownership proofs", () => {
     const proof = migrationResistanceEngine.registerContentOwnership({
-      creatorId: 5003, contentId: "video_final_001",
+      creatorId: 5003,
+      contentId: "video_final_001",
       contentType: "video",
       contentHash: "sha256_abc123def456",
       ipfsHash: "Qm123abc",
@@ -1092,7 +1378,8 @@ describe("Phase 24C: Migration Resistance Engine", () => {
     });
     expect(proof.platform).toBe("shadowchat");
     expect(proof.registeredAt).toBeDefined();
-    const retrieved = migrationResistanceEngine.getContentOwnershipProof("video_final_001");
+    const retrieved =
+      migrationResistanceEngine.getContentOwnershipProof("video_final_001");
     expect(retrieved).not.toBeNull();
     expect(retrieved.contentHash).toBe("sha256_abc123def456");
     const proofs = migrationResistanceEngine.getCreatorContentProofs(5003);
@@ -1102,9 +1389,24 @@ describe("Phase 24C: Migration Resistance Engine", () => {
   it("should build and track trust history", () => {
     const history = migrationResistanceEngine.buildTrustHistory(5004);
     expect(history.trustScore).toBe(50);
-    migrationResistanceEngine.recordTrustEvent(5004, "positive", "Completed KYC", 10);
-    migrationResistanceEngine.recordTrustEvent(5004, "positive", "Long-standing member", 15);
-    migrationResistanceEngine.recordTrustEvent(5004, "negative", "Report received", -5);
+    migrationResistanceEngine.recordTrustEvent(
+      5004,
+      "positive",
+      "Completed KYC",
+      10
+    );
+    migrationResistanceEngine.recordTrustEvent(
+      5004,
+      "positive",
+      "Long-standing member",
+      15
+    );
+    migrationResistanceEngine.recordTrustEvent(
+      5004,
+      "negative",
+      "Report received",
+      -5
+    );
     const updated = migrationResistanceEngine.getTrustHistory(5004);
     expect(updated.trustScore).toBe(70);
     expect(updated.totalPositiveEvents).toBe(2);

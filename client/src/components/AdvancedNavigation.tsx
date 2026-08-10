@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown, Search, Bell, Settings, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/useAuth';
-import { useLocation } from 'wouter';
+import React, { useState, useEffect } from "react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  Search,
+  Bell,
+  Settings,
+  User,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 
 interface NavItem {
   label: string;
@@ -18,10 +26,13 @@ interface AdvancedNavigationProps {
   onNavigate?: (path: string) => void;
 }
 
-export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({ items, onNavigate }) => {
+export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({
+  items,
+  onNavigate,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [, navigate] = useLocation();
   const { user } = useAuth();
 
@@ -47,7 +58,7 @@ export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({ items, o
 
           {/* Main Menu */}
           <div className="flex items-center gap-1">
-            {items.slice(0, 5).map((item) => (
+            {items.slice(0, 5).map(item => (
               <div key={item.href} className="relative group">
                 <button
                   onClick={() => handleNavigate(item.href)}
@@ -66,7 +77,7 @@ export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({ items, o
                 {/* Mega Menu */}
                 {item.children && (
                   <div className="absolute left-0 mt-0 w-48 bg-popover border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    {item.children.map((child) => (
+                    {item.children.map(child => (
                       <button
                         key={child.href}
                         onClick={() => handleNavigate(child.href)}
@@ -92,7 +103,7 @@ export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({ items, o
               placeholder="Search..."
               className="pl-10 pr-4 py-2 w-64"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
 
@@ -111,7 +122,7 @@ export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({ items, o
           {user ? (
             <div className="flex items-center gap-2 pl-4 border-l border-border">
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-orange-500 flex items-center justify-center text-white text-sm font-bold">
-                {user.name?.charAt(0) || 'U'}
+                {user.name?.charAt(0) || "U"}
               </div>
               <span className="text-sm font-medium">{user.name}</span>
             </div>
@@ -149,17 +160,19 @@ export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({ items, o
                 placeholder="Search..."
                 className="pl-10 pr-4 py-2 w-full"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
 
             {/* Mobile Menu Items */}
-            {filteredItems.map((item) => (
+            {filteredItems.map(item => (
               <div key={item.href}>
                 <button
                   onClick={() => {
                     if (item.children) {
-                      setExpandedMenu(expandedMenu === item.href ? null : item.href);
+                      setExpandedMenu(
+                        expandedMenu === item.href ? null : item.href
+                      );
                     } else {
                       handleNavigate(item.href);
                     }
@@ -178,7 +191,7 @@ export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({ items, o
                   {item.children && (
                     <ChevronDown
                       className={`w-4 h-4 transition-transform ${
-                        expandedMenu === item.href ? 'rotate-180' : ''
+                        expandedMenu === item.href ? "rotate-180" : ""
                       }`}
                     />
                   )}
@@ -187,7 +200,7 @@ export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({ items, o
                 {/* Mobile Submenu */}
                 {item.children && expandedMenu === item.href && (
                   <div className="pl-4 space-y-1">
-                    {item.children.map((child) => (
+                    {item.children.map(child => (
                       <button
                         key={child.href}
                         onClick={() => handleNavigate(child.href)}
@@ -213,7 +226,7 @@ export const AdvancedNavigation: React.FC<AdvancedNavigationProps> = ({ items, o
 // Breadcrumb Component
 const BreadcrumbNavigation: React.FC = () => {
   const [location] = useLocation();
-  const segments = location.split('/').filter(Boolean);
+  const segments = location.split("/").filter(Boolean);
 
   if (segments.length === 0) return null;
 
@@ -224,7 +237,7 @@ const BreadcrumbNavigation: React.FC = () => {
         <React.Fragment key={segment}>
           <span>/</span>
           <button className="hover:text-foreground transition-colors capitalize">
-            {segment.replace('-', ' ')}
+            {segment.replace("-", " ")}
           </button>
         </React.Fragment>
       ))}

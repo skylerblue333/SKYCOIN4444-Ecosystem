@@ -7,7 +7,7 @@ export const socialEngagementRouter = router({
   getAlgorithmicFeed: protectedProcedure.query(async () => ({
     posts: Array.from({ length: 20 }, (_, i) => ({
       id: `post-${i}`,
-      score: 1 - (i * 0.04),
+      score: 1 - i * 0.04,
       reason: "Trending in your network",
     })),
     nextCursor: "cursor-20",
@@ -49,7 +49,12 @@ export const socialEngagementRouter = router({
 
   // Chat moderation
   moderateComment: adminProcedure
-    .input(z.object({ commentId: z.string(), action: z.enum(["approve", "reject", "flag"]) }))
+    .input(
+      z.object({
+        commentId: z.string(),
+        action: z.enum(["approve", "reject", "flag"]),
+      })
+    )
     .mutation(async ({ input }) => ({
       success: true,
       action: input.action,
@@ -58,7 +63,12 @@ export const socialEngagementRouter = router({
   // Mention notifications
   getMentions: protectedProcedure.query(async () => ({
     mentions: [
-      { id: "1", from: "user123", text: "@you should see this", time: Date.now() },
+      {
+        id: "1",
+        from: "user123",
+        text: "@you should see this",
+        time: Date.now(),
+      },
     ],
   })),
 

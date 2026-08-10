@@ -10,7 +10,7 @@ export default function FeedbackDialog() {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-white mb-8">FeedbackDialog</h1>
         <p className="text-slate-400 mb-8">feedback modal</p>
-        
+
         <Card className="bg-slate-900 border-slate-800 p-8">
           <div className="space-y-6">
             <p className="text-slate-300">Content for FeedbackDialog page</p>

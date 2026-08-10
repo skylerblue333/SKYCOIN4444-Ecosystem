@@ -7,23 +7,25 @@ import { TRPCError } from "@trpc/server";
 
 export const voiceRouter = router({
   transcribe: protectedProcedure
-    .input(z.object({
-      audioUrl: z.string(),
-      language: z.string().optional(),
-      prompt: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        audioUrl: z.string(),
+        language: z.string().optional(),
+        prompt: z.string().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const result = await transcribeAudio(input);
-      
+
       // Check if it's an error
-      if ('error' in result) {
+      if ("error" in result) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
+          code: "BAD_REQUEST",
           message: result.error,
           cause: result,
         });
       }
-      
+
       // Optionally save transcription to database
       // await db.insert(transcriptions).values({
       //   userId: ctx.user.id,
@@ -33,7 +35,7 @@ export const voiceRouter = router({
       //   audioUrl: input.audioUrl,
       //   createdAt: new Date(),
       // });
-      
+
       return result;
     }),
 });

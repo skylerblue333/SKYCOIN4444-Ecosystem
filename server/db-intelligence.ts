@@ -37,13 +37,37 @@ import {
 } from "../drizzle";
 
 // ── Shared types ──────────────────────────────────────────────────────────
-export type TwinGoal = { id: string; title: string; status: string; target?: string; createdAt: number };
-export type TwinProject = { id: string; name: string; status: string; note?: string; createdAt: number };
-export type TwinLearning = { id: string; topic: string; progress: number; createdAt: number };
-export type TwinFinances = { currency?: string; monthlyTarget?: number; notes?: string };
+export type TwinGoal = {
+  id: string;
+  title: string;
+  status: string;
+  target?: string;
+  createdAt: number;
+};
+export type TwinProject = {
+  id: string;
+  name: string;
+  status: string;
+  note?: string;
+  createdAt: number;
+};
+export type TwinLearning = {
+  id: string;
+  topic: string;
+  progress: number;
+  createdAt: number;
+};
+export type TwinFinances = {
+  currency?: string;
+  monthlyTarget?: number;
+  notes?: string;
+};
 
 // Normalize a raw twin_memory row so JSON columns are never null.
-export type NormalizedTwin = Omit<TwinMemory, "goals" | "projects" | "preferences" | "finances" | "learning"> & {
+export type NormalizedTwin = Omit<
+  TwinMemory,
+  "goals" | "projects" | "preferences" | "finances" | "learning"
+> & {
   goals: TwinGoal[];
   projects: TwinProject[];
   preferences: Record<string, string>;
@@ -65,15 +89,23 @@ function normalizeTwin(row: TwinMemory): NormalizedTwin {
 // ════════════════════════════════════════════════════════════════════════
 // TWIN MEMORY
 // ════════════════════════════════════════════════════════════════════════
-export async function getTwinMemory(userId: number): Promise<NormalizedTwin | null> {
+export async function getTwinMemory(
+  userId: number
+): Promise<NormalizedTwin | null> {
   const db = await getDb();
   if (!db) return null;
-  const [row] = await db.select().from(twinMemory).where(eq(twinMemory.userId, userId)).limit(1);
+  const [row] = await db
+    .select()
+    .from(twinMemory)
+    .where(eq(twinMemory.userId, userId))
+    .limit(1);
   return row ? normalizeTwin(row) : null;
 }
 
 // Ensure a twin row exists for the user; returns the normalized row.
-export async function ensureTwinMemory(userId: number): Promise<NormalizedTwin | null> {
+export async function ensureTwinMemory(
+  userId: number
+): Promise<NormalizedTwin | null> {
   const db = await getDb();
   if (!db) return null;
   const existing = await getTwinMemory(userId);
@@ -94,7 +126,7 @@ export async function updateTwinMemory(
     preferences: Record<string, string>;
     finances: TwinFinances;
     learning: TwinLearning[];
-  }>,
+  }>
 ): Promise<NormalizedTwin | null> {
   const db = await getDb();
   if (!db) return null;
@@ -106,7 +138,10 @@ export async function updateTwinMemory(
   if (patch.preferences !== undefined) set.preferences = patch.preferences;
   if (patch.finances !== undefined) set.finances = patch.finances;
   if (patch.learning !== undefined) set.learning = patch.learning;
-  await db.update(twinMemory).set(set as any).where(eq(twinMemory.userId, userId));
+  await db
+    .update(twinMemory)
+    .set(set as any)
+    .where(eq(twinMemory.userId, userId));
   return getTwinMemory(userId);
 }
 
@@ -134,7 +169,10 @@ export async function addTwinFact(data: {
   return res?.id ?? null;
 }
 
-export async function getTwinFacts(userId: number, limit = 50): Promise<TwinFact[]> {
+export async function getTwinFacts(
+  userId: number,
+  limit = 50
+): Promise<TwinFact[]> {
   const db = await getDb();
   if (!db) return [];
   return db
@@ -145,7 +183,10 @@ export async function getTwinFacts(userId: number, limit = 50): Promise<TwinFact
     .limit(limit);
 }
 
-export async function deactivateTwinFact(userId: number, factId: number): Promise<void> {
+export async function deactivateTwinFact(
+  userId: number,
+  factId: number
+): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db
@@ -157,10 +198,16 @@ export async function deactivateTwinFact(userId: number, factId: number): Promis
 // ════════════════════════════════════════════════════════════════════════
 // REPUTATION
 // ════════════════════════════════════════════════════════════════════════
-export async function getReputation(userId: number): Promise<ReputationScore | null> {
+export async function getReputation(
+  userId: number
+): Promise<ReputationScore | null> {
   const db = await getDb();
   if (!db) return null;
-  const [row] = await db.select().from(reputationScores).where(eq(reputationScores.userId, userId)).limit(1);
+  const [row] = await db
+    .select()
+    .from(reputationScores)
+    .where(eq(reputationScores.userId, userId))
+    .limit(1);
   return row ?? null;
 }
 
@@ -194,7 +241,15 @@ export async function upsertReputation(data: {
   return getReputation(data.userId);
 }
 
-export async function getReputationLeaderboard(limit = 20): Promise<Array<ReputationScore & { name: string | null; username: string | null; avatar: string | null }>> {
+export async function getReputationLeaderboard(limit = 20): Promise<
+  Array<
+    ReputationScore & {
+      name: string | null;
+      username: string | null;
+      avatar: string | null;
+    }
+  >
+> {
   const db = await getDb();
   if (!db) return [];
   const rows = await db
@@ -255,7 +310,10 @@ export async function getUserActivitySignals(userId: number) {
     .from(startupBlueprints)
     .where(eq(startupBlueprints.userId, userId));
   const [listingAgg] = await db
-    .select({ total: sql<number>`count(*)`, sales: sql<number>`coalesce(sum(${aiMarketListings.sales}),0)` })
+    .select({
+      total: sql<number>`count(*)`,
+      sales: sql<number>`coalesce(sum(${aiMarketListings.sales}),0)`,
+    })
     .from(aiMarketListings)
     .where(eq(aiMarketListings.sellerId, userId));
   return {
@@ -292,7 +350,11 @@ export async function listOpportunities(filters?: {
 export async function getOpportunity(id: number): Promise<Opportunity | null> {
   const db = await getDb();
   if (!db) return null;
-  const [row] = await db.select().from(opportunities).where(eq(opportunities.id, id)).limit(1);
+  const [row] = await db
+    .select()
+    .from(opportunities)
+    .where(eq(opportunities.id, id))
+    .limit(1);
   return row ?? null;
 }
 
@@ -327,26 +389,43 @@ export async function createOpportunity(data: {
   return res?.id ?? null;
 }
 
-export async function getMatchesForUser(userId: number, limit = 30): Promise<Array<OpportunityMatch & { opportunity: Opportunity | null }>> {
+export async function getMatchesForUser(
+  userId: number,
+  limit = 30
+): Promise<Array<OpportunityMatch & { opportunity: Opportunity | null }>> {
   const db = await getDb();
   if (!db) return [];
   const rows = await db
     .select()
     .from(opportunityMatches)
-    .leftJoin(opportunities, eq(opportunities.id, opportunityMatches.opportunityId))
+    .leftJoin(
+      opportunities,
+      eq(opportunities.id, opportunityMatches.opportunityId)
+    )
     .where(eq(opportunityMatches.userId, userId))
     .orderBy(desc(opportunityMatches.score))
     .limit(limit);
-  return rows.map(r => ({ ...(r.opportunity_matches as OpportunityMatch), opportunity: (r.opportunities as Opportunity) ?? null }));
+  return rows.map(r => ({
+    ...(r.opportunity_matches as OpportunityMatch),
+    opportunity: (r.opportunities as Opportunity) ?? null,
+  }));
 }
 
-export async function getExistingMatch(userId: number, opportunityId: number): Promise<OpportunityMatch | null> {
+export async function getExistingMatch(
+  userId: number,
+  opportunityId: number
+): Promise<OpportunityMatch | null> {
   const db = await getDb();
   if (!db) return null;
   const [row] = await db
     .select()
     .from(opportunityMatches)
-    .where(and(eq(opportunityMatches.userId, userId), eq(opportunityMatches.opportunityId, opportunityId)))
+    .where(
+      and(
+        eq(opportunityMatches.userId, userId),
+        eq(opportunityMatches.opportunityId, opportunityId)
+      )
+    )
     .limit(1);
   return row ?? null;
 }
@@ -364,7 +443,11 @@ export async function upsertMatch(data: {
   if (existing) {
     await db
       .update(opportunityMatches)
-      .set({ score: data.score, reasoning: data.reasoning, ...(data.status ? { status: data.status } : {}) })
+      .set({
+        score: data.score,
+        reasoning: data.reasoning,
+        ...(data.status ? { status: data.status } : {}),
+      })
       .where(eq(opportunityMatches.id, existing.id));
   } else {
     await db.insert(opportunityMatches).values({
@@ -377,13 +460,22 @@ export async function upsertMatch(data: {
   }
 }
 
-export async function setMatchStatus(userId: number, opportunityId: number, status: OpportunityMatch["status"]): Promise<void> {
+export async function setMatchStatus(
+  userId: number,
+  opportunityId: number,
+  status: OpportunityMatch["status"]
+): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db
     .update(opportunityMatches)
     .set({ status })
-    .where(and(eq(opportunityMatches.userId, userId), eq(opportunityMatches.opportunityId, opportunityId)));
+    .where(
+      and(
+        eq(opportunityMatches.userId, userId),
+        eq(opportunityMatches.opportunityId, opportunityId)
+      )
+    );
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -399,7 +491,12 @@ export async function getMissionControlExtras(userId: number): Promise<{
   const [dm] = await db
     .select({ c: sql<number>`count(*)` })
     .from(directMessages)
-    .where(and(eq(directMessages.recipientId, userId), sql`${directMessages.readAt} is null`));
+    .where(
+      and(
+        eq(directMessages.recipientId, userId),
+        sql`${directMessages.readAt} is null`
+      )
+    );
   const [com] = await db
     .select({ c: sql<number>`count(*)` })
     .from(communityMembers)
@@ -430,10 +527,16 @@ export type NetworkSuggestion = {
 // Second-degree connections: people followed by the users I follow, whom I do
 // not already follow. Ranked by how many of my connections vouch for them, then
 // by their computed reputation. Pure graph math over real `follows` edges.
-export async function getProNetworkSuggestions(userId: number, limit = 10): Promise<NetworkSuggestion[]> {
+export async function getProNetworkSuggestions(
+  userId: number,
+  limit = 10
+): Promise<NetworkSuggestion[]> {
   const db = await getDb();
   if (!db) return [];
-  const f1 = db.select({ id: follows.followingId }).from(follows).where(eq(follows.followerId, userId));
+  const f1 = db
+    .select({ id: follows.followingId })
+    .from(follows)
+    .where(eq(follows.followerId, userId));
   const rows = await db
     .select({
       userId: follows.followingId,
@@ -445,15 +548,24 @@ export async function getProNetworkSuggestions(userId: number, limit = 10): Prom
     })
     .from(follows)
     .leftJoin(users, eq(users.id, follows.followingId))
-    .leftJoin(reputationScores, eq(reputationScores.userId, follows.followingId))
+    .leftJoin(
+      reputationScores,
+      eq(reputationScores.userId, follows.followingId)
+    )
     .where(
       and(
         sql`${follows.followerId} in (${f1})`,
         sql`${follows.followingId} <> ${userId}`,
-        sql`${follows.followingId} not in (${f1})`,
-      ),
+        sql`${follows.followingId} not in (${f1})`
+      )
     )
-    .groupBy(follows.followingId, users.name, users.username, users.avatar, reputationScores.overall)
+    .groupBy(
+      follows.followingId,
+      users.name,
+      users.username,
+      users.avatar,
+      reputationScores.overall
+    )
     .orderBy(sql`count(*) desc, ${reputationScores.overall} desc`)
     .limit(limit);
   return rows.map(r => ({
@@ -472,10 +584,17 @@ export async function getProNetworkSuggestions(userId: number, limit = 10): Prom
 export async function listMissions(userId: number): Promise<Mission[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(missions).where(eq(missions.userId, userId)).orderBy(desc(missions.createdAt));
+  return db
+    .select()
+    .from(missions)
+    .where(eq(missions.userId, userId))
+    .orderBy(desc(missions.createdAt));
 }
 
-export async function getMissionWithSteps(missionId: number, userId: number): Promise<{ mission: Mission; steps: MissionStep[] } | null> {
+export async function getMissionWithSteps(
+  missionId: number,
+  userId: number
+): Promise<{ mission: Mission; steps: MissionStep[] } | null> {
   const db = await getDb();
   if (!db) return null;
   const [mission] = await db
@@ -514,32 +633,59 @@ export async function createMission(data: {
   return res?.id ?? null;
 }
 
-export async function insertMissionSteps(missionId: number, steps: Array<{ title: string; detail?: string }>): Promise<void> {
+export async function insertMissionSteps(
+  missionId: number,
+  steps: Array<{ title: string; detail?: string }>
+): Promise<void> {
   const db = await getDb();
   if (!db || steps.length === 0) return;
   await db.insert(missionSteps).values(
-    steps.map((s, i) => ({ missionId, ordinal: i, title: s.title, detail: s.detail ?? null, done: false })),
+    steps.map((s, i) => ({
+      missionId,
+      ordinal: i,
+      title: s.title,
+      detail: s.detail ?? null,
+      done: false,
+    }))
   );
 }
 
-export async function setMissionStepDone(stepId: number, done: boolean): Promise<MissionStep | null> {
+export async function setMissionStepDone(
+  stepId: number,
+  done: boolean
+): Promise<MissionStep | null> {
   const db = await getDb();
   if (!db) return null;
-  await db.update(missionSteps).set({ done }).where(eq(missionSteps.id, stepId));
-  const [row] = await db.select().from(missionSteps).where(eq(missionSteps.id, stepId)).limit(1);
+  await db
+    .update(missionSteps)
+    .set({ done })
+    .where(eq(missionSteps.id, stepId));
+  const [row] = await db
+    .select()
+    .from(missionSteps)
+    .where(eq(missionSteps.id, stepId))
+    .limit(1);
   return row ?? null;
 }
 
 // Recompute a mission's progress from its steps and persist it.
-export async function recomputeMissionProgress(missionId: number): Promise<{ progress: number; status: Mission["status"] }> {
+export async function recomputeMissionProgress(
+  missionId: number
+): Promise<{ progress: number; status: Mission["status"] }> {
   const db = await getDb();
   if (!db) return { progress: 0, status: "active" };
-  const steps = await db.select().from(missionSteps).where(eq(missionSteps.missionId, missionId));
+  const steps = await db
+    .select()
+    .from(missionSteps)
+    .where(eq(missionSteps.missionId, missionId));
   const total = steps.length;
   const done = steps.filter(s => s.done).length;
   const progress = total === 0 ? 0 : Math.round((done / total) * 100);
   const status: Mission["status"] = progress >= 100 ? "completed" : "active";
-  await db.update(missions).set({ progress, status }).where(eq(missions.id, missionId));
+  await db
+    .update(missions)
+    .set({ progress, status })
+    .where(eq(missions.id, missionId));
   return { progress, status };
 }
 
@@ -577,19 +723,30 @@ export async function createBlueprint(data: {
   return res?.id ?? null;
 }
 
-export async function listBlueprints(userId: number): Promise<StartupBlueprint[]> {
+export async function listBlueprints(
+  userId: number
+): Promise<StartupBlueprint[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(startupBlueprints).where(eq(startupBlueprints.userId, userId)).orderBy(desc(startupBlueprints.createdAt));
+  return db
+    .select()
+    .from(startupBlueprints)
+    .where(eq(startupBlueprints.userId, userId))
+    .orderBy(desc(startupBlueprints.createdAt));
 }
 
-export async function getBlueprint(id: number, userId: number): Promise<StartupBlueprint | null> {
+export async function getBlueprint(
+  id: number,
+  userId: number
+): Promise<StartupBlueprint | null> {
   const db = await getDb();
   if (!db) return null;
   const [row] = await db
     .select()
     .from(startupBlueprints)
-    .where(and(eq(startupBlueprints.id, id), eq(startupBlueprints.userId, userId)))
+    .where(
+      and(eq(startupBlueprints.id, id), eq(startupBlueprints.userId, userId))
+    )
     .limit(1);
   return row ?? null;
 }
@@ -597,7 +754,10 @@ export async function getBlueprint(id: number, userId: number): Promise<StartupB
 // ════════════════════════════════════════════════════════════════════════
 // AI MARKETPLACE
 // ════════════════════════════════════════════════════════════════════════
-export async function listMarketListings(filters?: { kind?: AiMarketListing["kind"]; limit?: number }): Promise<Array<Omit<AiMarketListing, "content">>> {
+export async function listMarketListings(filters?: {
+  kind?: AiMarketListing["kind"];
+  limit?: number;
+}): Promise<Array<Omit<AiMarketListing, "content">>> {
   const db = await getDb();
   if (!db) return [];
   const conds = [eq(aiMarketListings.active, true)] as any[];
@@ -624,10 +784,16 @@ export async function listMarketListings(filters?: { kind?: AiMarketListing["kin
     .limit(filters?.limit ?? 50) as any;
 }
 
-export async function getListingFull(id: number): Promise<AiMarketListing | null> {
+export async function getListingFull(
+  id: number
+): Promise<AiMarketListing | null> {
   const db = await getDb();
   if (!db) return null;
-  const [row] = await db.select().from(aiMarketListings).where(eq(aiMarketListings.id, id)).limit(1);
+  const [row] = await db
+    .select()
+    .from(aiMarketListings)
+    .where(eq(aiMarketListings.id, id))
+    .limit(1);
   return row ?? null;
 }
 
@@ -658,13 +824,21 @@ export async function createMarketListing(data: {
   return res?.id ?? null;
 }
 
-export async function hasPurchased(listingId: number, buyerId: number): Promise<boolean> {
+export async function hasPurchased(
+  listingId: number,
+  buyerId: number
+): Promise<boolean> {
   const db = await getDb();
   if (!db) return false;
   const [row] = await db
     .select({ id: aiMarketPurchases.id })
     .from(aiMarketPurchases)
-    .where(and(eq(aiMarketPurchases.listingId, listingId), eq(aiMarketPurchases.buyerId, buyerId)))
+    .where(
+      and(
+        eq(aiMarketPurchases.listingId, listingId),
+        eq(aiMarketPurchases.buyerId, buyerId)
+      )
+    )
     .limit(1);
   return !!row;
 }
@@ -682,7 +856,12 @@ export async function getCoinBalance(userId: number): Promise<number> {
   const [row] = await db
     .select({ balance: tokenBalances.balance })
     .from(tokenBalances)
-    .where(and(eq(tokenBalances.userId, userId), eq(tokenBalances.token, SETTLEMENT_TOKEN)))
+    .where(
+      and(
+        eq(tokenBalances.userId, userId),
+        eq(tokenBalances.token, SETTLEMENT_TOKEN)
+      )
+    )
     .limit(1);
   return row ? Number(row.balance) : 0;
 }
@@ -716,39 +895,82 @@ export async function purchaseWithCoins(data: {
     await ensureCoinRow(data.sellerId);
     const balance = await getCoinBalance(data.buyerId);
     if (balance < coinPrice) {
-      return { ok: false, reason: `Insufficient SKY444 balance. Need ${coinPrice}, have ${balance}.` };
+      return {
+        ok: false,
+        reason: `Insufficient SKY444 balance. Need ${coinPrice}, have ${balance}.`,
+      };
     }
     // Debit buyer (guarded so concurrent spends cannot overdraw).
     const debit = await db
       .update(tokenBalances)
-      .set({ balance: sql`${tokenBalances.balance} - ${coinPrice}`, updatedAt: new Date() })
+      .set({
+        balance: sql`${tokenBalances.balance} - ${coinPrice}`,
+        updatedAt: new Date(),
+      })
       .where(
         and(
           eq(tokenBalances.userId, data.buyerId),
           eq(tokenBalances.token, SETTLEMENT_TOKEN),
-          sql`${tokenBalances.balance} >= ${coinPrice}`,
-        ),
+          sql`${tokenBalances.balance} >= ${coinPrice}`
+        )
       );
     // drizzle returns a result set; verify a row was actually updated.
-    const affected = (debit as unknown as { rowsAffected?: number; affectedRows?: number })?.rowsAffected
-      ?? (debit as unknown as [{ affectedRows?: number }])?.[0]?.affectedRows
-      ?? 0;
+    const affected =
+      (debit as unknown as { rowsAffected?: number; affectedRows?: number })
+        ?.rowsAffected ??
+      (debit as unknown as [{ affectedRows?: number }])?.[0]?.affectedRows ??
+      0;
     if (!affected) {
       return { ok: false, reason: "Insufficient SKY444 balance." };
     }
     // Credit seller.
     await db
       .update(tokenBalances)
-      .set({ balance: sql`${tokenBalances.balance} + ${coinPrice}`, updatedAt: new Date() })
-      .where(and(eq(tokenBalances.userId, data.sellerId), eq(tokenBalances.token, SETTLEMENT_TOKEN)));
+      .set({
+        balance: sql`${tokenBalances.balance} + ${coinPrice}`,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(tokenBalances.userId, data.sellerId),
+          eq(tokenBalances.token, SETTLEMENT_TOKEN)
+        )
+      );
     // Record an auditable transaction for both sides.
-    await db.insert(transactions).values([
-      { userId: data.buyerId, type: "transfer" as any, token: SETTLEMENT_TOKEN, amount: String(-coinPrice) as any, status: "confirmed", metadata: { kind: "ai_market_purchase", listingId: data.listingId } as any },
-      { userId: data.sellerId, type: "transfer" as any, token: SETTLEMENT_TOKEN, amount: String(coinPrice) as any, status: "confirmed", metadata: { kind: "ai_market_sale", listingId: data.listingId } as any },
-    ]).catch(() => undefined);
+    await db
+      .insert(transactions)
+      .values([
+        {
+          userId: data.buyerId,
+          type: "transfer" as any,
+          token: SETTLEMENT_TOKEN,
+          amount: String(-coinPrice) as any,
+          status: "confirmed",
+          metadata: {
+            kind: "ai_market_purchase",
+            listingId: data.listingId,
+          } as any,
+        },
+        {
+          userId: data.sellerId,
+          type: "transfer" as any,
+          token: SETTLEMENT_TOKEN,
+          amount: String(coinPrice) as any,
+          status: "confirmed",
+          metadata: {
+            kind: "ai_market_sale",
+            listingId: data.listingId,
+          } as any,
+        },
+      ])
+      .catch(() => undefined);
   }
 
-  await db.insert(aiMarketPurchases).values({ listingId: data.listingId, buyerId: data.buyerId, pricePaidCents: data.priceCents });
+  await db.insert(aiMarketPurchases).values({
+    listingId: data.listingId,
+    buyerId: data.buyerId,
+    pricePaidCents: data.priceCents,
+  });
   await db
     .update(aiMarketListings)
     .set({ sales: sql`${aiMarketListings.sales} + 1` })
@@ -757,13 +979,21 @@ export async function purchaseWithCoins(data: {
 }
 
 // True only if this buyer has a purchase that has NOT yet been rated.
-export async function canRate(listingId: number, buyerId: number): Promise<boolean> {
+export async function canRate(
+  listingId: number,
+  buyerId: number
+): Promise<boolean> {
   const db = await getDb();
   if (!db) return false;
   const [row] = await db
     .select({ id: aiMarketPurchases.id, rated: aiMarketPurchases.rated })
     .from(aiMarketPurchases)
-    .where(and(eq(aiMarketPurchases.listingId, listingId), eq(aiMarketPurchases.buyerId, buyerId)))
+    .where(
+      and(
+        eq(aiMarketPurchases.listingId, listingId),
+        eq(aiMarketPurchases.buyerId, buyerId)
+      )
+    )
     .limit(1);
   return !!row && !row.rated;
 }
@@ -771,32 +1001,56 @@ export async function canRate(listingId: number, buyerId: number): Promise<boole
 // Record a star rating (1-5) from a verified buyer, exactly once per purchase.
 // Aggregates are stored as sum/count so the average can be derived without
 // storing fabricated per-row review text. Returns false if already rated.
-export async function addListingRating(listingId: number, buyerId: number, stars: number): Promise<boolean> {
+export async function addListingRating(
+  listingId: number,
+  buyerId: number,
+  stars: number
+): Promise<boolean> {
   const db = await getDb();
   if (!db) return false;
   // Atomically claim the rating slot so a buyer cannot rate twice.
   const claim = await db
     .update(aiMarketPurchases)
     .set({ rated: true })
-    .where(and(eq(aiMarketPurchases.listingId, listingId), eq(aiMarketPurchases.buyerId, buyerId), eq(aiMarketPurchases.rated, false)));
-  const affected = (claim as unknown as { rowsAffected?: number; affectedRows?: number })?.rowsAffected
-    ?? (claim as unknown as [{ affectedRows?: number }])?.[0]?.affectedRows
-    ?? 0;
+    .where(
+      and(
+        eq(aiMarketPurchases.listingId, listingId),
+        eq(aiMarketPurchases.buyerId, buyerId),
+        eq(aiMarketPurchases.rated, false)
+      )
+    );
+  const affected =
+    (claim as unknown as { rowsAffected?: number; affectedRows?: number })
+      ?.rowsAffected ??
+    (claim as unknown as [{ affectedRows?: number }])?.[0]?.affectedRows ??
+    0;
   if (!affected) return false;
   await db
     .update(aiMarketListings)
-    .set({ ratingSum: sql`${aiMarketListings.ratingSum} + ${stars}`, ratingCount: sql`${aiMarketListings.ratingCount} + 1` })
+    .set({
+      ratingSum: sql`${aiMarketListings.ratingSum} + ${stars}`,
+      ratingCount: sql`${aiMarketListings.ratingCount} + 1`,
+    })
     .where(eq(aiMarketListings.id, listingId));
   return true;
 }
 
-export async function getPurchases(buyerId: number): Promise<Array<{ listing: Omit<AiMarketListing, "content">; pricePaidCents: number; createdAt: Date }>> {
+export async function getPurchases(buyerId: number): Promise<
+  Array<{
+    listing: Omit<AiMarketListing, "content">;
+    pricePaidCents: number;
+    createdAt: Date;
+  }>
+> {
   const db = await getDb();
   if (!db) return [];
   const rows = await db
     .select()
     .from(aiMarketPurchases)
-    .leftJoin(aiMarketListings, eq(aiMarketListings.id, aiMarketPurchases.listingId))
+    .leftJoin(
+      aiMarketListings,
+      eq(aiMarketListings.id, aiMarketPurchases.listingId)
+    )
     .where(eq(aiMarketPurchases.buyerId, buyerId))
     .orderBy(desc(aiMarketPurchases.createdAt));
   return rows.map(r => {

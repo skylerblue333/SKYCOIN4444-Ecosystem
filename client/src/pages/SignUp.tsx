@@ -68,13 +68,17 @@ export function SignUp() {
             SKYCOIN4444
           </div>
           <CardTitle className="text-xl text-white">Create Account</CardTitle>
-          <p className="text-sm text-slate-400">Join the ecosystem and start earning</p>
+          <p className="text-sm text-slate-400">
+            Join the ecosystem and start earning
+          </p>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Full Name</label>
+              <label className="text-sm font-medium text-slate-300">
+                Full Name
+              </label>
               <div className="relative">
                 <User className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
                 <Input
@@ -90,7 +94,9 @@ export function SignUp() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Email</label>
+              <label className="text-sm font-medium text-slate-300">
+                Email
+              </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
                 <Input
@@ -106,7 +112,9 @@ export function SignUp() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Password</label>
+              <label className="text-sm font-medium text-slate-300">
+                Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
                 <Input
@@ -123,7 +131,9 @@ export function SignUp() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Confirm Password</label>
+              <label className="text-sm font-medium text-slate-300">
+                Confirm Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
                 <Input
@@ -166,7 +176,9 @@ export function SignUp() {
           </form>
 
           <div className="mt-6 pt-6 border-t border-slate-700 space-y-2">
-            <p className="text-xs font-semibold text-slate-300">✨ Get Started With:</p>
+            <p className="text-xs font-semibold text-slate-300">
+              ✨ Get Started With:
+            </p>
             <div className="grid grid-cols-3 gap-2 text-xs text-center">
               <div className="p-2 bg-slate-800 rounded">
                 <div className="font-bold text-purple-400">1,000</div>

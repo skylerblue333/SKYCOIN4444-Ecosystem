@@ -16,7 +16,10 @@
 import { eq, desc, count, sql, and } from "drizzle-orm";
 import { getDb } from "./db.js";
 import { eventBus } from "./event-bus.js";
-import { governanceProposals, governanceVotes } from "../drizzle/schema-extended.js";
+import {
+  governanceProposals,
+  governanceVotes,
+} from "../drizzle/schema-extended.js";
 import { invokeLLM } from "./_core/llm.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -47,8 +50,14 @@ export class GovernanceEngineV2 {
   private readonly QUORUM_THRESHOLD = 0.1; // 10% of users must vote
   private readonly ANTI_WHALE_CAP = 0.15; // max 15% voting power per user
   private readonly DANGEROUS_KEYWORDS = [
-    "delete all", "drain treasury", "disable security", "remove admin",
-    "bypass", "override compliance", "unlimited mint", "no cap"
+    "delete all",
+    "drain treasury",
+    "disable security",
+    "remove admin",
+    "bypass",
+    "override compliance",
+    "unlimited mint",
+    "no cap",
   ];
 
   /**
@@ -76,9 +85,14 @@ Generate a governance proposal to address this situation. Respond in JSON:
 }`;
 
     try {
-      const response = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+      const response = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
       const rawContent = response.choices[0].message.content ?? "{}";
-      const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
+      const content =
+        typeof rawContent === "string"
+          ? rawContent
+          : JSON.stringify(rawContent);
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (!jsonMatch) return null;
 
@@ -115,8 +129,16 @@ Generate a governance proposal to address this situation. Respond in JSON:
         createdAt: new Date(),
       });
 
-      eventBus.publish("PROPOSAL_CREATED", { proposalId, trigger, autonomous: true, authorId }, authorId);
-      eventBus.publish("AI_ACTION_INITIATED", { action: "PROPOSE_GOVERNANCE", trigger, proposalId }, authorId);
+      eventBus.publish(
+        "PROPOSAL_CREATED",
+        { proposalId, trigger, autonomous: true, authorId },
+        authorId
+      );
+      eventBus.publish(
+        "AI_ACTION_INITIATED",
+        { action: "PROPOSE_GOVERNANCE", trigger, proposalId },
+        authorId
+      );
 
       return 0; // string ID used internally; return 0 as numeric sentinel
     } catch {
@@ -141,7 +163,9 @@ Generate a governance proposal to address this situation. Respond in JSON:
     if (!proposal) throw new Error("Proposal not found");
 
     // Safety check
-    const dangerous = this.isDangerous(proposal.title + " " + (proposal.description ?? ""));
+    const dangerous = this.isDangerous(
+      proposal.title + " " + (proposal.description ?? "")
+    );
     void proposal.proposalType; // suppress unused warning
 
     const prompt = `You are HOPE AI simulating the outcome of a governance proposal.
@@ -175,9 +199,14 @@ Simulate the likely outcome and economic impact. Respond in JSON:
     };
 
     try {
-      const response = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+      const response = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+      });
       const rawContent = response.choices[0].message.content ?? "{}";
-      const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
+      const content =
+        typeof rawContent === "string"
+          ? rawContent
+          : JSON.stringify(rawContent);
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]) as Partial<ProposalSimulation>;
@@ -187,7 +216,9 @@ Simulate the likely outcome and economic impact. Respond in JSON:
           passLikelihood: Number(parsed.passLikelihood ?? 0.5),
           economicImpact: parsed.economicImpact ?? "unknown",
           riskLevel: dangerous ? "critical" : (parsed.riskLevel ?? "low"),
-          aiRecommendation: dangerous ? "reject" : (parsed.aiRecommendation ?? "defer"),
+          aiRecommendation: dangerous
+            ? "reject"
+            : (parsed.aiRecommendation ?? "defer"),
           reasoning: parsed.reasoning ?? simulation.reasoning,
           simulatedAt: new Date(),
         };
@@ -196,7 +227,11 @@ Simulate the likely outcome and economic impact. Respond in JSON:
       // Use default simulation
     }
 
-    eventBus.publish("SIMULATION_RUN", { proposalId, outcome: simulation.predictedOutcome, risk: simulation.riskLevel });
+    eventBus.publish("SIMULATION_RUN", {
+      proposalId,
+      outcome: simulation.predictedOutcome,
+      risk: simulation.riskLevel,
+    });
     return simulation;
   }
 
@@ -243,16 +278,24 @@ Simulate the likely outcome and economic impact. Respond in JSON:
     if (vote === "for") {
       await db
         .update(governanceProposals)
-        .set({ votesFor: sql`${governanceProposals.votesFor} + ${cappedPower}` })
+        .set({
+          votesFor: sql`${governanceProposals.votesFor} + ${cappedPower}`,
+        })
         .where(eq(governanceProposals.id, String(proposalId)));
     } else {
       await db
         .update(governanceProposals)
-        .set({ votesAgainst: sql`${governanceProposals.votesAgainst} + ${cappedPower}` })
+        .set({
+          votesAgainst: sql`${governanceProposals.votesAgainst} + ${cappedPower}`,
+        })
         .where(eq(governanceProposals.id, String(proposalId)));
     }
 
-    eventBus.publish("VOTE_CAST", { proposalId, userId, vote, votingPower: cappedPower }, userId);
+    eventBus.publish(
+      "VOTE_CAST",
+      { proposalId, userId, vote, votingPower: cappedPower },
+      userId
+    );
 
     // Check if proposal can be resolved
     await this.checkProposalResolution(proposalId);
@@ -264,12 +307,21 @@ Simulate the likely outcome and economic impact. Respond in JSON:
    * Get governance health metrics.
    */
   async getGovernanceHealth(): Promise<GovernanceHealth> {
-    const empty: GovernanceHealth = { totalProposals: 0, activeProposals: 0, passRate: 0, avgParticipation: 85, aiProposalsCount: 0, dangerousProposalsBlocked: 0 };
+    const empty: GovernanceHealth = {
+      totalProposals: 0,
+      activeProposals: 0,
+      passRate: 0,
+      avgParticipation: 85,
+      aiProposalsCount: 0,
+      dangerousProposalsBlocked: 0,
+    };
     try {
       const db = await getDb();
       if (!db) return empty;
 
-      const [{ total }] = await db.select({ total: count() }).from(governanceProposals);
+      const [{ total }] = await db
+        .select({ total: count() })
+        .from(governanceProposals);
       const [{ active }] = await db
         .select({ active: count() })
         .from(governanceProposals)
@@ -299,7 +351,9 @@ Simulate the likely outcome and economic impact. Respond in JSON:
   /**
    * Get recent proposals with simulation data.
    */
-  async getProposals(limit = 20): Promise<typeof governanceProposals.$inferSelect[]> {
+  async getProposals(
+    limit = 20
+  ): Promise<(typeof governanceProposals.$inferSelect)[]> {
     const db = await getDb();
     if (!db) return [];
     return db
@@ -313,7 +367,7 @@ Simulate the likely outcome and economic impact. Respond in JSON:
 
   private isDangerous(text: string): boolean {
     const lower = text.toLowerCase();
-    return this.DANGEROUS_KEYWORDS.some((kw) => lower.includes(kw));
+    return this.DANGEROUS_KEYWORDS.some(kw => lower.includes(kw));
   }
 
   private async checkProposalResolution(proposalId: number): Promise<void> {
@@ -328,7 +382,8 @@ Simulate the likely outcome and economic impact. Respond in JSON:
 
     if (!proposal || proposal.status !== "active") return;
 
-    const totalVotes = Number(proposal.votesFor) + Number(proposal.votesAgainst);
+    const totalVotes =
+      Number(proposal.votesFor) + Number(proposal.votesAgainst);
     if (totalVotes < Number(proposal.quorumRequired ?? 10)) return;
 
     const passed = Number(proposal.votesFor) > Number(proposal.votesAgainst);
@@ -339,10 +394,17 @@ Simulate the likely outcome and economic impact. Respond in JSON:
       .set({ status: newStatus })
       .where(eq(governanceProposals.id, String(proposalId)));
 
-    eventBus.publish("PROPOSAL_STAGE_CHANGED", { proposalId, status: newStatus, totalVotes });
+    eventBus.publish("PROPOSAL_STAGE_CHANGED", {
+      proposalId,
+      status: newStatus,
+      totalVotes,
+    });
 
     if (passed) {
-      eventBus.publish("EXECUTION_TRIGGERED", { proposalId, title: proposal.title });
+      eventBus.publish("EXECUTION_TRIGGERED", {
+        proposalId,
+        title: proposal.title,
+      });
     }
   }
 }

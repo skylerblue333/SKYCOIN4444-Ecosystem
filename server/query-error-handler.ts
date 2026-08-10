@@ -12,13 +12,13 @@ export async function safeQuery<T>(
     return await queryFn();
   } catch (error) {
     console.error(`[Query Error] ${context}:`, error);
-    
+
     // Log the error but return fallback value instead of crashing
     if (error instanceof Error) {
       console.error(`Error message: ${error.message}`);
       console.error(`Stack: ${error.stack}`);
     }
-    
+
     // Return fallback value to prevent page crashes
     return fallbackValue;
   }
@@ -37,7 +37,7 @@ export function withQueryErrorHandling<T>(
       return await queryFn();
     } catch (error) {
       console.error(`[Procedure Error] ${context}:`, error);
-      
+
       // Return fallback instead of throwing
       return fallbackValue;
     }
@@ -53,6 +53,11 @@ export const FALLBACK_VALUES = {
   zero: 0,
   null: null,
   topDonors: [] as Array<{ donorId: string; amount: number; count: number }>,
-  leaderboard: [] as Array<{ id: string; name: string; xp: number; level: number }>,
+  leaderboard: [] as Array<{
+    id: string;
+    name: string;
+    xp: number;
+    level: number;
+  }>,
   stats: { total: 0, average: 0, count: 0 },
 };

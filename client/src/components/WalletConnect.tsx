@@ -14,13 +14,19 @@ export function WalletConnect() {
           {isConnected ? (
             <div>
               <p className="text-sm text-gray-400">Connected Wallet</p>
-              <p className="font-mono text-sm">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
-              <p className="text-xs text-purple-400 mt-1">Balance: {balance} ETH</p>
+              <p className="font-mono text-sm">
+                {address?.slice(0, 6)}...{address?.slice(-4)}
+              </p>
+              <p className="text-xs text-purple-400 mt-1">
+                Balance: {balance} ETH
+              </p>
             </div>
           ) : (
             <div>
               <p className="text-sm text-gray-400">No Wallet Connected</p>
-              <p className="text-xs text-gray-500">Connect MetaMask to start mining</p>
+              <p className="text-xs text-gray-500">
+                Connect MetaMask to start mining
+              </p>
             </div>
           )}
         </div>

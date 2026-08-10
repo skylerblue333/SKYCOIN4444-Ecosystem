@@ -9,9 +9,24 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  Home, Compass, ShoppingCart, Users, User, Settings, HelpCircle,
-  Wallet, Zap, Gamepad2, Radio, TrendingUp, Code, Lock, Bell,
-  MoreHorizontal, Menu, X
+  Home,
+  Compass,
+  ShoppingCart,
+  Users,
+  User,
+  Settings,
+  HelpCircle,
+  Wallet,
+  Zap,
+  Gamepad2,
+  Radio,
+  TrendingUp,
+  Code,
+  Lock,
+  Bell,
+  MoreHorizontal,
+  Menu,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -22,31 +37,31 @@ const navCategories = {
     { name: "Checkout", path: "/checkout" },
     { name: "Orders", path: "/ordertracking" },
   ],
-  "Finance": [
+  Finance: [
     { name: "Wallet", path: "/walletoverview" },
     { name: "Trading", path: "/tokenswap" },
     { name: "Staking", path: "/stakingdashboard" },
     { name: "Portfolio", path: "/portfoliotracker" },
   ],
-  "Social": [
+  Social: [
     { name: "Feed", path: "/social" },
     { name: "Community", path: "/communityhub" },
     { name: "Messages", path: "/directmessages" },
     { name: "Notifications", path: "/notificationcenter" },
   ],
-  "Gaming": [
+  Gaming: [
     { name: "Games", path: "/gamelobby" },
     { name: "Tournaments", path: "/tournaments" },
     { name: "Leaderboards", path: "/leaderboards" },
     { name: "Achievements", path: "/achievements" },
   ],
-  "Content": [
+  Content: [
     { name: "Streaming", path: "/streaming" },
     { name: "Blog", path: "/blogeditor" },
     { name: "Videos", path: "/videouploader" },
     { name: "Gallery", path: "/imagegallery" },
   ],
-  "Admin": [
+  Admin: [
     { name: "Dashboard", path: "/admindashboard" },
     { name: "Users", path: "/usermanagement" },
     { name: "Analytics", path: "/analyticsdashboard" },
@@ -68,14 +83,17 @@ export default function Navigation() {
           {Object.entries(navCategories).map(([category, items]) => (
             <DropdownMenu key={category}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="text-slate-300 hover:text-white">
+                <Button
+                  variant="ghost"
+                  className="text-slate-300 hover:text-white"
+                >
                   {category}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-48">
                 <DropdownMenuLabel>{category}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {items.map((item) => (
+                {items.map(item => (
                   <Link key={item.path} href={item.path}>
                     <a>
                       <DropdownMenuItem className="cursor-pointer">
@@ -109,5 +127,3 @@ export default function Navigation() {
     </nav>
   );
 }
-
-

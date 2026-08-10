@@ -1,10 +1,10 @@
 /**
  * API Versioning & Backward Compatibility System
- * 
+ *
  * Ensures Skycoin4444 can evolve APIs without breaking existing clients
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 // ============================================================================
 // API VERSION MANAGEMENT
@@ -13,7 +13,7 @@ import { Request, Response, NextFunction } from 'express';
 export interface APIVersion {
   version: string;
   releaseDate: Date;
-  status: 'active' | 'deprecated' | 'sunset';
+  status: "active" | "deprecated" | "sunset";
   deprecationDate?: Date;
   sunsetDate?: Date;
   changelog: string[];
@@ -21,54 +21,51 @@ export interface APIVersion {
 }
 
 export const API_VERSIONS: Record<string, APIVersion> = {
-  '1.0.0': {
-    version: '1.0.0',
-    releaseDate: new Date('2026-01-01'),
-    status: 'active',
+  "1.0.0": {
+    version: "1.0.0",
+    releaseDate: new Date("2026-01-01"),
+    status: "active",
     changelog: [
-      'Initial API release',
-      'Mining endpoints',
-      'Trading endpoints',
-      'Social endpoints',
+      "Initial API release",
+      "Mining endpoints",
+      "Trading endpoints",
+      "Social endpoints",
     ],
   },
-  '1.1.0': {
-    version: '1.1.0',
-    releaseDate: new Date('2026-03-01'),
-    status: 'active',
+  "1.1.0": {
+    version: "1.1.0",
+    releaseDate: new Date("2026-03-01"),
+    status: "active",
     changelog: [
-      'Added gaming endpoints',
-      'Added marketplace endpoints',
-      'Improved error messages',
-      'Added rate limiting',
+      "Added gaming endpoints",
+      "Added marketplace endpoints",
+      "Improved error messages",
+      "Added rate limiting",
     ],
   },
-  '2.0.0': {
-    version: '2.0.0',
-    releaseDate: new Date('2026-06-01'),
-    status: 'active',
+  "2.0.0": {
+    version: "2.0.0",
+    releaseDate: new Date("2026-06-01"),
+    status: "active",
     changelog: [
-      'Added governance endpoints',
-      'Redesigned response format',
-      'Added pagination to list endpoints',
-      'Improved authentication',
+      "Added governance endpoints",
+      "Redesigned response format",
+      "Added pagination to list endpoints",
+      "Improved authentication",
     ],
     breakingChanges: [
-      'Response format changed from array to object with data/meta',
-      'Pagination now required for list endpoints',
-      'Authentication now uses Bearer tokens only',
+      "Response format changed from array to object with data/meta",
+      "Pagination now required for list endpoints",
+      "Authentication now uses Bearer tokens only",
     ],
   },
-  '1.2.0': {
-    version: '1.2.0',
-    releaseDate: new Date('2026-04-01'),
-    status: 'deprecated',
-    deprecationDate: new Date('2026-10-01'),
-    sunsetDate: new Date('2027-01-01'),
-    changelog: [
-      'Bug fixes and improvements',
-      'Performance optimizations',
-    ],
+  "1.2.0": {
+    version: "1.2.0",
+    releaseDate: new Date("2026-04-01"),
+    status: "deprecated",
+    deprecationDate: new Date("2026-10-01"),
+    sunsetDate: new Date("2027-01-01"),
+    changelog: ["Bug fixes and improvements", "Performance optimizations"],
   },
 };
 
@@ -104,39 +101,46 @@ export interface VersionedResponse {
 // API VERSION MIDDLEWARE
 // ============================================================================
 
-export function apiVersionMiddleware(req: VersionedRequest, res: Response, next: NextFunction) {
+export function apiVersionMiddleware(
+  req: VersionedRequest,
+  res: Response,
+  next: NextFunction
+) {
   // Extract version from header, URL, or query parameter
   const version =
-    req.headers['api-version'] as string ||
-    req.query.version as string ||
+    (req.headers["api-version"] as string) ||
+    (req.query.version as string) ||
     extractVersionFromPath(req.path) ||
-    '2.0.0'; // Default to latest
+    "2.0.0"; // Default to latest
 
   // Validate version
   if (!isValidVersion(version)) {
     return res.status(400).json({
-      error: 'Invalid API version',
+      error: "Invalid API version",
       supportedVersions: Object.keys(API_VERSIONS),
     });
   }
 
   // Check if version is sunset
   const versionInfo = API_VERSIONS[version];
-  if (versionInfo.status === 'sunset') {
+  if (versionInfo.status === "sunset") {
     return res.status(410).json({
-      error: 'API version is no longer supported',
+      error: "API version is no longer supported",
       message: `Version ${version} was sunset on ${versionInfo.sunsetDate}`,
-      migrateToVersion: '2.0.0',
+      migrateToVersion: "2.0.0",
     });
   }
 
   // Warn if version is deprecated
-  if (versionInfo.status === 'deprecated') {
-    res.setHeader('Deprecation', 'true');
+  if (versionInfo.status === "deprecated") {
+    res.setHeader("Deprecation", "true");
     if (versionInfo.sunsetDate) {
-      res.setHeader('Sunset', versionInfo.sunsetDate.toISOString());
+      res.setHeader("Sunset", versionInfo.sunsetDate.toISOString());
     }
-    res.setHeader('Link', `<https://docs.skycoin4444.com/api/v2>; rel="successor-version"`);
+    res.setHeader(
+      "Link",
+      `<https://docs.skycoin4444.com/api/v2>; rel="successor-version"`
+    );
   }
 
   req.apiVersion = version;
@@ -147,7 +151,11 @@ export function apiVersionMiddleware(req: VersionedRequest, res: Response, next:
 // RESPONSE TRANSFORMATION
 // ============================================================================
 
-export function transformResponse(data: any, version: string, req: VersionedRequest): VersionedResponse {
+export function transformResponse(
+  data: any,
+  version: string,
+  req: VersionedRequest
+): VersionedResponse {
   const response: VersionedResponse = {
     version,
     timestamp: Date.now(),
@@ -173,13 +181,13 @@ export function transformResponse(data: any, version: string, req: VersionedRequ
 
 export function transformDataForVersion(data: any, version: string): any {
   switch (version) {
-    case '1.0.0':
-    case '1.1.0':
-    case '1.2.0':
+    case "1.0.0":
+    case "1.1.0":
+    case "1.2.0":
       // Old format: return data directly
       return data;
 
-    case '2.0.0':
+    case "2.0.0":
       // New format: wrap in object with metadata
       if (Array.isArray(data)) {
         return {
@@ -198,15 +206,18 @@ export function transformDataForVersion(data: any, version: string): any {
 // REQUEST TRANSFORMATION
 // ============================================================================
 
-export function transformRequest(req: VersionedRequest, targetVersion: string): any {
-  const sourceVersion = req.apiVersion || '2.0.0';
+export function transformRequest(
+  req: VersionedRequest,
+  targetVersion: string
+): any {
+  const sourceVersion = req.apiVersion || "2.0.0";
 
   if (sourceVersion === targetVersion) {
     return req.body;
   }
 
   // Transform from old format to new format
-  if (sourceVersion === '1.0.0' && targetVersion === '2.0.0') {
+  if (sourceVersion === "1.0.0" && targetVersion === "2.0.0") {
     return transformV1ToV2(req.body);
   }
 
@@ -237,15 +248,15 @@ export interface CompatibilityAdapter {
 
 export const COMPATIBILITY_ADAPTERS: CompatibilityAdapter[] = [
   {
-    fromVersion: '1.0.0',
-    toVersion: '2.0.0',
-    transformRequest: (data) => ({
+    fromVersion: "1.0.0",
+    toVersion: "2.0.0",
+    transformRequest: data => ({
       ...data,
       user_id: data.userId,
       created_at: data.createdAt,
       updated_at: data.updatedAt,
     }),
-    transformResponse: (data) => ({
+    transformResponse: data => ({
       ...data,
       userId: data.user_id,
       createdAt: data.created_at,
@@ -253,13 +264,13 @@ export const COMPATIBILITY_ADAPTERS: CompatibilityAdapter[] = [
     }),
   },
   {
-    fromVersion: '1.1.0',
-    toVersion: '2.0.0',
-    transformRequest: (data) => ({
+    fromVersion: "1.1.0",
+    toVersion: "2.0.0",
+    transformRequest: data => ({
       ...data,
       user_id: data.userId,
     }),
-    transformResponse: (data) => ({
+    transformResponse: data => ({
       ...data,
       userId: data.user_id,
     }),
@@ -281,20 +292,20 @@ export interface DeprecationWarning {
 
 export const DEPRECATION_WARNINGS: DeprecationWarning[] = [
   {
-    endpoint: '/mining/status',
-    method: 'GET',
-    deprecatedVersion: '1.0.0',
-    sunsetDate: new Date('2027-01-01'),
-    replacement: '/v2/mining/status',
-    migrationGuide: 'https://docs.skycoin4444.com/migration/v1-to-v2',
+    endpoint: "/mining/status",
+    method: "GET",
+    deprecatedVersion: "1.0.0",
+    sunsetDate: new Date("2027-01-01"),
+    replacement: "/v2/mining/status",
+    migrationGuide: "https://docs.skycoin4444.com/migration/v1-to-v2",
   },
   {
-    endpoint: '/trading/orders',
-    method: 'GET',
-    deprecatedVersion: '1.0.0',
-    sunsetDate: new Date('2027-01-01'),
-    replacement: '/v2/trading/orders',
-    migrationGuide: 'https://docs.skycoin4444.com/migration/v1-to-v2',
+    endpoint: "/trading/orders",
+    method: "GET",
+    deprecatedVersion: "1.0.0",
+    sunsetDate: new Date("2027-01-01"),
+    replacement: "/v2/trading/orders",
+    migrationGuide: "https://docs.skycoin4444.com/migration/v1-to-v2",
   },
 ];
 
@@ -313,33 +324,37 @@ export interface FeatureFlag {
 
 export const FEATURE_FLAGS: FeatureFlag[] = [
   {
-    name: 'new_mining_algorithm',
-    version: '2.1.0',
+    name: "new_mining_algorithm",
+    version: "2.1.0",
     enabled: true,
     rolloutPercentage: 50,
   },
   {
-    name: 'improved_trading_ui',
-    version: '2.0.0',
+    name: "improved_trading_ui",
+    version: "2.0.0",
     enabled: true,
     rolloutPercentage: 100,
   },
   {
-    name: 'ai_recommendations',
-    version: '2.2.0',
+    name: "ai_recommendations",
+    version: "2.2.0",
     enabled: true,
     rolloutPercentage: 25,
-    targetUsers: ['premium', 'beta-tester'],
+    targetUsers: ["premium", "beta-tester"],
   },
   {
-    name: 'multi_region_support',
-    version: '2.3.0',
+    name: "multi_region_support",
+    version: "2.3.0",
     enabled: false,
     rolloutPercentage: 0,
   },
 ];
 
-export function isFeatureEnabled(featureName: string, userId?: string, region?: string): boolean {
+export function isFeatureEnabled(
+  featureName: string,
+  userId?: string,
+  region?: string
+): boolean {
   const flag = FEATURE_FLAGS.find(f => f.name === featureName);
   if (!flag || !flag.enabled) return false;
 
@@ -347,10 +362,12 @@ export function isFeatureEnabled(featureName: string, userId?: string, region?: 
   if (Math.random() * 100 > flag.rolloutPercentage) return false;
 
   // Check target users
-  if (flag.targetUsers && userId && !flag.targetUsers.includes(userId)) return false;
+  if (flag.targetUsers && userId && !flag.targetUsers.includes(userId))
+    return false;
 
   // Check target regions
-  if (flag.targetRegions && region && !flag.targetRegions.includes(region)) return false;
+  if (flag.targetRegions && region && !flag.targetRegions.includes(region))
+    return false;
 
   return true;
 }
@@ -369,20 +386,20 @@ export class VersionCompatibilityChecker {
   }
 
   static getMajorVersion(version: string): number {
-    return parseInt(version.split('.')[0]);
+    return parseInt(version.split(".")[0]);
   }
 
   static getMinorVersion(version: string): number {
-    return parseInt(version.split('.')[1]);
+    return parseInt(version.split(".")[1]);
   }
 
   static getPatchVersion(version: string): number {
-    return parseInt(version.split('.')[2]);
+    return parseInt(version.split(".")[2]);
   }
 
   static compareVersions(v1: string, v2: string): number {
-    const v1Parts = v1.split('.').map(Number);
-    const v2Parts = v2.split('.').map(Number);
+    const v1Parts = v1.split(".").map(Number);
+    const v2Parts = v2.split(".").map(Number);
 
     for (let i = 0; i < 3; i++) {
       if (v1Parts[i] > v2Parts[i]) return 1;
@@ -423,44 +440,44 @@ export interface APIEndpointDoc {
 
 export const API_DOCS: APIEndpointDoc[] = [
   {
-    path: '/mining/start',
-    method: 'POST',
-    version: '1.0.0',
-    description: 'Start mining operation',
+    path: "/mining/start",
+    method: "POST",
+    version: "1.0.0",
+    description: "Start mining operation",
     parameters: [
       {
-        name: 'poolId',
-        type: 'string',
+        name: "poolId",
+        type: "string",
         required: true,
-        description: 'Mining pool ID',
+        description: "Mining pool ID",
       },
     ],
     responses: [
       {
         status: 200,
-        description: 'Mining started successfully',
-        schema: { miningId: 'string', status: 'string' },
+        description: "Mining started successfully",
+        schema: { miningId: "string", status: "string" },
       },
     ],
   },
   {
-    path: '/v2/mining/start',
-    method: 'POST',
-    version: '2.0.0',
-    description: 'Start mining operation (v2)',
+    path: "/v2/mining/start",
+    method: "POST",
+    version: "2.0.0",
+    description: "Start mining operation (v2)",
     parameters: [
       {
-        name: 'pool_id',
-        type: 'string',
+        name: "pool_id",
+        type: "string",
         required: true,
-        description: 'Mining pool ID',
+        description: "Mining pool ID",
       },
     ],
     responses: [
       {
         status: 200,
-        description: 'Mining started successfully',
-        schema: { data: { mining_id: 'string', status: 'string' } },
+        description: "Mining started successfully",
+        schema: { data: { mining_id: "string", status: "string" } },
       },
     ],
   },

@@ -5,7 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Share2, MessageCircle, UserPlus, MoreVertical, Trophy, TrendingUp, Heart, MessageSquare } from "lucide-react";
+import {
+  Share2,
+  MessageCircle,
+  UserPlus,
+  MoreVertical,
+  Trophy,
+  TrendingUp,
+  Heart,
+  MessageSquare,
+} from "lucide-react";
 
 interface UserStats {
   followers: number;
@@ -36,10 +45,15 @@ const mockUser = {
     followers: 12543,
     following: 892,
     posts: 456,
-    earnings: 15234.50,
+    earnings: 15234.5,
     reputation: 4.8,
   },
-  badges: ["Early Adopter", "Top Contributor", "Verified Creator", "Mining Expert"],
+  badges: [
+    "Early Adopter",
+    "Top Contributor",
+    "Verified Creator",
+    "Mining Expert",
+  ],
 };
 
 const mockActivity: Activity[] = [
@@ -90,7 +104,9 @@ export function UserProfile() {
 
               <div className="flex-1 pt-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <h1 className="text-3xl font-bold text-white">{mockUser.name}</h1>
+                  <h1 className="text-3xl font-bold text-white">
+                    {mockUser.name}
+                  </h1>
                   {mockUser.verified && (
                     <Badge className="bg-blue-600">✓ Verified</Badge>
                   )}
@@ -105,7 +121,11 @@ export function UserProfile() {
                 <div className="flex gap-2">
                   <Button
                     onClick={handleFollow}
-                    className={isFollowing ? "bg-slate-700 hover:bg-slate-600" : "bg-purple-600 hover:bg-purple-700"}
+                    className={
+                      isFollowing
+                        ? "bg-slate-700 hover:bg-slate-600"
+                        : "bg-purple-600 hover:bg-purple-700"
+                    }
                   >
                     <UserPlus className="w-4 h-4 mr-2" />
                     {isFollowing ? "Following" : "Follow"}
@@ -130,15 +150,26 @@ export function UserProfile() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
-            { label: "Followers", value: mockUser.stats.followers.toLocaleString() },
-            { label: "Following", value: mockUser.stats.following.toLocaleString() },
+            {
+              label: "Followers",
+              value: mockUser.stats.followers.toLocaleString(),
+            },
+            {
+              label: "Following",
+              value: mockUser.stats.following.toLocaleString(),
+            },
             { label: "Posts", value: mockUser.stats.posts.toLocaleString() },
-            { label: "Earnings", value: `$${mockUser.stats.earnings.toLocaleString()}` },
+            {
+              label: "Earnings",
+              value: `$${mockUser.stats.earnings.toLocaleString()}`,
+            },
             { label: "Reputation", value: `${mockUser.stats.reputation}/5.0` },
           ].map((stat, i) => (
             <Card key={i} className="border-slate-700 bg-slate-800/50">
               <CardContent className="pt-6 text-center">
-                <p className="text-2xl font-bold text-purple-400 mb-1">{stat.value}</p>
+                <p className="text-2xl font-bold text-purple-400 mb-1">
+                  {stat.value}
+                </p>
                 <p className="text-sm text-slate-400">{stat.label}</p>
               </CardContent>
             </Card>
@@ -153,7 +184,10 @@ export function UserProfile() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {mockUser.badges.map((badge, i) => (
-                <div key={i} className="p-4 bg-slate-700/50 rounded-lg text-center">
+                <div
+                  key={i}
+                  className="p-4 bg-slate-700/50 rounded-lg text-center"
+                >
                   <Trophy className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
                   <p className="text-sm font-medium text-white">{badge}</p>
                 </div>
@@ -166,17 +200,27 @@ export function UserProfile() {
         <Card className="border-slate-700 bg-slate-800/50">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4 bg-slate-700 border-b border-slate-700">
-              <TabsTrigger value="posts" className="text-slate-300">Posts</TabsTrigger>
-              <TabsTrigger value="activity" className="text-slate-300">Activity</TabsTrigger>
-              <TabsTrigger value="followers" className="text-slate-300">Followers</TabsTrigger>
-              <TabsTrigger value="likes" className="text-slate-300">Likes</TabsTrigger>
+              <TabsTrigger value="posts" className="text-slate-300">
+                Posts
+              </TabsTrigger>
+              <TabsTrigger value="activity" className="text-slate-300">
+                Activity
+              </TabsTrigger>
+              <TabsTrigger value="followers" className="text-slate-300">
+                Followers
+              </TabsTrigger>
+              <TabsTrigger value="likes" className="text-slate-300">
+                Likes
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="posts" className="p-6">
               <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3].map(i => (
                   <div key={i} className="p-4 bg-slate-700/50 rounded-lg">
-                    <p className="text-white mb-2">Post #{i}: Discussing Web3 innovations...</p>
+                    <p className="text-white mb-2">
+                      Post #{i}: Discussing Web3 innovations...
+                    </p>
                     <div className="flex gap-4 text-sm text-slate-400">
                       <span>❤️ 234 likes</span>
                       <span>💬 45 comments</span>
@@ -189,8 +233,11 @@ export function UserProfile() {
 
             <TabsContent value="activity" className="p-6">
               <div className="space-y-4">
-                {mockActivity.map((activity) => (
-                  <div key={activity.id} className="flex gap-4 p-4 bg-slate-700/50 rounded-lg">
+                {mockActivity.map(activity => (
+                  <div
+                    key={activity.id}
+                    className="flex gap-4 p-4 bg-slate-700/50 rounded-lg"
+                  >
                     <div className="text-purple-400">{activity.icon}</div>
                     <div className="flex-1">
                       <p className="text-white">{activity.description}</p>
@@ -205,8 +252,11 @@ export function UserProfile() {
 
             <TabsContent value="followers" className="p-6">
               <div className="space-y-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
+                {[1, 2, 3, 4].map(i => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
                         <AvatarFallback>U{i}</AvatarFallback>
@@ -216,7 +266,13 @@ export function UserProfile() {
                         <p className="text-xs text-slate-400">@user{i}</p>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" className="border-slate-600">Follow</Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-slate-600"
+                    >
+                      Follow
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -224,9 +280,11 @@ export function UserProfile() {
 
             <TabsContent value="likes" className="p-6">
               <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3].map(i => (
                   <div key={i} className="p-4 bg-slate-700/50 rounded-lg">
-                    <p className="text-white mb-2">Liked: Post about cryptocurrency trends</p>
+                    <p className="text-white mb-2">
+                      Liked: Post about cryptocurrency trends
+                    </p>
                     <p className="text-xs text-slate-400">2 hours ago</p>
                   </div>
                 ))}

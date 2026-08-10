@@ -44,7 +44,8 @@ interface IntentPattern {
 const INTENT_PATTERNS: IntentPattern[] = [
   // PAYMENT — "pay $20", "send 50 sky to @alice", "transfer 100"
   {
-    pattern: /(?:pay|send|transfer)\s+(?:\$|usd|sky|skycoin)?\s*(\d+(?:\.\d+)?)\s*(?:sky|usd|skycoin)?\s*(?:to\s+@?(\w+))?(?:\s+for\s+(.+))?/i,
+    pattern:
+      /(?:pay|send|transfer)\s+(?:\$|usd|sky|skycoin)?\s*(\d+(?:\.\d+)?)\s*(?:sky|usd|skycoin)?\s*(?:to\s+@?(\w+))?(?:\s+for\s+(.+))?/i,
     type: ACTION_TYPES.PAYMENT,
     confidence: 0.92,
     extract: (m): PaymentPayload => ({
@@ -54,7 +55,7 @@ const INTENT_PATTERNS: IntentPattern[] = [
       to: m[2] || undefined,
       reason: m[3] || undefined,
     }),
-    confirmationPrompt: (p) => {
+    confirmationPrompt: p => {
       const pp = p as PaymentPayload;
       return `Send ${pp.amount} SKY${pp.to ? ` to @${pp.to}` : ""}${pp.reason ? ` for "${pp.reason}"` : ""}?`;
     },
@@ -62,7 +63,8 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
   // TIP — "tip @alice 10", "tip 25 sky"
   {
-    pattern: /(?:tip|give\s+a\s+tip\s+to|reward)\s+@?(\w+)\s+(?:\$|sky)?\s*(\d+(?:\.\d+)?)|(?:tip|give)\s+(?:\$|sky)?\s*(\d+(?:\.\d+)?)\s+(?:to\s+)?@?(\w+)/i,
+    pattern:
+      /(?:tip|give\s+a\s+tip\s+to|reward)\s+@?(\w+)\s+(?:\$|sky)?\s*(\d+(?:\.\d+)?)|(?:tip|give)\s+(?:\$|sky)?\s*(\d+(?:\.\d+)?)\s+(?:to\s+)?@?(\w+)/i,
     type: ACTION_TYPES.TIP,
     confidence: 0.9,
     extract: (m): TipPayload => ({
@@ -70,7 +72,7 @@ const INTENT_PATTERNS: IntentPattern[] = [
       to: m[1] || m[4] || "creator",
       amount: parseFloat(m[2] || m[3]),
     }),
-    confirmationPrompt: (p) => {
+    confirmationPrompt: p => {
       const tp = p as TipPayload;
       return `Tip @${tp.to} ${tp.amount} SKY?`;
     },
@@ -78,7 +80,8 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
   // REQUEST_SERVICE — "I need a designer", "find me a developer for $200"
   {
-    pattern: /(?:i\s+need|find\s+me|hire|looking\s+for|get\s+me)\s+(?:a\s+)?(?:good\s+)?(\w+(?:\s+\w+)?)\s*(?:for\s+(?:\$|sky)?\s*(\d+))?/i,
+    pattern:
+      /(?:i\s+need|find\s+me|hire|looking\s+for|get\s+me)\s+(?:a\s+)?(?:good\s+)?(\w+(?:\s+\w+)?)\s*(?:for\s+(?:\$|sky)?\s*(\d+))?/i,
     type: ACTION_TYPES.REQUEST_SERVICE,
     confidence: 0.78,
     extract: (m, text): RequestServicePayload => ({
@@ -87,7 +90,7 @@ const INTENT_PATTERNS: IntentPattern[] = [
       budget: m[2] ? parseFloat(m[2]) : undefined,
       description: text,
     }),
-    confirmationPrompt: (p) => {
+    confirmationPrompt: p => {
       const rp = p as RequestServicePayload;
       return `Find a ${rp.serviceType}${rp.budget ? ` for ${rp.budget} SKY` : ""}?`;
     },
@@ -95,7 +98,8 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
   // CREATE_LISTING — "list my logo for 50 sky", "sell template for $30"
   {
-    pattern: /(?:list|sell|create\s+listing\s+for|post\s+for\s+sale)\s+(?:my\s+)?(.+?)\s+for\s+(?:\$|sky)?\s*(\d+(?:\.\d+)?)/i,
+    pattern:
+      /(?:list|sell|create\s+listing\s+for|post\s+for\s+sale)\s+(?:my\s+)?(.+?)\s+for\s+(?:\$|sky)?\s*(\d+(?:\.\d+)?)/i,
     type: ACTION_TYPES.CREATE_LISTING,
     confidence: 0.88,
     extract: (m): CreateListingPayload => ({
@@ -104,7 +108,7 @@ const INTENT_PATTERNS: IntentPattern[] = [
       price: parseFloat(m[2]),
       description: m[1],
     }),
-    confirmationPrompt: (p) => {
+    confirmationPrompt: p => {
       const cl = p as CreateListingPayload;
       return `Create listing "${cl.title}" for ${cl.price} SKY?`;
     },
@@ -112,7 +116,8 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
   // MATCH_USER — "match me with a designer", "connect me with someone who knows React"
   {
-    pattern: /(?:match\s+me|connect\s+me|find\s+someone|introduce\s+me)\s+(?:with\s+)?(?:a\s+)?(.+?)(?:\s+who\s+(.+))?$/i,
+    pattern:
+      /(?:match\s+me|connect\s+me|find\s+someone|introduce\s+me)\s+(?:with\s+)?(?:a\s+)?(.+?)(?:\s+who\s+(.+))?$/i,
     type: ACTION_TYPES.MATCH_USER,
     confidence: 0.75,
     extract: (m, text): MatchUserPayload => ({
@@ -125,14 +130,15 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
   // CALL_AI_AGENT — "ask AI to", "have NOVA", "run agent"
   {
-    pattern: /(?:ask\s+(?:ai|nova|the\s+ai)|have\s+(?:ai|nova)|run\s+(?:an?\s+)?agent|ai\s+(?:please|can\s+you)?)\s+(.+)/i,
+    pattern:
+      /(?:ask\s+(?:ai|nova|the\s+ai)|have\s+(?:ai|nova)|run\s+(?:an?\s+)?agent|ai\s+(?:please|can\s+you)?)\s+(.+)/i,
     type: ACTION_TYPES.CALL_AI_AGENT,
     confidence: 0.85,
     extract: (m): CallAIAgentPayload => ({
       type: "CALL_AI_AGENT",
       task: m[1],
     }),
-    confirmationPrompt: (p) => {
+    confirmationPrompt: p => {
       const ap = p as CallAIAgentPayload;
       return `Run AI task: "${ap.task}"?`;
     },
@@ -140,7 +146,8 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
   // SCHEDULE_EVENT — "schedule a call", "set up a meeting"
   {
-    pattern: /(?:schedule|set\s+up|create|plan)\s+(?:a\s+)?(?:meeting|call|event|stream|session|interview)\s*(?:with\s+@?(\w+))?(?:\s+(?:on|at)\s+(.+))?/i,
+    pattern:
+      /(?:schedule|set\s+up|create|plan)\s+(?:a\s+)?(?:meeting|call|event|stream|session|interview)\s*(?:with\s+@?(\w+))?(?:\s+(?:on|at)\s+(.+))?/i,
     type: ACTION_TYPES.SCHEDULE_EVENT,
     confidence: 0.82,
     extract: (m, text): ScheduleEventPayload => ({
@@ -154,7 +161,8 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
   // SWAP_TOKEN — "swap 100 sky for eth", "exchange 50 usdc to sky"
   {
-    pattern: /(?:swap|exchange|trade|convert)\s+(\d+(?:\.\d+)?)\s+(\w+)\s+(?:for|to|into)\s+(\w+)/i,
+    pattern:
+      /(?:swap|exchange|trade|convert)\s+(\d+(?:\.\d+)?)\s+(\w+)\s+(?:for|to|into)\s+(\w+)/i,
     type: ACTION_TYPES.SWAP_TOKEN,
     confidence: 0.93,
     extract: (m): SwapTokenPayload => ({
@@ -163,7 +171,7 @@ const INTENT_PATTERNS: IntentPattern[] = [
       fromToken: m[2].toUpperCase(),
       toToken: m[3].toUpperCase(),
     }),
-    confirmationPrompt: (p) => {
+    confirmationPrompt: p => {
       const sp = p as SwapTokenPayload;
       return `Swap ${sp.amount} ${sp.fromToken} → ${sp.toToken}?`;
     },
@@ -171,7 +179,8 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
   // STAKE_TOKEN — "stake 500 sky", "lock 1000 tokens"
   {
-    pattern: /(?:stake|lock|deposit)\s+(\d+(?:\.\d+)?)\s*(?:sky|tokens?|skycoin)?/i,
+    pattern:
+      /(?:stake|lock|deposit)\s+(\d+(?:\.\d+)?)\s*(?:sky|tokens?|skycoin)?/i,
     type: ACTION_TYPES.STAKE_TOKEN,
     confidence: 0.9,
     extract: (m): StakeTokenPayload => ({
@@ -179,7 +188,7 @@ const INTENT_PATTERNS: IntentPattern[] = [
       token: "SKY",
       amount: parseFloat(m[1]),
     }),
-    confirmationPrompt: (p) => {
+    confirmationPrompt: p => {
       const sp = p as StakeTokenPayload;
       return `Stake ${sp.amount} SKY for rewards?`;
     },
@@ -187,14 +196,15 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
   // SUBSCRIBE — "subscribe to @alice", "join @creator premium"
   {
-    pattern: /(?:subscribe|follow|join)\s+(?:to\s+)?@?(\w+)(?:\s+(?:premium|pro|plus))?/i,
+    pattern:
+      /(?:subscribe|follow|join)\s+(?:to\s+)?@?(\w+)(?:\s+(?:premium|pro|plus))?/i,
     type: ACTION_TYPES.SUBSCRIBE,
     confidence: 0.8,
     extract: (m): SubscribePayload => ({
       type: "SUBSCRIBE",
       target: m[1],
     }),
-    confirmationPrompt: (p) => {
+    confirmationPrompt: p => {
       const sp = p as SubscribePayload;
       return `Subscribe to @${sp.target}?`;
     },
@@ -255,12 +265,21 @@ export function parseIntent(message: string): ParsedIntent {
 /**
  * routeAction — maps action type to the correct handler URL/procedure
  */
-export function routeAction(type: ActionType): { procedure: string; route?: string } {
+export function routeAction(type: ActionType): {
+  procedure: string;
+  route?: string;
+} {
   const routes: Record<ActionType, { procedure: string; route?: string }> = {
     PAYMENT: { procedure: "wallet.send", route: "/wallet" },
     TIP: { procedure: "wallet.send", route: "/wallet" },
-    REQUEST_SERVICE: { procedure: "marketplace.createRequest", route: "/marketplace" },
-    CREATE_LISTING: { procedure: "marketplace.createListing", route: "/marketplace" },
+    REQUEST_SERVICE: {
+      procedure: "marketplace.createRequest",
+      route: "/marketplace",
+    },
+    CREATE_LISTING: {
+      procedure: "marketplace.createListing",
+      route: "/marketplace",
+    },
     MATCH_USER: { procedure: "social.findMatch", route: "/social" },
     CALL_AI_AGENT: { procedure: "ai.chat", route: "/ai-engineer" },
     SCHEDULE_EVENT: { procedure: "stream.scheduleEvent", route: "/streaming" },
@@ -342,7 +361,8 @@ export function buildExecutionContext(intent: ParsedIntent): {
       return {
         procedure: route.procedure,
         input: intent.payload as unknown as Record<string, unknown>,
-        displayMessage: intent.displayLabel || intent.confirmationPrompt || "Executing...",
+        displayMessage:
+          intent.displayLabel || intent.confirmationPrompt || "Executing...",
       };
   }
 }
@@ -358,7 +378,10 @@ export function formatActionConfirmation(intent: ParsedIntent): string {
  * getSuggestions — returns contextual quick action suggestions
  * based on conversation context
  */
-export function getSuggestions(context: { hasRecipient: boolean; userBalance: number }): Array<{
+export function getSuggestions(context: {
+  hasRecipient: boolean;
+  userBalance: number;
+}): Array<{
   label: string;
   type: ActionType;
   icon: string;
@@ -366,13 +389,33 @@ export function getSuggestions(context: { hasRecipient: boolean; userBalance: nu
   const suggestions = [];
 
   if (context.hasRecipient && context.userBalance > 0) {
-    suggestions.push({ label: "Send Tip", type: ACTION_TYPES.TIP, icon: "Heart" });
-    suggestions.push({ label: "Send Payment", type: ACTION_TYPES.PAYMENT, icon: "ArrowUpRight" });
+    suggestions.push({
+      label: "Send Tip",
+      type: ACTION_TYPES.TIP,
+      icon: "Heart",
+    });
+    suggestions.push({
+      label: "Send Payment",
+      type: ACTION_TYPES.PAYMENT,
+      icon: "ArrowUpRight",
+    });
   }
 
-  suggestions.push({ label: "Hire AI Agent", type: ACTION_TYPES.CALL_AI_AGENT, icon: "Bot" });
-  suggestions.push({ label: "Request Service", type: ACTION_TYPES.REQUEST_SERVICE, icon: "ShoppingBag" });
-  suggestions.push({ label: "Create Listing", type: ACTION_TYPES.CREATE_LISTING, icon: "PlusCircle" });
+  suggestions.push({
+    label: "Hire AI Agent",
+    type: ACTION_TYPES.CALL_AI_AGENT,
+    icon: "Bot",
+  });
+  suggestions.push({
+    label: "Request Service",
+    type: ACTION_TYPES.REQUEST_SERVICE,
+    icon: "ShoppingBag",
+  });
+  suggestions.push({
+    label: "Create Listing",
+    type: ACTION_TYPES.CREATE_LISTING,
+    icon: "PlusCircle",
+  });
 
   return suggestions;
 }

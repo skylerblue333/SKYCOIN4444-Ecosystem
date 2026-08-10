@@ -19,7 +19,7 @@ import {
   Layers,
   Sparkles,
   ArrowRight,
-  CheckCircle2,
+  CheckCircle,
   Zap,
   Crown,
 } from "lucide-react";
@@ -245,13 +245,17 @@ export default function Features() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[oklch(0.72 0.28 305)]/30 bg-[oklch(0.72 0.28 305)]/5 mb-4">
             <Layers className="h-3 w-3 text-[oklch(0.72 0.28 305)]" />
-            <span className="text-xs font-mono text-[oklch(0.72 0.28 305)]">COMPLETE FEATURE BREAKDOWN</span>
+            <span className="text-xs font-mono text-[oklch(0.72 0.28 305)]">
+              COMPLETE FEATURE BREAKDOWN
+            </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-[oklch(0.72 0.28 305)]">22,680+</span> Features
+            <span className="text-[oklch(0.72 0.28 305)]">22,680+</span>{" "}
+            Features
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Every feature is real, compiled, and production-ready. 70 versions of continuous engineering across 12 integrated modules.
+            Every feature is real, compiled, and production-ready. 70 versions
+            of continuous engineering across 12 integrated modules.
           </p>
         </div>
 
@@ -282,24 +286,34 @@ export default function Features() {
         {/* Feature Categories */}
         <div className="space-y-6 max-w-5xl mx-auto">
           {FEATURE_CATEGORIES.map((category, idx) => (
-            <div key={category.name} className="stat-card p-6 hover:border-[oklch(0.72 0.28 305)]/30 transition-all">
+            <div
+              key={category.name}
+              className="stat-card p-6 hover:border-[oklch(0.72 0.28 305)]/30 transition-all"
+            >
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-[oklch(0.72 0.28 305)]/10 flex items-center justify-center shrink-0">
                   <category.icon className="w-6 h-6 text-[oklch(0.72 0.28 305)]" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-bold">{category.name}</h3>
-                  <div className="text-sm text-muted-foreground">Module {idx + 1} of 12</div>
+                  <div className="text-sm text-muted-foreground">
+                    Module {idx + 1} of 12
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-mono font-bold text-[oklch(0.72 0.28 305)]">{category.count}</div>
+                  <div className="text-xl font-mono font-bold text-[oklch(0.72 0.28 305)]">
+                    {category.count}
+                  </div>
                   <div className="text-xs text-muted-foreground">features</div>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {category.features.map((feature) => (
-                  <div key={feature} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)] shrink-0" />
+                {category.features.map(feature => (
+                  <div
+                    key={feature}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 text-[oklch(0.72 0.28 305)] shrink-0" />
                     <span className="text-muted-foreground">{feature}</span>
                   </div>
                 ))}
@@ -311,7 +325,10 @@ export default function Features() {
         {/* CTA */}
         <div className="text-center mt-16">
           <Link href="/ecosystem">
-            <Button size="lg" className="bg-[oklch(0.72 0.28 305)] hover:bg-[oklch(0.65 0.28 305)] text-black font-semibold gap-2 h-12 px-8">
+            <Button
+              size="lg"
+              className="bg-[oklch(0.72 0.28 305)] hover:bg-[oklch(0.65 0.28 305)] text-black font-semibold gap-2 h-12 px-8"
+            >
               <Sparkles className="w-5 h-5" />
               Explore the Ecosystem
               <ArrowRight className="w-4 h-4" />

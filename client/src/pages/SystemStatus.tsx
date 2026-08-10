@@ -5,11 +5,31 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import {
-  Activity, Database, Server, Cpu, MemoryStick, Clock, RefreshCw,
-  CheckCircle, AlertTriangle, XCircle, Wifi, Shield, Zap, Globe
+  Activity,
+  Database,
+  Server,
+  Cpu,
+  MemoryStick,
+  Clock,
+  RefreshCw,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  Wifi,
+  Shield,
+  Zap,
+  Globe,
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 interface HealthData {
   status: "ok" | "degraded" | "down";
@@ -38,19 +58,30 @@ interface HistoryPoint {
 }
 
 const StatusIcon = ({ status }: { status: string }) => {
-  if (status === "ok" || status === "healthy") return <CheckCircle className="w-5 h-5 text-green-400" />;
-  if (status === "degraded") return <AlertTriangle className="w-5 h-5 text-yellow-400" />;
+  if (status === "ok" || status === "healthy")
+    return <CheckCircle className="w-5 h-5 text-green-400" />;
+  if (status === "degraded")
+    return <AlertTriangle className="w-5 h-5 text-yellow-400" />;
   return <XCircle className="w-5 h-5 text-red-400" />;
 };
 
 const StatusBadge = ({ status }: { status: string }) => {
-  const color = status === "ok" || status === "healthy" ? "bg-green-500/20 text-green-400 border-green-500/30"
-    : status === "degraded" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-    : "bg-red-500/20 text-red-400 border-red-500/30";
-  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${color}`}>
-    <span className={`w-1.5 h-1.5 rounded-full ${status === "ok" || status === "healthy" ? "bg-green-400 animate-pulse" : status === "degraded" ? "bg-yellow-400" : "bg-red-400"}`} />
-    {status.toUpperCase()}
-  </span>;
+  const color =
+    status === "ok" || status === "healthy"
+      ? "bg-green-500/20 text-green-400 border-green-500/30"
+      : status === "degraded"
+        ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+        : "bg-red-500/20 text-red-400 border-red-500/30";
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${color}`}
+    >
+      <span
+        className={`w-1.5 h-1.5 rounded-full ${status === "ok" || status === "healthy" ? "bg-green-400 animate-pulse" : status === "degraded" ? "bg-yellow-400" : "bg-red-400"}`}
+      />
+      {status.toUpperCase()}
+    </span>
+  );
 };
 
 function formatUptime(seconds: number): string {
@@ -93,7 +124,7 @@ export default function SystemStatus() {
         return [...prev.slice(-19), point];
       });
     } catch {
-      setHealth(prev => prev ? { ...prev, status: "down" } : null);
+      setHealth(prev => (prev ? { ...prev, status: "down" } : null));
     } finally {
       setLoading(false);
     }
@@ -110,15 +141,47 @@ export default function SystemStatus() {
   }, [autoRefresh, fetchStatus]);
 
   const services = [
-    { name: "API Server", icon: <Server className="w-4 h-4" />, status: health?.services.server.status || "unknown", detail: `PID ${metrics?.pid || "—"}` },
-    { name: "Database", icon: <Database className="w-4 h-4" />, status: health?.services.database.status || "unknown", detail: `${health?.services.database.latencyMs || 0}ms latency` },
-    { name: "tRPC Layer", icon: <Zap className="w-4 h-4" />, status: health?.status === "ok" ? "healthy" : "degraded", detail: "Procedures active" },
-    { name: "Auth System", icon: <Shield className="w-4 h-4" />, status: "healthy", detail: "OAuth + JWT active" },
-    { name: "Storage", icon: <Globe className="w-4 h-4" />, status: "healthy", detail: "S3 proxy active" },
-    { name: "Rate Limiter", icon: <Activity className="w-4 h-4" />, status: "healthy", detail: "All routes protected" },
+    {
+      name: "API Server",
+      icon: <Server className="w-4 h-4" />,
+      status: health?.services.server.status || "unknown",
+      detail: `PID ${metrics?.pid || "—"}`,
+    },
+    {
+      name: "Database",
+      icon: <Database className="w-4 h-4" />,
+      status: health?.services.database.status || "unknown",
+      detail: `${health?.services.database.latencyMs || 0}ms latency`,
+    },
+    {
+      name: "tRPC Layer",
+      icon: <Zap className="w-4 h-4" />,
+      status: health?.status === "ok" ? "healthy" : "degraded",
+      detail: "Procedures active",
+    },
+    {
+      name: "Auth System",
+      icon: <Shield className="w-4 h-4" />,
+      status: "healthy",
+      detail: "OAuth + JWT active",
+    },
+    {
+      name: "Storage",
+      icon: <Globe className="w-4 h-4" />,
+      status: "healthy",
+      detail: "S3 proxy active",
+    },
+    {
+      name: "Rate Limiter",
+      icon: <Activity className="w-4 h-4" />,
+      status: "healthy",
+      detail: "All routes protected",
+    },
   ];
 
-  const memPercent = metrics ? Math.round((metrics.memory.heapUsedMB / metrics.memory.heapTotalMB) * 100) : 0;
+  const memPercent = metrics
+    ? Math.round((metrics.memory.heapUsedMB / metrics.memory.heapTotalMB) * 100)
+    : 0;
 
   return (
     <AppLayout>
@@ -143,29 +206,47 @@ export default function SystemStatus() {
               variant="outline"
               size="sm"
               onClick={() => setAutoRefresh(!autoRefresh)}
-              className={autoRefresh ? "border-green-500/50 text-green-400" : ""}
+              className={
+                autoRefresh ? "border-green-500/50 text-green-400" : ""
+              }
             >
               <Wifi className="w-3 h-3 mr-1" />
               {autoRefresh ? "Live" : "Paused"}
             </Button>
-            <Button variant="outline" size="sm" onClick={fetchStatus} disabled={loading}>
-              <RefreshCw className={`w-3 h-3 mr-1 ${loading ? "animate-spin" : ""}`} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchStatus}
+              disabled={loading}
+            >
+              <RefreshCw
+                className={`w-3 h-3 mr-1 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
         </div>
 
         {/* Overall Status Banner */}
-        <Card className={`border-2 ${health?.status === "ok" ? "border-green-500/30 bg-green-500/5" : health?.status === "degraded" ? "border-yellow-500/30 bg-yellow-500/5" : "border-red-500/30 bg-red-500/5"}`}>
+        <Card
+          className={`border-2 ${health?.status === "ok" ? "border-green-500/30 bg-green-500/5" : health?.status === "degraded" ? "border-yellow-500/30 bg-yellow-500/5" : "border-red-500/30 bg-red-500/5"}`}
+        >
           <CardContent className="py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <StatusIcon status={health?.status || "unknown"} />
               <div>
                 <div className="font-semibold text-lg">
-                  {health?.status === "ok" ? "All Systems Operational" : health?.status === "degraded" ? "Partial Outage" : loading ? "Checking..." : "System Outage"}
+                  {health?.status === "ok"
+                    ? "All Systems Operational"
+                    : health?.status === "degraded"
+                      ? "Partial Outage"
+                      : loading
+                        ? "Checking..."
+                        : "System Outage"}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Environment: {health?.environment || "—"} · Uptime: {health ? formatUptime(health.uptime) : "—"}
+                  Environment: {health?.environment || "—"} · Uptime:{" "}
+                  {health ? formatUptime(health.uptime) : "—"}
                 </div>
               </div>
             </div>
@@ -175,8 +256,11 @@ export default function SystemStatus() {
 
         {/* Service Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {services.map((svc) => (
-            <Card key={svc.name} className="border border-border/50 hover:border-purple-500/30 transition-colors">
+          {services.map(svc => (
+            <Card
+              key={svc.name}
+              className="border border-border/50 hover:border-purple-500/30 transition-colors"
+            >
               <CardContent className="py-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2 text-sm font-medium">
@@ -185,7 +269,9 @@ export default function SystemStatus() {
                   </div>
                   <StatusBadge status={svc.status} />
                 </div>
-                <div className="text-xs text-muted-foreground">{svc.detail}</div>
+                <div className="text-xs text-muted-foreground">
+                  {svc.detail}
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -203,11 +289,15 @@ export default function SystemStatus() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-400">
-                {metrics?.memory.heapUsedMB || 0} <span className="text-sm font-normal text-muted-foreground">MB</span>
+                {metrics?.memory.heapUsedMB || 0}{" "}
+                <span className="text-sm font-normal text-muted-foreground">
+                  MB
+                </span>
               </div>
               <Progress value={memPercent} className="mt-2 h-1.5" />
               <div className="text-xs text-muted-foreground mt-1">
-                {memPercent}% of {metrics?.memory.heapTotalMB || 0}MB heap · RSS {metrics?.memory.rssMB || 0}MB
+                {memPercent}% of {metrics?.memory.heapTotalMB || 0}MB heap · RSS{" "}
+                {metrics?.memory.rssMB || 0}MB
               </div>
             </CardContent>
           </Card>
@@ -222,10 +312,20 @@ export default function SystemStatus() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-cyan-400">
-                {health?.services.database.latencyMs || 0} <span className="text-sm font-normal text-muted-foreground">ms</span>
+                {health?.services.database.latencyMs || 0}{" "}
+                <span className="text-sm font-normal text-muted-foreground">
+                  ms
+                </span>
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                Status: <span className={health?.services.database.status === "healthy" ? "text-green-400" : "text-yellow-400"}>
+                Status:{" "}
+                <span
+                  className={
+                    health?.services.database.status === "healthy"
+                      ? "text-green-400"
+                      : "text-yellow-400"
+                  }
+                >
                   {health?.services.database.status || "unknown"}
                 </span>
               </div>
@@ -265,16 +365,46 @@ export default function SystemStatus() {
                 <ResponsiveContainer width="100%" height={120}>
                   <AreaChart data={history}>
                     <defs>
-                      <linearGradient id="latencyGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                      <linearGradient
+                        id="latencyGrad"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#06b6d4"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#06b6d4"
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" />
-                    <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#888" }} />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 10, fill: "#888" }}
+                    />
                     <YAxis tick={{ fontSize: 10, fill: "#888" }} unit="ms" />
-                    <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #333", borderRadius: 8, fontSize: 12 }} />
-                    <Area type="monotone" dataKey="latency" stroke="#06b6d4" fill="url(#latencyGrad)" strokeWidth={2} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#1a1a2e",
+                        border: "1px solid #333",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="latency"
+                      stroke="#06b6d4"
+                      fill="url(#latencyGrad)"
+                      strokeWidth={2}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -292,15 +422,39 @@ export default function SystemStatus() {
                   <AreaChart data={history}>
                     <defs>
                       <linearGradient id="memGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                        <stop
+                          offset="5%"
+                          stopColor="#a855f7"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#a855f7"
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" />
-                    <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#888" }} />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 10, fill: "#888" }}
+                    />
                     <YAxis tick={{ fontSize: 10, fill: "#888" }} unit="MB" />
-                    <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #333", borderRadius: 8, fontSize: 12 }} />
-                    <Area type="monotone" dataKey="memory" stroke="#a855f7" fill="url(#memGrad)" strokeWidth={2} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#1a1a2e",
+                        border: "1px solid #333",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="memory"
+                      stroke="#a855f7"
+                      fill="url(#memGrad)"
+                      strokeWidth={2}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -319,25 +473,74 @@ export default function SystemStatus() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               {[
-                { label: "Security Headers", value: "Helmet v8", color: "text-green-400" },
-                { label: "Compression", value: "Gzip Level 6", color: "text-blue-400" },
-                { label: "Rate Limiting", value: "Per-route", color: "text-purple-400" },
-                { label: "Request Timeout", value: "30 seconds", color: "text-cyan-400" },
-                { label: "Body Limit", value: "10 MB", color: "text-orange-400" },
-                { label: "Auth Rate Limit", value: "30/15min", color: "text-pink-400" },
-                { label: "API Rate Limit", value: "300/min", color: "text-yellow-400" },
-                { label: "Upload Rate Limit", value: "20/min", color: "text-red-400" },
+                {
+                  label: "Security Headers",
+                  value: "Helmet v8",
+                  color: "text-green-400",
+                },
+                {
+                  label: "Compression",
+                  value: "Gzip Level 6",
+                  color: "text-blue-400",
+                },
+                {
+                  label: "Rate Limiting",
+                  value: "Per-route",
+                  color: "text-purple-400",
+                },
+                {
+                  label: "Request Timeout",
+                  value: "30 seconds",
+                  color: "text-cyan-400",
+                },
+                {
+                  label: "Body Limit",
+                  value: "10 MB",
+                  color: "text-orange-400",
+                },
+                {
+                  label: "Auth Rate Limit",
+                  value: "30/15min",
+                  color: "text-pink-400",
+                },
+                {
+                  label: "API Rate Limit",
+                  value: "300/min",
+                  color: "text-yellow-400",
+                },
+                {
+                  label: "Upload Rate Limit",
+                  value: "20/min",
+                  color: "text-red-400",
+                },
               ].map(item => (
                 <div key={item.label} className="space-y-1">
-                  <div className="text-muted-foreground text-xs">{item.label}</div>
-                  <div className={`font-medium ${item.color}`}>{item.value}</div>
+                  <div className="text-muted-foreground text-xs">
+                    {item.label}
+                  </div>
+                  <div className={`font-medium ${item.color}`}>
+                    {item.value}
+                  </div>
                 </div>
               ))}
             </div>
             <Separator className="my-4" />
             <div className="flex flex-wrap gap-2">
-              {["helmet", "compression", "express-rate-limit", "morgan", "tRPC v11", "Drizzle ORM", "Stripe v8", "JWT Auth"].map(pkg => (
-                <Badge key={pkg} variant="outline" className="text-xs border-purple-500/30 text-purple-300">
+              {[
+                "helmet",
+                "compression",
+                "express-rate-limit",
+                "morgan",
+                "tRPC v11",
+                "Drizzle ORM",
+                "Stripe v8",
+                "JWT Auth",
+              ].map(pkg => (
+                <Badge
+                  key={pkg}
+                  variant="outline"
+                  className="text-xs border-purple-500/30 text-purple-300"
+                >
                   {pkg}
                 </Badge>
               ))}

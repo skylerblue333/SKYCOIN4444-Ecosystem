@@ -1,11 +1,26 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Lock, Mail, Bell, Eye, EyeOff, Loader2, Shield, Trash2 } from "lucide-react";
+import {
+  Lock,
+  Mail,
+  Bell,
+  Eye,
+  EyeOff,
+  Loader2,
+  Shield,
+  Trash2,
+} from "lucide-react";
 
 export function AccountSettings() {
   const [activeTab, setActiveTab] = useState("general");
@@ -43,7 +58,12 @@ export function AccountSettings() {
         return;
       }
       toast.success("Password updated successfully");
-      setFormData({ ...formData, currentPassword: "", newPassword: "", confirmPassword: "" });
+      setFormData({
+        ...formData,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (error) {
       toast.error("Failed to update password");
     } finally {
@@ -75,16 +95,32 @@ export function AccountSettings() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Account Settings</h1>
-          <p className="text-slate-400">Manage your account, security, and preferences</p>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Account Settings
+          </h1>
+          <p className="text-slate-400">
+            Manage your account, security, and preferences
+          </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-4 bg-slate-800 border border-slate-700">
-            <TabsTrigger value="general" className="text-slate-300">General</TabsTrigger>
-            <TabsTrigger value="security" className="text-slate-300">Security</TabsTrigger>
-            <TabsTrigger value="notifications" className="text-slate-300">Notifications</TabsTrigger>
-            <TabsTrigger value="danger" className="text-slate-300">Danger</TabsTrigger>
+            <TabsTrigger value="general" className="text-slate-300">
+              General
+            </TabsTrigger>
+            <TabsTrigger value="security" className="text-slate-300">
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="text-slate-300">
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger value="danger" className="text-slate-300">
+              Danger
+            </TabsTrigger>
           </TabsList>
 
           {/* General Tab */}
@@ -92,11 +128,15 @@ export function AccountSettings() {
             <Card className="border-slate-700 bg-slate-800/50">
               <CardHeader>
                 <CardTitle className="text-white">General Settings</CardTitle>
-                <CardDescription>Update your basic account information</CardDescription>
+                <CardDescription>
+                  Update your basic account information
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-300 mb-2 block">Email Address</label>
+                  <label className="text-sm font-medium text-slate-300 mb-2 block">
+                    Email Address
+                  </label>
                   <div className="flex gap-2">
                     <Input
                       type="email"
@@ -104,9 +144,13 @@ export function AccountSettings() {
                       disabled
                       className="bg-slate-700 border-slate-600 text-slate-400"
                     />
-                    <Button variant="outline" className="border-slate-600">Change</Button>
+                    <Button variant="outline" className="border-slate-600">
+                      Change
+                    </Button>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">Email verified ✓</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Email verified ✓
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -124,7 +168,9 @@ export function AccountSettings() {
               <CardContent>
                 <form onSubmit={handlePasswordChange} className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-slate-300 mb-2 block">Current Password</label>
+                    <label className="text-sm font-medium text-slate-300 mb-2 block">
+                      Current Password
+                    </label>
                     <Input
                       type="password"
                       name="currentPassword"
@@ -135,7 +181,9 @@ export function AccountSettings() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-slate-300 mb-2 block">New Password</label>
+                    <label className="text-sm font-medium text-slate-300 mb-2 block">
+                      New Password
+                    </label>
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
@@ -150,12 +198,18 @@ export function AccountSettings() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-2.5 text-slate-400"
                       >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-slate-300 mb-2 block">Confirm Password</label>
+                    <label className="text-sm font-medium text-slate-300 mb-2 block">
+                      Confirm Password
+                    </label>
                     <Input
                       type="password"
                       name="confirmPassword"
@@ -170,7 +224,9 @@ export function AccountSettings() {
                     disabled={loading}
                     className="w-full bg-purple-600 hover:bg-purple-700"
                   >
-                    {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : null}
                     Update Password
                   </Button>
                 </form>
@@ -185,8 +241,12 @@ export function AccountSettings() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-400 mb-4">Add an extra layer of security to your account</p>
-                <Button variant="outline" className="border-slate-600">Enable 2FA</Button>
+                <p className="text-slate-400 mb-4">
+                  Add an extra layer of security to your account
+                </p>
+                <Button variant="outline" className="border-slate-600">
+                  Enable 2FA
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -202,21 +262,31 @@ export function AccountSettings() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {Object.entries(notifications).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between p-3 bg-slate-700/50 rounded">
+                  <div
+                    key={key}
+                    className="flex items-center justify-between p-3 bg-slate-700/50 rounded"
+                  >
                     <div>
                       <p className="text-sm font-medium text-white capitalize">
                         {key.replace(/([A-Z])/g, " $1").trim()}
                       </p>
                       <p className="text-xs text-slate-400">
-                        {key === "emailNotifications" && "Receive email notifications"}
-                        {key === "pushNotifications" && "Receive browser push notifications"}
-                        {key === "marketingEmails" && "Receive promotional emails"}
+                        {key === "emailNotifications" &&
+                          "Receive email notifications"}
+                        {key === "pushNotifications" &&
+                          "Receive browser push notifications"}
+                        {key === "marketingEmails" &&
+                          "Receive promotional emails"}
                         {key === "weeklyDigest" && "Receive weekly digest"}
                       </p>
                     </div>
                     <Switch
                       checked={value}
-                      onCheckedChange={() => handleNotificationChange(key as keyof typeof notifications)}
+                      onCheckedChange={() =>
+                        handleNotificationChange(
+                          key as keyof typeof notifications
+                        )
+                      }
                     />
                   </div>
                 ))}
@@ -237,14 +307,17 @@ export function AccountSettings() {
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-sm text-slate-400">
-                    Deleting your account will permanently remove all your data. This action cannot be undone.
+                    Deleting your account will permanently remove all your data.
+                    This action cannot be undone.
                   </p>
                   <Button
                     onClick={handleDeleteAccount}
                     disabled={loading}
                     className="w-full bg-red-600 hover:bg-red-700"
                   >
-                    {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : null}
                     Delete Account
                   </Button>
                 </div>

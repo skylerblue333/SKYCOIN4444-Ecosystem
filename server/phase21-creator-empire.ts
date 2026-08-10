@@ -68,8 +68,17 @@ export interface SponsorshipDashboard {
   totalEarned: number;
   pendingPayments: number;
   avgDealValue: number;
-  topSponsors: Array<{ sponsorId: number; sponsorName: string; totalPaid: number }>;
-  upcomingDeals: Array<{ dealId: string; sponsorName: string; value: number; dueDate: Date }>;
+  topSponsors: Array<{
+    sponsorId: number;
+    sponsorName: string;
+    totalPaid: number;
+  }>;
+  upcomingDeals: Array<{
+    dealId: string;
+    sponsorName: string;
+    value: number;
+    dueDate: Date;
+  }>;
   completedDeals: number;
 }
 
@@ -93,7 +102,8 @@ export interface CampaignPlanner {
   id: string;
   creatorId: number;
   campaignName: string;
-  campaignType: "launch" | "milestone" | "seasonal" | "collab" | "giveaway" | "challenge";
+  campaignType:
+    "launch" | "milestone" | "seasonal" | "collab" | "giveaway" | "challenge";
   status: "draft" | "scheduled" | "active" | "completed" | "cancelled";
   startDate: Date;
   endDate: Date;
@@ -102,7 +112,12 @@ export interface CampaignPlanner {
   actualReach: number;
   targetRevenue: number;
   actualRevenue: number;
-  tasks: Array<{ taskId: string; title: string; dueDate: Date; completed: boolean }>;
+  tasks: Array<{
+    taskId: string;
+    title: string;
+    dueDate: Date;
+    completed: boolean;
+  }>;
   platforms: string[];
   createdAt: Date;
 }
@@ -114,7 +129,15 @@ export interface CreatorJobPost {
   creatorId: number;
   title: string;
   description: string;
-  jobType: "editor" | "marketer" | "developer" | "moderator" | "manager" | "designer" | "writer" | "thumbnail_artist";
+  jobType:
+    | "editor"
+    | "marketer"
+    | "developer"
+    | "moderator"
+    | "manager"
+    | "designer"
+    | "writer"
+    | "thumbnail_artist";
   budget: number;
   budgetType: "fixed" | "hourly" | "revenue_share";
   currency: "USD" | "SKY444";
@@ -146,7 +169,9 @@ export interface CreatorTeamMember {
   creatorId: number;
   memberId: number;
   role: CreatorJobPost["jobType"];
-  permissions: Array<"post" | "edit" | "moderate" | "analytics" | "revenue" | "dm">;
+  permissions: Array<
+    "post" | "edit" | "moderate" | "analytics" | "revenue" | "dm"
+  >;
   payRate: number;
   payType: "fixed_monthly" | "per_task" | "revenue_share";
   currency: "USD" | "SKY444";
@@ -163,7 +188,9 @@ export interface SyndicationJob {
   creatorId: number;
   contentId: string;
   contentType: "post" | "video" | "reel" | "stream_clip";
-  targetPlatforms: Array<"youtube" | "twitter_x" | "instagram" | "tiktok" | "discord" | "telegram">;
+  targetPlatforms: Array<
+    "youtube" | "twitter_x" | "instagram" | "tiktok" | "discord" | "telegram"
+  >;
   status: "queued" | "processing" | "completed" | "partial" | "failed";
   results: Array<{
     platform: string;
@@ -221,7 +248,14 @@ export interface ContentRepurposeJob {
   creatorId: number;
   sourceContentId: string;
   sourceType: "long_video" | "stream_vod" | "blog_post" | "podcast";
-  targetFormats: Array<"short_clip" | "reel" | "thread" | "carousel" | "quote_card" | "podcast_clip">;
+  targetFormats: Array<
+    | "short_clip"
+    | "reel"
+    | "thread"
+    | "carousel"
+    | "quote_card"
+    | "podcast_clip"
+  >;
   status: "queued" | "processing" | "completed" | "failed";
   outputs: Array<{
     format: string;
@@ -251,18 +285,40 @@ const _contentRepurposeJobs = new Map<string, ContentRepurposeJob>();
 // ─── CREATOR CRM ENGINE ───────────────────────────────────────────────────────
 
 export const creatorCRM = {
-  upsertFanProfile(params: Omit<FanProfile, "id" | "lifetimeValue" | "churnRisk" | "segment" | "updatedAt">): FanProfile {
+  upsertFanProfile(
+    params: Omit<
+      FanProfile,
+      "id" | "lifetimeValue" | "churnRisk" | "segment" | "updatedAt"
+    >
+  ): FanProfile {
     const id = `fan_${params.creatorId}_${params.fanUserId}`;
     const existing = _fanProfiles.get(id);
-    const base = existing ?? { ...params, id, lifetimeValue: 0, churnRisk: "low" as const, segment: "fan", notes: "", tags: [], updatedAt: new Date() };
+    const base = existing ?? {
+      ...params,
+      id,
+      lifetimeValue: 0,
+      churnRisk: "low" as const,
+      segment: "fan",
+      notes: "",
+      tags: [],
+      updatedAt: new Date(),
+    };
     if (existing) {
       Object.assign(existing, params);
     }
     const profile = existing ?? base;
-    profile.lifetimeValue = profile.totalSpent + profile.totalTips + profile.totalWatchHours * 0.5;
-    const daysSinceLast = (Date.now() - profile.lastInteractionAt.getTime()) / 86400000;
-    profile.churnRisk = daysSinceLast > 30 ? "high" : daysSinceLast > 14 ? "medium" : "low";
-    profile.segment = profile.lifetimeValue > 1000 ? "whale" : profile.lifetimeValue > 100 ? "superfan" : "fan";
+    profile.lifetimeValue =
+      profile.totalSpent + profile.totalTips + profile.totalWatchHours * 0.5;
+    const daysSinceLast =
+      (Date.now() - profile.lastInteractionAt.getTime()) / 86400000;
+    profile.churnRisk =
+      daysSinceLast > 30 ? "high" : daysSinceLast > 14 ? "medium" : "low";
+    profile.segment =
+      profile.lifetimeValue > 1000
+        ? "whale"
+        : profile.lifetimeValue > 100
+          ? "superfan"
+          : "fan";
     profile.updatedAt = new Date();
     _fanProfiles.set(id, profile);
     return profile;
@@ -274,14 +330,22 @@ export const creatorCRM = {
 
   getCreatorFans(creatorId: number, segment?: string): FanProfile[] {
     return Array.from(_fanProfiles.values())
-      .filter(f => f.creatorId === creatorId && (!segment || f.segment === segment))
+      .filter(
+        f => f.creatorId === creatorId && (!segment || f.segment === segment)
+      )
       .sort((a, b) => b.lifetimeValue - a.lifetimeValue);
   },
 
-  createSubscriberSegment(params: Omit<SubscriberSegment, "id" | "subscriberCount" | "avgMonthlyRevenue" | "createdAt" | "updatedAt">): SubscriberSegment {
+  createSubscriberSegment(
+    params: Omit<
+      SubscriberSegment,
+      "id" | "subscriberCount" | "avgMonthlyRevenue" | "createdAt" | "updatedAt"
+    >
+  ): SubscriberSegment {
     const id = `seg_${params.creatorId}_${Date.now()}`;
     const segment: SubscriberSegment = {
-      ...params, id,
+      ...params,
+      id,
       subscriberCount: 0,
       avgMonthlyRevenue: 0,
       createdAt: new Date(),
@@ -292,14 +356,30 @@ export const creatorCRM = {
   },
 
   getCreatorSegments(creatorId: number): SubscriberSegment[] {
-    return Array.from(_subscriberSegments.values()).filter(s => s.creatorId === creatorId);
+    return Array.from(_subscriberSegments.values()).filter(
+      s => s.creatorId === creatorId
+    );
   },
 
-  createMonetizationFunnel(params: Omit<MonetizationFunnel, "id" | "totalEntered" | "totalConverted" | "conversionRate" | "totalRevenue" | "createdAt">): MonetizationFunnel {
+  createMonetizationFunnel(
+    params: Omit<
+      MonetizationFunnel,
+      | "id"
+      | "totalEntered"
+      | "totalConverted"
+      | "conversionRate"
+      | "totalRevenue"
+      | "createdAt"
+    >
+  ): MonetizationFunnel {
     const id = `funnel_${params.creatorId}_${Date.now()}`;
     const funnel: MonetizationFunnel = {
-      ...params, id,
-      totalEntered: 0, totalConverted: 0, conversionRate: 0, totalRevenue: 0,
+      ...params,
+      id,
+      totalEntered: 0,
+      totalConverted: 0,
+      conversionRate: 0,
+      totalRevenue: 0,
       createdAt: new Date(),
     };
     _monetizationFunnels.set(id, funnel);
@@ -310,37 +390,53 @@ export const creatorCRM = {
     const funnel = _monetizationFunnels.get(funnelId);
     if (!funnel) return null;
     funnel.totalEntered++;
-    funnel.conversionRate = funnel.totalEntered > 0 ? funnel.totalConverted / funnel.totalEntered : 0;
+    funnel.conversionRate =
+      funnel.totalEntered > 0 ? funnel.totalConverted / funnel.totalEntered : 0;
     return funnel;
   },
 
-  recordFunnelConversion(funnelId: string, revenue: number): MonetizationFunnel | null {
+  recordFunnelConversion(
+    funnelId: string,
+    revenue: number
+  ): MonetizationFunnel | null {
     const funnel = _monetizationFunnels.get(funnelId);
     if (!funnel) return null;
     funnel.totalConverted++;
     funnel.totalRevenue += revenue;
-    funnel.conversionRate = funnel.totalEntered > 0 ? funnel.totalConverted / funnel.totalEntered : 0;
+    funnel.conversionRate =
+      funnel.totalEntered > 0 ? funnel.totalConverted / funnel.totalEntered : 0;
     return funnel;
   },
 
   getCreatorFunnels(creatorId: number): MonetizationFunnel[] {
-    return Array.from(_monetizationFunnels.values()).filter(f => f.creatorId === creatorId);
+    return Array.from(_monetizationFunnels.values()).filter(
+      f => f.creatorId === creatorId
+    );
   },
 
-  generatePayoutForecast(creatorId: number, period: string, historicalRevenue: Record<string, number>): PayoutForecast {
+  generatePayoutForecast(
+    creatorId: number,
+    period: string,
+    historicalRevenue: Record<string, number>
+  ): PayoutForecast {
     const values = Object.values(historicalRevenue);
-    const avgRevenue = values.length > 0 ? values.reduce((s, v) => s + v, 0) / values.length : 0;
-    const growthRate = values.length >= 2
-      ? (values[values.length - 1] - values[0]) / Math.max(1, values[0]) / values.length
-      : 0.05;
+    const avgRevenue =
+      values.length > 0 ? values.reduce((s, v) => s + v, 0) / values.length : 0;
+    const growthRate =
+      values.length >= 2
+        ? (values[values.length - 1] - values[0]) /
+          Math.max(1, values[0]) /
+          values.length
+        : 0.05;
     const projected = avgRevenue * (1 + growthRate);
     const forecast: PayoutForecast = {
-      creatorId, forecastPeriod: period,
-      projectedSubscriptionRevenue: projected * 0.40,
-      projectedAdRevenue: projected * 0.20,
-      projectedTipRevenue: projected * 0.10,
-      projectedPPVRevenue: projected * 0.10,
-      projectedSponsorshipRevenue: projected * 0.10,
+      creatorId,
+      forecastPeriod: period,
+      projectedSubscriptionRevenue: projected * 0.4,
+      projectedAdRevenue: projected * 0.2,
+      projectedTipRevenue: projected * 0.1,
+      projectedPPVRevenue: projected * 0.1,
+      projectedSponsorshipRevenue: projected * 0.1,
       projectedDigitalProductRevenue: projected * 0.05,
       projectedAffiliateRevenue: projected * 0.05,
       totalProjected: projected,
@@ -356,18 +452,29 @@ export const creatorCRM = {
     return _payoutForecasts.get(`forecast_${creatorId}_${period}`) ?? null;
   },
 
-  createCampaignPlanner(params: Omit<CampaignPlanner, "id" | "actualReach" | "actualRevenue" | "createdAt">): CampaignPlanner {
+  createCampaignPlanner(
+    params: Omit<
+      CampaignPlanner,
+      "id" | "actualReach" | "actualRevenue" | "createdAt"
+    >
+  ): CampaignPlanner {
     const id = `camp_${params.creatorId}_${Date.now()}`;
     const campaign: CampaignPlanner = {
-      ...params, id,
-      actualReach: 0, actualRevenue: 0,
+      ...params,
+      id,
+      actualReach: 0,
+      actualRevenue: 0,
       createdAt: new Date(),
     };
     _campaignPlanners.set(id, campaign);
     return campaign;
   },
 
-  updateCampaignMetrics(campaignId: string, actualReach: number, actualRevenue: number): CampaignPlanner | null {
+  updateCampaignMetrics(
+    campaignId: string,
+    actualReach: number,
+    actualRevenue: number
+  ): CampaignPlanner | null {
     const campaign = _campaignPlanners.get(campaignId);
     if (!campaign) return null;
     campaign.actualReach = actualReach;
@@ -375,7 +482,10 @@ export const creatorCRM = {
     return campaign;
   },
 
-  completeCampaignTask(campaignId: string, taskId: string): CampaignPlanner | null {
+  completeCampaignTask(
+    campaignId: string,
+    taskId: string
+  ): CampaignPlanner | null {
     const campaign = _campaignPlanners.get(campaignId);
     if (!campaign) return null;
     const task = campaign.tasks.find(t => t.taskId === taskId);
@@ -385,7 +495,9 @@ export const creatorCRM = {
   },
 
   getCreatorCampaigns(creatorId: number): CampaignPlanner[] {
-    return Array.from(_campaignPlanners.values()).filter(c => c.creatorId === creatorId);
+    return Array.from(_campaignPlanners.values()).filter(
+      c => c.creatorId === creatorId
+    );
   },
 
   getSponsorshipDashboard(creatorId: number): SponsorshipDashboard {
@@ -407,11 +519,18 @@ export const creatorCRM = {
 // ─── HIRING MARKETPLACE ENGINE ────────────────────────────────────────────────
 
 export const hiringMarketplace = {
-  postJob(params: Omit<CreatorJobPost, "id" | "applicantCount" | "viewCount" | "createdAt">): CreatorJobPost {
+  postJob(
+    params: Omit<
+      CreatorJobPost,
+      "id" | "applicantCount" | "viewCount" | "createdAt"
+    >
+  ): CreatorJobPost {
     const id = `job_${params.creatorId}_${Date.now()}`;
     const job: CreatorJobPost = {
-      ...params, id,
-      applicantCount: 0, viewCount: 0,
+      ...params,
+      id,
+      applicantCount: 0,
+      viewCount: 0,
       createdAt: new Date(),
     };
     _jobPosts.set(id, job);
@@ -425,10 +544,13 @@ export const hiringMarketplace = {
     return job;
   },
 
-  applyToJob(params: Omit<JobApplication, "id" | "status" | "appliedAt" | "updatedAt">): JobApplication {
+  applyToJob(
+    params: Omit<JobApplication, "id" | "status" | "appliedAt" | "updatedAt">
+  ): JobApplication {
     const id = `app_${params.applicantId}_${params.jobId}_${Date.now()}`;
     const application: JobApplication = {
-      ...params, id,
+      ...params,
+      id,
       status: "pending",
       appliedAt: new Date(),
       updatedAt: new Date(),
@@ -439,7 +561,11 @@ export const hiringMarketplace = {
     return application;
   },
 
-  reviewApplication(applicationId: string, status: JobApplication["status"], note?: string): JobApplication | null {
+  reviewApplication(
+    applicationId: string,
+    status: JobApplication["status"],
+    note?: string
+  ): JobApplication | null {
     const app = _jobApplications.get(applicationId);
     if (!app) return null;
     app.status = status;
@@ -457,16 +583,20 @@ export const hiringMarketplace = {
   },
 
   getOpenJobs(jobType?: CreatorJobPost["jobType"]): CreatorJobPost[] {
-    return Array.from(_jobPosts.values()).filter(j =>
-      j.status === "open" && (!jobType || j.jobType === jobType)
+    return Array.from(_jobPosts.values()).filter(
+      j => j.status === "open" && (!jobType || j.jobType === jobType)
     );
   },
 
   getCreatorJobs(creatorId: number): CreatorJobPost[] {
-    return Array.from(_jobPosts.values()).filter(j => j.creatorId === creatorId);
+    return Array.from(_jobPosts.values()).filter(
+      j => j.creatorId === creatorId
+    );
   },
 
-  addTeamMember(params: Omit<CreatorTeamMember, "id" | "totalPaid">): CreatorTeamMember {
+  addTeamMember(
+    params: Omit<CreatorTeamMember, "id" | "totalPaid">
+  ): CreatorTeamMember {
     const id = `team_${params.creatorId}_${params.memberId}`;
     const member: CreatorTeamMember = { ...params, id, totalPaid: 0 };
     _teamMembers.set(id, member);
@@ -483,10 +613,16 @@ export const hiringMarketplace = {
   },
 
   getCreatorTeam(creatorId: number): CreatorTeamMember[] {
-    return Array.from(_teamMembers.values()).filter(m => m.creatorId === creatorId && m.isActive);
+    return Array.from(_teamMembers.values()).filter(
+      m => m.creatorId === creatorId && m.isActive
+    );
   },
 
-  payTeamMember(creatorId: number, memberId: number, amount: number): CreatorTeamMember | null {
+  payTeamMember(
+    creatorId: number,
+    memberId: number,
+    amount: number
+  ): CreatorTeamMember | null {
     const member = _teamMembers.get(`team_${creatorId}_${memberId}`);
     if (!member) return null;
     member.totalPaid += amount;
@@ -497,12 +633,18 @@ export const hiringMarketplace = {
 // ─── CREATOR EXPANSION ENGINE ─────────────────────────────────────────────────
 
 export const creatorExpansionEngine = {
-  queueSyndication(params: Omit<SyndicationJob, "id" | "status" | "results" | "createdAt">): SyndicationJob {
+  queueSyndication(
+    params: Omit<SyndicationJob, "id" | "status" | "results" | "createdAt">
+  ): SyndicationJob {
     const id = `syn_${params.creatorId}_${Date.now()}`;
     const job: SyndicationJob = {
-      ...params, id,
+      ...params,
+      id,
       status: "queued",
-      results: params.targetPlatforms.map(p => ({ platform: p, status: "failed" as const })),
+      results: params.targetPlatforms.map(p => ({
+        platform: p,
+        status: "failed" as const,
+      })),
       createdAt: new Date(),
     };
     _syndicationJobs.set(id, job);
@@ -524,10 +666,17 @@ export const creatorExpansionEngine = {
     return job;
   },
 
-  queueAutoClip(creatorId: number, sourceStreamId: string, sourceDurationSeconds: number): AutoClipJob {
+  queueAutoClip(
+    creatorId: number,
+    sourceStreamId: string,
+    sourceDurationSeconds: number
+  ): AutoClipJob {
     const id = `clip_${creatorId}_${Date.now()}`;
     const job: AutoClipJob = {
-      id, creatorId, sourceStreamId, sourceDurationSeconds,
+      id,
+      creatorId,
+      sourceStreamId,
+      sourceDurationSeconds,
       status: "queued",
       clips: [],
       clipsGenerated: 0,
@@ -564,10 +713,22 @@ export const creatorExpansionEngine = {
     return job;
   },
 
-  queueAutoTranslation(creatorId: number, contentId: string, contentType: AutoTranslationJob["contentType"], sourceLanguage: string, targetLanguages: string[], sourceText: string): AutoTranslationJob {
+  queueAutoTranslation(
+    creatorId: number,
+    contentId: string,
+    contentType: AutoTranslationJob["contentType"],
+    sourceLanguage: string,
+    targetLanguages: string[],
+    sourceText: string
+  ): AutoTranslationJob {
     const id = `trans_${creatorId}_${contentId}_${Date.now()}`;
     const job: AutoTranslationJob = {
-      id, creatorId, contentId, contentType, sourceLanguage, targetLanguages,
+      id,
+      creatorId,
+      contentId,
+      contentType,
+      sourceLanguage,
+      targetLanguages,
       status: "queued",
       translations: [],
       createdAt: new Date(),
@@ -583,7 +744,7 @@ export const creatorExpansionEngine = {
     job.translations = job.targetLanguages.map(lang => ({
       language: lang,
       translatedText: `[${lang.toUpperCase()} translation of content ${job.contentId}]`,
-      confidence: 0.85 + Math.random() * 0.10,
+      confidence: 0.85 + Math.random() * 0.1,
       status: "completed" as const,
     }));
     job.status = "completed";
@@ -591,10 +752,19 @@ export const creatorExpansionEngine = {
     return job;
   },
 
-  queueContentRepurpose(creatorId: number, sourceContentId: string, sourceType: ContentRepurposeJob["sourceType"], targetFormats: ContentRepurposeJob["targetFormats"]): ContentRepurposeJob {
+  queueContentRepurpose(
+    creatorId: number,
+    sourceContentId: string,
+    sourceType: ContentRepurposeJob["sourceType"],
+    targetFormats: ContentRepurposeJob["targetFormats"]
+  ): ContentRepurposeJob {
     const id = `repurpose_${creatorId}_${sourceContentId}_${Date.now()}`;
     const job: ContentRepurposeJob = {
-      id, creatorId, sourceContentId, sourceType, targetFormats,
+      id,
+      creatorId,
+      sourceContentId,
+      sourceType,
+      targetFormats,
       status: "queued",
       outputs: [],
       createdAt: new Date(),
@@ -619,10 +789,14 @@ export const creatorExpansionEngine = {
   },
 
   getCreatorSyndicationJobs(creatorId: number): SyndicationJob[] {
-    return Array.from(_syndicationJobs.values()).filter(j => j.creatorId === creatorId);
+    return Array.from(_syndicationJobs.values()).filter(
+      j => j.creatorId === creatorId
+    );
   },
 
   getCreatorAutoClipJobs(creatorId: number): AutoClipJob[] {
-    return Array.from(_autoClipJobs.values()).filter(j => j.creatorId === creatorId);
+    return Array.from(_autoClipJobs.values()).filter(
+      j => j.creatorId === creatorId
+    );
   },
 };

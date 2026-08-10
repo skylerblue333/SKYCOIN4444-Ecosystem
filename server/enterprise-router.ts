@@ -51,7 +51,12 @@ const economyRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      return economyEngine.mint(input.token as TokenSymbol, input.userId, input.amount, input.reason);
+      return economyEngine.mint(
+        input.token as TokenSymbol,
+        input.userId,
+        input.amount,
+        input.reason
+      );
     }),
 
   burn: protectedProcedure
@@ -63,13 +68,23 @@ const economyRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return economyEngine.burn(input.token as TokenSymbol, ctx.user.id, input.amount, input.reason);
+      return economyEngine.burn(
+        input.token as TokenSymbol,
+        ctx.user.id,
+        input.amount,
+        input.reason
+      );
     }),
 
   applySinkPressure: adminProcedure
-    .input(z.object({ token: z.string(), multiplier: z.number().min(0.1).max(5) }))
+    .input(
+      z.object({ token: z.string(), multiplier: z.number().min(0.1).max(5) })
+    )
     .mutation(async ({ input }) => {
-      await economyEngine.applySinkPressure(input.token as TokenSymbol, input.multiplier);
+      await economyEngine.applySinkPressure(
+        input.token as TokenSymbol,
+        input.multiplier
+      );
       return { success: true };
     }),
 });
@@ -89,13 +104,25 @@ const securityRouter = router({
 
   myRiskScore: protectedProcedure.query(async ({ ctx }) => {
     const report = await securityEngine.getFraudReport(ctx.user.id);
-    return { riskScore: report.riskScore, quarantineRecommended: report.quarantineRecommended };
+    return {
+      riskScore: report.riskScore,
+      quarantineRecommended: report.quarantineRecommended,
+    };
   }),
 
   checkAction: protectedProcedure
-    .input(z.object({ action: z.string(), maxPerMinute: z.number().int().min(1).max(1000).optional() }))
+    .input(
+      z.object({
+        action: z.string(),
+        maxPerMinute: z.number().int().min(1).max(1000).optional(),
+      })
+    )
     .query(async ({ ctx, input }) => {
-      return securityEngine.checkAction(ctx.user.id, input.action, input.maxPerMinute);
+      return securityEngine.checkAction(
+        ctx.user.id,
+        input.action,
+        input.maxPerMinute
+      );
     }),
 });
 
@@ -111,9 +138,18 @@ const behaviorRouter = router({
   }),
 
   recordSignal: protectedProcedure
-    .input(z.object({ signalType: z.string().min(1).max(60), value: z.number().optional() }))
+    .input(
+      z.object({
+        signalType: z.string().min(1).max(60),
+        value: z.number().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      await behaviorEngine.recordSignal(ctx.user.id, input.signalType, input.value);
+      await behaviorEngine.recordSignal(
+        ctx.user.id,
+        input.signalType,
+        input.value
+      );
       return { success: true };
     }),
 
@@ -150,7 +186,12 @@ const governanceV2Router = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return governanceEngineV2.castVote(input.proposalId, ctx.user.id, input.vote, input.votingPower ?? 1);
+      return governanceEngineV2.castVote(
+        input.proposalId,
+        ctx.user.id,
+        input.vote,
+        input.votingPower ?? 1
+      );
     }),
 
   proposeAutonomously: adminProcedure
@@ -226,7 +267,9 @@ const memoryGraphRouter = router({
   }),
 
   loadHistory: adminProcedure
-    .input(z.object({ windowHours: z.number().int().min(1).max(168).optional() }))
+    .input(
+      z.object({ windowHours: z.number().int().min(1).max(168).optional() })
+    )
     .mutation(async ({ input }) => {
       await memoryGraphEngine.loadHistoricalMemory(input.windowHours ?? 24);
       return { success: true };
@@ -260,7 +303,10 @@ const emergentRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      return emergentEconomyEngine.createEmergentSink(input.token as TokenSymbol, input.trigger);
+      return emergentEconomyEngine.createEmergentSink(
+        input.token as TokenSymbol,
+        input.trigger
+      );
     }),
 
   enactLaw: adminProcedure

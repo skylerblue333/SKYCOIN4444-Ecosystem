@@ -5,7 +5,7 @@
 
 // 1. Micro-interactions
 export interface MicroInteraction {
-  trigger: 'hover' | 'click' | 'focus' | 'scroll';
+  trigger: "hover" | "click" | "focus" | "scroll";
   animation: string;
   duration: number;
   easing: string;
@@ -13,53 +13,53 @@ export interface MicroInteraction {
 
 export const MICRO_INTERACTIONS: Record<string, MicroInteraction> = {
   buttonHover: {
-    trigger: 'hover',
-    animation: 'scale(1.05)',
+    trigger: "hover",
+    animation: "scale(1.05)",
     duration: 150,
-    easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+    easing: "cubic-bezier(0.23, 1, 0.32, 1)",
   },
   buttonClick: {
-    trigger: 'click',
-    animation: 'scale(0.95)',
+    trigger: "click",
+    animation: "scale(0.95)",
     duration: 100,
-    easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+    easing: "cubic-bezier(0.23, 1, 0.32, 1)",
   },
   inputFocus: {
-    trigger: 'focus',
-    animation: 'borderColor(primary)',
+    trigger: "focus",
+    animation: "borderColor(primary)",
     duration: 200,
-    easing: 'ease-out',
+    easing: "ease-out",
   },
   cardHover: {
-    trigger: 'hover',
-    animation: 'translateY(-4px) shadow(lg)',
+    trigger: "hover",
+    animation: "translateY(-4px) shadow(lg)",
     duration: 200,
-    easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+    easing: "cubic-bezier(0.23, 1, 0.32, 1)",
   },
 };
 
 // 2. Loading States
 export interface LoadingState {
-  type: 'skeleton' | 'spinner' | 'progress' | 'pulse';
+  type: "skeleton" | "spinner" | "progress" | "pulse";
   duration: number;
   message?: string;
 }
 
 export const LOADING_STATES: Record<string, LoadingState> = {
   pageSkeleton: {
-    type: 'skeleton',
+    type: "skeleton",
     duration: 300,
   },
   apiSpinner: {
-    type: 'spinner',
+    type: "spinner",
     duration: 200,
   },
   fileUpload: {
-    type: 'progress',
+    type: "progress",
     duration: 500,
   },
   dataRefresh: {
-    type: 'pulse',
+    type: "pulse",
     duration: 400,
   },
 };
@@ -112,17 +112,17 @@ export interface ErrorMessage {
   message: string;
   action?: string;
   actionHandler?: () => void;
-  severity: 'error' | 'warning' | 'info';
+  severity: "error" | "warning" | "info";
 }
 
 export const createErrorMessage = (
   error: Error,
   context?: string
 ): ErrorMessage => ({
-  title: 'Something went wrong',
-  message: error.message || 'An unexpected error occurred',
-  severity: 'error',
-  action: 'Try again',
+  title: "Something went wrong",
+  message: error.message || "An unexpected error occurred",
+  severity: "error",
+  action: "Try again",
   actionHandler: () => window.location.reload(),
 });
 
@@ -138,36 +138,36 @@ export const createSuccessNotification = (
   message: string
 ): SuccessNotification => ({
   message,
-  icon: '✓',
+  icon: "✓",
   duration: 3000,
 });
 
 // 6. Tooltips
 export interface Tooltip {
   content: string;
-  position: 'top' | 'bottom' | 'left' | 'right';
+  position: "top" | "bottom" | "left" | "right";
   delay: number;
   maxWidth: number;
 }
 
 export const TOOLTIP_DEFAULTS: Tooltip = {
-  content: '',
-  position: 'top',
+  content: "",
+  position: "top",
   delay: 500,
   maxWidth: 250,
 };
 
 // 7. Animations
 export const ANIMATION_LIBRARY = {
-  fadeIn: 'fade-in 0.3s ease-out',
-  fadeOut: 'fade-out 0.3s ease-out',
-  slideIn: 'slide-in 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-  slideOut: 'slide-out 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-  scaleIn: 'scale-in 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-  scaleOut: 'scale-out 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-  bounce: 'bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-  pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-  shimmer: 'shimmer 2s infinite',
+  fadeIn: "fade-in 0.3s ease-out",
+  fadeOut: "fade-out 0.3s ease-out",
+  slideIn: "slide-in 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+  slideOut: "slide-out 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+  scaleIn: "scale-in 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+  scaleOut: "scale-out 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
+  bounce: "bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+  pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+  shimmer: "shimmer 2s infinite",
 };
 
 // 8. Page Transitions
@@ -179,18 +179,18 @@ export interface PageTransition {
 
 export const PAGE_TRANSITIONS: Record<string, PageTransition> = {
   default: {
-    enter: 'fade-in',
-    exit: 'fade-out',
+    enter: "fade-in",
+    exit: "fade-out",
     duration: 300,
   },
   slide: {
-    enter: 'slide-in-right',
-    exit: 'slide-out-left',
+    enter: "slide-in-right",
+    exit: "slide-out-left",
     duration: 400,
   },
   modal: {
-    enter: 'scale-in',
-    exit: 'scale-out',
+    enter: "scale-in",
+    exit: "scale-out",
     duration: 300,
   },
 };
@@ -208,10 +208,12 @@ export class FocusManager {
     if (focusableElements.length === 0) return;
 
     const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+    const lastElement = focusableElements[
+      focusableElements.length - 1
+    ] as HTMLElement;
 
-    element.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+    element.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
 
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
@@ -273,7 +275,9 @@ export class VoiceCommandManager {
   private commands: Map<string, () => void> = new Map();
 
   constructor() {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SR =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
     if (SR) {
       this.recognition = new SR();
       this.setupRecognition();
@@ -286,7 +290,7 @@ export class VoiceCommandManager {
     this.recognition.onresult = (event: any) => {
       const transcript = Array.from(event.results as any[])
         .map((result: any) => result[0].transcript)
-        .join('')
+        .join("")
         .toLowerCase();
 
       for (const [phrase, action] of this.commands) {

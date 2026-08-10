@@ -2,7 +2,17 @@
  * DatingPremium — Dating System Monetization
  * Boost, super likes, AI profile optimization, visibility ranking
  */
-import { Crown, Flame, Star, Brain, Eye, Shield, Zap, Check, ChevronRight } from "lucide-react";
+import {
+  Crown,
+  Flame,
+  Star,
+  Brain,
+  Eye,
+  Shield,
+  Zap,
+  Check,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -66,23 +76,73 @@ const PLANS = [
 ];
 
 const BOOSTS = [
-  { name: "1 Boost", price: "$2.99", desc: "30 min of 10x visibility", icon: "🔥" },
-  { name: "5 Boosts", price: "$9.99", desc: "Save 33% — best for weekends", icon: "⚡" },
-  { name: "10 Boosts", price: "$14.99", desc: "Save 50% — power user pack", icon: "👑" },
+  {
+    name: "1 Boost",
+    price: "$2.99",
+    desc: "30 min of 10x visibility",
+    icon: "🔥",
+  },
+  {
+    name: "5 Boosts",
+    price: "$9.99",
+    desc: "Save 33% — best for weekends",
+    icon: "⚡",
+  },
+  {
+    name: "10 Boosts",
+    price: "$14.99",
+    desc: "Save 50% — power user pack",
+    icon: "👑",
+  },
 ];
 
 const SUPER_LIKES = [
-  { name: "5 Super Likes", price: "$4.99", desc: "Stand out instantly", icon: "⭐" },
+  {
+    name: "5 Super Likes",
+    price: "$4.99",
+    desc: "Stand out instantly",
+    icon: "⭐",
+  },
   { name: "25 Super Likes", price: "$14.99", desc: "Save 40%", icon: "🌟" },
 ];
 
 const PREMIUM_FEATURES = [
-  { icon: Eye, title: "See Who Liked You", desc: "Know your admirers before swiping", color: "text-pink-400" },
-  { icon: Brain, title: "AI Profile Coach", desc: "Optimize bio, photos, and first impressions", color: "text-purple-400" },
-  { icon: Flame, title: "Boost Visibility", desc: "10x more profile views for 30 minutes", color: "text-orange-400" },
-  { icon: Star, title: "Super Likes", desc: "Show extra interest — 3x more likely to match", color: "text-yellow-400" },
-  { icon: Shield, title: "Advanced Filters", desc: "Filter by trust score, verified status, intent", color: "text-blue-400" },
-  { icon: Zap, title: "Priority Queue", desc: "Appear first in other users' feeds", color: "text-cyan-400" },
+  {
+    icon: Eye,
+    title: "See Who Liked You",
+    desc: "Know your admirers before swiping",
+    color: "text-pink-400",
+  },
+  {
+    icon: Brain,
+    title: "AI Profile Coach",
+    desc: "Optimize bio, photos, and first impressions",
+    color: "text-purple-400",
+  },
+  {
+    icon: Flame,
+    title: "Boost Visibility",
+    desc: "10x more profile views for 30 minutes",
+    color: "text-orange-400",
+  },
+  {
+    icon: Star,
+    title: "Super Likes",
+    desc: "Show extra interest — 3x more likely to match",
+    color: "text-yellow-400",
+  },
+  {
+    icon: Shield,
+    title: "Advanced Filters",
+    desc: "Filter by trust score, verified status, intent",
+    color: "text-blue-400",
+  },
+  {
+    icon: Zap,
+    title: "Priority Queue",
+    desc: "Appear first in other users' feeds",
+    color: "text-cyan-400",
+  },
 ];
 
 export default function DatingPremium() {
@@ -102,7 +162,9 @@ export default function DatingPremium() {
           <Crown className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-2xl font-bold">ShadowMatch Premium</h1>
-        <p className="text-sm text-muted-foreground mt-1">Find your match faster with AI-powered tools</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Find your match faster with AI-powered tools
+        </p>
       </div>
 
       {/* Premium features grid */}
@@ -123,16 +185,23 @@ export default function DatingPremium() {
       <div className="space-y-3">
         <h2 className="font-semibold text-sm">Choose Your Plan</h2>
         {PLANS.map(plan => (
-          <div key={plan.id} className={`card p-4 border-2 ${plan.color} relative`}>
+          <div
+            key={plan.id}
+            className={`card p-4 border-2 ${plan.color} relative`}
+          >
             {plan.badge && (
-              <Badge className={`${plan.badgeColor} text-white text-xs absolute -top-2 left-4`}>
+              <Badge
+                className={`${plan.badgeColor} text-white text-xs absolute -top-2 left-4`}
+              >
                 {plan.badge}
               </Badge>
             )}
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="font-bold text-base">{plan.name}</div>
-                <div className="text-xs text-muted-foreground">{plan.period}</div>
+                <div className="text-xs text-muted-foreground">
+                  {plan.period}
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-xl font-bold">{plan.price}</div>
@@ -167,11 +236,18 @@ export default function DatingPremium() {
               <span className="text-2xl">{boost.icon}</span>
               <div className="flex-1">
                 <div className="text-sm font-semibold">{boost.name}</div>
-                <div className="text-xs text-muted-foreground">{boost.desc}</div>
+                <div className="text-xs text-muted-foreground">
+                  {boost.desc}
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-sm font-bold">{boost.price}</div>
-                <Button size="sm" variant="outline" className="mt-1 text-xs h-7" onClick={() => handleBuy(boost.name)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-1 text-xs h-7"
+                  onClick={() => handleBuy(boost.name)}
+                >
                   Buy
                 </Button>
               </div>
@@ -193,7 +269,12 @@ export default function DatingPremium() {
               </div>
               <div className="text-right">
                 <div className="text-sm font-bold">{sl.price}</div>
-                <Button size="sm" variant="outline" className="mt-1 text-xs h-7" onClick={() => handleBuy(sl.name)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-1 text-xs h-7"
+                  onClick={() => handleBuy(sl.name)}
+                >
                   Buy
                 </Button>
               </div>
@@ -208,9 +289,15 @@ export default function DatingPremium() {
           <Brain className="w-8 h-8 text-purple-400 shrink-0" />
           <div className="flex-1">
             <div className="font-semibold text-sm">AI Profile Optimizer</div>
-            <div className="text-xs text-muted-foreground">Get a personalized profile audit + rewrite suggestions</div>
+            <div className="text-xs text-muted-foreground">
+              Get a personalized profile audit + rewrite suggestions
+            </div>
           </div>
-          <Button size="sm" className="bg-purple-500 hover:bg-purple-400 shrink-0" onClick={() => toast("AI Profile Optimizer requires Gold plan")}>
+          <Button
+            size="sm"
+            className="bg-purple-500 hover:bg-purple-400 shrink-0"
+            onClick={() => toast("AI Profile Optimizer requires Gold plan")}
+          >
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>

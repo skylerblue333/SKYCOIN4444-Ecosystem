@@ -11,7 +11,8 @@ export interface ReferralCode {
   code: string;
   referrerId: number;
   referrerType: "user" | "creator" | "community" | "nft_holder";
-  referralType: "standard" | "creator" | "affiliate" | "community" | "nft_bonus";
+  referralType:
+    "standard" | "creator" | "affiliate" | "community" | "nft_bonus";
   commissionRate: number;
   bonusAmount: number;
   bonusCurrency: "USD" | "SKY444";
@@ -28,7 +29,8 @@ export interface ReferralConversion {
   referralCodeId: string;
   referrerId: number;
   refereeId: number;
-  conversionType: "signup" | "first_purchase" | "subscription" | "nft_mint" | "creator_join";
+  conversionType:
+    "signup" | "first_purchase" | "subscription" | "nft_mint" | "creator_join";
   rewardAmount: number;
   rewardCurrency: "USD" | "SKY444";
   level: number;
@@ -65,7 +67,12 @@ export interface InviteReward {
 
 export interface StreakRecord {
   userId: number;
-  streakType: "daily_login" | "daily_post" | "daily_stream" | "daily_purchase" | "daily_referral";
+  streakType:
+    | "daily_login"
+    | "daily_post"
+    | "daily_stream"
+    | "daily_purchase"
+    | "daily_referral";
   currentStreak: number;
   longestStreak: number;
   lastActivityAt: Date;
@@ -79,7 +86,8 @@ export interface EngagementQuest {
   title: string;
   description: string;
   questType: "daily" | "weekly" | "monthly" | "one_time" | "seasonal";
-  category: "social" | "creator" | "trading" | "gaming" | "charity" | "community";
+  category:
+    "social" | "creator" | "trading" | "gaming" | "charity" | "community";
   requirements: Array<{ action: string; target: number; current: number }>;
   rewardAmount: number;
   rewardCurrency: "USD" | "SKY444" | "XP" | "NFT";
@@ -103,7 +111,8 @@ export interface UserQuestProgress {
 export interface CreatorMilestone {
   id: string;
   creatorId: number;
-  milestoneType: "followers" | "subscribers" | "revenue" | "streams" | "posts" | "nft_sales";
+  milestoneType:
+    "followers" | "subscribers" | "revenue" | "streams" | "posts" | "nft_sales";
   target: number;
   current: number;
   rewardAmount: number;
@@ -118,7 +127,12 @@ export interface CreatorMilestone {
 export interface RetentionLoop {
   id: string;
   userId: number;
-  loopType: "notification_hook" | "social_obligation" | "economic_lock" | "content_addiction" | "community_bond";
+  loopType:
+    | "notification_hook"
+    | "social_obligation"
+    | "economic_lock"
+    | "content_addiction"
+    | "community_bond";
   strength: number;
   lastTriggeredAt: Date;
   triggerCount: number;
@@ -144,7 +158,8 @@ export interface CreatorCollaboration {
   id: string;
   initiatorId: number;
   partnerId: number;
-  collaborationType: "co_stream" | "co_post" | "joint_nft" | "cross_promote" | "joint_course";
+  collaborationType:
+    "co_stream" | "co_post" | "joint_nft" | "cross_promote" | "joint_course";
   status: "proposed" | "accepted" | "active" | "completed" | "declined";
   revenueShare: number;
   projectedReach: number;
@@ -167,10 +182,26 @@ export interface GrowthHeatmap {
 
 export interface TrendingGrowthMap {
   period: string;
-  topGrowingCategories: Array<{ category: string; growthRate: number; newCreators: number }>;
-  topGrowingRegions: Array<{ region: string; growthRate: number; newUsers: number }>;
-  viralContent: Array<{ contentId: string; shareVelocity: number; reachMultiplier: number }>;
-  emergingCreators: Array<{ creatorId: number; followerGrowthRate: number; engagementRate: number }>;
+  topGrowingCategories: Array<{
+    category: string;
+    growthRate: number;
+    newCreators: number;
+  }>;
+  topGrowingRegions: Array<{
+    region: string;
+    growthRate: number;
+    newUsers: number;
+  }>;
+  viralContent: Array<{
+    contentId: string;
+    shareVelocity: number;
+    reachMultiplier: number;
+  }>;
+  emergingCreators: Array<{
+    creatorId: number;
+    followerGrowthRate: number;
+    engagementRate: number;
+  }>;
   generatedAt: Date;
 }
 
@@ -191,10 +222,13 @@ const _growthHeatmaps: GrowthHeatmap[] = [];
 // ─── REFERRAL ENGINE IMPLEMENTATION ─────────────────────────────────────────
 
 export const referralEngine = {
-  createReferralCode(params: Omit<ReferralCode, "id" | "uses" | "totalEarned" | "createdAt">): ReferralCode {
+  createReferralCode(
+    params: Omit<ReferralCode, "id" | "uses" | "totalEarned" | "createdAt">
+  ): ReferralCode {
     const id = `ref_${params.referrerId}_${Date.now()}`;
     const code: ReferralCode = {
-      ...params, id,
+      ...params,
+      id,
       uses: 0,
       totalEarned: 0,
       createdAt: new Date(),
@@ -209,7 +243,9 @@ export const referralEngine = {
   },
 
   getUserReferralCodes(userId: number): ReferralCode[] {
-    return Array.from(_referralCodes.values()).filter(r => r.referrerId === userId);
+    return Array.from(_referralCodes.values()).filter(
+      r => r.referrerId === userId
+    );
   },
 
   recordConversion(params: {
@@ -225,7 +261,11 @@ export const referralEngine = {
 
     const id = `conv_${params.refereeId}_${Date.now()}`;
     const level = params.level ?? 1;
-    const levelMultipliers: Record<number, number> = { 1: 1.0, 2: 0.5, 3: 0.25 };
+    const levelMultipliers: Record<number, number> = {
+      1: 1.0,
+      2: 0.5,
+      3: 0.25,
+    };
     const rewardAmount = refCode.bonusAmount * (levelMultipliers[level] ?? 0.1);
 
     const conversion: ReferralConversion = {
@@ -256,9 +296,15 @@ export const referralEngine = {
   },
 
   getReferralTree(userId: number): ReferralTree {
-    const direct = Array.from(_referralConversions.values()).filter(c => c.referrerId === userId && c.level === 1);
-    const level2 = Array.from(_referralConversions.values()).filter(c => c.referrerId === userId && c.level === 2);
-    const level3 = Array.from(_referralConversions.values()).filter(c => c.referrerId === userId && c.level === 3);
+    const direct = Array.from(_referralConversions.values()).filter(
+      c => c.referrerId === userId && c.level === 1
+    );
+    const level2 = Array.from(_referralConversions.values()).filter(
+      c => c.referrerId === userId && c.level === 2
+    );
+    const level3 = Array.from(_referralConversions.values()).filter(
+      c => c.referrerId === userId && c.level === 3
+    );
     const totalEarned = Array.from(_referralConversions.values())
       .filter(c => c.referrerId === userId && c.status !== "rejected")
       .reduce((s, c) => s + c.rewardAmount, 0);
@@ -274,7 +320,9 @@ export const referralEngine = {
   },
 
   getTopReferrers(limit = 20): ReferralTree[] {
-    const userIds = new Set(Array.from(_referralConversions.values()).map(c => c.referrerId));
+    const userIds = new Set(
+      Array.from(_referralConversions.values()).map(c => c.referrerId)
+    );
     return Array.from(userIds)
       .map(uid => this.getReferralTree(uid))
       .sort((a, b) => b.totalNetwork - a.totalNetwork)
@@ -286,11 +334,22 @@ export const referralEngine = {
 
 export const viralGrowthEngine = {
   // Invite Rewards
-  issueInviteReward(userId: number, rewardType: InviteReward["rewardType"], amount: number, currency: InviteReward["rewardCurrency"], description: string): InviteReward {
+  issueInviteReward(
+    userId: number,
+    rewardType: InviteReward["rewardType"],
+    amount: number,
+    currency: InviteReward["rewardCurrency"],
+    description: string
+  ): InviteReward {
     const id = `reward_${userId}_${Date.now()}`;
     const reward: InviteReward = {
-      id, userId, rewardType, rewardAmount: amount, rewardCurrency: currency,
-      description, claimed: false,
+      id,
+      userId,
+      rewardType,
+      rewardAmount: amount,
+      rewardCurrency: currency,
+      description,
+      claimed: false,
       expiresAt: new Date(Date.now() + 30 * 86400000),
       createdAt: new Date(),
     };
@@ -312,7 +371,10 @@ export const viralGrowthEngine = {
   },
 
   // Streak System
-  recordActivity(userId: number, streakType: StreakRecord["streakType"]): StreakRecord {
+  recordActivity(
+    userId: number,
+    streakType: StreakRecord["streakType"]
+  ): StreakRecord {
     const key = `streak_${userId}_${streakType}`;
     const existing = _streakRecords.get(key);
     const now = new Date();
@@ -320,10 +382,13 @@ export const viralGrowthEngine = {
 
     if (!existing) {
       const milestones = [3, 7, 14, 30, 60, 90, 180, 365].map(days => ({
-        days, reward: days * 10, claimed: false,
+        days,
+        reward: days * 10,
+        claimed: false,
       }));
       const record: StreakRecord = {
-        userId, streakType,
+        userId,
+        streakType,
         currentStreak: 1,
         longestStreak: 1,
         lastActivityAt: now,
@@ -361,7 +426,10 @@ export const viralGrowthEngine = {
     return existing;
   },
 
-  getStreak(userId: number, streakType: StreakRecord["streakType"]): StreakRecord | null {
+  getStreak(
+    userId: number,
+    streakType: StreakRecord["streakType"]
+  ): StreakRecord | null {
     return _streakRecords.get(`streak_${userId}_${streakType}`) ?? null;
   },
 
@@ -370,10 +438,13 @@ export const viralGrowthEngine = {
   },
 
   // Engagement Quests
-  createQuest(params: Omit<EngagementQuest, "id" | "completions" | "createdAt">): EngagementQuest {
+  createQuest(
+    params: Omit<EngagementQuest, "id" | "completions" | "createdAt">
+  ): EngagementQuest {
     const id = `quest_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     const quest: EngagementQuest = {
-      ...params, id,
+      ...params,
+      id,
       completions: 0,
       createdAt: new Date(),
     };
@@ -387,8 +458,13 @@ export const viralGrowthEngine = {
     const key = `qp_${userId}_${questId}`;
     if (_userQuestProgress.has(key)) return _userQuestProgress.get(key)!;
     const progress: UserQuestProgress = {
-      userId, questId,
-      progress: quest.requirements.map(r => ({ action: r.action, current: 0, target: r.target })),
+      userId,
+      questId,
+      progress: quest.requirements.map(r => ({
+        action: r.action,
+        current: 0,
+        target: r.target,
+      })),
       completed: false,
       rewardClaimed: false,
       startedAt: new Date(),
@@ -397,7 +473,12 @@ export const viralGrowthEngine = {
     return progress;
   },
 
-  updateQuestProgress(userId: number, questId: string, action: string, increment = 1): UserQuestProgress | null {
+  updateQuestProgress(
+    userId: number,
+    questId: string,
+    action: string,
+    increment = 1
+  ): UserQuestProgress | null {
     const key = `qp_${userId}_${questId}`;
     const progress = _userQuestProgress.get(key);
     if (!progress || progress.completed) return null;
@@ -422,35 +503,54 @@ export const viralGrowthEngine = {
 
   getActiveQuests(): EngagementQuest[] {
     const now = new Date();
-    return Array.from(_engagementQuests.values())
-      .filter(q => q.isActive && (!q.expiresAt || q.expiresAt > now));
+    return Array.from(_engagementQuests.values()).filter(
+      q => q.isActive && (!q.expiresAt || q.expiresAt > now)
+    );
   },
 
   getUserQuestProgress(userId: number): UserQuestProgress[] {
-    return Array.from(_userQuestProgress.values()).filter(p => p.userId === userId);
+    return Array.from(_userQuestProgress.values()).filter(
+      p => p.userId === userId
+    );
   },
 
   // Creator Milestones
-  createMilestone(params: Omit<CreatorMilestone, "id" | "achieved" | "achievedAt" | "boostActiveUntil">): CreatorMilestone {
+  createMilestone(
+    params: Omit<
+      CreatorMilestone,
+      "id" | "achieved" | "achievedAt" | "boostActiveUntil"
+    >
+  ): CreatorMilestone {
     const id = `ms_${params.creatorId}_${params.milestoneType}_${params.target}`;
     const milestone: CreatorMilestone = {
-      ...params, id,
+      ...params,
+      id,
       achieved: false,
     };
     _creatorMilestones.set(id, milestone);
     return milestone;
   },
 
-  updateMilestoneProgress(creatorId: number, milestoneType: CreatorMilestone["milestoneType"], current: number): CreatorMilestone[] {
-    const milestones = Array.from(_creatorMilestones.values())
-      .filter(m => m.creatorId === creatorId && m.milestoneType === milestoneType && !m.achieved);
+  updateMilestoneProgress(
+    creatorId: number,
+    milestoneType: CreatorMilestone["milestoneType"],
+    current: number
+  ): CreatorMilestone[] {
+    const milestones = Array.from(_creatorMilestones.values()).filter(
+      m =>
+        m.creatorId === creatorId &&
+        m.milestoneType === milestoneType &&
+        !m.achieved
+    );
     const triggered: CreatorMilestone[] = [];
     for (const m of milestones) {
       m.current = current;
       if (current >= m.target) {
         m.achieved = true;
         m.achievedAt = new Date();
-        m.boostActiveUntil = new Date(Date.now() + m.boostDurationDays * 86400000);
+        m.boostActiveUntil = new Date(
+          Date.now() + m.boostDurationDays * 86400000
+        );
         triggered.push(m);
       }
     }
@@ -458,17 +558,27 @@ export const viralGrowthEngine = {
   },
 
   getCreatorMilestones(creatorId: number): CreatorMilestone[] {
-    return Array.from(_creatorMilestones.values()).filter(m => m.creatorId === creatorId);
+    return Array.from(_creatorMilestones.values()).filter(
+      m => m.creatorId === creatorId
+    );
   },
 
   getActiveBoosts(creatorId: number): CreatorMilestone[] {
     const now = new Date();
-    return Array.from(_creatorMilestones.values())
-      .filter(m => m.creatorId === creatorId && m.achieved && m.boostActiveUntil && m.boostActiveUntil > now);
+    return Array.from(_creatorMilestones.values()).filter(
+      m =>
+        m.creatorId === creatorId &&
+        m.achieved &&
+        m.boostActiveUntil &&
+        m.boostActiveUntil > now
+    );
   },
 
   // Retention Loops
-  recordRetentionEvent(userId: number, loopType: RetentionLoop["loopType"]): RetentionLoop {
+  recordRetentionEvent(
+    userId: number,
+    loopType: RetentionLoop["loopType"]
+  ): RetentionLoop {
     const key = `ret_${userId}_${loopType}`;
     const existing = _retentionLoops.get(key);
     if (existing) {
@@ -480,7 +590,8 @@ export const viralGrowthEngine = {
     }
     const loop: RetentionLoop = {
       id: key,
-      userId, loopType,
+      userId,
+      loopType,
       strength: 0.1,
       lastTriggeredAt: new Date(),
       triggerCount: 1,
@@ -491,7 +602,9 @@ export const viralGrowthEngine = {
   },
 
   getUserRetentionScore(userId: number): number {
-    const loops = Array.from(_retentionLoops.values()).filter(l => l.userId === userId);
+    const loops = Array.from(_retentionLoops.values()).filter(
+      l => l.userId === userId
+    );
     if (loops.length === 0) return 0;
     return loops.reduce((s, l) => s + l.retentionScore, 0) / loops.length;
   },
@@ -501,9 +614,22 @@ export const viralGrowthEngine = {
 
 export const networkExpansionEngine = {
   // Cross-Community Discovery
-  generateCommunityRecommendations(userId: number, userInterests: string[], currentCommunityIds: string[]): CrossCommunityDiscovery {
+  generateCommunityRecommendations(
+    userId: number,
+    userInterests: string[],
+    currentCommunityIds: string[]
+  ): CrossCommunityDiscovery {
     // Simulate intelligent matching based on interests
-    const allInterests = ["crypto", "gaming", "art", "music", "tech", "fitness", "finance", "streaming"];
+    const allInterests = [
+      "crypto",
+      "gaming",
+      "art",
+      "music",
+      "tech",
+      "fitness",
+      "finance",
+      "streaming",
+    ];
     const recommendations = allInterests
       .filter(i => !userInterests.includes(i))
       .slice(0, 5)
@@ -523,10 +649,16 @@ export const networkExpansionEngine = {
   },
 
   // Creator Collaborations
-  proposeCollaboration(params: Omit<CreatorCollaboration, "id" | "actualReach" | "revenueGenerated" | "createdAt">): CreatorCollaboration {
+  proposeCollaboration(
+    params: Omit<
+      CreatorCollaboration,
+      "id" | "actualReach" | "revenueGenerated" | "createdAt"
+    >
+  ): CreatorCollaboration {
     const id = `collab_${params.initiatorId}_${params.partnerId}_${Date.now()}`;
     const collab: CreatorCollaboration = {
-      ...params, id,
+      ...params,
+      id,
       actualReach: 0,
       revenueGenerated: 0,
       createdAt: new Date(),
@@ -535,14 +667,21 @@ export const networkExpansionEngine = {
     return collab;
   },
 
-  respondToCollaboration(collabId: string, accept: boolean): CreatorCollaboration | null {
+  respondToCollaboration(
+    collabId: string,
+    accept: boolean
+  ): CreatorCollaboration | null {
     const collab = _collaborations.get(collabId);
     if (!collab) return null;
     collab.status = accept ? "accepted" : "declined";
     return collab;
   },
 
-  completeCollaboration(collabId: string, actualReach: number, revenueGenerated: number): CreatorCollaboration | null {
+  completeCollaboration(
+    collabId: string,
+    actualReach: number,
+    revenueGenerated: number
+  ): CreatorCollaboration | null {
     const collab = _collaborations.get(collabId);
     if (!collab) return null;
     collab.status = "completed";
@@ -552,8 +691,9 @@ export const networkExpansionEngine = {
   },
 
   getCreatorCollaborations(creatorId: number): CreatorCollaboration[] {
-    return Array.from(_collaborations.values())
-      .filter(c => c.initiatorId === creatorId || c.partnerId === creatorId);
+    return Array.from(_collaborations.values()).filter(
+      c => c.initiatorId === creatorId || c.partnerId === creatorId
+    );
   },
 
   // Growth Heatmaps
@@ -582,8 +722,24 @@ export const networkExpansionEngine = {
 
   // Trending Growth Map
   generateTrendingGrowthMap(period: string): TrendingGrowthMap {
-    const categories = ["gaming", "crypto", "art", "music", "fitness", "tech", "streaming", "education"];
-    const regions = ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East", "Africa"];
+    const categories = [
+      "gaming",
+      "crypto",
+      "art",
+      "music",
+      "fitness",
+      "tech",
+      "streaming",
+      "education",
+    ];
+    const regions = [
+      "North America",
+      "Europe",
+      "Asia Pacific",
+      "Latin America",
+      "Middle East",
+      "Africa",
+    ];
     return {
       period,
       topGrowingCategories: categories.slice(0, 5).map((cat, i) => ({
@@ -616,11 +772,16 @@ export const networkExpansionEngine = {
       return daysSince <= 1;
     }).length;
     return {
-      totalReferrals: Array.from(_referralCodes.values()).reduce((s, r) => s + r.uses, 0),
+      totalReferrals: Array.from(_referralCodes.values()).reduce(
+        (s, r) => s + r.uses,
+        0
+      ),
       totalConversions: _referralConversions.size,
       activeStreaks,
       activeQuests: viralGrowthEngine.getActiveQuests().length,
-      collaborationsActive: Array.from(_collaborations.values()).filter(c => c.status === "active").length,
+      collaborationsActive: Array.from(_collaborations.values()).filter(
+        c => c.status === "active"
+      ).length,
       retentionScore: 0,
     };
   },

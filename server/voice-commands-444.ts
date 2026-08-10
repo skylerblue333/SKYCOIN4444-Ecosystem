@@ -1,7 +1,7 @@
 /**
  * SKYCOIN4444 - COMPLETE 444-COMMAND VOICE SYSTEM
  * Rich, smooth, production-grade voice control across entire platform
- * 
+ *
  * Command Categories:
  * - AI Commands (50)
  * - Navigation Commands (40)
@@ -65,24 +65,24 @@ export class VoiceCommandSystem444 {
   private initializeAllCommands(): void {
     // AI COMMANDS (50)
     this.registerCommand({
-      id: 'ai_chat',
-      name: 'AI Chat',
-      description: 'Start conversation with AI',
-      category: 'AI',
-      aliases: ['talk to ai', 'chat with ai', 'ask ai'],
-      action: async (ctx) => ({ response: 'AI chat started' }),
+      id: "ai_chat",
+      name: "AI Chat",
+      description: "Start conversation with AI",
+      category: "AI",
+      aliases: ["talk to ai", "chat with ai", "ask ai"],
+      action: async ctx => ({ response: "AI chat started" }),
       requiresAuth: false,
       requiresAdmin: false,
       confidence: 0.95,
     });
 
     this.registerCommand({
-      id: 'ai_analyze',
-      name: 'Analyze Data',
-      description: 'Analyze data with AI',
-      category: 'AI',
-      aliases: ['analyze', 'analyze data', 'ai analyze'],
-      action: async (ctx) => ({ response: 'Analysis started' }),
+      id: "ai_analyze",
+      name: "Analyze Data",
+      description: "Analyze data with AI",
+      category: "AI",
+      aliases: ["analyze", "analyze data", "ai analyze"],
+      action: async ctx => ({ response: "Analysis started" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.92,
@@ -94,9 +94,9 @@ export class VoiceCommandSystem444 {
         id: `ai_command_${i}`,
         name: `AI Command ${i}`,
         description: `AI command ${i}`,
-        category: 'AI',
+        category: "AI",
         aliases: [`ai ${i}`, `command ${i}`],
-        action: async (ctx) => ({ response: `AI command ${i} executed` }),
+        action: async ctx => ({ response: `AI command ${i} executed` }),
         requiresAuth: false,
         requiresAdmin: false,
         confidence: 0.9,
@@ -105,12 +105,12 @@ export class VoiceCommandSystem444 {
 
     // NAVIGATION COMMANDS (40)
     this.registerCommand({
-      id: 'nav_home',
-      name: 'Go Home',
-      description: 'Navigate to home',
-      category: 'Navigation',
-      aliases: ['go home', 'home', 'main page'],
-      action: async (ctx) => ({ route: '/' }),
+      id: "nav_home",
+      name: "Go Home",
+      description: "Navigate to home",
+      category: "Navigation",
+      aliases: ["go home", "home", "main page"],
+      action: async ctx => ({ route: "/" }),
       requiresAuth: false,
       requiresAdmin: false,
       confidence: 0.98,
@@ -121,9 +121,9 @@ export class VoiceCommandSystem444 {
         id: `nav_${i}`,
         name: `Navigate ${i}`,
         description: `Navigation command ${i}`,
-        category: 'Navigation',
+        category: "Navigation",
         aliases: [`nav ${i}`, `go to ${i}`],
-        action: async (ctx) => ({ route: `/page-${i}` }),
+        action: async ctx => ({ route: `/page-${i}` }),
         requiresAuth: false,
         requiresAdmin: false,
         confidence: 0.95,
@@ -132,12 +132,12 @@ export class VoiceCommandSystem444 {
 
     // PAYMENT COMMANDS (35)
     this.registerCommand({
-      id: 'pay_send',
-      name: 'Send Payment',
-      description: 'Send payment to user',
-      category: 'Payment',
-      aliases: ['send payment', 'pay', 'transfer'],
-      action: async (ctx) => ({ response: 'Payment initiated' }),
+      id: "pay_send",
+      name: "Send Payment",
+      description: "Send payment to user",
+      category: "Payment",
+      aliases: ["send payment", "pay", "transfer"],
+      action: async ctx => ({ response: "Payment initiated" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.93,
@@ -148,9 +148,9 @@ export class VoiceCommandSystem444 {
         id: `pay_${i}`,
         name: `Payment Command ${i}`,
         description: `Payment command ${i}`,
-        category: 'Payment',
+        category: "Payment",
         aliases: [`pay ${i}`, `payment ${i}`],
-        action: async (ctx) => ({ response: `Payment command ${i} executed` }),
+        action: async ctx => ({ response: `Payment command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.9,
@@ -159,12 +159,12 @@ export class VoiceCommandSystem444 {
 
     // SOCIAL COMMANDS (45)
     this.registerCommand({
-      id: 'social_post',
-      name: 'Create Post',
-      description: 'Create new social post',
-      category: 'Social',
-      aliases: ['post', 'create post', 'new post'],
-      action: async (ctx) => ({ response: 'Post created' }),
+      id: "social_post",
+      name: "Create Post",
+      description: "Create new social post",
+      category: "Social",
+      aliases: ["post", "create post", "new post"],
+      action: async ctx => ({ response: "Post created" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.94,
@@ -175,9 +175,9 @@ export class VoiceCommandSystem444 {
         id: `social_${i}`,
         name: `Social Command ${i}`,
         description: `Social command ${i}`,
-        category: 'Social',
+        category: "Social",
         aliases: [`social ${i}`, `post ${i}`],
-        action: async (ctx) => ({ response: `Social command ${i} executed` }),
+        action: async ctx => ({ response: `Social command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.91,
@@ -186,12 +186,12 @@ export class VoiceCommandSystem444 {
 
     // GAMING COMMANDS (40)
     this.registerCommand({
-      id: 'game_play',
-      name: 'Play Game',
-      description: 'Start playing game',
-      category: 'Gaming',
-      aliases: ['play', 'start game', 'play game'],
-      action: async (ctx) => ({ response: 'Game started' }),
+      id: "game_play",
+      name: "Play Game",
+      description: "Start playing game",
+      category: "Gaming",
+      aliases: ["play", "start game", "play game"],
+      action: async ctx => ({ response: "Game started" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.96,
@@ -202,9 +202,9 @@ export class VoiceCommandSystem444 {
         id: `game_${i}`,
         name: `Game Command ${i}`,
         description: `Game command ${i}`,
-        category: 'Gaming',
+        category: "Gaming",
         aliases: [`game ${i}`, `play ${i}`],
-        action: async (ctx) => ({ response: `Game command ${i} executed` }),
+        action: async ctx => ({ response: `Game command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.92,
@@ -213,12 +213,12 @@ export class VoiceCommandSystem444 {
 
     // MARKETPLACE COMMANDS (35)
     this.registerCommand({
-      id: 'market_buy',
-      name: 'Buy Item',
-      description: 'Buy item from marketplace',
-      category: 'Marketplace',
-      aliases: ['buy', 'purchase', 'buy item'],
-      action: async (ctx) => ({ response: 'Purchase initiated' }),
+      id: "market_buy",
+      name: "Buy Item",
+      description: "Buy item from marketplace",
+      category: "Marketplace",
+      aliases: ["buy", "purchase", "buy item"],
+      action: async ctx => ({ response: "Purchase initiated" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.93,
@@ -229,9 +229,11 @@ export class VoiceCommandSystem444 {
         id: `market_${i}`,
         name: `Marketplace Command ${i}`,
         description: `Marketplace command ${i}`,
-        category: 'Marketplace',
+        category: "Marketplace",
         aliases: [`market ${i}`, `buy ${i}`],
-        action: async (ctx) => ({ response: `Marketplace command ${i} executed` }),
+        action: async ctx => ({
+          response: `Marketplace command ${i} executed`,
+        }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.9,
@@ -240,12 +242,12 @@ export class VoiceCommandSystem444 {
 
     // GOVERNANCE COMMANDS (30)
     this.registerCommand({
-      id: 'gov_vote',
-      name: 'Vote',
-      description: 'Vote on proposal',
-      category: 'Governance',
-      aliases: ['vote', 'cast vote', 'voting'],
-      action: async (ctx) => ({ response: 'Vote recorded' }),
+      id: "gov_vote",
+      name: "Vote",
+      description: "Vote on proposal",
+      category: "Governance",
+      aliases: ["vote", "cast vote", "voting"],
+      action: async ctx => ({ response: "Vote recorded" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.94,
@@ -256,9 +258,9 @@ export class VoiceCommandSystem444 {
         id: `gov_${i}`,
         name: `Governance Command ${i}`,
         description: `Governance command ${i}`,
-        category: 'Governance',
+        category: "Governance",
         aliases: [`gov ${i}`, `vote ${i}`],
-        action: async (ctx) => ({ response: `Governance command ${i} executed` }),
+        action: async ctx => ({ response: `Governance command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.91,
@@ -267,12 +269,12 @@ export class VoiceCommandSystem444 {
 
     // ANALYTICS COMMANDS (30)
     this.registerCommand({
-      id: 'analytics_dashboard',
-      name: 'Show Dashboard',
-      description: 'Show analytics dashboard',
-      category: 'Analytics',
-      aliases: ['dashboard', 'show dashboard', 'analytics'],
-      action: async (ctx) => ({ response: 'Dashboard displayed' }),
+      id: "analytics_dashboard",
+      name: "Show Dashboard",
+      description: "Show analytics dashboard",
+      category: "Analytics",
+      aliases: ["dashboard", "show dashboard", "analytics"],
+      action: async ctx => ({ response: "Dashboard displayed" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.95,
@@ -283,9 +285,9 @@ export class VoiceCommandSystem444 {
         id: `analytics_${i}`,
         name: `Analytics Command ${i}`,
         description: `Analytics command ${i}`,
-        category: 'Analytics',
+        category: "Analytics",
         aliases: [`analytics ${i}`, `report ${i}`],
-        action: async (ctx) => ({ response: `Analytics command ${i} executed` }),
+        action: async ctx => ({ response: `Analytics command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.92,
@@ -294,12 +296,12 @@ export class VoiceCommandSystem444 {
 
     // ADMIN COMMANDS (40)
     this.registerCommand({
-      id: 'admin_dashboard',
-      name: 'Admin Dashboard',
-      description: 'Open admin dashboard',
-      category: 'Admin',
-      aliases: ['admin', 'admin panel', 'admin dashboard'],
-      action: async (ctx) => ({ response: 'Admin dashboard opened' }),
+      id: "admin_dashboard",
+      name: "Admin Dashboard",
+      description: "Open admin dashboard",
+      category: "Admin",
+      aliases: ["admin", "admin panel", "admin dashboard"],
+      action: async ctx => ({ response: "Admin dashboard opened" }),
       requiresAuth: true,
       requiresAdmin: true,
       confidence: 0.97,
@@ -310,9 +312,9 @@ export class VoiceCommandSystem444 {
         id: `admin_${i}`,
         name: `Admin Command ${i}`,
         description: `Admin command ${i}`,
-        category: 'Admin',
+        category: "Admin",
         aliases: [`admin ${i}`, `manage ${i}`],
-        action: async (ctx) => ({ response: `Admin command ${i} executed` }),
+        action: async ctx => ({ response: `Admin command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: true,
         confidence: 0.93,
@@ -321,12 +323,12 @@ export class VoiceCommandSystem444 {
 
     // WALLET COMMANDS (35)
     this.registerCommand({
-      id: 'wallet_balance',
-      name: 'Check Balance',
-      description: 'Check wallet balance',
-      category: 'Wallet',
-      aliases: ['balance', 'check balance', 'wallet'],
-      action: async (ctx) => ({ response: 'Balance retrieved' }),
+      id: "wallet_balance",
+      name: "Check Balance",
+      description: "Check wallet balance",
+      category: "Wallet",
+      aliases: ["balance", "check balance", "wallet"],
+      action: async ctx => ({ response: "Balance retrieved" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.96,
@@ -337,9 +339,9 @@ export class VoiceCommandSystem444 {
         id: `wallet_${i}`,
         name: `Wallet Command ${i}`,
         description: `Wallet command ${i}`,
-        category: 'Wallet',
+        category: "Wallet",
         aliases: [`wallet ${i}`, `crypto ${i}`],
-        action: async (ctx) => ({ response: `Wallet command ${i} executed` }),
+        action: async ctx => ({ response: `Wallet command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.93,
@@ -348,12 +350,12 @@ export class VoiceCommandSystem444 {
 
     // STREAMING COMMANDS (30)
     this.registerCommand({
-      id: 'stream_start',
-      name: 'Start Stream',
-      description: 'Start live stream',
-      category: 'Streaming',
-      aliases: ['stream', 'start stream', 'go live'],
-      action: async (ctx) => ({ response: 'Stream started' }),
+      id: "stream_start",
+      name: "Start Stream",
+      description: "Start live stream",
+      category: "Streaming",
+      aliases: ["stream", "start stream", "go live"],
+      action: async ctx => ({ response: "Stream started" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.94,
@@ -364,9 +366,9 @@ export class VoiceCommandSystem444 {
         id: `stream_${i}`,
         name: `Stream Command ${i}`,
         description: `Stream command ${i}`,
-        category: 'Streaming',
+        category: "Streaming",
         aliases: [`stream ${i}`, `live ${i}`],
-        action: async (ctx) => ({ response: `Stream command ${i} executed` }),
+        action: async ctx => ({ response: `Stream command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.91,
@@ -375,12 +377,12 @@ export class VoiceCommandSystem444 {
 
     // CHAT COMMANDS (25)
     this.registerCommand({
-      id: 'chat_message',
-      name: 'Send Message',
-      description: 'Send chat message',
-      category: 'Chat',
-      aliases: ['message', 'send message', 'chat'],
-      action: async (ctx) => ({ response: 'Message sent' }),
+      id: "chat_message",
+      name: "Send Message",
+      description: "Send chat message",
+      category: "Chat",
+      aliases: ["message", "send message", "chat"],
+      action: async ctx => ({ response: "Message sent" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.95,
@@ -391,9 +393,9 @@ export class VoiceCommandSystem444 {
         id: `chat_${i}`,
         name: `Chat Command ${i}`,
         description: `Chat command ${i}`,
-        category: 'Chat',
+        category: "Chat",
         aliases: [`chat ${i}`, `msg ${i}`],
-        action: async (ctx) => ({ response: `Chat command ${i} executed` }),
+        action: async ctx => ({ response: `Chat command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.92,
@@ -402,12 +404,12 @@ export class VoiceCommandSystem444 {
 
     // SEARCH COMMANDS (20)
     this.registerCommand({
-      id: 'search_global',
-      name: 'Search',
-      description: 'Search platform',
-      category: 'Search',
-      aliases: ['search', 'find', 'look for'],
-      action: async (ctx) => ({ response: 'Search results displayed' }),
+      id: "search_global",
+      name: "Search",
+      description: "Search platform",
+      category: "Search",
+      aliases: ["search", "find", "look for"],
+      action: async ctx => ({ response: "Search results displayed" }),
       requiresAuth: false,
       requiresAdmin: false,
       confidence: 0.94,
@@ -418,9 +420,9 @@ export class VoiceCommandSystem444 {
         id: `search_${i}`,
         name: `Search Command ${i}`,
         description: `Search command ${i}`,
-        category: 'Search',
+        category: "Search",
         aliases: [`search ${i}`, `find ${i}`],
-        action: async (ctx) => ({ response: `Search command ${i} executed` }),
+        action: async ctx => ({ response: `Search command ${i} executed` }),
         requiresAuth: false,
         requiresAdmin: false,
         confidence: 0.91,
@@ -429,12 +431,12 @@ export class VoiceCommandSystem444 {
 
     // SETTINGS COMMANDS (25)
     this.registerCommand({
-      id: 'settings_open',
-      name: 'Open Settings',
-      description: 'Open settings',
-      category: 'Settings',
-      aliases: ['settings', 'preferences', 'config'],
-      action: async (ctx) => ({ response: 'Settings opened' }),
+      id: "settings_open",
+      name: "Open Settings",
+      description: "Open settings",
+      category: "Settings",
+      aliases: ["settings", "preferences", "config"],
+      action: async ctx => ({ response: "Settings opened" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.96,
@@ -445,9 +447,9 @@ export class VoiceCommandSystem444 {
         id: `settings_${i}`,
         name: `Settings Command ${i}`,
         description: `Settings command ${i}`,
-        category: 'Settings',
+        category: "Settings",
         aliases: [`settings ${i}`, `config ${i}`],
-        action: async (ctx) => ({ response: `Settings command ${i} executed` }),
+        action: async ctx => ({ response: `Settings command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.93,
@@ -456,12 +458,12 @@ export class VoiceCommandSystem444 {
 
     // HELP COMMANDS (20)
     this.registerCommand({
-      id: 'help_general',
-      name: 'Help',
-      description: 'Show help',
-      category: 'Help',
-      aliases: ['help', 'assist', 'support'],
-      action: async (ctx) => ({ response: 'Help displayed' }),
+      id: "help_general",
+      name: "Help",
+      description: "Show help",
+      category: "Help",
+      aliases: ["help", "assist", "support"],
+      action: async ctx => ({ response: "Help displayed" }),
       requiresAuth: false,
       requiresAdmin: false,
       confidence: 0.97,
@@ -472,9 +474,9 @@ export class VoiceCommandSystem444 {
         id: `help_${i}`,
         name: `Help Command ${i}`,
         description: `Help command ${i}`,
-        category: 'Help',
+        category: "Help",
         aliases: [`help ${i}`, `how to ${i}`],
-        action: async (ctx) => ({ response: `Help command ${i} executed` }),
+        action: async ctx => ({ response: `Help command ${i} executed` }),
         requiresAuth: false,
         requiresAdmin: false,
         confidence: 0.94,
@@ -483,12 +485,12 @@ export class VoiceCommandSystem444 {
 
     // SYSTEM COMMANDS (30)
     this.registerCommand({
-      id: 'system_status',
-      name: 'System Status',
-      description: 'Check system status',
-      category: 'System',
-      aliases: ['status', 'system status', 'health'],
-      action: async (ctx) => ({ response: 'System healthy' }),
+      id: "system_status",
+      name: "System Status",
+      description: "Check system status",
+      category: "System",
+      aliases: ["status", "system status", "health"],
+      action: async ctx => ({ response: "System healthy" }),
       requiresAuth: false,
       requiresAdmin: false,
       confidence: 0.96,
@@ -499,9 +501,9 @@ export class VoiceCommandSystem444 {
         id: `system_${i}`,
         name: `System Command ${i}`,
         description: `System command ${i}`,
-        category: 'System',
+        category: "System",
         aliases: [`system ${i}`, `sys ${i}`],
-        action: async (ctx) => ({ response: `System command ${i} executed` }),
+        action: async ctx => ({ response: `System command ${i} executed` }),
         requiresAuth: false,
         requiresAdmin: false,
         confidence: 0.92,
@@ -510,12 +512,12 @@ export class VoiceCommandSystem444 {
 
     // ACCESSIBILITY COMMANDS (20)
     this.registerCommand({
-      id: 'access_voice',
-      name: 'Voice Control',
-      description: 'Enable voice control',
-      category: 'Accessibility',
-      aliases: ['voice', 'voice control', 'speak'],
-      action: async (ctx) => ({ response: 'Voice control enabled' }),
+      id: "access_voice",
+      name: "Voice Control",
+      description: "Enable voice control",
+      category: "Accessibility",
+      aliases: ["voice", "voice control", "speak"],
+      action: async ctx => ({ response: "Voice control enabled" }),
       requiresAuth: false,
       requiresAdmin: false,
       confidence: 0.95,
@@ -526,9 +528,11 @@ export class VoiceCommandSystem444 {
         id: `access_${i}`,
         name: `Accessibility Command ${i}`,
         description: `Accessibility command ${i}`,
-        category: 'Accessibility',
+        category: "Accessibility",
         aliases: [`access ${i}`, `a11y ${i}`],
-        action: async (ctx) => ({ response: `Accessibility command ${i} executed` }),
+        action: async ctx => ({
+          response: `Accessibility command ${i} executed`,
+        }),
         requiresAuth: false,
         requiresAdmin: false,
         confidence: 0.93,
@@ -537,12 +541,12 @@ export class VoiceCommandSystem444 {
 
     // NOTIFICATION COMMANDS (15)
     this.registerCommand({
-      id: 'notif_check',
-      name: 'Check Notifications',
-      description: 'Check notifications',
-      category: 'Notifications',
-      aliases: ['notifications', 'check notifications', 'alerts'],
-      action: async (ctx) => ({ response: 'Notifications displayed' }),
+      id: "notif_check",
+      name: "Check Notifications",
+      description: "Check notifications",
+      category: "Notifications",
+      aliases: ["notifications", "check notifications", "alerts"],
+      action: async ctx => ({ response: "Notifications displayed" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.94,
@@ -553,9 +557,11 @@ export class VoiceCommandSystem444 {
         id: `notif_${i}`,
         name: `Notification Command ${i}`,
         description: `Notification command ${i}`,
-        category: 'Notifications',
+        category: "Notifications",
         aliases: [`notif ${i}`, `alert ${i}`],
-        action: async (ctx) => ({ response: `Notification command ${i} executed` }),
+        action: async ctx => ({
+          response: `Notification command ${i} executed`,
+        }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.91,
@@ -564,12 +570,12 @@ export class VoiceCommandSystem444 {
 
     // INTEGRATION COMMANDS (20)
     this.registerCommand({
-      id: 'integ_connect',
-      name: 'Connect Integration',
-      description: 'Connect external service',
-      category: 'Integration',
-      aliases: ['connect', 'integrate', 'link'],
-      action: async (ctx) => ({ response: 'Integration connected' }),
+      id: "integ_connect",
+      name: "Connect Integration",
+      description: "Connect external service",
+      category: "Integration",
+      aliases: ["connect", "integrate", "link"],
+      action: async ctx => ({ response: "Integration connected" }),
       requiresAuth: true,
       requiresAdmin: false,
       confidence: 0.92,
@@ -580,9 +586,11 @@ export class VoiceCommandSystem444 {
         id: `integ_${i}`,
         name: `Integration Command ${i}`,
         description: `Integration command ${i}`,
-        category: 'Integration',
+        category: "Integration",
         aliases: [`integ ${i}`, `connect ${i}`],
-        action: async (ctx) => ({ response: `Integration command ${i} executed` }),
+        action: async ctx => ({
+          response: `Integration command ${i} executed`,
+        }),
         requiresAuth: true,
         requiresAdmin: false,
         confidence: 0.9,
@@ -591,12 +599,12 @@ export class VoiceCommandSystem444 {
 
     // DEVELOPER COMMANDS (25)
     this.registerCommand({
-      id: 'dev_console',
-      name: 'Developer Console',
-      description: 'Open developer console',
-      category: 'Developer',
-      aliases: ['console', 'dev', 'developer'],
-      action: async (ctx) => ({ response: 'Developer console opened' }),
+      id: "dev_console",
+      name: "Developer Console",
+      description: "Open developer console",
+      category: "Developer",
+      aliases: ["console", "dev", "developer"],
+      action: async ctx => ({ response: "Developer console opened" }),
       requiresAuth: true,
       requiresAdmin: true,
       confidence: 0.96,
@@ -607,9 +615,9 @@ export class VoiceCommandSystem444 {
         id: `dev_${i}`,
         name: `Developer Command ${i}`,
         description: `Developer command ${i}`,
-        category: 'Developer',
+        category: "Developer",
         aliases: [`dev ${i}`, `code ${i}`],
-        action: async (ctx) => ({ response: `Developer command ${i} executed` }),
+        action: async ctx => ({ response: `Developer command ${i} executed` }),
         requiresAuth: true,
         requiresAdmin: true,
         confidence: 0.93,
@@ -619,7 +627,7 @@ export class VoiceCommandSystem444 {
 
   private registerCommand(cmd: VoiceCommand): void {
     this.commands.set(cmd.id, cmd);
-    cmd.aliases.forEach((alias) => {
+    cmd.aliases.forEach(alias => {
       this.aliases.set(alias.toLowerCase(), cmd.id);
     });
   }
@@ -629,20 +637,23 @@ export class VoiceCommandSystem444 {
     const commandId = this.aliases.get(normalized);
 
     if (!commandId) {
-      return { error: 'Command not recognized', suggestions: this.getSuggestions(normalized) };
+      return {
+        error: "Command not recognized",
+        suggestions: this.getSuggestions(normalized),
+      };
     }
 
     const command = this.commands.get(commandId);
     if (!command) {
-      return { error: 'Command not found' };
+      return { error: "Command not found" };
     }
 
     if (command.requiresAuth && !context.userId) {
-      return { error: 'Authentication required' };
+      return { error: "Authentication required" };
     }
 
-    if (command.requiresAdmin && context.userRole !== 'admin') {
-      return { error: 'Admin privileges required' };
+    if (command.requiresAdmin && context.userRole !== "admin") {
+      return { error: "Admin privileges required" };
     }
 
     try {
@@ -669,7 +680,9 @@ export class VoiceCommandSystem444 {
   }
 
   getCommandsByCategory(category: string): VoiceCommand[] {
-    return Array.from(this.commands.values()).filter((cmd) => cmd.category === category);
+    return Array.from(this.commands.values()).filter(
+      cmd => cmd.category === category
+    );
   }
 
   getTotalCommandCount(): number {
@@ -680,8 +693,13 @@ export class VoiceCommandSystem444 {
     return {
       totalCommands: this.commands.size,
       totalAliases: this.aliases.size,
-      categories: [...new Set(Array.from(this.commands.values()).map((cmd) => cmd.category))],
-      commandsByCategory: this.getCommandsByCategory('AI').length > 0 ? 'All categories loaded' : 'Loading...',
+      categories: [
+        ...new Set(Array.from(this.commands.values()).map(cmd => cmd.category)),
+      ],
+      commandsByCategory:
+        this.getCommandsByCategory("AI").length > 0
+          ? "All categories loaded"
+          : "Loading...",
     };
   }
 }

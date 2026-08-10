@@ -12,12 +12,23 @@
  * - Token Registry endpoint (reads from shared/tokenRegistry.ts)
  */
 
-import { router, publicProcedure, protectedProcedure, adminProcedure } from "./_core/trpc";
+import {
+  router,
+  publicProcedure,
+  protectedProcedure,
+  adminProcedure,
+} from "./_core/trpc";
 import { z } from "zod";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm";
-import { TOKEN_REGISTRY, SWAPPABLE_TOKENS, STAKEABLE_TOKENS, TIPPABLE_TOKENS, GOV_TOKENS } from "@shared/tokenRegistry";
+import {
+  TOKEN_REGISTRY,
+  SWAPPABLE_TOKENS,
+  STAKEABLE_TOKENS,
+  TIPPABLE_TOKENS,
+  GOV_TOKENS,
+} from "@shared/tokenRegistry";
 
 // ─── DB helpers ──────────────────────────────────────────────────────────────
 
@@ -25,22 +36,32 @@ async function getRegionPolicies() {
   const db = await getDb();
   if (!db) return [];
   try {
-    const rows = await db.execute(sql`SELECT * FROM region_policies ORDER BY region_name`);
+    const rows = await db.execute(
+      sql`SELECT * FROM region_policies ORDER BY region_name`
+    );
     return (rows as any)[0] as RegionPolicy[];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 async function getRegionPolicy(regionCode: string) {
   const db = await getDb();
   if (!db) return null;
   try {
-    const rows = await db.execute(sql`SELECT * FROM region_policies WHERE region_code = ${regionCode} LIMIT 1`);
+    const rows = await db.execute(
+      sql`SELECT * FROM region_policies WHERE region_code = ${regionCode} LIMIT 1`
+    );
     const data = (rows as any)[0] as RegionPolicy[];
     return data[0] ?? null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
-async function upsertRegionPolicy(policy: Partial<RegionPolicy> & { regionCode: string; regionName: string }) {
+async function upsertRegionPolicy(
+  policy: Partial<RegionPolicy> & { regionCode: string; regionName: string }
+) {
   const db = await getDb();
   if (!db) return null;
   try {
@@ -81,7 +102,9 @@ async function upsertRegionPolicy(policy: Partial<RegionPolicy> & { regionCode: 
         notes = VALUES(notes)
     `);
     return true;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 async function getAmbassadors(regionCode?: string) {
@@ -104,10 +127,17 @@ async function getAmbassadors(regionCode?: string) {
           ORDER BY a.appointed_at DESC
         `);
     return (rows as any)[0] as AmbassadorRow[];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
-async function appointAmbassador(userId: number, regionCode: string, role: string, bio?: string) {
+async function appointAmbassador(
+  userId: number,
+  regionCode: string,
+  role: string,
+  bio?: string
+) {
   const db = await getDb();
   if (!db) return null;
   try {
@@ -117,7 +147,9 @@ async function appointAmbassador(userId: number, regionCode: string, role: strin
       ON DUPLICATE KEY UPDATE status = 'active', bio = VALUES(bio)
     `);
     return true;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 async function getGlobalHeatmapData() {
@@ -142,22 +174,32 @@ async function getGlobalHeatmapData() {
       ORDER BY active_users DESC
     `);
     return (rows as any)[0] as HeatmapRow[];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 async function getPlatformMetrics() {
   const db = await getDb();
   if (!db) return null;
   try {
-    const [usersRow] = await db.execute(sql`SELECT COUNT(*) AS total FROM users`) as any;
-    const [postsRow] = await db.execute(sql`SELECT COUNT(*) AS total FROM posts`) as any;
-    const [txRow] = await db.execute(sql`SELECT COUNT(*) AS total FROM transactions`) as any;
+    const [usersRow] = (await db.execute(
+      sql`SELECT COUNT(*) AS total FROM users`
+    )) as any;
+    const [postsRow] = (await db.execute(
+      sql`SELECT COUNT(*) AS total FROM posts`
+    )) as any;
+    const [txRow] = (await db.execute(
+      sql`SELECT COUNT(*) AS total FROM transactions`
+    )) as any;
     return {
       totalUsers: Number(usersRow[0]?.total ?? 0),
       totalPosts: Number(postsRow[0]?.total ?? 0),
       totalTransactions: Number(txRow[0]?.total ?? 0),
     };
-  } catch { return { totalUsers: 0, totalPosts: 0, totalTransactions: 0 }; }
+  } catch {
+    return { totalUsers: 0, totalPosts: 0, totalTransactions: 0 };
+  }
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -209,14 +251,20 @@ interface HeatmapRow {
 
 // ─── Ambassador roles ─────────────────────────────────────────────────────────
 const AMBASSADOR_ROLES = [
-  "country", "community", "language", "education",
-  "developer", "religion", "charity", "gaming", "creator",
+  "country",
+  "community",
+  "language",
+  "education",
+  "developer",
+  "religion",
+  "charity",
+  "gaming",
+  "creator",
 ] as const;
 
 // ─── Router ───────────────────────────────────────────────────────────────────
 
 export const gocRouter = router({
-
   // ── Token Registry ──────────────────────────────────────────────────────────
   tokenRegistry: publicProcedure.query(() => ({
     all: TOKEN_REGISTRY,
@@ -238,44 +286,118 @@ export const gocRouter = router({
     }),
 
   updateRegion: adminProcedure
-    .input(z.object({
-      regionCode: z.string().min(2).max(8),
-      regionName: z.string().min(2).max(64),
-      cryptoEnabled: z.boolean().optional(),
-      walletEnabled: z.boolean().optional(),
-      miningEnabled: z.boolean().optional(),
-      stakingEnabled: z.boolean().optional(),
-      dexEnabled: z.boolean().optional(),
-      governanceEnabled: z.boolean().optional(),
-      datingEnabled: z.boolean().optional(),
-      languageExchangeEnabled: z.boolean().optional(),
-      marketplaceEnabled: z.boolean().optional(),
-      gamingEnabled: z.boolean().optional(),
-      streamingEnabled: z.boolean().optional(),
-      aiAgentsEnabled: z.boolean().optional(),
-      educationEnabled: z.boolean().optional(),
-      developerToolsEnabled: z.boolean().optional(),
-      notes: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        regionCode: z.string().min(2).max(8),
+        regionName: z.string().min(2).max(64),
+        cryptoEnabled: z.boolean().optional(),
+        walletEnabled: z.boolean().optional(),
+        miningEnabled: z.boolean().optional(),
+        stakingEnabled: z.boolean().optional(),
+        dexEnabled: z.boolean().optional(),
+        governanceEnabled: z.boolean().optional(),
+        datingEnabled: z.boolean().optional(),
+        languageExchangeEnabled: z.boolean().optional(),
+        marketplaceEnabled: z.boolean().optional(),
+        gamingEnabled: z.boolean().optional(),
+        streamingEnabled: z.boolean().optional(),
+        aiAgentsEnabled: z.boolean().optional(),
+        educationEnabled: z.boolean().optional(),
+        developerToolsEnabled: z.boolean().optional(),
+        notes: z.string().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
       const mapped = {
         ...input,
-        cryptoEnabled: input.cryptoEnabled !== undefined ? (input.cryptoEnabled ? 1 : 0) : undefined,
-        walletEnabled: input.walletEnabled !== undefined ? (input.walletEnabled ? 1 : 0) : undefined,
-        miningEnabled: input.miningEnabled !== undefined ? (input.miningEnabled ? 1 : 0) : undefined,
-        stakingEnabled: input.stakingEnabled !== undefined ? (input.stakingEnabled ? 1 : 0) : undefined,
-        dexEnabled: input.dexEnabled !== undefined ? (input.dexEnabled ? 1 : 0) : undefined,
-        governanceEnabled: input.governanceEnabled !== undefined ? (input.governanceEnabled ? 1 : 0) : undefined,
-        datingEnabled: input.datingEnabled !== undefined ? (input.datingEnabled ? 1 : 0) : undefined,
-        languageExchangeEnabled: input.languageExchangeEnabled !== undefined ? (input.languageExchangeEnabled ? 1 : 0) : undefined,
-        marketplaceEnabled: input.marketplaceEnabled !== undefined ? (input.marketplaceEnabled ? 1 : 0) : undefined,
-        gamingEnabled: input.gamingEnabled !== undefined ? (input.gamingEnabled ? 1 : 0) : undefined,
-        streamingEnabled: input.streamingEnabled !== undefined ? (input.streamingEnabled ? 1 : 0) : undefined,
-        aiAgentsEnabled: input.aiAgentsEnabled !== undefined ? (input.aiAgentsEnabled ? 1 : 0) : undefined,
-        educationEnabled: input.educationEnabled !== undefined ? (input.educationEnabled ? 1 : 0) : undefined,
-        developerToolsEnabled: input.developerToolsEnabled !== undefined ? (input.developerToolsEnabled ? 1 : 0) : undefined,
+        cryptoEnabled:
+          input.cryptoEnabled !== undefined
+            ? input.cryptoEnabled
+              ? 1
+              : 0
+            : undefined,
+        walletEnabled:
+          input.walletEnabled !== undefined
+            ? input.walletEnabled
+              ? 1
+              : 0
+            : undefined,
+        miningEnabled:
+          input.miningEnabled !== undefined
+            ? input.miningEnabled
+              ? 1
+              : 0
+            : undefined,
+        stakingEnabled:
+          input.stakingEnabled !== undefined
+            ? input.stakingEnabled
+              ? 1
+              : 0
+            : undefined,
+        dexEnabled:
+          input.dexEnabled !== undefined
+            ? input.dexEnabled
+              ? 1
+              : 0
+            : undefined,
+        governanceEnabled:
+          input.governanceEnabled !== undefined
+            ? input.governanceEnabled
+              ? 1
+              : 0
+            : undefined,
+        datingEnabled:
+          input.datingEnabled !== undefined
+            ? input.datingEnabled
+              ? 1
+              : 0
+            : undefined,
+        languageExchangeEnabled:
+          input.languageExchangeEnabled !== undefined
+            ? input.languageExchangeEnabled
+              ? 1
+              : 0
+            : undefined,
+        marketplaceEnabled:
+          input.marketplaceEnabled !== undefined
+            ? input.marketplaceEnabled
+              ? 1
+              : 0
+            : undefined,
+        gamingEnabled:
+          input.gamingEnabled !== undefined
+            ? input.gamingEnabled
+              ? 1
+              : 0
+            : undefined,
+        streamingEnabled:
+          input.streamingEnabled !== undefined
+            ? input.streamingEnabled
+              ? 1
+              : 0
+            : undefined,
+        aiAgentsEnabled:
+          input.aiAgentsEnabled !== undefined
+            ? input.aiAgentsEnabled
+              ? 1
+              : 0
+            : undefined,
+        educationEnabled:
+          input.educationEnabled !== undefined
+            ? input.educationEnabled
+              ? 1
+              : 0
+            : undefined,
+        developerToolsEnabled:
+          input.developerToolsEnabled !== undefined
+            ? input.developerToolsEnabled
+              ? 1
+              : 0
+            : undefined,
       };
-      const ok = await upsertRegionPolicy(mapped as Parameters<typeof upsertRegionPolicy>[0]);
+      const ok = await upsertRegionPolicy(
+        mapped as Parameters<typeof upsertRegionPolicy>[0]
+      );
       return { success: !!ok };
     }),
 
@@ -289,14 +411,21 @@ export const gocRouter = router({
   ambassadorRoles: publicProcedure.query(() => AMBASSADOR_ROLES),
 
   appoint: adminProcedure
-    .input(z.object({
-      userId: z.number(),
-      regionCode: z.string(),
-      role: z.enum(AMBASSADOR_ROLES),
-      bio: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        userId: z.number(),
+        regionCode: z.string(),
+        role: z.enum(AMBASSADOR_ROLES),
+        bio: z.string().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
-      const ok = await appointAmbassador(input.userId, input.regionCode, input.role, input.bio);
+      const ok = await appointAmbassador(
+        input.userId,
+        input.regionCode,
+        input.role,
+        input.bio
+      );
       return { success: !!ok };
     }),
 
@@ -322,7 +451,15 @@ Current platform metrics:
 - Tokens: SKY4 (core), DOGE (community), TRUMP (governance)
 
 Regions with restricted features:
-${regions.filter(r => !r.cryptoEnabled || !r.walletEnabled).map(r => `- ${r.regionName}: crypto=${r.cryptoEnabled ? 'on' : 'OFF'}, wallet=${r.walletEnabled ? 'on' : 'OFF'}`).join('\n') || '- None (all regions have full access)'}
+${
+  regions
+    .filter(r => !r.cryptoEnabled || !r.walletEnabled)
+    .map(
+      r =>
+        `- ${r.regionName}: crypto=${r.cryptoEnabled ? "on" : "OFF"}, wallet=${r.walletEnabled ? "on" : "OFF"}`
+    )
+    .join("\n") || "- None (all regions have full access)"
+}
 
 Generate a concise growth analysis with:
 1. Top 3 growth opportunities (specific, actionable)
@@ -345,7 +482,8 @@ Be direct, specific, and data-driven. No fluff. Max 300 words.`;
       };
     } catch {
       return {
-        analysis: "Growth analysis unavailable — AI service temporarily unreachable. Check platform metrics above for manual review.",
+        analysis:
+          "Growth analysis unavailable — AI service temporarily unreachable. Check platform metrics above for manual review.",
         metrics,
         generatedAt: new Date().toISOString(),
       };
@@ -364,7 +502,11 @@ Be direct, specific, and data-driven. No fluff. Max 300 words.`;
       regions: regions.length,
       ambassadors: ambassadors.length,
       religionLeaders: ambassadors.filter(a => a.role === "religion").length,
-      tokens: TOKEN_REGISTRY.map(t => ({ symbol: t.symbol, name: t.name, role: t.role })),
+      tokens: TOKEN_REGISTRY.map(t => ({
+        symbol: t.symbol,
+        name: t.name,
+        role: t.role,
+      })),
     };
   }),
 });

@@ -3,8 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpRight, ArrowDownLeft, Download, Filter, Search, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ArrowUpRight,
+  ArrowDownLeft,
+  Download,
+  Filter,
+  Search,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -85,18 +99,18 @@ export function TransactionHistory() {
 
     if (searchTerm) {
       filtered = filtered.filter(
-        (tx) =>
+        tx =>
           tx.counterparty.toLowerCase().includes(searchTerm.toLowerCase()) ||
           tx.hash.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (filterType !== "all") {
-      filtered = filtered.filter((tx) => tx.type === filterType);
+      filtered = filtered.filter(tx => tx.type === filterType);
     }
 
     if (filterStatus !== "all") {
-      filtered = filtered.filter((tx) => tx.status === filterStatus);
+      filtered = filtered.filter(tx => tx.status === filterStatus);
     }
 
     if (sortBy === "recent") {
@@ -114,12 +128,15 @@ export function TransactionHistory() {
 
   const stats = useMemo(() => {
     const totalSent = mockTransactions
-      .filter((tx) => tx.type === "send")
+      .filter(tx => tx.type === "send")
       .reduce((sum, tx) => sum + tx.amount, 0);
     const totalReceived = mockTransactions
-      .filter((tx) => tx.type === "receive")
+      .filter(tx => tx.type === "receive")
       .reduce((sum, tx) => sum + tx.amount, 0);
-    const totalFees = mockTransactions.reduce((sum, tx) => sum + (tx.fee || 0), 0);
+    const totalFees = mockTransactions.reduce(
+      (sum, tx) => sum + (tx.fee || 0),
+      0
+    );
 
     return { totalSent, totalReceived, totalFees };
   }, []);
@@ -133,8 +150,14 @@ export function TransactionHistory() {
   };
 
   const getStatusBadge = (status: string) => {
-    if (status === "completed") return <Badge className="bg-green-500/20 text-green-400">Completed</Badge>;
-    if (status === "pending") return <Badge className="bg-yellow-500/20 text-yellow-400">Pending</Badge>;
+    if (status === "completed")
+      return (
+        <Badge className="bg-green-500/20 text-green-400">Completed</Badge>
+      );
+    if (status === "pending")
+      return (
+        <Badge className="bg-yellow-500/20 text-yellow-400">Pending</Badge>
+      );
     return <Badge className="bg-red-500/20 text-red-400">Failed</Badge>;
   };
 
@@ -142,8 +165,12 @@ export function TransactionHistory() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Transaction History</h1>
-          <p className="text-slate-400">View and manage all your transactions</p>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Transaction History
+          </h1>
+          <p className="text-slate-400">
+            View and manage all your transactions
+          </p>
         </div>
 
         {/* Stats */}
@@ -153,7 +180,9 @@ export function TransactionHistory() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-400">Total Sent</p>
-                  <p className="text-2xl font-bold text-red-400">${stats.totalSent.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-red-400">
+                    ${stats.totalSent.toFixed(2)}
+                  </p>
                 </div>
                 <TrendingUp className="w-8 h-8 text-red-400/50" />
               </div>
@@ -165,7 +194,9 @@ export function TransactionHistory() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-400">Total Received</p>
-                  <p className="text-2xl font-bold text-green-400">${stats.totalReceived.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-green-400">
+                    ${stats.totalReceived.toFixed(2)}
+                  </p>
                 </div>
                 <TrendingDown className="w-8 h-8 text-green-400/50" />
               </div>
@@ -177,7 +208,9 @@ export function TransactionHistory() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-400">Total Fees</p>
-                  <p className="text-2xl font-bold text-purple-400">${stats.totalFees.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-purple-400">
+                    ${stats.totalFees.toFixed(2)}
+                  </p>
                 </div>
                 <Filter className="w-8 h-8 text-purple-400/50" />
               </div>
@@ -194,7 +227,7 @@ export function TransactionHistory() {
                 <Input
                   placeholder="Search by address or hash..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600 text-white"
                 />
               </div>
@@ -255,28 +288,39 @@ export function TransactionHistory() {
           <CardContent>
             <div className="space-y-2">
               {filteredTransactions.length === 0 ? (
-                <p className="text-center text-slate-400 py-8">No transactions found</p>
+                <p className="text-center text-slate-400 py-8">
+                  No transactions found
+                </p>
               ) : (
-                filteredTransactions.map((tx) => (
+                filteredTransactions.map(tx => (
                   <div
                     key={tx.id}
                     className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition"
                   >
                     <div className="flex items-center gap-4 flex-1">
-                      <div className="p-2 bg-slate-600 rounded-lg">{getTypeIcon(tx.type)}</div>
+                      <div className="p-2 bg-slate-600 rounded-lg">
+                        {getTypeIcon(tx.type)}
+                      </div>
                       <div className="flex-1">
-                        <p className="font-medium text-white capitalize">{tx.type}</p>
-                        <p className="text-sm text-slate-400">{tx.counterparty}</p>
+                        <p className="font-medium text-white capitalize">
+                          {tx.type}
+                        </p>
+                        <p className="text-sm text-slate-400">
+                          {tx.counterparty}
+                        </p>
                       </div>
                     </div>
 
                     <div className="text-right">
                       <p className="font-bold text-white">
-                        {tx.type === "send" || tx.type === "unstake" ? "-" : "+"}
+                        {tx.type === "send" || tx.type === "unstake"
+                          ? "-"
+                          : "+"}
                         {tx.amount} {tx.currency}
                       </p>
                       <p className="text-sm text-slate-400">
-                        {tx.timestamp.toLocaleDateString()} {tx.timestamp.toLocaleTimeString()}
+                        {tx.timestamp.toLocaleDateString()}{" "}
+                        {tx.timestamp.toLocaleTimeString()}
                       </p>
                     </div>
 

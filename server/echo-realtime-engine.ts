@@ -39,7 +39,7 @@ interface Subscription {
 
 interface PresenceInfo {
   userId: string;
-  status: 'online' | 'offline' | 'away';
+  status: "online" | "offline" | "away";
   lastSeen: number;
   metadata?: Record<string, any>;
 }
@@ -135,7 +135,10 @@ class ConnectionManager {
   }
 
   public connect(): void {
-    if (this.state === ConnectionState.Connected || this.state === ConnectionState.Connecting) {
+    if (
+      this.state === ConnectionState.Connected ||
+      this.state === ConnectionState.Connecting
+    ) {
       return;
     }
 
@@ -149,11 +152,15 @@ class ConnectionManager {
       this.onOpenCallback();
     };
 
-    this.ws.onmessage = (event) => {
+    this.ws.onmessage = event => {
       if (isValidJson(event.data)) {
         const message: WebSocketMessage = JSON.parse(event.data);
         if (message.type === PING_MESSAGE_TYPE) {
-          this.send({ type: PONG_MESSAGE_TYPE, timestamp: Date.now(), payload: {} });
+          this.send({
+            type: PONG_MESSAGE_TYPE,
+            timestamp: Date.now(),
+            payload: {},
+          });
         } else {
           this.onMessageCallback(message);
         }
@@ -162,14 +169,14 @@ class ConnectionManager {
       }
     };
 
-    this.ws.onclose = (event) => {
+    this.ws.onclose = event => {
       this.setState(ConnectionState.Disconnected);
       this.stopHeartbeat();
       this.onCloseCallback(event);
       this.handleReconnect();
     };
 
-    this.ws.onerror = (event) => {
+    this.ws.onerror = event => {
       console.error("WebSocket error:", event);
       this.onErrorCallback(event);
       this.ws?.close(); // Force close to trigger onclose and reconnection logic
@@ -211,11 +218,15 @@ class ConnectionManager {
       this.reconnectAttempts++;
       this.setState(ConnectionState.Reconnecting);
       this.reconnectTimer = setTimeout(() => {
-        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.config.maxReconnectAttempts})...`);
+        console.log(
+          `Attempting to reconnect (${this.reconnectAttempts}/${this.config.maxReconnectAttempts})...`
+        );
         this.connect();
       }, this.config.reconnectIntervalMs);
     } else {
-      console.error("Max reconnect attempts reached. Connection permanently lost.");
+      console.error(
+        "Max reconnect attempts reached. Connection permanently lost."
+      );
       this.setState(ConnectionState.Disconnected);
     }
   }
@@ -231,7 +242,11 @@ class ConnectionManager {
     this.stopHeartbeat(); // Ensure no duplicate heartbeats
     this.heartbeatTimer = setInterval(() => {
       if (this.state === ConnectionState.Connected) {
-        this.send({ type: PING_MESSAGE_TYPE, timestamp: Date.now(), payload: {} });
+        this.send({
+          type: PING_MESSAGE_TYPE,
+          timestamp: Date.now(),
+          payload: {},
+        });
       }
     }, HEARTBEAT_INTERVAL);
   }
@@ -247,7 +262,10 @@ class ConnectionManager {
 class PubSubManager {
   private subscriptions: Map<string, Subscription[]> = new Map();
 
-  public subscribe(channel: string, callback: (message: WebSocketMessage) => void): () => void {
+  public subscribe(
+    channel: string,
+    callback: (message: WebSocketMessage) => void
+  ): () => void {
     if (!this.subscriptions.has(channel)) {
       this.subscriptions.set(channel, []);
     }
@@ -261,10 +279,15 @@ class PubSubManager {
     };
   }
 
-  public unsubscribe(channel: string, callback: (message: WebSocketMessage) => void): void {
+  public unsubscribe(
+    channel: string,
+    callback: (message: WebSocketMessage) => void
+  ): void {
     if (this.subscriptions.has(channel)) {
       let channelSubscriptions = this.subscriptions.get(channel)!;
-      channelSubscriptions = channelSubscriptions.filter(sub => sub.callback !== callback);
+      channelSubscriptions = channelSubscriptions.filter(
+        sub => sub.callback !== callback
+      );
       this.subscriptions.set(channel, channelSubscriptions);
       if (channelSubscriptions.length === 0) {
         this.subscriptions.delete(channel);
@@ -278,7 +301,10 @@ class PubSubManager {
         try {
           sub.callback(message);
         } catch (error) {
-          console.error(`Error in subscription callback for channel ${message.channel}:`, error);
+          console.error(
+            `Error in subscription callback for channel ${message.channel}:`,
+            error
+          );
         }
       });
     }
@@ -303,7 +329,9 @@ class PresenceTracker {
   }
 
   public getAllOnlineUsers(): PresenceInfo[] {
-    return Array.from(this.presenceMap.values()).filter(p => p.status === 'online');
+    return Array.from(this.presenceMap.values()).filter(
+      p => p.status === "online"
+    );
   }
 
   public joinRoom(roomId: string, userId: string): void {
@@ -325,11 +353,16 @@ class PresenceTracker {
   }
 
   public getRoomMembers(roomId: string): string[] {
-    return this.roomPresence.has(roomId) ? Array.from(this.roomPresence.get(roomId)!) : [];
+    return this.roomPresence.has(roomId)
+      ? Array.from(this.roomPresence.get(roomId)!)
+      : [];
   }
 
   public isUserInRoom(roomId: string, userId: string): boolean {
-    return this.roomPresence.has(roomId) && this.roomPresence.get(roomId)!.has(userId);
+    return (
+      this.roomPresence.has(roomId) &&
+      this.roomPresence.get(roomId)!.has(userId)
+    );
   }
 }
 
@@ -401,7 +434,7 @@ class MessageHistory {
   }
 
   public getHistory(channel?: string, limit: number = 50): WebSocketMessage[] {
-    let filteredHistory = channel
+    const filteredHistory = channel
       ? this.history.filter(msg => msg.channel === channel)
       : this.history;
     return filteredHistory.slice(-limit);
@@ -430,16 +463,22 @@ class EchoRealtimeEngine {
   constructor(config: Partial<EngineConfig>) {
     this.config = {
       websocketUrl: config.websocketUrl || "ws://localhost:8080/realtime",
-      reconnectIntervalMs: config.reconnectIntervalMs || DEFAULT_RECONNECT_INTERVAL,
-      maxReconnectAttempts: config.maxReconnectAttempts || DEFAULT_MAX_RECONNECT_ATTEMPTS,
-      messageQueueCapacity: config.messageQueueCapacity || DEFAULT_MESSAGE_QUEUE_CAPACITY,
-      messageHistoryCapacity: config.messageHistoryCapacity || DEFAULT_MESSAGE_HISTORY_CAPACITY,
+      reconnectIntervalMs:
+        config.reconnectIntervalMs || DEFAULT_RECONNECT_INTERVAL,
+      maxReconnectAttempts:
+        config.maxReconnectAttempts || DEFAULT_MAX_RECONNECT_ATTEMPTS,
+      messageQueueCapacity:
+        config.messageQueueCapacity || DEFAULT_MESSAGE_QUEUE_CAPACITY,
+      messageHistoryCapacity:
+        config.messageHistoryCapacity || DEFAULT_MESSAGE_HISTORY_CAPACITY,
     };
 
     this.pubSubManager = new PubSubManager();
     this.presenceTracker = new PresenceTracker();
     this.messageQueue = new MessageQueue(this.config.messageQueueCapacity);
-    this.messageHistory = new MessageHistory(this.config.messageHistoryCapacity);
+    this.messageHistory = new MessageHistory(
+      this.config.messageHistoryCapacity
+    );
 
     this.connectionManager = new ConnectionManager(
       this.config,
@@ -473,19 +512,39 @@ class EchoRealtimeEngine {
 
   // --- Pub/Sub Methods ---
 
-  public subscribe(channel: string, callback: (message: WebSocketMessage) => void): () => void {
+  public subscribe(
+    channel: string,
+    callback: (message: WebSocketMessage) => void
+  ): () => void {
     // Send subscription request to server if needed
-    this.sendMessage({ type: "SUBSCRIBE", channel, timestamp: Date.now(), payload: { userId: this.userId } });
+    this.sendMessage({
+      type: "SUBSCRIBE",
+      channel,
+      timestamp: Date.now(),
+      payload: { userId: this.userId },
+    });
     return this.pubSubManager.subscribe(channel, callback);
   }
 
-  public unsubscribe(channel: string, callback: (message: WebSocketMessage) => void): void {
+  public unsubscribe(
+    channel: string,
+    callback: (message: WebSocketMessage) => void
+  ): void {
     // Send unsubscription request to server if needed
-    this.sendMessage({ type: "UNSUBSCRIBE", channel, timestamp: Date.now(), payload: { userId: this.userId } });
+    this.sendMessage({
+      type: "UNSUBSCRIBE",
+      channel,
+      timestamp: Date.now(),
+      payload: { userId: this.userId },
+    });
     this.pubSubManager.unsubscribe(channel, callback);
   }
 
-  public publish(channel: string, payload: any, messageType: MessageType | string = MessageType.Chat): void {
+  public publish(
+    channel: string,
+    payload: any,
+    messageType: MessageType | string = MessageType.Chat
+  ): void {
     const message: WebSocketMessage = {
       type: messageType,
       channel,
@@ -509,7 +568,10 @@ class EchoRealtimeEngine {
   }
 
   private processQueuedMessages(): void {
-    while (!this.messageQueue.isEmpty() && this.connectionManager.getState() === ConnectionState.Connected) {
+    while (
+      !this.messageQueue.isEmpty() &&
+      this.connectionManager.getState() === ConnectionState.Connected
+    ) {
       const item = this.messageQueue.dequeue();
       if (item) {
         console.log("Sending queued message:", item.message);
@@ -524,18 +586,31 @@ class EchoRealtimeEngine {
     this.processQueuedMessages();
     // Re-subscribe to all active channels upon reconnection
     this.pubSubManager.getActiveChannels().forEach(channel => {
-      this.sendMessage({ type: "SUBSCRIBE", channel, timestamp: Date.now(), payload: { userId: this.userId } });
+      this.sendMessage({
+        type: "SUBSCRIBE",
+        channel,
+        timestamp: Date.now(),
+        payload: { userId: this.userId },
+      });
     });
     // Update presence to online
     if (this.userId) {
-      this.updatePresence({ userId: this.userId, status: 'online', lastSeen: Date.now() });
+      this.updatePresence({
+        userId: this.userId,
+        status: "online",
+        lastSeen: Date.now(),
+      });
     }
   }
 
   private handleClose(event: CloseEvent): void {
     console.log("WebSocket connection closed:", event.code, event.reason);
     if (this.userId) {
-      this.updatePresence({ userId: this.userId, status: 'offline', lastSeen: Date.now() });
+      this.updatePresence({
+        userId: this.userId,
+        status: "offline",
+        lastSeen: Date.now(),
+      });
     }
   }
 
@@ -549,12 +624,18 @@ class EchoRealtimeEngine {
         break;
       case "ROOM_JOIN":
         if (message.payload.roomId && message.payload.userId) {
-          this.presenceTracker.joinRoom(message.payload.roomId, message.payload.userId);
+          this.presenceTracker.joinRoom(
+            message.payload.roomId,
+            message.payload.userId
+          );
         }
         break;
       case "ROOM_LEAVE":
         if (message.payload.roomId && message.payload.userId) {
-          this.presenceTracker.leaveRoom(message.payload.roomId, message.payload.userId);
+          this.presenceTracker.leaveRoom(
+            message.payload.roomId,
+            message.payload.userId
+          );
         }
         break;
       case "LIVE_FEED_UPDATE":
@@ -575,7 +656,11 @@ class EchoRealtimeEngine {
   private handleError(event: Event): void {
     console.error("WebSocket error occurred:", event);
     // Potentially use invokeLLM for advanced error analysis or reporting
-      invokeLLM({ messages: [{ role: "user", content: `WebSocket error: ${JSON.stringify(event)}` }] }).then(analysis => {
+    invokeLLM({
+      messages: [
+        { role: "user", content: `WebSocket error: ${JSON.stringify(event)}` },
+      ],
+    }).then(analysis => {
       // console.log("LLM analysis of error:", analysis);
     });
   }
@@ -584,7 +669,11 @@ class EchoRealtimeEngine {
 
   public updatePresence(info: PresenceInfo): void {
     this.presenceTracker.updatePresence(info);
-    this.sendMessage({ type: "PRESENCE_UPDATE", timestamp: Date.now(), payload: info });
+    this.sendMessage({
+      type: "PRESENCE_UPDATE",
+      timestamp: Date.now(),
+      payload: info,
+    });
   }
 
   public getPresence(userId: string): PresenceInfo | undefined {
@@ -598,14 +687,24 @@ class EchoRealtimeEngine {
   public joinRoom(roomId: string): void {
     if (this.userId) {
       this.presenceTracker.joinRoom(roomId, this.userId);
-      this.sendMessage({ type: "ROOM_JOIN", channel: roomId, timestamp: Date.now(), payload: { roomId, userId: this.userId } });
+      this.sendMessage({
+        type: "ROOM_JOIN",
+        channel: roomId,
+        timestamp: Date.now(),
+        payload: { roomId, userId: this.userId },
+      });
     }
   }
 
   public leaveRoom(roomId: string): void {
     if (this.userId) {
       this.presenceTracker.leaveRoom(roomId, this.userId);
-      this.sendMessage({ type: "ROOM_LEAVE", channel: roomId, timestamp: Date.now(), payload: { roomId, userId: this.userId } });
+      this.sendMessage({
+        type: "ROOM_LEAVE",
+        channel: roomId,
+        timestamp: Date.now(),
+        payload: { roomId, userId: this.userId },
+      });
     }
   }
 
@@ -619,7 +718,10 @@ class EchoRealtimeEngine {
 
   // --- Message History Methods ---
 
-  public getMessageHistory(channel?: string, limit?: number): WebSocketMessage[] {
+  public getMessageHistory(
+    channel?: string,
+    limit?: number
+  ): WebSocketMessage[] {
     return this.messageHistory.getHistory(channel, limit);
   }
 
@@ -629,31 +731,69 @@ class EchoRealtimeEngine {
 
   // --- Live Feed and Notification Methods (simplified, relying on pub/sub) ---
 
-  public sendLiveFeedUpdate(feedId: string, itemId: string, data: Record<string, any>): void {
-    const payload: LiveFeedUpdatePayload = { feedId, itemId, data, timestamp: Date.now() };
+  public sendLiveFeedUpdate(
+    feedId: string,
+    itemId: string,
+    data: Record<string, any>
+  ): void {
+    const payload: LiveFeedUpdatePayload = {
+      feedId,
+      itemId,
+      data,
+      timestamp: Date.now(),
+    };
     this.publish(`livefeed-${feedId}`, payload, "LIVE_FEED_UPDATE");
   }
 
-  public sendNotification(targetUserId: string, notification: NotificationPayload): void {
-    this.publish(`user-notification-${targetUserId}`, notification, "NOTIFICATION_DELIVERY");
+  public sendNotification(
+    targetUserId: string,
+    notification: NotificationPayload
+  ): void {
+    this.publish(
+      `user-notification-${targetUserId}`,
+      notification,
+      "NOTIFICATION_DELIVERY"
+    );
   }
 
   // --- AI-powered methods (example usage of invokeLLM) ---
 
   public async analyzeMessageSentiment(messageText: string): Promise<string> {
     try {
-      const resp = await invokeLLM({ messages: [{ role: "system", content: "Analyze the sentiment of the message. Reply with one word: positive, negative, or neutral." }, { role: "user", content: messageText }] });
-      return String(resp.choices[0]?.message?.content || "").trim() || "neutral";
+      const resp = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content:
+              "Analyze the sentiment of the message. Reply with one word: positive, negative, or neutral.",
+          },
+          { role: "user", content: messageText },
+        ],
+      });
+      return (
+        String(resp.choices[0]?.message?.content || "").trim() || "neutral"
+      );
     } catch (error) {
       console.error("Error analyzing message sentiment with LLM:", error);
       return "error";
     }
   }
 
-  public async generateChatbotResponse(prompt: string, context: WebSocketMessage[]): Promise<string> {
+  public async generateChatbotResponse(
+    prompt: string,
+    context: WebSocketMessage[]
+  ): Promise<string> {
     try {
-      const contextMsgs = context.slice(-5).map(m => ({ role: "user" as const, content: String(m.payload) }));
-      const resp = await invokeLLM({ messages: [{ role: "system", content: "You are a helpful chat assistant." }, ...contextMsgs, { role: "user", content: prompt }] });
+      const contextMsgs = context
+        .slice(-5)
+        .map(m => ({ role: "user" as const, content: String(m.payload) }));
+      const resp = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are a helpful chat assistant." },
+          ...contextMsgs,
+          { role: "user", content: prompt },
+        ],
+      });
       return String(resp.choices[0]?.message?.content || "");
     } catch (error) {
       console.error("Error generating chatbot response with LLM:", error);

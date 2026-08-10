@@ -3,7 +3,19 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { ShoppingBag, Coins, Zap, Shield, Sword, Crown, Star, ChevronLeft, Filter, Sparkles, Lock } from "lucide-react";
+import {
+  ShoppingBag,
+  Coins,
+  Zap,
+  Shield,
+  Sword,
+  Crown,
+  Star,
+  ChevronLeft,
+  Filter,
+  Sparkles,
+  Lock,
+} from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
@@ -38,21 +50,131 @@ const RARITY_BADGE: Record<Rarity, string> = {
 };
 
 const SHOP_ITEMS: ShopItem[] = [
-  { id: 1, name: "Shadow Cloak", description: "Invisible to enemy scanners for 24h", price: 250, rarity: "epic", category: "gear", icon: "🌑" },
-  { id: 2, name: "XP Booster x2", description: "Double XP for 7 days", price: 100, rarity: "rare", category: "boost", icon: "⚡" },
-  { id: 3, name: "Legendary Sword", description: "+50% attack power in PvP battles", price: 1500, rarity: "legendary", category: "weapon", icon: "⚔️", limited: true, remaining: 7 },
-  { id: 4, name: "Sky Shield", description: "Blocks 3 attacks in clan wars", price: 400, rarity: "epic", category: "gear", icon: "🛡️" },
-  { id: 5, name: "Daily Spin Token", description: "Extra spin on the daily wheel", price: 50, rarity: "common", category: "boost", icon: "🎰" },
-  { id: 6, name: "Crown of Kings", description: "Display crown on your profile + 10% reward bonus", price: 2000, rarity: "legendary", category: "cosmetic", icon: "👑", limited: true, remaining: 3 },
-  { id: 7, name: "Stealth Boots", description: "Move undetected in clan territory", price: 350, rarity: "rare", category: "gear", icon: "👢" },
-  { id: 8, name: "Battle Pass Token", description: "Unlock one Battle Pass tier instantly", price: 200, rarity: "rare", category: "boost", icon: "🎫" },
-  { id: 9, name: "Neon Avatar Frame", description: "Animated neon border on your avatar", price: 150, rarity: "common", category: "cosmetic", icon: "🌈" },
-  { id: 10, name: "Oracle's Eye", description: "See enemy clan stats before declaring war", price: 800, rarity: "epic", category: "intel", icon: "🔮" },
-  { id: 11, name: "Chaos Gem", description: "Random legendary drop on next quest", price: 500, rarity: "epic", category: "boost", icon: "💎" },
-  { id: 12, name: "Sky Genesis NFT", description: "Exclusive genesis collection NFT — tradeable", price: 5000, rarity: "legendary", category: "nft", icon: "🌌", limited: true, remaining: 1 },
+  {
+    id: 1,
+    name: "Shadow Cloak",
+    description: "Invisible to enemy scanners for 24h",
+    price: 250,
+    rarity: "epic",
+    category: "gear",
+    icon: "🌑",
+  },
+  {
+    id: 2,
+    name: "XP Booster x2",
+    description: "Double XP for 7 days",
+    price: 100,
+    rarity: "rare",
+    category: "boost",
+    icon: "⚡",
+  },
+  {
+    id: 3,
+    name: "Legendary Sword",
+    description: "+50% attack power in PvP battles",
+    price: 1500,
+    rarity: "legendary",
+    category: "weapon",
+    icon: "⚔️",
+    limited: true,
+    remaining: 7,
+  },
+  {
+    id: 4,
+    name: "Sky Shield",
+    description: "Blocks 3 attacks in clan wars",
+    price: 400,
+    rarity: "epic",
+    category: "gear",
+    icon: "🛡️",
+  },
+  {
+    id: 5,
+    name: "Daily Spin Token",
+    description: "Extra spin on the daily wheel",
+    price: 50,
+    rarity: "common",
+    category: "boost",
+    icon: "🎰",
+  },
+  {
+    id: 6,
+    name: "Crown of Kings",
+    description: "Display crown on your profile + 10% reward bonus",
+    price: 2000,
+    rarity: "legendary",
+    category: "cosmetic",
+    icon: "👑",
+    limited: true,
+    remaining: 3,
+  },
+  {
+    id: 7,
+    name: "Stealth Boots",
+    description: "Move undetected in clan territory",
+    price: 350,
+    rarity: "rare",
+    category: "gear",
+    icon: "👢",
+  },
+  {
+    id: 8,
+    name: "Battle Pass Token",
+    description: "Unlock one Battle Pass tier instantly",
+    price: 200,
+    rarity: "rare",
+    category: "boost",
+    icon: "🎫",
+  },
+  {
+    id: 9,
+    name: "Neon Avatar Frame",
+    description: "Animated neon border on your avatar",
+    price: 150,
+    rarity: "common",
+    category: "cosmetic",
+    icon: "🌈",
+  },
+  {
+    id: 10,
+    name: "Oracle's Eye",
+    description: "See enemy clan stats before declaring war",
+    price: 800,
+    rarity: "epic",
+    category: "intel",
+    icon: "🔮",
+  },
+  {
+    id: 11,
+    name: "Chaos Gem",
+    description: "Random legendary drop on next quest",
+    price: 500,
+    rarity: "epic",
+    category: "boost",
+    icon: "💎",
+  },
+  {
+    id: 12,
+    name: "Sky Genesis NFT",
+    description: "Exclusive genesis collection NFT — tradeable",
+    price: 5000,
+    rarity: "legendary",
+    category: "nft",
+    icon: "🌌",
+    limited: true,
+    remaining: 1,
+  },
 ];
 
-const CATEGORIES = ["all", "gear", "weapon", "boost", "cosmetic", "intel", "nft"];
+const CATEGORIES = [
+  "all",
+  "gear",
+  "weapon",
+  "boost",
+  "cosmetic",
+  "intel",
+  "nft",
+];
 
 export default function P2EShop() {
   const { user } = useAuth();
@@ -62,7 +184,9 @@ export default function P2EShop() {
   const [purchased, setPurchased] = useState<Set<number>>(new Set());
 
   // Use staking stats for SKY444 balance display
-  const { data: stakingStats } = trpc.staking.stats.useQuery(undefined, { enabled: !!user });
+  const { data: stakingStats } = trpc.staking.stats.useQuery(undefined, {
+    enabled: !!user,
+  });
   const skyBalance = (stakingStats as any)?.userStaked ?? 1250;
 
   const filtered = SHOP_ITEMS.filter(item => {
@@ -72,13 +196,18 @@ export default function P2EShop() {
   });
 
   const handleBuy = (item: ShopItem) => {
-    if (!user) { toast.error("Sign in to purchase items"); return; }
+    if (!user) {
+      toast.error("Sign in to purchase items");
+      return;
+    }
     if (skyBalance < item.price) {
       toast.error(`Need ${item.price} SKY444 — you have ${skyBalance}`);
       return;
     }
     setPurchased(prev => new Set([...prev, item.id]));
-    toast.success(`🎉 ${item.icon} ${item.name} purchased! Check your inventory.`);
+    toast.success(
+      `🎉 ${item.icon} ${item.name} purchased! Check your inventory.`
+    );
   };
 
   return (
@@ -90,7 +219,10 @@ export default function P2EShop() {
           <div className="glow-orb w-48 h-48 bg-orange-500/10 bottom-0 left-1/4" />
         </div>
         <div className="container max-w-6xl mx-auto px-4 relative z-10">
-          <button onClick={() => navigate(-1 as any)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white mb-4 transition-colors">
+          <button
+            onClick={() => navigate(-1 as any)}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white mb-4 transition-colors"
+          >
             <ChevronLeft className="w-4 h-4" /> Back
           </button>
           <div className="flex items-center justify-between">
@@ -101,14 +233,20 @@ export default function P2EShop() {
                 </div>
                 <h1 className="text-4xl font-black rainbow-text">P2E Shop</h1>
               </div>
-              <p className="text-muted-foreground metallic-shimmer">Spend SKY444 tokens on gear, boosts, NFTs, and cosmetics.</p>
+              <p className="text-muted-foreground metallic-shimmer">
+                Spend SKY444 tokens on gear, boosts, NFTs, and cosmetics.
+              </p>
             </div>
             {/* Wallet balance */}
             <div className="hidden sm:flex items-center gap-3 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-950/20">
               <Coins className="w-5 h-5 text-amber-400" />
               <div>
-                <div className="text-xs text-muted-foreground">SKY444 Balance</div>
-                <div className="text-lg font-black text-amber-400">{skyBalance.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">
+                  SKY444 Balance
+                </div>
+                <div className="text-lg font-black text-amber-400">
+                  {skyBalance.toLocaleString()}
+                </div>
               </div>
             </div>
           </div>
@@ -127,7 +265,9 @@ export default function P2EShop() {
               key={c}
               onClick={() => setCategory(c)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${
-                category === c ? "bg-amber-500/20 border border-amber-500/40 text-amber-300" : "bg-white/5 border border-white/10 text-muted-foreground hover:text-white"
+                category === c
+                  ? "bg-amber-500/20 border border-amber-500/40 text-amber-300"
+                  : "bg-white/5 border border-white/10 text-muted-foreground hover:text-white"
               }`}
             >
               {c}
@@ -139,7 +279,9 @@ export default function P2EShop() {
               key={r}
               onClick={() => setRarityFilter(r)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${
-                rarityFilter === r ? "bg-purple-500/20 border border-purple-500/40 text-purple-300" : "bg-white/5 border border-white/10 text-muted-foreground hover:text-white"
+                rarityFilter === r
+                  ? "bg-purple-500/20 border border-purple-500/40 text-purple-300"
+                  : "bg-white/5 border border-white/10 text-muted-foreground hover:text-white"
               }`}
             >
               {r}
@@ -148,7 +290,9 @@ export default function P2EShop() {
         </div>
 
         {/* Item count */}
-        <div className="text-sm text-muted-foreground mb-4">{filtered.length} items</div>
+        <div className="text-sm text-muted-foreground mb-4">
+          {filtered.length} items
+        </div>
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -170,19 +314,27 @@ export default function P2EShop() {
                 <div className="text-4xl mb-3 text-center">{item.icon}</div>
 
                 {/* Rarity badge */}
-                <div className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full mb-2 capitalize ${RARITY_BADGE[item.rarity]}`}>
+                <div
+                  className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full mb-2 capitalize ${RARITY_BADGE[item.rarity]}`}
+                >
                   <Sparkles className="w-3 h-3" />
                   {item.rarity}
                 </div>
 
-                <h3 className="text-sm font-bold text-white mb-1">{item.name}</h3>
-                <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{item.description}</p>
+                <h3 className="text-sm font-bold text-white mb-1">
+                  {item.name}
+                </h3>
+                <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                  {item.description}
+                </p>
 
                 {/* Price + Buy */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <Coins className="w-4 h-4 text-amber-400" />
-                    <span className="text-sm font-black text-amber-400">{item.price.toLocaleString()}</span>
+                    <span className="text-sm font-black text-amber-400">
+                      {item.price.toLocaleString()}
+                    </span>
                   </div>
                   <button
                     onClick={() => handleBuy(item)}

@@ -33,7 +33,7 @@ Bitcoin uses SHA-256 hashing and ECDSA for cryptographic security. The proof-of-
       "The blockchain is an immutable ledger of all transactions",
       "Mining secures the network and creates new bitcoins",
       "Private keys control access to your bitcoins",
-      "The supply is capped at 21 million bitcoins"
+      "The supply is capped at 21 million bitcoins",
     ],
     quiz: [
       {
@@ -43,10 +43,11 @@ Bitcoin uses SHA-256 hashing and ECDSA for cryptographic security. The proof-of-
           "Satoshi Nakamoto (anonymous)",
           "Vitalik Buterin",
           "Charlie Lee",
-          "The US Federal Reserve"
+          "The US Federal Reserve",
         ],
         correctAnswer: 0,
-        explanation: "Bitcoin was created by an anonymous person or group known as Satoshi Nakamoto in 2009."
+        explanation:
+          "Bitcoin was created by an anonymous person or group known as Satoshi Nakamoto in 2009.",
       },
       {
         id: "q2",
@@ -55,10 +56,11 @@ Bitcoin uses SHA-256 hashing and ECDSA for cryptographic security. The proof-of-
           "100 million BTC",
           "21 million BTC",
           "1 billion BTC",
-          "Unlimited"
+          "Unlimited",
         ],
         correctAnswer: 1,
-        explanation: "Bitcoin has a fixed supply cap of 21 million BTC, which is a key feature of its design."
+        explanation:
+          "Bitcoin has a fixed supply cap of 21 million BTC, which is a key feature of its design.",
       },
       {
         id: "q3",
@@ -67,10 +69,11 @@ Bitcoin uses SHA-256 hashing and ECDSA for cryptographic security. The proof-of-
           "Proof of Stake",
           "Proof of Work",
           "Proof of Authority",
-          "Proof of History"
+          "Proof of History",
         ],
         correctAnswer: 1,
-        explanation: "Bitcoin uses Proof of Work consensus, where miners solve complex cryptographic puzzles to validate transactions."
+        explanation:
+          "Bitcoin uses Proof of Work consensus, where miners solve complex cryptographic puzzles to validate transactions.",
       },
       {
         id: "q4",
@@ -79,26 +82,24 @@ Bitcoin uses SHA-256 hashing and ECDSA for cryptographic security. The proof-of-
           "Every year",
           "Every 100,000 blocks",
           "Every 210,000 blocks",
-          "Never"
+          "Never",
         ],
         correctAnswer: 2,
-        explanation: "Bitcoin's mining reward halves every 210,000 blocks, approximately every 4 years."
+        explanation:
+          "Bitcoin's mining reward halves every 210,000 blocks, approximately every 4 years.",
       },
       {
         id: "q5",
-        question: "What cryptographic algorithm does Bitcoin use for signatures?",
-        options: [
-          "RSA",
-          "ECDSA",
-          "AES",
-          "MD5"
-        ],
+        question:
+          "What cryptographic algorithm does Bitcoin use for signatures?",
+        options: ["RSA", "ECDSA", "AES", "MD5"],
         correctAnswer: 1,
-        explanation: "Bitcoin uses ECDSA (Elliptic Curve Digital Signature Algorithm) for transaction signatures."
-      }
+        explanation:
+          "Bitcoin uses ECDSA (Elliptic Curve Digital Signature Algorithm) for transaction signatures.",
+      },
     ],
     xpReward: 500,
-    skyReward: 50
+    skyReward: 50,
   },
   {
     id: "eth-101",
@@ -145,7 +146,7 @@ Gas and Fees:
       "The EVM executes code deterministically across the network",
       "Gas metering prevents spam and allocates network resources",
       "Multiple token standards (ERC-20, ERC-721) enable different use cases",
-      "Ethereum transitioned from Proof of Work to Proof of Stake"
+      "Ethereum transitioned from Proof of Work to Proof of Stake",
     ],
     quiz: [
       {
@@ -155,10 +156,10 @@ Gas and Fees:
           "Satoshi Nakamoto",
           "Vitalik Buterin",
           "Charlie Lee",
-          "Gavin Wood"
+          "Gavin Wood",
         ],
         correctAnswer: 1,
-        explanation: "Ethereum was created by Vitalik Buterin in 2015."
+        explanation: "Ethereum was created by Vitalik Buterin in 2015.",
       },
       {
         id: "q2",
@@ -167,10 +168,11 @@ Gas and Fees:
           "A legal document signed by lawyers",
           "Self-executing code stored on the blockchain",
           "A traditional insurance contract",
-          "A cryptocurrency wallet"
+          "A cryptocurrency wallet",
         ],
         correctAnswer: 1,
-        explanation: "A smart contract is self-executing code that runs on the blockchain and automatically executes when conditions are met."
+        explanation:
+          "A smart contract is self-executing code that runs on the blockchain and automatically executes when conditions are met.",
       },
       {
         id: "q3",
@@ -179,10 +181,11 @@ Gas and Fees:
           "Non-fungible tokens",
           "Fungible tokens (like currencies)",
           "A consensus mechanism",
-          "A blockchain layer"
+          "A blockchain layer",
         ],
         correctAnswer: 1,
-        explanation: "ERC-20 is the standard for fungible tokens on Ethereum, similar to how currencies work."
+        explanation:
+          "ERC-20 is the standard for fungible tokens on Ethereum, similar to how currencies work.",
       },
       {
         id: "q4",
@@ -191,10 +194,11 @@ Gas and Fees:
           "Combining two blockchains",
           "Transition from Proof of Work to Proof of Stake",
           "Merging smart contracts",
-          "Combining wallets"
+          "Combining wallets",
         ],
         correctAnswer: 1,
-        explanation: "The Merge was Ethereum's transition from Proof of Work to Proof of Stake consensus in 2022."
+        explanation:
+          "The Merge was Ethereum's transition from Proof of Work to Proof of Stake consensus in 2022.",
       },
       {
         id: "q5",
@@ -203,14 +207,15 @@ Gas and Fees:
           "A cryptocurrency",
           "A measure of computational work required to execute transactions",
           "A type of wallet",
-          "A mining pool"
+          "A mining pool",
         ],
         correctAnswer: 1,
-        explanation: "Gas measures the computational work required to execute transactions and smart contracts on Ethereum."
-      }
+        explanation:
+          "Gas measures the computational work required to execute transactions and smart contracts on Ethereum.",
+      },
     ],
     xpReward: 600,
-    skyReward: 60
+    skyReward: 60,
   },
   {
     id: "defi-101",
@@ -267,7 +272,7 @@ Best Practices:
       "Permissionless access means anyone can participate globally",
       "AMMs and liquidity pools power decentralized exchanges",
       "Composability allows protocols to interact ('money legos')",
-      "Higher yields come with higher risks - always research first"
+      "Higher yields come with higher risks - always research first",
     ],
     quiz: [
       {
@@ -277,10 +282,11 @@ Best Practices:
           "Digital Finance",
           "Decentralized Finance",
           "Distributed Finance",
-          "Derivative Finance"
+          "Derivative Finance",
         ],
         correctAnswer: 1,
-        explanation: "DeFi stands for Decentralized Finance, which provides financial services without traditional intermediaries."
+        explanation:
+          "DeFi stands for Decentralized Finance, which provides financial services without traditional intermediaries.",
       },
       {
         id: "q2",
@@ -289,10 +295,11 @@ Best Practices:
           "A person who manages markets",
           "A smart contract that uses liquidity pools to enable trading",
           "A centralized exchange",
-          "A type of wallet"
+          "A type of wallet",
         ],
         correctAnswer: 1,
-        explanation: "An AMM is a smart contract that uses liquidity pools to enable trading without a central order book."
+        explanation:
+          "An AMM is a smart contract that uses liquidity pools to enable trading without a central order book.",
       },
       {
         id: "q3",
@@ -301,10 +308,11 @@ Best Practices:
           "Loss from trading mistakes",
           "Loss when a protocol shuts down",
           "Loss for liquidity providers when token prices diverge",
-          "Loss from hacking"
+          "Loss from hacking",
         ],
         correctAnswer: 2,
-        explanation: "Impermanent loss occurs when the price ratio of tokens in a liquidity pool changes significantly."
+        explanation:
+          "Impermanent loss occurs when the price ratio of tokens in a liquidity pool changes significantly.",
       },
       {
         id: "q4",
@@ -313,10 +321,11 @@ Best Practices:
           "You need permission from the government",
           "Anyone can participate without KYC or approval",
           "Only institutions can participate",
-          "You need to ask the protocol owner"
+          "You need to ask the protocol owner",
         ],
         correctAnswer: 1,
-        explanation: "Permissionless means anyone with a crypto wallet can participate without KYC or approval from a central authority."
+        explanation:
+          "Permissionless means anyone with a crypto wallet can participate without KYC or approval from a central authority.",
       },
       {
         id: "q5",
@@ -325,13 +334,14 @@ Best Practices:
           "Physical cryptocurrency tokens",
           "Protocols that can be composed together",
           "A type of wallet",
-          "Mining equipment"
+          "Mining equipment",
         ],
         correctAnswer: 1,
-        explanation: "'Money legos' refers to the composability of DeFi protocols - they can be combined and interact with each other."
-      }
+        explanation:
+          "'Money legos' refers to the composability of DeFi protocols - they can be combined and interact with each other.",
+      },
     ],
     xpReward: 700,
-    skyReward: 70
-  }
+    skyReward: 70,
+  },
 ];

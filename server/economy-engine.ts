@@ -80,7 +80,14 @@ export class EconomyEngine {
       .limit(1);
 
     if (!cap) {
-      return { success: false, token, amount, newCirculatingSupply: 0, capHit: false, reason: "No emission cap found" };
+      return {
+        success: false,
+        token,
+        amount,
+        newCirculatingSupply: 0,
+        capHit: false,
+        reason: "No emission cap found",
+      };
     }
 
     const currentSupply = Number(cap.totalSupply);
@@ -89,18 +96,30 @@ export class EconomyEngine {
     const dailyCap = Number(cap.dailyCap);
 
     if (emittedToday + amount > dailyCap) {
-      eventBus.publish("EMISSION_CAP_HIT", { token, attempted: amount, available: dailyCap - emittedToday }, userId);
+      eventBus.publish(
+        "EMISSION_CAP_HIT",
+        { token, attempted: amount, available: dailyCap - emittedToday },
+        userId
+      );
       return {
-        success: false, token, amount,
+        success: false,
+        token,
+        amount,
         newCirculatingSupply: currentSupply,
         capHit: true,
         reason: `Daily emission cap hit: ${emittedToday}/${dailyCap}`,
       };
     }
     if (maxSupply > 0 && currentSupply + amount > maxSupply) {
-      eventBus.publish("EMISSION_CAP_HIT", { token, attempted: amount, available: maxSupply - currentSupply }, userId);
+      eventBus.publish(
+        "EMISSION_CAP_HIT",
+        { token, attempted: amount, available: maxSupply - currentSupply },
+        userId
+      );
       return {
-        success: false, token, amount,
+        success: false,
+        token,
+        amount,
         newCirculatingSupply: currentSupply,
         capHit: true,
         reason: `Supply cap hit: ${currentSupply}/${maxSupply}`,
@@ -113,7 +132,7 @@ export class EconomyEngine {
       .set({
         totalSupply: String(currentSupply + amount),
         emittedToday: String(emittedToday + amount),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(eq(tokenEmissionCaps.token, token));
 
@@ -121,20 +140,26 @@ export class EconomyEngine {
     const [existing] = await db
       .select()
       .from(tokenBalances)
-      .where(and(eq(tokenBalances.userId, userId), eq(tokenBalances.token, token)))
+      .where(
+        and(eq(tokenBalances.userId, userId), eq(tokenBalances.token, token))
+      )
       .limit(1);
 
     if (existing) {
       await db
         .update(tokenBalances)
         .set({ balance: String(Number(existing.balance) + amount) })
-        .where(and(eq(tokenBalances.userId, userId), eq(tokenBalances.token, token)));
+        .where(
+          and(eq(tokenBalances.userId, userId), eq(tokenBalances.token, token))
+        );
     } else {
-      await db.insert(tokenBalances).values({ userId, token, balance: String(amount) });
+      await db
+        .insert(tokenBalances)
+        .values({ userId, token, balance: String(amount) });
     }
 
     // Record transaction
-      await db.insert(transactions).values({
+    await db.insert(transactions).values({
       userId,
       type: "reward",
       token,
@@ -150,13 +175,21 @@ export class EconomyEngine {
     eventBus.publish("TOKEN_MINTED", { token, amount, userId, reason }, userId);
 
     // Check inflation warning
-    const emissionPct = maxSupply > 0 ? ((currentSupply + amount) / maxSupply) * 100 : 0;
+    const emissionPct =
+      maxSupply > 0 ? ((currentSupply + amount) / maxSupply) * 100 : 0;
     if (emissionPct > 80) {
-      eventBus.publish("INFLATION_WARNING", { token, emissionPct, currentSupply: currentSupply + amount, maxSupply });
+      eventBus.publish("INFLATION_WARNING", {
+        token,
+        emissionPct,
+        currentSupply: currentSupply + amount,
+        maxSupply,
+      });
     }
 
     return {
-      success: true, token, amount,
+      success: true,
+      token,
+      amount,
       newCirculatingSupply: currentSupply + amount,
       capHit: false,
       reason: `Minted ${amount} ${token} for user ${userId}: ${reason}`,
@@ -179,7 +212,9 @@ export class EconomyEngine {
     const [bal] = await db
       .select()
       .from(tokenBalances)
-      .where(and(eq(tokenBalances.userId, userId), eq(tokenBalances.token, token)))
+      .where(
+        and(eq(tokenBalances.userId, userId), eq(tokenBalances.token, token))
+      )
       .limit(1);
 
     if (!bal || Number(bal.balance) < amount) {
@@ -190,16 +225,24 @@ export class EconomyEngine {
     await db
       .update(tokenBalances)
       .set({ balance: String(newBalance) })
-      .where(and(eq(tokenBalances.userId, userId), eq(tokenBalances.token, token)));
+      .where(
+        and(eq(tokenBalances.userId, userId), eq(tokenBalances.token, token))
+      );
 
     // Reduce circulating supply
     await db
       .update(tokenEmissionCaps)
-      .set({ totalSupply: sql`GREATEST(0, ${tokenEmissionCaps.totalSupply} - ${amount})`, updatedAt: new Date() })
+      .set({
+        totalSupply: sql`GREATEST(0, ${tokenEmissionCaps.totalSupply} - ${amount})`,
+        updatedAt: new Date(),
+      })
       .where(eq(tokenEmissionCaps.token, token));
 
     await db.insert(transactions).values({
-      userId, type: "transfer", token, amount: String(amount),
+      userId,
+      type: "transfer",
+      token,
+      amount: String(amount),
       metadata: { reason, operation: "burn" },
       status: "confirmed",
       createdAt: new Date(),
@@ -223,7 +266,7 @@ export class EconomyEngine {
     const caps = await db.select().from(tokenEmissionCaps);
     const markets = await db.select().from(tokenMarketState);
 
-    const marketMap = new Map(markets.map((m) => [m.token, m]));
+    const marketMap = new Map(markets.map(m => [m.token, m]));
     const alerts: string[] = [];
     const recommendations: string[] = [];
     const snapshots: TokenEconomySnapshot[] = [];
@@ -232,7 +275,8 @@ export class EconomyEngine {
       const market = marketMap.get(cap.token);
       const currentSupply = Number(cap.totalSupply);
       const maxSupply = Number(cap.supplyCap ?? 0);
-      const emissionUsedPct = maxSupply > 0 ? (currentSupply / maxSupply) * 100 : 0;
+      const emissionUsedPct =
+        maxSupply > 0 ? (currentSupply / maxSupply) * 100 : 0;
       const currentPrice = Number(market?.currentPrice ?? 0);
       const priceChange24h = Number(market?.volatilityScore ?? 0) * 10;
       const volume24h = Number(market?.volume24h ?? 0);
@@ -241,16 +285,28 @@ export class EconomyEngine {
       const sinkPressure = Number(market?.demandIndex ?? 1) < 0.8 ? 50 : 0;
 
       if (emissionUsedPct > 90) {
-        alerts.push(`${cap.token}: emission at ${emissionUsedPct.toFixed(1)}% — near cap`);
-        recommendations.push(`Activate sink mechanics for ${cap.token} to reduce circulating supply`);
+        alerts.push(
+          `${cap.token}: emission at ${emissionUsedPct.toFixed(1)}% — near cap`
+        );
+        recommendations.push(
+          `Activate sink mechanics for ${cap.token} to reduce circulating supply`
+        );
       }
       if (liquidityScore < 30) {
         alerts.push(`${cap.token}: low liquidity score (${liquidityScore})`);
-        eventBus.publish("LOW_LIQUIDITY_DETECTED", { token: cap.token, liquidityScore });
+        eventBus.publish("LOW_LIQUIDITY_DETECTED", {
+          token: cap.token,
+          liquidityScore,
+        });
       }
       if (inflationRate > 15) {
-        alerts.push(`${cap.token}: high inflation rate (${inflationRate.toFixed(1)}%)`);
-        eventBus.publish("INFLATION_WARNING", { token: cap.token, inflationRate });
+        alerts.push(
+          `${cap.token}: high inflation rate (${inflationRate.toFixed(1)}%)`
+        );
+        eventBus.publish("INFLATION_WARNING", {
+          token: cap.token,
+          inflationRate,
+        });
       }
 
       snapshots.push({
@@ -267,18 +323,33 @@ export class EconomyEngine {
       });
     }
 
-    const criticalCount = alerts.filter((a) => a.includes("near cap") || a.includes("high inflation")).length;
+    const criticalCount = alerts.filter(
+      a => a.includes("near cap") || a.includes("high inflation")
+    ).length;
     const overallHealth: EconomyHealthReport["overallHealth"] =
-      criticalCount >= 2 ? "CRITICAL" : alerts.length > 0 ? "WARNING" : "HEALTHY";
+      criticalCount >= 2
+        ? "CRITICAL"
+        : alerts.length > 0
+          ? "WARNING"
+          : "HEALTHY";
 
-    return { overallHealth, tokens: snapshots, alerts, recommendations, timestamp: Date.now() };
+    return {
+      overallHealth,
+      tokens: snapshots,
+      alerts,
+      recommendations,
+      timestamp: Date.now(),
+    };
   }
 
   /**
    * Apply automatic sink pressure when inflation is detected.
    * Called by Free Will Engine when INFLATION_WARNING fires.
    */
-  async applySinkPressure(token: TokenSymbol, pressureMultiplier: number): Promise<void> {
+  async applySinkPressure(
+    token: TokenSymbol,
+    pressureMultiplier: number
+  ): Promise<void> {
     const db = await getDb();
     if (!db) return;
 
@@ -322,7 +393,7 @@ export class EconomyEngine {
   /**
    * Get token market state for all tokens.
    */
-  async getMarketStates(): Promise<typeof tokenMarketState.$inferSelect[]> {
+  async getMarketStates(): Promise<(typeof tokenMarketState.$inferSelect)[]> {
     const db = await getDb();
     if (!db) return [];
     return db.select().from(tokenMarketState);
@@ -331,7 +402,7 @@ export class EconomyEngine {
   /**
    * Get emission caps for all tokens.
    */
-  async getEmissionCaps(): Promise<typeof tokenEmissionCaps.$inferSelect[]> {
+  async getEmissionCaps(): Promise<(typeof tokenEmissionCaps.$inferSelect)[]> {
     const db = await getDb();
     if (!db) return [];
     return db.select().from(tokenEmissionCaps);

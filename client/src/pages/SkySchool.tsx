@@ -8,10 +8,37 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
-  BookOpen, Star, Zap, Award, Clock, Users, Search, GraduationCap, Brain,
-  Coins, Shield, Code, Rocket, Bug, Cloud, Cpu, CheckCircle, Terminal, Play,
-  Video, ArrowLeft, BarChart3, Lock, Trophy, ChevronRight, Flame, Target,
-  Sparkles, ArrowRight, Volume2, Code2
+  BookOpen,
+  Star,
+  Zap,
+  Award,
+  Clock,
+  Users,
+  Search,
+  GraduationCap,
+  Brain,
+  Coins,
+  Shield,
+  Code,
+  Rocket,
+  Bug,
+  Cloud,
+  Cpu,
+  CheckCircle,
+  Terminal,
+  Play,
+  Video,
+  ArrowLeft,
+  BarChart3,
+  Lock,
+  Trophy,
+  ChevronRight,
+  Flame,
+  Target,
+  Sparkles,
+  ArrowRight,
+  Volume2,
+  Code2,
 } from "lucide-react";
 
 // Real YouTube Videos + Actual Lesson Content
@@ -23,7 +50,8 @@ const COURSES = [
     level: "Beginner",
     icon: "⛓️",
     title: "Blockchain Fundamentals",
-    description: "Master distributed ledgers, consensus mechanisms, and cryptography",
+    description:
+      "Master distributed ledgers, consensus mechanisms, and cryptography",
     lessons: 12,
     duration: "4h 30m",
     xpReward: 500,
@@ -49,7 +77,7 @@ Learning Objectives:
 ✓ Understand blockchain architecture
 ✓ Learn about distributed systems
 ✓ Grasp the importance of cryptography
-✓ Know the difference between public and private blockchains`
+✓ Know the difference between public and private blockchains`,
       },
       {
         title: "Distributed Ledgers",
@@ -72,7 +100,7 @@ Use Cases:
 • Supply chain tracking
 • Cross-border payments
 • Smart contracts
-• Digital identity management`
+• Digital identity management`,
       },
       {
         title: "Consensus Mechanisms",
@@ -99,7 +127,7 @@ Other Mechanisms:
 
 Comparison:
 PoW is more decentralized but energy-intensive.
-PoS is more efficient but requires significant capital.`
+PoS is more efficient but requires significant capital.`,
       },
       {
         title: "Hash Functions",
@@ -123,7 +151,7 @@ Applications in Blockchain:
 • Creating block identifiers
 • Verifying data integrity
 • Merkle trees for efficient verification
-• Proof of Work in mining`
+• Proof of Work in mining`,
       },
       {
         title: "Merkle Trees",
@@ -154,7 +182,7 @@ Applications:
 • Git: Merkle trees for version control
 
 Verification:
-To verify a specific transaction, only need O(log n) hashes instead of all n transactions.`
+To verify a specific transaction, only need O(log n) hashes instead of all n transactions.`,
       },
       {
         title: "Smart Contracts Intro",
@@ -189,7 +217,7 @@ Platforms:
 • Ethereum: Most popular, uses Solidity
 • Cardano: Uses Plutus
 • Polkadot: Uses Ink!
-• Solana: Uses Rust`
+• Solana: Uses Rust`,
       },
       {
         title: "Public vs Private Chains",
@@ -224,7 +252,7 @@ Hybrid Approaches:
 • Sidechains: Connected to main chain
 
 Choosing the Right Type:
-Consider: Decentralization needs, Privacy requirements, Performance needs, Regulatory compliance`
+Consider: Decentralization needs, Privacy requirements, Performance needs, Regulatory compliance`,
       },
       {
         title: "Layer 1 vs Layer 2",
@@ -258,7 +286,7 @@ Layer 2: Faster and cheaper but depends on Layer 1
 Current Solutions:
 • Bitcoin: Lightning Network (Layer 2)
 • Ethereum: Polygon, Arbitrum, Optimism (Layer 2)
-• Ethereum 2.0: Sharding (Layer 1)`
+• Ethereum 2.0: Sharding (Layer 1)`,
       },
       {
         title: "Blockchain Use Cases",
@@ -305,7 +333,7 @@ Intellectual Property:
 • Royalty distribution
 • NFTs for digital assets
 • Proof of ownership
-• Automated licensing`
+• Automated licensing`,
       },
       {
         title: "Security Fundamentals",
@@ -344,7 +372,7 @@ Best Practices:
 • Enable 2FA
 • Backup private keys
 • Verify smart contracts
-• Stay updated on security news`
+• Stay updated on security news`,
       },
       {
         title: "Wallets & Keys",
@@ -383,7 +411,7 @@ Recovery:
 • Seed phrase allows wallet recovery
 • Keep backups in multiple locations
 • Use password managers
-• Test recovery process regularly`
+• Test recovery process regularly`,
       },
       {
         title: "Final Assessment",
@@ -419,9 +447,9 @@ Next Steps:
 
 Certificate:
 You have earned your Blockchain Fundamentals certificate!
-Share your achievement: #BlockchainFundamentals #SKY4444`
-      }
-    ]
+Share your achievement: #BlockchainFundamentals #SKY4444`,
+      },
+    ],
   },
   {
     id: "python-dev",
@@ -430,7 +458,8 @@ Share your achievement: #BlockchainFundamentals #SKY4444`
     level: "Beginner",
     icon: "🐍",
     title: "Python for Builders",
-    description: "From zero to production - scripts, APIs, automation, data pipelines",
+    description:
+      "From zero to production - scripts, APIs, automation, data pipelines",
     lessons: 6,
     duration: "3h 00m",
     xpReward: 600,
@@ -482,7 +511,7 @@ for i in range(5):
 
 while x > 0:
     print(x)
-    x -= 1`
+    x -= 1`,
       },
       {
         title: "Functions & Modules",
@@ -537,7 +566,7 @@ def greet(name):
 
 # main.py
 from mymodule import greet
-print(greet("Alice"))`
+print(greet("Alice"))`,
       },
       {
         title: "Data Structures",
@@ -580,7 +609,7 @@ squares_dict = {x: x**2 for x in range(5)}
 Common Methods:
 list.append(), list.extend(), list.remove()
 dict.keys(), dict.values(), dict.items()
-set.add(), set.remove(), set.union()`
+set.add(), set.remove(), set.union()`,
       },
       {
         title: "File I/O & Error Handling",
@@ -628,7 +657,7 @@ JSON:
 import json
 data = {"name": "Alice", "age": 30}
 json_str = json.dumps(data)
-parsed = json.loads(json_str)`
+parsed = json.loads(json_str)`,
       },
       {
         title: "APIs with FastAPI",
@@ -686,7 +715,7 @@ from pydantic import Field
 
 class Item(BaseModel):
     name: str = Field(..., min_length=1)
-    price: float = Field(..., gt=0)`
+    price: float = Field(..., gt=0)`,
       },
       {
         title: "Final Project",
@@ -726,9 +755,9 @@ Deploy to Heroku, Railway, or Render
 
 Certificate:
 You have completed Python for Builders!
-Showcase your API project on GitHub.`
-      }
-    ]
+Showcase your API project on GitHub.`,
+      },
+    ],
   },
   {
     id: "js-mastery",
@@ -789,7 +818,7 @@ const multiply = (a, b) => a * b;
 Arrow Functions:
 const greet = (name) => {
     return \`Hello, \${name}!\`;
-};`
+};`,
       },
       {
         title: "DOM & Events",
@@ -834,7 +863,7 @@ element.addEventListener("click", (event) => {
 Creating Elements:
 const newDiv = document.createElement("div")
 newDiv.textContent = "Hello"
-document.body.appendChild(newDiv)`
+document.body.appendChild(newDiv)`,
       },
       {
         title: "React Basics",
@@ -888,7 +917,7 @@ import { useEffect } from "react";
 useEffect(() => {
     console.log("Component mounted");
     return () => console.log("Component unmounted");
-}, []);  // Dependency array`
+}, []);  // Dependency array`,
       },
       {
         title: "Advanced React",
@@ -946,7 +975,7 @@ const handleChange = (e) => {
         ...formData,
         [e.target.name]: e.target.value
     });
-};`
+};`,
       },
       {
         title: "Building with Next.js",
@@ -994,7 +1023,7 @@ export default function Post({ params }) {
 
 Deployment:
 npm run build
-Deploy to Vercel with one click`
+Deploy to Vercel with one click`,
       },
       {
         title: "Final Project",
@@ -1039,30 +1068,37 @@ Testing:
 
 Certificate:
 You have completed JavaScript & React Mastery!
-Share your project on GitHub and deploy on Vercel.`
-      }
-    ]
-  }
+Share your project on GitHub and deploy on Vercel.`,
+      },
+    ],
+  },
 ];
 
 const LEVEL_COLORS: Record<string, string> = {
-  "Beginner": "bg-green-500/20 text-green-300 border-green-500/30",
-  "Intermediate": "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  "Advanced": "bg-red-500/20 text-red-300 border-red-500/30",
+  Beginner: "bg-green-500/20 text-green-300 border-green-500/30",
+  Intermediate: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+  Advanced: "bg-red-500/20 text-red-300 border-red-500/30",
 };
 
 export default function SkySchool() {
   const { isAuthenticated, user } = useAuth();
   const [search, setSearch] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState<typeof COURSES[0] | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<
+    (typeof COURSES)[0] | null
+  >(null);
   const [selectedLessonIdx, setSelectedLessonIdx] = useState(0);
-  const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(new Set());
-  const [completedLessons, setCompletedLessons] = useState<Record<string, Set<number>>>({});
+  const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(
+    new Set()
+  );
+  const [completedLessons, setCompletedLessons] = useState<
+    Record<string, Set<number>>
+  >({});
 
-  const filtered = COURSES.filter(c =>
-    c.title.toLowerCase().includes(search.toLowerCase()) ||
-    c.description.toLowerCase().includes(search.toLowerCase()) ||
-    c.category.toLowerCase().includes(search.toLowerCase())
+  const filtered = COURSES.filter(
+    c =>
+      c.title.toLowerCase().includes(search.toLowerCase()) ||
+      c.description.toLowerCase().includes(search.toLowerCase()) ||
+      c.category.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleEnroll = (courseId: string) => {
@@ -1080,7 +1116,9 @@ export default function SkySchool() {
     const completed = completedLessons[key] || new Set();
     completed.add(selectedLessonIdx);
     setCompletedLessons(prev => ({ ...prev, [key]: completed }));
-    toast.success(`Lesson completed! +${Math.round(selectedCourse.xpReward / selectedCourse.lessons)} XP`);
+    toast.success(
+      `Lesson completed! +${Math.round(selectedCourse.xpReward / selectedCourse.lessons)} XP`
+    );
   };
 
   const handleNextLesson = () => {
@@ -1090,14 +1128,16 @@ export default function SkySchool() {
       setSelectedLessonIdx(selectedLessonIdx + 1);
     } else {
       handleCompleteLesson();
-      toast.success(`Course completed! 🏆 +${selectedCourse.xpReward} XP, +${selectedCourse.skyReward} SKY`);
+      toast.success(
+        `Course completed! 🏆 +${selectedCourse.xpReward} XP, +${selectedCourse.skyReward} SKY`
+      );
     }
   };
 
   // Lesson View with REAL YouTube Video
   if (selectedCourse) {
     const lesson = selectedCourse.topics[selectedLessonIdx];
-    const progress = (selectedLessonIdx + 1) / selectedCourse.lessons * 100;
+    const progress = ((selectedLessonIdx + 1) / selectedCourse.lessons) * 100;
     const completed = completedLessons[selectedCourse.id] || new Set();
 
     return (
@@ -1116,7 +1156,9 @@ export default function SkySchool() {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-sm text-slate-400">Progress</p>
-                <p className="text-lg font-bold text-white">{selectedLessonIdx + 1}/{selectedCourse.lessons}</p>
+                <p className="text-lg font-bold text-white">
+                  {selectedLessonIdx + 1}/{selectedCourse.lessons}
+                </p>
               </div>
               <div className="w-40 h-3 bg-slate-800 rounded-full overflow-hidden">
                 <div
@@ -1145,12 +1187,17 @@ export default function SkySchool() {
             <div className="col-span-2 space-y-6">
               <Card className="bg-slate-900/50 border border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-white">{lesson.title}</CardTitle>
+                  <CardTitle className="text-2xl text-white">
+                    {lesson.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="prose prose-invert max-w-none">
-                    {lesson.content.split('\n').map((line, idx) => (
-                      <p key={idx} className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                    {lesson.content.split("\n").map((line, idx) => (
+                      <p
+                        key={idx}
+                        className="text-slate-300 leading-relaxed whitespace-pre-wrap"
+                      >
                         {line}
                       </p>
                     ))}
@@ -1158,7 +1205,9 @@ export default function SkySchool() {
                   <div className="flex gap-3 pt-4">
                     <Button
                       variant="outline"
-                      onClick={() => setSelectedLessonIdx(Math.max(0, selectedLessonIdx - 1))}
+                      onClick={() =>
+                        setSelectedLessonIdx(Math.max(0, selectedLessonIdx - 1))
+                      }
                       disabled={selectedLessonIdx === 0}
                       className="border-slate-600 text-slate-300"
                     >
@@ -1168,7 +1217,9 @@ export default function SkySchool() {
                       className="flex-1 bg-purple-600 hover:bg-purple-700"
                       onClick={handleNextLesson}
                     >
-                      {selectedLessonIdx === selectedCourse.lessons - 1 ? "Complete Course" : "Next Lesson"}
+                      {selectedLessonIdx === selectedCourse.lessons - 1
+                        ? "Complete Course"
+                        : "Next Lesson"}
                       <ChevronRight className="w-4 h-4 ml-2" />
                     </Button>
                   </div>
@@ -1181,7 +1232,9 @@ export default function SkySchool() {
               {/* Course Info */}
               <Card className="bg-slate-900/50 border border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-white">{selectedCourse.title}</CardTitle>
+                  <CardTitle className="text-white">
+                    {selectedCourse.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-slate-300">
                   <div className="flex items-center gap-2">
@@ -1193,12 +1246,12 @@ export default function SkySchool() {
                     {selectedCourse.duration}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-yellow-400" />
-                    +{selectedCourse.skyReward} SKY
+                    <Zap className="w-4 h-4 text-yellow-400" />+
+                    {selectedCourse.skyReward} SKY
                   </div>
                   <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-purple-400" />
-                    +{selectedCourse.xpReward} XP
+                    <Award className="w-4 h-4 text-purple-400" />+
+                    {selectedCourse.xpReward} XP
                   </div>
                 </CardContent>
               </Card>
@@ -1252,7 +1305,10 @@ export default function SkySchool() {
             <GraduationCap className="w-10 h-10 text-cyan-400" />
             <div>
               <h1 className="text-5xl font-bold text-white">Sky School</h1>
-              <p className="text-slate-400 text-lg mt-2">Learn Web3, Coding, AI, and Hacking. Earn SKY4, XP, and Certifications.</p>
+              <p className="text-slate-400 text-lg mt-2">
+                Learn Web3, Coding, AI, and Hacking. Earn SKY4, XP, and
+                Certifications.
+              </p>
             </div>
           </div>
         </div>
@@ -1268,19 +1324,28 @@ export default function SkySchool() {
           <Card className="bg-slate-900/50 border border-white/10">
             <CardContent className="p-4">
               <p className="text-slate-400 text-sm">Total Lessons</p>
-              <p className="text-3xl font-bold text-white">{COURSES.reduce((sum, c) => sum + c.lessons, 0)}</p>
+              <p className="text-3xl font-bold text-white">
+                {COURSES.reduce((sum, c) => sum + c.lessons, 0)}
+              </p>
             </CardContent>
           </Card>
           <Card className="bg-slate-900/50 border border-white/10">
             <CardContent className="p-4">
               <p className="text-slate-400 text-sm">Total Hours</p>
-              <p className="text-3xl font-bold text-white">{(COURSES.reduce((sum, c) => sum + parseFloat(c.duration), 0)).toFixed(1)}</p>
+              <p className="text-3xl font-bold text-white">
+                {COURSES.reduce(
+                  (sum, c) => sum + parseFloat(c.duration),
+                  0
+                ).toFixed(1)}
+              </p>
             </CardContent>
           </Card>
           <Card className="bg-slate-900/50 border border-white/10">
             <CardContent className="p-4">
               <p className="text-slate-400 text-sm">Enrolled</p>
-              <p className="text-3xl font-bold text-white">{enrolledCourses.size}</p>
+              <p className="text-3xl font-bold text-white">
+                {enrolledCourses.size}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -1316,20 +1381,26 @@ export default function SkySchool() {
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <span className="text-4xl">{course.icon}</span>
-                      <Badge className={`text-xs px-2 py-1 ${LEVEL_COLORS[course.level]}`}>
+                      <Badge
+                        className={`text-xs px-2 py-1 ${LEVEL_COLORS[course.level]}`}
+                      >
                         {course.level}
                       </Badge>
                     </div>
                     <h3 className="font-bold text-white text-lg mb-2 group-hover:text-cyan-300 transition-colors">
                       {course.title}
                     </h3>
-                    <p className="text-slate-400 text-sm mb-4">{course.description}</p>
+                    <p className="text-slate-400 text-sm mb-4">
+                      {course.description}
+                    </p>
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
                       <span className="flex items-center gap-1">
-                        <BookOpen className="w-4 h-4" />{course.lessons} lessons
+                        <BookOpen className="w-4 h-4" />
+                        {course.lessons} lessons
                       </span>
                       <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />{course.duration}
+                        <Clock className="w-4 h-4" />
+                        {course.duration}
                       </span>
                     </div>
                     <div className="flex items-center justify-between mb-4">
@@ -1370,68 +1441,102 @@ export default function SkySchool() {
           {/* Web3 Courses */}
           <TabsContent value="web3" className="mt-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.filter(c => c.track === "web3").map(course => (
-                <Card key={course.id} className="bg-slate-900/50 border border-white/10 hover:border-cyan-500/50 transition-all overflow-hidden group cursor-pointer">
-                  <div className="h-2 w-full bg-gradient-to-r from-cyan-500 to-purple-500" />
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <span className="text-4xl">{course.icon}</span>
-                      <Badge className={`text-xs px-2 py-1 ${LEVEL_COLORS[course.level]}`}>
-                        {course.level}
-                      </Badge>
-                    </div>
-                    <h3 className="font-bold text-white text-lg mb-2">{course.title}</h3>
-                    <p className="text-slate-400 text-sm mb-4">{course.description}</p>
-                    <div className="flex gap-2">
-                      {enrolledCourses.has(course.id) ? (
-                        <Button className="flex-1 bg-green-600/20 text-green-300" onClick={() => setSelectedCourse(course)}>
-                          <Play className="w-4 h-4 mr-2" />
-                          Continue
-                        </Button>
-                      ) : (
-                        <Button className="flex-1 bg-cyan-500/20 text-cyan-300" onClick={() => handleEnroll(course.id)}>
-                          <Play className="w-4 h-4 mr-2" />
-                          Enroll
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {filtered
+                .filter(c => c.track === "web3")
+                .map(course => (
+                  <Card
+                    key={course.id}
+                    className="bg-slate-900/50 border border-white/10 hover:border-cyan-500/50 transition-all overflow-hidden group cursor-pointer"
+                  >
+                    <div className="h-2 w-full bg-gradient-to-r from-cyan-500 to-purple-500" />
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <span className="text-4xl">{course.icon}</span>
+                        <Badge
+                          className={`text-xs px-2 py-1 ${LEVEL_COLORS[course.level]}`}
+                        >
+                          {course.level}
+                        </Badge>
+                      </div>
+                      <h3 className="font-bold text-white text-lg mb-2">
+                        {course.title}
+                      </h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        {course.description}
+                      </p>
+                      <div className="flex gap-2">
+                        {enrolledCourses.has(course.id) ? (
+                          <Button
+                            className="flex-1 bg-green-600/20 text-green-300"
+                            onClick={() => setSelectedCourse(course)}
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Continue
+                          </Button>
+                        ) : (
+                          <Button
+                            className="flex-1 bg-cyan-500/20 text-cyan-300"
+                            onClick={() => handleEnroll(course.id)}
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Enroll
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
           </TabsContent>
 
           {/* Coding Courses */}
           <TabsContent value="coding" className="mt-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.filter(c => c.track === "coding").map(course => (
-                <Card key={course.id} className="bg-slate-900/50 border border-white/10 hover:border-cyan-500/50 transition-all overflow-hidden group cursor-pointer">
-                  <div className="h-2 w-full bg-gradient-to-r from-cyan-500 to-purple-500" />
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <span className="text-4xl">{course.icon}</span>
-                      <Badge className={`text-xs px-2 py-1 ${LEVEL_COLORS[course.level]}`}>
-                        {course.level}
-                      </Badge>
-                    </div>
-                    <h3 className="font-bold text-white text-lg mb-2">{course.title}</h3>
-                    <p className="text-slate-400 text-sm mb-4">{course.description}</p>
-                    <div className="flex gap-2">
-                      {enrolledCourses.has(course.id) ? (
-                        <Button className="flex-1 bg-green-600/20 text-green-300" onClick={() => setSelectedCourse(course)}>
-                          <Play className="w-4 h-4 mr-2" />
-                          Continue
-                        </Button>
-                      ) : (
-                        <Button className="flex-1 bg-cyan-500/20 text-cyan-300" onClick={() => handleEnroll(course.id)}>
-                          <Play className="w-4 h-4 mr-2" />
-                          Enroll
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {filtered
+                .filter(c => c.track === "coding")
+                .map(course => (
+                  <Card
+                    key={course.id}
+                    className="bg-slate-900/50 border border-white/10 hover:border-cyan-500/50 transition-all overflow-hidden group cursor-pointer"
+                  >
+                    <div className="h-2 w-full bg-gradient-to-r from-cyan-500 to-purple-500" />
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <span className="text-4xl">{course.icon}</span>
+                        <Badge
+                          className={`text-xs px-2 py-1 ${LEVEL_COLORS[course.level]}`}
+                        >
+                          {course.level}
+                        </Badge>
+                      </div>
+                      <h3 className="font-bold text-white text-lg mb-2">
+                        {course.title}
+                      </h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        {course.description}
+                      </p>
+                      <div className="flex gap-2">
+                        {enrolledCourses.has(course.id) ? (
+                          <Button
+                            className="flex-1 bg-green-600/20 text-green-300"
+                            onClick={() => setSelectedCourse(course)}
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Continue
+                          </Button>
+                        ) : (
+                          <Button
+                            className="flex-1 bg-cyan-500/20 text-cyan-300"
+                            onClick={() => handleEnroll(course.id)}
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Enroll
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
           </TabsContent>
         </Tabs>

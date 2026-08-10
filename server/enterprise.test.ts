@@ -50,17 +50,38 @@ describe("Free Will Engine — Goal System", () => {
   });
 
   it("marks goal as achieved at 100% progress", () => {
-    const goal: Goal = { id: "g1", name: "Test", targetValue: 100, currentValue: 100, progress: 100, status: "active" };
+    const goal: Goal = {
+      id: "g1",
+      name: "Test",
+      targetValue: 100,
+      currentValue: 100,
+      progress: 100,
+      status: "active",
+    };
     expect(evaluateGoalStatus(goal)).toBe("achieved");
   });
 
   it("keeps goal active when progress is partial", () => {
-    const goal: Goal = { id: "g2", name: "Test", targetValue: 100, currentValue: 60, progress: 60, status: "active" };
+    const goal: Goal = {
+      id: "g2",
+      name: "Test",
+      targetValue: 100,
+      currentValue: 60,
+      progress: 60,
+      status: "active",
+    };
     expect(evaluateGoalStatus(goal)).toBe("active");
   });
 
   it("respects paused status", () => {
-    const goal: Goal = { id: "g3", name: "Test", targetValue: 100, currentValue: 40, progress: 40, status: "paused" };
+    const goal: Goal = {
+      id: "g3",
+      name: "Test",
+      targetValue: 100,
+      currentValue: 40,
+      progress: 40,
+      status: "paused",
+    };
     expect(evaluateGoalStatus(goal)).toBe("paused");
   });
 });
@@ -116,10 +137,24 @@ describe("Economy Engine — Emission Caps", () => {
 // ─── Behavior Engine: Archetype Scoring ──────────────────────────────────────
 
 describe("Behavior Engine — Archetype Scoring", () => {
-  type Archetype = "explorer" | "creator" | "trader" | "governor" | "builder" | "guardian" | "analyst";
+  type Archetype =
+    | "explorer"
+    | "creator"
+    | "trader"
+    | "governor"
+    | "builder"
+    | "guardian"
+    | "analyst";
 
   interface BehaviorSignal {
-    type: "trade" | "create" | "vote" | "explore" | "build" | "moderate" | "analyze";
+    type:
+      | "trade"
+      | "create"
+      | "vote"
+      | "explore"
+      | "build"
+      | "moderate"
+      | "analyze";
     weight: number;
   }
 
@@ -198,23 +233,27 @@ describe("Security Engine — Risk Scoring", () => {
   }
 
   it("returns 0 for clean user", () => {
-    expect(computeRiskScore({
-      failedLoginAttempts: 0,
-      unusualTransactionAmount: false,
-      newDevice: false,
-      vpnDetected: false,
-      rapidTransactions: false,
-    })).toBe(0);
+    expect(
+      computeRiskScore({
+        failedLoginAttempts: 0,
+        unusualTransactionAmount: false,
+        newDevice: false,
+        vpnDetected: false,
+        rapidTransactions: false,
+      })
+    ).toBe(0);
   });
 
   it("caps score at 100", () => {
-    expect(computeRiskScore({
-      failedLoginAttempts: 10,
-      unusualTransactionAmount: true,
-      newDevice: true,
-      vpnDetected: true,
-      rapidTransactions: true,
-    })).toBe(100);
+    expect(
+      computeRiskScore({
+        failedLoginAttempts: 10,
+        unusualTransactionAmount: true,
+        newDevice: true,
+        vpnDetected: true,
+        rapidTransactions: true,
+      })
+    ).toBe(100);
   });
 
   it("rapid transactions is highest risk factor", () => {

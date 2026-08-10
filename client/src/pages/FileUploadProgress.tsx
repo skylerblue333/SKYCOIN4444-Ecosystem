@@ -8,12 +8,16 @@ export default function FileUploadProgress() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-black p-4">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-8">FileUploadProgress</h1>
+        <h1 className="text-3xl font-bold text-white mb-8">
+          FileUploadProgress
+        </h1>
         <p className="text-slate-400 mb-8">file upload progress</p>
-        
+
         <Card className="bg-slate-900 border-slate-800 p-8">
           <div className="space-y-6">
-            <p className="text-slate-300">Content for FileUploadProgress page</p>
+            <p className="text-slate-300">
+              Content for FileUploadProgress page
+            </p>
             <Button onClick={() => setState(!state)}>
               {state ? "Deactivate" : "Activate"}
             </Button>

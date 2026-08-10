@@ -10,7 +10,8 @@ import { describe, it, expect, beforeEach } from "vitest";
 
 describe("Phase 25A: Universal Search Engine", () => {
   it("should index and search content", async () => {
-    const { universalSearch: universalSearchEngine, searchIndexEngine } = await import("./phase25-search-dominance");
+    const { universalSearch: universalSearchEngine, searchIndexEngine } =
+      await import("./phase25-search-dominance");
     searchIndexEngine.indexDocument({
       id: "post_1",
       entityType: "post",
@@ -23,8 +24,14 @@ describe("Phase 25A: Universal Search Engine", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       isActive: true,
-      viewCount: 1000, likeCount: 200, shareCount: 50, commentCount: 30, purchaseCount: 0,
-      trendingScore: 0.8, qualityScore: 0.9, metadata: {},
+      viewCount: 1000,
+      likeCount: 200,
+      shareCount: 50,
+      commentCount: 30,
+      purchaseCount: 0,
+      trendingScore: 0.8,
+      qualityScore: 0.9,
+      metadata: {},
     });
     searchIndexEngine.indexDocument({
       id: "creator_1",
@@ -36,26 +43,48 @@ describe("Phase 25A: Universal Search Engine", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       isActive: true,
-      viewCount: 5000, likeCount: 1000, shareCount: 200, commentCount: 100, purchaseCount: 0,
-      trendingScore: 0.9, qualityScore: 0.95, metadata: {},
+      viewCount: 5000,
+      likeCount: 1000,
+      shareCount: 200,
+      commentCount: 100,
+      purchaseCount: 0,
+      trendingScore: 0.9,
+      qualityScore: 0.95,
+      metadata: {},
     });
-    const results = await universalSearchEngine.search({ query: "blockchain", limit: 10 });
+    const results = await universalSearchEngine.search({
+      query: "blockchain",
+      limit: 10,
+    });
     expect(results.results.length).toBeGreaterThan(0);
     expect(results.totalCount).toBeGreaterThan(0);
     expect(results.results[0].score).toBeGreaterThan(0);
   });
 
   it("should filter by entity type", async () => {
-    const { universalSearch: universalSearchEngine } = await import("./phase25-search-dominance");
-    const results = await universalSearchEngine.search({ query: "web3", entityTypes: ["creator"], limit: 10, useAI: false });
+    const { universalSearch: universalSearchEngine } =
+      await import("./phase25-search-dominance");
+    const results = await universalSearchEngine.search({
+      query: "web3",
+      entityTypes: ["creator"],
+      limit: 10,
+      useAI: false,
+    });
     // All results should be creator type when filtered
     expect(results.results.length).toBeGreaterThan(0);
-    expect(results.results.every(r => r.document.entityType === "creator")).toBe(true);
+    expect(
+      results.results.every(r => r.document.entityType === "creator")
+    ).toBe(true);
   });
 
   it("should return empty for no matches", async () => {
-    const { universalSearch: universalSearchEngine } = await import("./phase25-search-dominance");
-    const results = await universalSearchEngine.search({ query: "xyznonexistentterm12345", limit: 10, useAI: false });
+    const { universalSearch: universalSearchEngine } =
+      await import("./phase25-search-dominance");
+    const results = await universalSearchEngine.search({
+      query: "xyznonexistentterm12345",
+      limit: 10,
+      useAI: false,
+    });
     // With a completely nonsensical query, results should be very few or zero
     expect(results.results.length).toBeLessThanOrEqual(2);
   });
@@ -64,8 +93,15 @@ describe("Phase 25A: Universal Search Engine", () => {
 describe("Phase 25B: Semantic Search Engine", () => {
   it("should perform semantic search with embeddings", async () => {
     const { semanticSearchEngine } = await import("./phase25-search-dominance");
-    const result = await semanticSearchEngine.search("decentralized social platform", undefined, 5);
-    const wrappedResult = { results: result, semanticScore: result[0]?.score ?? 0.5 };
+    const result = await semanticSearchEngine.search(
+      "decentralized social platform",
+      undefined,
+      5
+    );
+    const wrappedResult = {
+      results: result,
+      semanticScore: result[0]?.score ?? 0.5,
+    };
     expect(wrappedResult).toBeDefined();
     expect(Array.isArray(wrappedResult.results)).toBe(true);
     expect(wrappedResult.semanticScore).toBeGreaterThanOrEqual(0);
@@ -74,9 +110,14 @@ describe("Phase 25B: Semantic Search Engine", () => {
 
 describe("Phase 25C: AI Intent Engine", () => {
   it("should classify search intent", async () => {
-    const { aiIntentSearchEngine: aiIntentEngine } = await import("./phase25-search-dominance");
+    const { aiIntentSearchEngine: aiIntentEngine } =
+      await import("./phase25-search-dominance");
     const intentResult = await aiIntentEngine.detectIntent("buy NFT art");
-    const intent = { intent: intentResult.intent, confidence: intentResult.confidence, suggestedFilters: { entityType: intentResult.entityType } };
+    const intent = {
+      intent: intentResult.intent,
+      confidence: intentResult.confidence,
+      suggestedFilters: { entityType: intentResult.entityType },
+    };
     expect(intent.intent).toBeDefined();
     expect(intent.confidence).toBeGreaterThan(0);
     expect(intent.suggestedFilters).toBeDefined();
@@ -98,10 +139,25 @@ describe("Phase 25D: Trending Search Engine", () => {
 
 describe("Phase 25E: Predictive Search Engine", () => {
   it("should return autocomplete suggestions", async () => {
-    const { predictiveSearchEngine } = await import("./phase25-search-dominance");
-    predictiveSearchEngine.indexSuggestion({ prefix: "sky", suggestion: "skycoin", entityType: "post", score: 1.0 });
-    predictiveSearchEngine.indexSuggestion({ prefix: "sky", suggestion: "skycoin", entityType: "post", score: 1.0 });
-    const suggestions = predictiveSearchEngine.getSuggestions("sky", undefined, 5);
+    const { predictiveSearchEngine } =
+      await import("./phase25-search-dominance");
+    predictiveSearchEngine.indexSuggestion({
+      prefix: "sky",
+      suggestion: "skycoin",
+      entityType: "post",
+      score: 1.0,
+    });
+    predictiveSearchEngine.indexSuggestion({
+      prefix: "sky",
+      suggestion: "skycoin",
+      entityType: "post",
+      score: 1.0,
+    });
+    const suggestions = predictiveSearchEngine.getSuggestions(
+      "sky",
+      undefined,
+      5
+    );
     expect(suggestions.length).toBeGreaterThan(0);
     expect(suggestions[0]?.suggestion).toBeDefined();
   });
@@ -134,9 +190,25 @@ describe("Phase 26A: Graph Core Engine", () => {
 
   it("should traverse BFS", async () => {
     const { graphCoreEngine } = await import("./phase26-knowledge-graph");
-    graphCoreEngine.addNode({ id: "creator_200", nodeType: "creator", entityId: 200, label: "Creator 200", properties: {} });
-    graphCoreEngine.addEdge({ fromNodeId: "user_100", toNodeId: "creator_200", edgeType: "follows", weight: 1.0, properties: {} });
-    const result = graphCoreEngine.traverseBFS({ startNodeId: "user_100", maxDepth: 2, limit: 50 });
+    graphCoreEngine.addNode({
+      id: "creator_200",
+      nodeType: "creator",
+      entityId: 200,
+      label: "Creator 200",
+      properties: {},
+    });
+    graphCoreEngine.addEdge({
+      fromNodeId: "user_100",
+      toNodeId: "creator_200",
+      edgeType: "follows",
+      weight: 1.0,
+      properties: {},
+    });
+    const result = graphCoreEngine.traverseBFS({
+      startNodeId: "user_100",
+      maxDepth: 2,
+      limit: 50,
+    });
     expect(result.nodes.length).toBeGreaterThan(0);
     expect(result.executionTimeMs).toBeGreaterThanOrEqual(0);
   });
@@ -182,7 +254,8 @@ describe("Phase 26C: Influence Graph Engine", () => {
 
 describe("Phase 26D: Transaction Graph Engine", () => {
   it("should record transaction flow", async () => {
-    const { transactionGraphEngine } = await import("./phase26-knowledge-graph");
+    const { transactionGraphEngine } =
+      await import("./phase26-knowledge-graph");
     const flow = transactionGraphEngine.recordFlow({
       fromWalletId: "wallet_A",
       toWalletId: "wallet_B",
@@ -197,13 +270,15 @@ describe("Phase 26D: Transaction Graph Engine", () => {
   });
 
   it("should detect suspicious patterns", async () => {
-    const { transactionGraphEngine } = await import("./phase26-knowledge-graph");
+    const { transactionGraphEngine } =
+      await import("./phase26-knowledge-graph");
     const patterns = transactionGraphEngine.detectSuspiciousPatterns();
     expect(Array.isArray(patterns)).toBe(true);
   });
 
   it("should get transaction volume", async () => {
-    const { transactionGraphEngine } = await import("./phase26-knowledge-graph");
+    const { transactionGraphEngine } =
+      await import("./phase26-knowledge-graph");
     const volume = transactionGraphEngine.getTransactionVolume("SKYCOIN");
     expect(volume.total).toBeGreaterThanOrEqual(0);
     expect(volume.byType).toBeDefined();
@@ -259,7 +334,8 @@ describe("Phase 27A: Live Shopping Engine", () => {
   });
 
   it("should pin and unpin products", async () => {
-    const { liveShoppingEngine, productEngine } = await import("./phase27-live-commerce");
+    const { liveShoppingEngine, productEngine } =
+      await import("./phase27-live-commerce");
     const product = productEngine.createProduct({
       creatorId: 1,
       title: "Summer Tee",
@@ -290,7 +366,8 @@ describe("Phase 27A: Live Shopping Engine", () => {
 
 describe("Phase 27B: Timed Drops Engine", () => {
   it("should create and purchase a timed drop", async () => {
-    const { timedDropsEngine, productEngine } = await import("./phase27-live-commerce");
+    const { timedDropsEngine, productEngine } =
+      await import("./phase27-live-commerce");
     const product = productEngine.createProduct({
       creatorId: 1,
       title: "Limited NFT",
@@ -378,16 +455,41 @@ describe("Phase 27C: Flash Auction Engine", () => {
 
 describe("Phase 27D: Commerce AI Engine", () => {
   it("should generate upsell offers", async () => {
-    const { commerceAIEngine, productEngine } = await import("./phase27-live-commerce");
+    const { commerceAIEngine, productEngine } =
+      await import("./phase27-live-commerce");
     const p1 = productEngine.createProduct({
-      creatorId: 1, title: "Hoodie", description: "Warm hoodie", price: 60, currency: "USD",
-      stock: 50, imageUrls: [], category: "apparel", tags: [], isDigital: false, isNFT: false,
-      shippingRequired: true, isActive: true, isFeatured: false, affiliateCommissionRate: 0.1,
+      creatorId: 1,
+      title: "Hoodie",
+      description: "Warm hoodie",
+      price: 60,
+      currency: "USD",
+      stock: 50,
+      imageUrls: [],
+      category: "apparel",
+      tags: [],
+      isDigital: false,
+      isNFT: false,
+      shippingRequired: true,
+      isActive: true,
+      isFeatured: false,
+      affiliateCommissionRate: 0.1,
     });
     const p2 = productEngine.createProduct({
-      creatorId: 1, title: "Cap", description: "Matching cap", price: 25, currency: "USD",
-      stock: 100, imageUrls: [], category: "apparel", tags: [], isDigital: false, isNFT: false,
-      shippingRequired: true, isActive: true, isFeatured: false, affiliateCommissionRate: 0.1,
+      creatorId: 1,
+      title: "Cap",
+      description: "Matching cap",
+      price: 25,
+      currency: "USD",
+      stock: 100,
+      imageUrls: [],
+      category: "apparel",
+      tags: [],
+      isDigital: false,
+      isNFT: false,
+      shippingRequired: true,
+      isActive: true,
+      isFeatured: false,
+      affiliateCommissionRate: 0.1,
     });
     const offer = commerceAIEngine.generateUpsellOffer(p1.id, p2.id, "bundle");
     expect(offer.offerType).toBe("bundle");
@@ -396,7 +498,8 @@ describe("Phase 27D: Commerce AI Engine", () => {
   });
 
   it("should segment buyers", async () => {
-    const { commerceAIEngine, orderEngine } = await import("./phase27-live-commerce");
+    const { commerceAIEngine, orderEngine } =
+      await import("./phase27-live-commerce");
     // Create some orders
     const products = Array.from({ length: 3 }, (_, i) => ({
       id: `test_prod_${i}`,
@@ -433,7 +536,11 @@ describe("Phase 27D: Commerce AI Engine", () => {
 describe("Phase 28A: Skill Ranking Engine", () => {
   it("should create player profile and update rating", async () => {
     const { skillRankingEngine } = await import("./phase28-gaming-engine");
-    const profile = skillRankingEngine.getOrCreateProfile(1001, "PlayerOne", "P1#1234");
+    const profile = skillRankingEngine.getOrCreateProfile(
+      1001,
+      "PlayerOne",
+      "P1#1234"
+    );
     expect(profile.skillRating).toBe(1000);
     expect(profile.rank).toBe("bronze");
 
@@ -445,7 +552,10 @@ describe("Phase 28A: Skill Ranking Engine", () => {
 
   it("should calculate ELO change", async () => {
     const { skillRankingEngine } = await import("./phase28-gaming-engine");
-    const { winnerDelta, loserDelta } = skillRankingEngine.calculateEloChange(1000, 1000);
+    const { winnerDelta, loserDelta } = skillRankingEngine.calculateEloChange(
+      1000,
+      1000
+    );
     expect(winnerDelta).toBe(16);
     expect(loserDelta).toBe(-16);
   });
@@ -455,13 +565,16 @@ describe("Phase 28A: Skill Ranking Engine", () => {
     skillRankingEngine.getOrCreateProfile(1002, "PlayerTwo", "P2#5678");
     const leaderboard = skillRankingEngine.getLeaderboard(undefined, 10);
     expect(leaderboard.length).toBeGreaterThan(0);
-    expect(leaderboard[0].skillRating).toBeGreaterThanOrEqual(leaderboard[leaderboard.length - 1].skillRating);
+    expect(leaderboard[0].skillRating).toBeGreaterThanOrEqual(
+      leaderboard[leaderboard.length - 1].skillRating
+    );
   });
 });
 
 describe("Phase 28B: Matchmaking Engine", () => {
   it("should queue and find a match", async () => {
-    const { matchmakingEngine, skillRankingEngine } = await import("./phase28-gaming-engine");
+    const { matchmakingEngine, skillRankingEngine } =
+      await import("./phase28-gaming-engine");
     skillRankingEngine.getOrCreateProfile(2001, "Alpha", "A#001");
     skillRankingEngine.getOrCreateProfile(2002, "Beta", "B#002");
     matchmakingEngine.joinQueue(2001, "1v1");
@@ -481,7 +594,8 @@ describe("Phase 28B: Matchmaking Engine", () => {
 
 describe("Phase 28C: Match Engine", () => {
   it("should start and complete a match with ELO updates", async () => {
-    const { matchmakingEngine, matchEngine, skillRankingEngine } = await import("./phase28-gaming-engine");
+    const { matchmakingEngine, matchEngine, skillRankingEngine } =
+      await import("./phase28-gaming-engine");
     skillRankingEngine.getOrCreateProfile(3001, "Gamma", "G#001");
     skillRankingEngine.getOrCreateProfile(3002, "Delta", "D#002");
     matchmakingEngine.joinQueue(3001, "1v1");
@@ -564,7 +678,8 @@ describe("Phase 28E: Wager Engine", () => {
 
 describe("Phase 28F: Guild Engine", () => {
   it("should create guild and add member", async () => {
-    const { guildEngine, skillRankingEngine } = await import("./phase28-gaming-engine");
+    const { guildEngine, skillRankingEngine } =
+      await import("./phase28-gaming-engine");
     skillRankingEngine.getOrCreateProfile(4001, "GuildMaster", "GM#001");
     const guild = guildEngine.createGuild({
       name: "Shadow Warriors",
@@ -700,7 +815,14 @@ describe("Phase 29B: Event Engine", () => {
       startsAt: new Date(Date.now() - 1000),
       endsAt: new Date(Date.now() + 7 * 86400000),
       rewards: [],
-      milestones: [{ target: 100, metric: "participants", reward: "badge", achieved: false }],
+      milestones: [
+        {
+          target: 100,
+          metric: "participants",
+          reward: "badge",
+          achieved: false,
+        },
+      ],
       isSponsored: false,
       totalEngagement: 0,
     });
@@ -726,8 +848,16 @@ describe("Phase 29C: Ritual Engine", () => {
       ritualType: "daily",
       status: "active",
       actions: [
-        { actionType: "post", description: "Post your daily SKYCOIN update", rewardPoints: 10 },
-        { actionType: "react", description: "React to 3 posts", rewardPoints: 5 },
+        {
+          actionType: "post",
+          description: "Post your daily SKYCOIN update",
+          rewardPoints: 10,
+        },
+        {
+          actionType: "react",
+          description: "React to 3 posts",
+          rewardPoints: 5,
+        },
       ],
     });
     expect(ritual.status).toBe("active");
@@ -757,7 +887,11 @@ describe("Phase 29D: Hashtag Economy Engine", () => {
 
   it("should sponsor a hashtag", async () => {
     const { hashtagEconomyEngine } = await import("./phase29-culture-engine");
-    const sponsored = hashtagEconomyEngine.sponsorHashtag("SKYCOIN4444", 1, 500);
+    const sponsored = hashtagEconomyEngine.sponsorHashtag(
+      "SKYCOIN4444",
+      1,
+      500
+    );
     expect(sponsored?.monetizationEnabled).toBe(true);
     expect(sponsored?.sponsorBid).toBe(500);
   });
@@ -784,7 +918,9 @@ describe("Phase 29E: Cultural Moment Engine", () => {
 
     const top = culturalMomentEngine.getTopMoments("platform_record", 5);
     expect(top.length).toBeGreaterThan(0);
-    expect(top[0].culturalScore).toBeGreaterThanOrEqual(top[top.length - 1].culturalScore);
+    expect(top[0].culturalScore).toBeGreaterThanOrEqual(
+      top[top.length - 1].culturalScore
+    );
   });
 });
 
@@ -808,10 +944,15 @@ describe("Phase 29F: Platform Lore Engine", () => {
 
 describe("Phase 29G: Cultural Reputation Engine", () => {
   it("should compute cultural rank", async () => {
-    const { culturalReputationEngine, memeMarketEngine } = await import("./phase29-culture-engine");
+    const { culturalReputationEngine, memeMarketEngine } =
+      await import("./phase29-culture-engine");
     // Buy lots of memes to boost culture score
     const meme = memeMarketEngine.createMeme({
-      title: "Rank Test Meme", description: "test", creatorId: 99, tags: [], isNFT: false,
+      title: "Rank Test Meme",
+      description: "test",
+      creatorId: 99,
+      tags: [],
+      isNFT: false,
     });
     for (let i = 0; i < 20; i++) {
       memeMarketEngine.tradeMeme(meme.id, 9999, "buy", 10);
@@ -825,16 +966,20 @@ describe("Phase 29G: Cultural Reputation Engine", () => {
   });
 
   it("should award badges", async () => {
-    const { culturalReputationEngine } = await import("./phase29-culture-engine");
+    const { culturalReputationEngine } =
+      await import("./phase29-culture-engine");
     const rep = culturalReputationEngine.awardBadge(9999, "meme_lord");
     expect(rep.badges).toContain("meme_lord");
   });
 
   it("should return culture leaderboard", async () => {
-    const { culturalReputationEngine } = await import("./phase29-culture-engine");
+    const { culturalReputationEngine } =
+      await import("./phase29-culture-engine");
     const leaderboard = culturalReputationEngine.getLeaderboard(10);
     expect(leaderboard.length).toBeGreaterThan(0);
-    expect(leaderboard[0].cultureScore).toBeGreaterThanOrEqual(leaderboard[leaderboard.length - 1].cultureScore);
+    expect(leaderboard[0].cultureScore).toBeGreaterThanOrEqual(
+      leaderboard[leaderboard.length - 1].cultureScore
+    );
   });
 });
 
@@ -842,7 +987,8 @@ describe("Phase 29G: Cultural Reputation Engine", () => {
 
 describe("Phase 30A: Region Manager", () => {
   it("should add region and update health", async () => {
-    const { regionManager } = await import("./phase30-legendary-infrastructure");
+    const { regionManager } =
+      await import("./phase30-legendary-infrastructure");
     const region = regionManager.addRegion({
       id: "us-east-1",
       name: "US East",
@@ -865,12 +1011,16 @@ describe("Phase 30A: Region Manager", () => {
     });
     expect(region.status).toBe("healthy");
 
-    const updated = regionManager.updateHealth("us-east-1", { cpuUtilization: 96, errorRate: 0.001 });
+    const updated = regionManager.updateHealth("us-east-1", {
+      cpuUtilization: 96,
+      errorRate: 0.001,
+    });
     expect(updated?.status).toBe("critical");
   });
 
   it("should failover region", async () => {
-    const { regionManager } = await import("./phase30-legendary-infrastructure");
+    const { regionManager } =
+      await import("./phase30-legendary-infrastructure");
     regionManager.addRegion({
       id: "eu-west-1",
       name: "EU West",
@@ -930,7 +1080,8 @@ describe("Phase 30B: Shard Manager", () => {
 
 describe("Phase 30C: Traffic Manager", () => {
   it("should create route and select region", async () => {
-    const { trafficManager } = await import("./phase30-legendary-infrastructure");
+    const { trafficManager } =
+      await import("./phase30-legendary-infrastructure");
     const route = trafficManager.createRoute({
       serviceName: "api-gateway",
       policy: "latency_based",
@@ -947,10 +1098,14 @@ describe("Phase 30C: Traffic Manager", () => {
   });
 
   it("should update weights", async () => {
-    const { trafficManager } = await import("./phase30-legendary-infrastructure");
+    const { trafficManager } =
+      await import("./phase30-legendary-infrastructure");
     const route = trafficManager.getRouteForService("api-gateway");
     expect(route).not.toBeNull();
-    const updated = trafficManager.updateWeights(route!.id, { "eu-west-1": 70, "us-east-1": 30 });
+    const updated = trafficManager.updateWeights(route!.id, {
+      "eu-west-1": 70,
+      "us-east-1": 30,
+    });
     expect(updated?.regionWeights["eu-west-1"]).toBe(70);
   });
 });
@@ -989,7 +1144,8 @@ describe("Phase 30D: SLA Monitor", () => {
 
 describe("Phase 30E: Incident Manager", () => {
   it("should create, acknowledge, and resolve incident", async () => {
-    const { incidentManager } = await import("./phase30-legendary-infrastructure");
+    const { incidentManager } =
+      await import("./phase30-legendary-infrastructure");
     const incident = incidentManager.createIncident({
       title: "API Gateway Latency Spike",
       description: "P99 latency exceeded 2s",
@@ -1006,13 +1162,19 @@ describe("Phase 30E: Incident Manager", () => {
     const acked = incidentManager.acknowledge(incident.id, 1);
     expect(acked?.status).toBe("acknowledged");
 
-    const resolved = incidentManager.updateStatus(incident.id, "resolved", "Issue resolved by scaling up", 1);
+    const resolved = incidentManager.updateStatus(
+      incident.id,
+      "resolved",
+      "Issue resolved by scaling up",
+      1
+    );
     expect(resolved?.status).toBe("resolved");
     expect(resolved?.mttrMinutes).toBeGreaterThanOrEqual(0);
   });
 
   it("should return MTTR", async () => {
-    const { incidentManager } = await import("./phase30-legendary-infrastructure");
+    const { incidentManager } =
+      await import("./phase30-legendary-infrastructure");
     const mttr = incidentManager.getMTTR(30);
     expect(mttr).toBeGreaterThanOrEqual(0);
   });
@@ -1020,7 +1182,8 @@ describe("Phase 30E: Incident Manager", () => {
 
 describe("Phase 30F: Cost Intelligence Engine", () => {
   it("should record costs and generate report", async () => {
-    const { costIntelligenceEngine } = await import("./phase30-legendary-infrastructure");
+    const { costIntelligenceEngine } =
+      await import("./phase30-legendary-infrastructure");
     const period = new Date().toISOString().slice(0, 7);
     costIntelligenceEngine.recordCost({
       regionId: "us-east-1",
@@ -1050,13 +1213,19 @@ describe("Phase 30F: Cost Intelligence Engine", () => {
   });
 
   it("should identify and implement optimizations", async () => {
-    const { costIntelligenceEngine } = await import("./phase30-legendary-infrastructure");
+    const { costIntelligenceEngine } =
+      await import("./phase30-legendary-infrastructure");
     const optimizations = costIntelligenceEngine.identifyOptimizations();
     expect(Array.isArray(optimizations)).toBe(true);
     if (optimizations.length > 0) {
-      const approved = costIntelligenceEngine.approveOptimization(optimizations[0].id, 1);
+      const approved = costIntelligenceEngine.approveOptimization(
+        optimizations[0].id,
+        1
+      );
       expect(approved?.status).toBe("approved");
-      const implemented = costIntelligenceEngine.implementOptimization(optimizations[0].id);
+      const implemented = costIntelligenceEngine.implementOptimization(
+        optimizations[0].id
+      );
       expect(implemented?.status).toBe("completed");
     }
   });
@@ -1064,7 +1233,8 @@ describe("Phase 30F: Cost Intelligence Engine", () => {
 
 describe("Phase 30G: Edge Computing Engine", () => {
   it("should add edge node and find nearest", async () => {
-    const { edgeComputingEngine } = await import("./phase30-legendary-infrastructure");
+    const { edgeComputingEngine } =
+      await import("./phase30-legendary-infrastructure");
     edgeComputingEngine.addEdgeNode({
       id: "edge_nyc_1",
       regionId: "us-east-1",
@@ -1083,7 +1253,8 @@ describe("Phase 30G: Edge Computing Engine", () => {
   });
 
   it("should return edge stats", async () => {
-    const { edgeComputingEngine } = await import("./phase30-legendary-infrastructure");
+    const { edgeComputingEngine } =
+      await import("./phase30-legendary-infrastructure");
     const stats = edgeComputingEngine.getEdgeStats();
     expect(stats.totalNodes).toBeGreaterThan(0);
     expect(stats.avgCacheHitRate).toBeGreaterThan(0);
@@ -1092,7 +1263,8 @@ describe("Phase 30G: Edge Computing Engine", () => {
 
 describe("Phase 30H: Data Sovereignty Engine", () => {
   it("should create policy and validate data placement", async () => {
-    const { dataSovereigntyEngine } = await import("./phase30-legendary-infrastructure");
+    const { dataSovereigntyEngine } =
+      await import("./phase30-legendary-infrastructure");
     dataSovereigntyEngine.createPolicy({
       countryCode: "DE",
       dataTypes: ["user_pii", "financial"],
@@ -1103,10 +1275,18 @@ describe("Phase 30H: Data Sovereignty Engine", () => {
       auditLoggingRequired: true,
     });
 
-    const compliant = dataSovereigntyEngine.validateDataPlacement("DE", "eu-west-1", "user_pii");
+    const compliant = dataSovereigntyEngine.validateDataPlacement(
+      "DE",
+      "eu-west-1",
+      "user_pii"
+    );
     expect(compliant.isCompliant).toBe(true);
 
-    const nonCompliant = dataSovereigntyEngine.validateDataPlacement("DE", "us-east-1", "user_pii");
+    const nonCompliant = dataSovereigntyEngine.validateDataPlacement(
+      "DE",
+      "us-east-1",
+      "user_pii"
+    );
     expect(nonCompliant.isCompliant).toBe(false);
     expect(nonCompliant.reason).toContain("eu-west-1");
   });
@@ -1114,7 +1294,8 @@ describe("Phase 30H: Data Sovereignty Engine", () => {
 
 describe("Phase 30I: Observability Engine", () => {
   it("should record metrics and query them", async () => {
-    const { observabilityEngine } = await import("./phase30-legendary-infrastructure");
+    const { observabilityEngine } =
+      await import("./phase30-legendary-infrastructure");
     const since = new Date(Date.now() - 1000);
     observabilityEngine.recordMetric({
       serviceName: "api-gateway",
@@ -1125,13 +1306,18 @@ describe("Phase 30I: Observability Engine", () => {
       labels: { method: "GET" },
       timestamp: new Date(),
     });
-    const metrics = observabilityEngine.queryMetrics("api-gateway", "request_count", since);
+    const metrics = observabilityEngine.queryMetrics(
+      "api-gateway",
+      "request_count",
+      since
+    );
     expect(metrics.length).toBeGreaterThan(0);
     expect(metrics[0].value).toBe(10000);
   });
 
   it("should return observability dashboard", async () => {
-    const { observabilityEngine } = await import("./phase30-legendary-infrastructure");
+    const { observabilityEngine } =
+      await import("./phase30-legendary-infrastructure");
     const dashboard = observabilityEngine.getObservabilityDashboard();
     expect(dashboard.totalMetrics).toBeGreaterThan(0);
     expect(dashboard.slaHealth).toBeGreaterThanOrEqual(0);
@@ -1140,7 +1326,8 @@ describe("Phase 30I: Observability Engine", () => {
 
 describe("Phase 30J: Infrastructure Orchestrator", () => {
   it("should return global status", async () => {
-    const { infrastructureOrchestrator } = await import("./phase30-legendary-infrastructure");
+    const { infrastructureOrchestrator } =
+      await import("./phase30-legendary-infrastructure");
     const status = infrastructureOrchestrator.getGlobalStatus();
     expect(status.regions.total).toBeGreaterThan(0);
     expect(status.shards.total).toBeGreaterThan(0);
@@ -1149,7 +1336,8 @@ describe("Phase 30J: Infrastructure Orchestrator", () => {
   });
 
   it("should run health check", async () => {
-    const { infrastructureOrchestrator } = await import("./phase30-legendary-infrastructure");
+    const { infrastructureOrchestrator } =
+      await import("./phase30-legendary-infrastructure");
     const health = infrastructureOrchestrator.runHealthCheck();
     expect(health.passed + health.failed).toBeGreaterThanOrEqual(0);
     expect(Array.isArray(health.warnings)).toBe(true);

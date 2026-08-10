@@ -8,13 +8,39 @@
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type JobStatus = "open" | "in_progress" | "review" | "completed" | "cancelled" | "disputed";
-export type BountyStatus = "open" | "claimed" | "submitted" | "approved" | "rejected" | "expired";
-export type GrantStatus = "open" | "applied" | "under_review" | "approved" | "rejected" | "disbursed" | "completed";
+export type JobStatus =
+  "open" | "in_progress" | "review" | "completed" | "cancelled" | "disputed";
+export type BountyStatus =
+  "open" | "claimed" | "submitted" | "approved" | "rejected" | "expired";
+export type GrantStatus =
+  | "open"
+  | "applied"
+  | "under_review"
+  | "approved"
+  | "rejected"
+  | "disbursed"
+  | "completed";
 export type DAOFundStatus = "active" | "paused" | "depleted" | "closed";
-export type EconomicRole = "employer" | "worker" | "investor" | "grantee" | "grantor" | "bounty_hunter" | "dao_member";
-export type ContractType = "fixed_price" | "hourly" | "milestone" | "revenue_share" | "equity";
-export type SkillCategory = "development" | "design" | "marketing" | "content" | "moderation" | "research" | "legal" | "finance" | "other";
+export type EconomicRole =
+  | "employer"
+  | "worker"
+  | "investor"
+  | "grantee"
+  | "grantor"
+  | "bounty_hunter"
+  | "dao_member";
+export type ContractType =
+  "fixed_price" | "hourly" | "milestone" | "revenue_share" | "equity";
+export type SkillCategory =
+  | "development"
+  | "design"
+  | "marketing"
+  | "content"
+  | "moderation"
+  | "research"
+  | "legal"
+  | "finance"
+  | "other";
 
 export interface JobListing {
   id: string;
@@ -293,7 +319,10 @@ export const jobMarketEngine = {
     return application;
   },
 
-  selectWorker(jobId: string, applicationId: string): { job: JobListing; application: JobApplication } | null {
+  selectWorker(
+    jobId: string,
+    applicationId: string
+  ): { job: JobListing; application: JobApplication } | null {
     const job = _jobs.get(jobId);
     const app = _applications.get(applicationId);
     if (!job || !app || app.jobId !== jobId) return null;
@@ -307,7 +336,11 @@ export const jobMarketEngine = {
 
     // Reject all other applications
     for (const [, a] of _applications) {
-      if (a.jobId === jobId && a.id !== applicationId && a.status === "pending") {
+      if (
+        a.jobId === jobId &&
+        a.id !== applicationId &&
+        a.status === "pending"
+      ) {
         a.status = "rejected";
         a.respondedAt = new Date();
       }
@@ -341,7 +374,10 @@ export const jobMarketEngine = {
     return milestone;
   },
 
-  submitMilestone(milestoneId: string, submissionUrl: string): Milestone | null {
+  submitMilestone(
+    milestoneId: string,
+    submissionUrl: string
+  ): Milestone | null {
     const ms = _milestones.get(milestoneId);
     if (!ms || ms.status !== "pending") return null;
     ms.status = "submitted";
@@ -366,7 +402,11 @@ export const jobMarketEngine = {
     job.completedAt = new Date();
     // Update worker economic reputation
     if (job.selectedWorkerId) {
-      economicReputationEngine.recordJobCompletion(job.selectedWorkerId, job.budget, true);
+      economicReputationEngine.recordJobCompletion(
+        job.selectedWorkerId,
+        job.budget,
+        true
+      );
     }
     return job;
   },
@@ -387,14 +427,22 @@ export const jobMarketEngine = {
     limit?: number;
   }): JobListing[] {
     let jobs = Array.from(_jobs.values()).filter(j => j.status === "open");
-    if (params.category) jobs = jobs.filter(j => j.category === params.category);
-    if (params.maxBudget) jobs = jobs.filter(j => j.budget <= params.maxBudget!);
-    if (params.minBudget) jobs = jobs.filter(j => j.budget >= params.minBudget!);
-    if (params.experienceLevel) jobs = jobs.filter(j => j.experienceLevel === params.experienceLevel);
+    if (params.category)
+      jobs = jobs.filter(j => j.category === params.category);
+    if (params.maxBudget)
+      jobs = jobs.filter(j => j.budget <= params.maxBudget!);
+    if (params.minBudget)
+      jobs = jobs.filter(j => j.budget >= params.minBudget!);
+    if (params.experienceLevel)
+      jobs = jobs.filter(j => j.experienceLevel === params.experienceLevel);
     if (params.skills?.length) {
-      jobs = jobs.filter(j => params.skills!.some(s => j.requiredSkills.includes(s)));
+      jobs = jobs.filter(j =>
+        params.skills!.some(s => j.requiredSkills.includes(s))
+      );
     }
-    return jobs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, params.limit ?? 50);
+    return jobs
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, params.limit ?? 50);
   },
 
   getJobStats(): {
@@ -412,7 +460,9 @@ export const jobMarketEngine = {
       inProgress: jobs.filter(j => j.status === "in_progress").length,
       completed: jobs.filter(j => j.status === "completed").length,
       disputed: jobs.filter(j => j.status === "disputed").length,
-      totalVolume: jobs.filter(j => j.status === "completed").reduce((s, j) => s + j.budget, 0),
+      totalVolume: jobs
+        .filter(j => j.status === "completed")
+        .reduce((s, j) => s + j.budget, 0),
     };
   },
 };
@@ -481,7 +531,11 @@ export const bountyBoardEngine = {
     bounty.status = "approved";
     bounty.approvedAt = new Date();
     if (bounty.claimantId) {
-      economicReputationEngine.recordJobCompletion(bounty.claimantId, bounty.reward, true);
+      economicReputationEngine.recordJobCompletion(
+        bounty.claimantId,
+        bounty.reward,
+        true
+      );
     }
     return bounty;
   },
@@ -494,8 +548,9 @@ export const bountyBoardEngine = {
   },
 
   getOpenBounties(category?: SkillCategory, limit = 50): BountyListing[] {
-    let bounties = Array.from(_bounties.values())
-      .filter(b => b.status === "open" && b.expiresAt > new Date());
+    let bounties = Array.from(_bounties.values()).filter(
+      b => b.status === "open" && b.expiresAt > new Date()
+    );
     if (category) bounties = bounties.filter(b => b.category === category);
     return bounties.sort((a, b) => b.reward - a.reward).slice(0, limit);
   },
@@ -511,9 +566,13 @@ export const bountyBoardEngine = {
     return {
       total: bounties.length,
       open: bounties.filter(b => b.status === "open").length,
-      claimed: bounties.filter(b => b.status === "claimed" || b.status === "submitted").length,
+      claimed: bounties.filter(
+        b => b.status === "claimed" || b.status === "submitted"
+      ).length,
       approved: bounties.filter(b => b.status === "approved").length,
-      totalRewards: bounties.filter(b => b.status === "approved").reduce((s, b) => s + b.reward, 0),
+      totalRewards: bounties
+        .filter(b => b.status === "approved")
+        .reduce((s, b) => s + b.reward, 0),
     };
   },
 };
@@ -568,7 +627,11 @@ export const grantSystemEngine = {
   }): GrantApplication | null {
     const program = _grantPrograms.get(params.programId);
     if (!program || program.status !== "open") return null;
-    if (params.requestedAmount > program.maxGrantAmount || params.requestedAmount < program.minGrantAmount) return null;
+    if (
+      params.requestedAmount > program.maxGrantAmount ||
+      params.requestedAmount < program.minGrantAmount
+    )
+      return null;
     if (program.applicationDeadline < new Date()) return null;
 
     const application: GrantApplication = {
@@ -590,7 +653,13 @@ export const grantSystemEngine = {
     return application;
   },
 
-  reviewApplication(applicationId: string, score: number, notes: string, approved: boolean, approvedAmount?: number): GrantApplication | null {
+  reviewApplication(
+    applicationId: string,
+    score: number,
+    notes: string,
+    approved: boolean,
+    approvedAmount?: number
+  ): GrantApplication | null {
     const app = _grantApplications.get(applicationId);
     if (!app || app.status !== "applied") return null;
     const program = _grantPrograms.get(app.programId);
@@ -642,13 +711,16 @@ export const grantSystemEngine = {
   } {
     const programs = Array.from(_grantPrograms.values());
     const apps = Array.from(_grantApplications.values());
-    const approved = apps.filter(a => a.status === "approved" || a.status === "disbursed").length;
+    const approved = apps.filter(
+      a => a.status === "approved" || a.status === "disbursed"
+    ).length;
     return {
       totalPrograms: programs.length,
       totalBudget: programs.reduce((s, p) => s + p.totalBudget, 0),
       totalDisbursed: programs.reduce((s, p) => s + p.totalDisbursed, 0),
       totalApplications: apps.length,
-      approvalRate: apps.length > 0 ? Math.round((approved / apps.length) * 100) : 0,
+      approvalRate:
+        apps.length > 0 ? Math.round((approved / apps.length) * 100) : 0,
     };
   },
 };
@@ -685,7 +757,11 @@ export const daoFundingEngine = {
     return pool;
   },
 
-  contribute(poolId: string, contributorId: number, amount: number): DAOFundingPool | null {
+  contribute(
+    poolId: string,
+    contributorId: number,
+    amount: number
+  ): DAOFundingPool | null {
     const pool = _daoPools.get(poolId);
     if (!pool || pool.status !== "active") return null;
     if (amount < pool.minContribution) return null;
@@ -733,7 +809,12 @@ export const daoFundingEngine = {
     return proposal;
   },
 
-  vote(proposalId: string, voterId: number, inFavor: boolean, votingPower: number): DAOFundingProposal | null {
+  vote(
+    proposalId: string,
+    voterId: number,
+    inFavor: boolean,
+    votingPower: number
+  ): DAOFundingProposal | null {
     const proposal = _daoProposals.get(proposalId);
     if (!proposal || proposal.status !== "voting") return null;
     if (proposal.votingEndsAt < new Date()) {
@@ -754,9 +835,10 @@ export const daoFundingEngine = {
     const pool = _daoPools.get(proposal.poolId);
     if (!pool) return null;
 
-    const approvalRate = proposal.totalVotingPower > 0
-      ? proposal.votesFor / proposal.totalVotingPower
-      : 0;
+    const approvalRate =
+      proposal.totalVotingPower > 0
+        ? proposal.votesFor / proposal.totalVotingPower
+        : 0;
 
     if (approvalRate >= pool.votingThreshold) {
       proposal.status = "approved";
@@ -824,16 +906,23 @@ export const economicReputationEngine = {
     return score;
   },
 
-  recordJobCompletion(userId: number, amount: number, onTime: boolean): EconomicReputationScore {
+  recordJobCompletion(
+    userId: number,
+    amount: number,
+    onTime: boolean
+  ): EconomicReputationScore {
     const score = this.getOrCreate(userId);
     score.totalJobsCompleted++;
     score.totalEarned += amount;
     if (!onTime) {
-      score.components.onTimeDelivery = Math.max(0,
-        (score.components.onTimeDelivery * (score.totalJobsCompleted - 1)) / score.totalJobsCompleted
+      score.components.onTimeDelivery = Math.max(
+        0,
+        (score.components.onTimeDelivery * (score.totalJobsCompleted - 1)) /
+          score.totalJobsCompleted
       );
     }
-    score.components.jobCompletionRate = Math.min(100,
+    score.components.jobCompletionRate = Math.min(
+      100,
       score.components.jobCompletionRate * 0.9 + 10
     );
     this._recalculate(score);
@@ -842,7 +931,10 @@ export const economicReputationEngine = {
 
   recordDispute(userId: number): EconomicReputationScore {
     const score = this.getOrCreate(userId);
-    score.components.disputeRate = Math.min(100, score.components.disputeRate + 5);
+    score.components.disputeRate = Math.min(
+      100,
+      score.components.disputeRate + 5
+    );
     this._recalculate(score);
     return score;
   },
@@ -859,18 +951,23 @@ export const economicReputationEngine = {
   _recalculate(score: EconomicReputationScore): void {
     score.overallScore = Math.round(
       score.components.jobCompletionRate * 0.25 +
-      score.components.onTimeDelivery * 0.2 +
-      score.components.clientSatisfaction * 0.2 +
-      (100 - score.components.disputeRate) * 0.15 +
-      score.components.paymentReliability * 0.1 +
-      score.components.communityContribution * 0.1
+        score.components.onTimeDelivery * 0.2 +
+        score.components.clientSatisfaction * 0.2 +
+        (100 - score.components.disputeRate) * 0.15 +
+        score.components.paymentReliability * 0.1 +
+        score.components.communityContribution * 0.1
     );
 
     score.level =
-      score.overallScore >= 90 ? "elite" :
-      score.overallScore >= 75 ? "expert" :
-      score.overallScore >= 60 ? "professional" :
-      score.overallScore >= 40 ? "established" : "newcomer";
+      score.overallScore >= 90
+        ? "elite"
+        : score.overallScore >= 75
+          ? "expert"
+          : score.overallScore >= 60
+            ? "professional"
+            : score.overallScore >= 40
+              ? "established"
+              : "newcomer";
 
     score.lastUpdatedAt = new Date();
   },
@@ -918,12 +1015,20 @@ export const skillEndorsementEngine = {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   },
 
-  getSkillRating(userId: number, skill: string): { avgRating: number; count: number } {
-    const endorsements = Array.from(_skillEndorsements.values())
-      .filter(e => e.endorseeId === userId && e.skill === skill);
+  getSkillRating(
+    userId: number,
+    skill: string
+  ): { avgRating: number; count: number } {
+    const endorsements = Array.from(_skillEndorsements.values()).filter(
+      e => e.endorseeId === userId && e.skill === skill
+    );
     if (endorsements.length === 0) return { avgRating: 0, count: 0 };
-    const avgRating = endorsements.reduce((s, e) => s + e.rating, 0) / endorsements.length;
-    return { avgRating: Math.round(avgRating * 10) / 10, count: endorsements.length };
+    const avgRating =
+      endorsements.reduce((s, e) => s + e.rating, 0) / endorsements.length;
+    return {
+      avgRating: Math.round(avgRating * 10) / 10,
+      count: endorsements.length,
+    };
   },
 };
 
@@ -937,9 +1042,15 @@ export const economicHealthMonitor = {
     const daoStats = daoFundingEngine.getPoolStats();
 
     const totalJobs = jobStats.total;
-    const avgJobValue = totalJobs > 0 ? jobStats.totalVolume / Math.max(jobStats.completed, 1) : 0;
+    const avgJobValue =
+      totalJobs > 0
+        ? jobStats.totalVolume / Math.max(jobStats.completed, 1)
+        : 0;
     const openBounties = bountyStats.open;
-    const avgBountyReward = bountyStats.total > 0 ? bountyStats.totalRewards / Math.max(bountyStats.approved, 1) : 0;
+    const avgBountyReward =
+      bountyStats.total > 0
+        ? bountyStats.totalRewards / Math.max(bountyStats.approved, 1)
+        : 0;
 
     const metrics: EconomicHealthMetrics = {
       timestamp: new Date(),
@@ -947,14 +1058,27 @@ export const economicHealthMonitor = {
       totalOpenBounties: openBounties,
       totalActiveGrants: grantStats.totalPrograms,
       totalDAOPools: daoStats.totalPools,
-      totalEconomicVolume: jobStats.totalVolume + bountyStats.totalRewards + grantStats.totalDisbursed + daoStats.totalDisbursed,
+      totalEconomicVolume:
+        jobStats.totalVolume +
+        bountyStats.totalRewards +
+        grantStats.totalDisbursed +
+        daoStats.totalDisbursed,
       avgJobValue,
       avgBountyReward,
-      jobCompletionRate: totalJobs > 0 ? Math.round((jobStats.completed / totalJobs) * 100) : 0,
-      bountyClaimRate: bountyStats.total > 0 ? Math.round(((bountyStats.claimed + bountyStats.approved) / bountyStats.total) * 100) : 0,
+      jobCompletionRate:
+        totalJobs > 0 ? Math.round((jobStats.completed / totalJobs) * 100) : 0,
+      bountyClaimRate:
+        bountyStats.total > 0
+          ? Math.round(
+              ((bountyStats.claimed + bountyStats.approved) /
+                bountyStats.total) *
+                100
+            )
+          : 0,
       grantApprovalRate: grantStats.approvalRate,
       activeWorkers: _economicReputations.size,
-      activeEmployers: new Set(Array.from(_jobs.values()).map(j => j.posterId)).size,
+      activeEmployers: new Set(Array.from(_jobs.values()).map(j => j.posterId))
+        .size,
       platformTake: jobStats.totalVolume * 0.05,
     };
     _healthMetricsHistory.push(metrics);
@@ -984,10 +1108,16 @@ export const economicCivilizationDashboard = {
     return {
       reputation: economicReputationEngine.getScore(userId),
       postedJobs: Array.from(_jobs.values()).filter(j => j.posterId === userId),
-      applications: Array.from(_applications.values()).filter(a => a.applicantId === userId),
+      applications: Array.from(_applications.values()).filter(
+        a => a.applicantId === userId
+      ),
       endorsements: skillEndorsementEngine.getUserEndorsements(userId),
-      bountyActivity: Array.from(_bounties.values()).filter(b => b.claimantId === userId),
-      grantApplications: Array.from(_grantApplications.values()).filter(a => a.applicantId === userId),
+      bountyActivity: Array.from(_bounties.values()).filter(
+        b => b.claimantId === userId
+      ),
+      grantApplications: Array.from(_grantApplications.values()).filter(
+        a => a.applicantId === userId
+      ),
     };
   },
 

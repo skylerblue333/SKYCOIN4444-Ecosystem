@@ -45,16 +45,16 @@ export function TranslationLayer({
     setIsTranslating(true);
     try {
       // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Mock translation logic
       const mockTranslations: Record<string, Record<string, string>> = {
         "Chinese|English": {
-          "你好": "Hello",
-          "谢谢": "Thank you",
-          "很高兴见到你": "Nice to meet you",
-          "今天怎么样": "How are you today",
-          "很好": "Very good",
+          你好: "Hello",
+          谢谢: "Thank you",
+          很高兴见到你: "Nice to meet you",
+          今天怎么样: "How are you today",
+          很好: "Very good",
         },
         "Spanish|English": {
           Hola: "Hello",
@@ -65,7 +65,7 @@ export function TranslationLayer({
         "Japanese|English": {
           こんにちは: "Hello",
           ありがとう: "Thank you",
-          "よろしくお願いします": "Nice to meet you",
+          よろしくお願いします: "Nice to meet you",
         },
       };
 
@@ -91,10 +91,20 @@ export function TranslationLayer({
 
   // Auto-translate if enabled
   useEffect(() => {
-    if (autoTranslate && sourceText.trim() && sourceLanguage !== targetLanguage) {
+    if (
+      autoTranslate &&
+      sourceText.trim() &&
+      sourceLanguage !== targetLanguage
+    ) {
       performTranslation();
     }
-  }, [sourceText, autoTranslate, sourceLanguage, targetLanguage, performTranslation]);
+  }, [
+    sourceText,
+    autoTranslate,
+    sourceLanguage,
+    targetLanguage,
+    performTranslation,
+  ]);
 
   const handleCopyTranslation = () => {
     navigator.clipboard.writeText(translatedText);
@@ -106,9 +116,14 @@ export function TranslationLayer({
   const handleSpeak = (text: string, language: string) => {
     if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = language === "Chinese" ? "zh-CN" : 
-                       language === "Spanish" ? "es-ES" :
-                       language === "Japanese" ? "ja-JP" : "en-US";
+      utterance.lang =
+        language === "Chinese"
+          ? "zh-CN"
+          : language === "Spanish"
+            ? "es-ES"
+            : language === "Japanese"
+              ? "ja-JP"
+              : "en-US";
       window.speechSynthesis.speak(utterance);
       toast.success("Playing audio...");
     } else {
@@ -188,8 +203,12 @@ export function TranslationLayer({
             </div>
 
             <div className="bg-purple-500/10 rounded p-3 border border-purple-500/20">
-              <p className="text-sm text-purple-300 mb-1 text-xs">Translation:</p>
-              <p className="text-purple-100 font-medium text-sm">{translatedText}</p>
+              <p className="text-sm text-purple-300 mb-1 text-xs">
+                Translation:
+              </p>
+              <p className="text-purple-100 font-medium text-sm">
+                {translatedText}
+              </p>
             </div>
           </div>
 

@@ -3,7 +3,16 @@
  * Conversation previews, safety filters, engagement scoring
  */
 import { useState } from "react";
-import { Heart, MessageCircle, Search, Filter, Star, Shield, Clock, Flame } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Search,
+  Filter,
+  Star,
+  Shield,
+  Clock,
+  Flame,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -84,7 +93,8 @@ export default function MatchFeed() {
   const filtered = MATCHES.filter(m => {
     if (filter === "unread" && m.unread === 0) return false;
     if (filter === "online" && !m.isOnline) return false;
-    if (search && !m.name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !m.name.toLowerCase().includes(search.toLowerCase()))
+      return false;
     return true;
   });
 
@@ -97,9 +107,15 @@ export default function MatchFeed() {
             <Heart className="w-5 h-5 text-pink-500" />
             My Matches
           </h1>
-          <p className="text-xs text-muted-foreground">{MATCHES.length} connections</p>
+          <p className="text-xs text-muted-foreground">
+            {MATCHES.length} connections
+          </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => toast("Filters coming soon")}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => toast("Filters coming soon")}
+        >
           <Filter className="w-4 h-4" />
         </Button>
       </div>
@@ -130,7 +146,9 @@ export default function MatchFeed() {
 
       {/* New matches row */}
       <div>
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">New Matches</h2>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          New Matches
+        </h2>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {MATCHES.filter(m => m.conversationStage === "new").map(m => (
             <Link key={m.id} href={`/dating/chat/${m.id}`}>
@@ -139,9 +157,13 @@ export default function MatchFeed() {
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-xl font-bold text-white">
                     {m.name[0]}
                   </div>
-                  {m.isOnline && <div className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-background" />}
+                  {m.isOnline && (
+                    <div className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-background" />
+                  )}
                 </div>
-                <span className="text-xs text-muted-foreground">{m.name.split(" ")[0]}</span>
+                <span className="text-xs text-muted-foreground">
+                  {m.name.split(" ")[0]}
+                </span>
               </div>
             </Link>
           ))}
@@ -150,7 +172,9 @@ export default function MatchFeed() {
 
       {/* Conversations */}
       <div>
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Conversations</h2>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          Conversations
+        </h2>
         <div className="space-y-2">
           {filtered.map(match => (
             <Link key={match.id} href={`/dating/chat/${match.id}`}>
@@ -160,23 +184,35 @@ export default function MatchFeed() {
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-lg font-bold text-white">
                     {match.name[0]}
                   </div>
-                  {match.isOnline && <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-background" />}
+                  {match.isOnline && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-background" />
+                  )}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <span className="font-semibold text-sm">{match.name}</span>
-                    {match.isVerified && <Shield className="w-3 h-3 text-blue-400" />}
-                    <span className={`text-xs ml-auto ${STAGE_COLORS[match.conversationStage]}`}>
+                    {match.isVerified && (
+                      <Shield className="w-3 h-3 text-blue-400" />
+                    )}
+                    <span
+                      className={`text-xs ml-auto ${STAGE_COLORS[match.conversationStage]}`}
+                    >
                       {STAGE_LABELS[match.conversationStage]}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground truncate">{match.lastMessage}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {match.lastMessage}
+                  </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Clock className="w-2.5 h-2.5 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">{match.lastMessageTime}</span>
-                    <span className="text-xs text-green-400 ml-auto">{match.compatibility}% match</span>
+                    <span className="text-xs text-muted-foreground">
+                      {match.lastMessageTime}
+                    </span>
+                    <span className="text-xs text-green-400 ml-auto">
+                      {match.compatibility}% match
+                    </span>
                   </div>
                 </div>
 
@@ -204,7 +240,11 @@ export default function MatchFeed() {
         <Flame className="w-6 h-6 text-orange-400 shrink-0" />
         <div className="flex-1 text-xs">
           <span className="font-semibold">Pro tip:</span>
-          <span className="text-muted-foreground"> Matches with 80%+ compatibility are 3x more likely to respond within 1 hour.</span>
+          <span className="text-muted-foreground">
+            {" "}
+            Matches with 80%+ compatibility are 3x more likely to respond within
+            1 hour.
+          </span>
         </div>
       </div>
     </div>

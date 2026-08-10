@@ -19,7 +19,9 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
 
   // const signupMutation = trpc.system.notifyOwner.useMutation();
-  const aiCodeQuery = trpc.hopeaiAdvanced.analyzeCodeLive.useQuery({ code: "" });
+  const aiCodeQuery = trpc.hopeaiAdvanced.analyzeCodeLive.useQuery({
+    code: "",
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,12 +57,18 @@ export default function SignUp() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl w-full">
         {/* Sign-up Form */}
         <Card className="p-8 bg-slate-800/50 border-purple-500/30">
-          <h1 className="text-3xl font-bold text-white mb-2">Join SKYCOIN4444</h1>
-          <p className="text-gray-400 mb-6">Create your account and unlock unlimited possibilities</p>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Join SKYCOIN4444
+          </h1>
+          <p className="text-gray-400 mb-6">
+            Create your account and unlock unlimited possibilities
+          </p>
 
           <form onSubmit={handleSignUp} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Full Name
+              </label>
               <Input
                 type="text"
                 name="name"
@@ -73,7 +81,9 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Email
+              </label>
               <Input
                 type="email"
                 name="email"
@@ -86,7 +96,9 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Password
+              </label>
               <Input
                 type="password"
                 name="password"
@@ -99,7 +111,9 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Referral Code (Optional)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Referral Code (Optional)
+              </label>
               <Input
                 type="text"
                 name="referralCode"
@@ -120,14 +134,24 @@ export default function SignUp() {
           </form>
 
           <p className="text-gray-400 text-sm mt-4">
-            Already have an account?             <button onClick={() => window.location.href = "/login"} className="text-cyan-400 hover:underline">Sign in</button>
+            Already have an account?{" "}
+            <button
+              onClick={() => (window.location.href = "/login")}
+              className="text-cyan-400 hover:underline"
+            >
+              Sign in
+            </button>
           </p>
         </Card>
 
         {/* AI Code Feed */}
         <Card className="p-8 bg-slate-800/50 border-purple-500/30">
-          <h2 className="text-2xl font-bold text-white mb-4">AI Code Generation Feed</h2>
-          <p className="text-gray-400 mb-4">AI generates code snippets for your signup flow</p>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            AI Code Generation Feed
+          </h2>
+          <p className="text-gray-400 mb-4">
+            AI generates code snippets for your signup flow
+          </p>
 
           <Button
             onClick={generateAICode}
@@ -139,8 +163,13 @@ export default function SignUp() {
 
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {aiCodeFeed.map((code, idx) => (
-              <div key={idx} className="bg-slate-700/50 p-3 rounded border border-purple-500/30">
-                <p className="text-xs text-gray-300 font-mono break-all">{code}</p>
+              <div
+                key={idx}
+                className="bg-slate-700/50 p-3 rounded border border-purple-500/30"
+              >
+                <p className="text-xs text-gray-300 font-mono break-all">
+                  {code}
+                </p>
                 <Button
                   size="sm"
                   className="mt-2 text-xs bg-purple-600 hover:bg-purple-600"

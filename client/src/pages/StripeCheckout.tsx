@@ -8,7 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { CreditCard, Lock, ShoppingCart, CheckCircle, ArrowLeft, Zap, Shield } from "lucide-react";
+import {
+  CreditCard,
+  Lock,
+  ShoppingCart,
+  CheckCircle,
+  ArrowLeft,
+  Zap,
+  Shield,
+} from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 const SUBSCRIPTION_PLANS = [
@@ -17,7 +25,12 @@ const SUBSCRIPTION_PLANS = [
     name: "Starter",
     price: 4.99,
     period: "month",
-    features: ["100 AI generations/mo", "Basic analytics", "Community access", "5 GB storage"],
+    features: [
+      "100 AI generations/mo",
+      "Basic analytics",
+      "Community access",
+      "5 GB storage",
+    ],
     badge: null,
     color: "from-blue-600 to-cyan-600",
   },
@@ -26,7 +39,14 @@ const SUBSCRIPTION_PLANS = [
     name: "Pro",
     price: 19.99,
     period: "month",
-    features: ["Unlimited AI generations", "Advanced analytics", "Priority support", "50 GB storage", "Creator tools", "Custom domain"],
+    features: [
+      "Unlimited AI generations",
+      "Advanced analytics",
+      "Priority support",
+      "50 GB storage",
+      "Creator tools",
+      "Custom domain",
+    ],
     badge: "Most Popular",
     color: "from-purple-600 to-pink-600",
   },
@@ -35,7 +55,15 @@ const SUBSCRIPTION_PLANS = [
     name: "Scalable",
     price: 99.99,
     period: "month",
-    features: ["Everything in Pro", "White-label options", "API access", "Dedicated support", "500 GB storage", "Team management", "Custom integrations"],
+    features: [
+      "Everything in Pro",
+      "White-label options",
+      "API access",
+      "Dedicated support",
+      "500 GB storage",
+      "Team management",
+      "Custom integrations",
+    ],
     badge: "Best Value",
     color: "from-amber-600 to-orange-600",
   },
@@ -50,9 +78,11 @@ export default function StripeCheckout() {
   const [promoApplied, setPromoApplied] = useState(false);
 
   const checkoutMut = trpc.payments.createStripeCheckout.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       if (data.mock) {
-        toast.success("Demo checkout — Stripe not configured yet. Redirecting to success page...");
+        toast.success(
+          "Demo checkout — Stripe not configured yet. Redirecting to success page..."
+        );
         setTimeout(() => setStep("success"), 1500);
       } else if (data.url) {
         window.location.href = data.url;
@@ -75,7 +105,10 @@ export default function StripeCheckout() {
   };
 
   const applyPromo = () => {
-    if (promoCode.toUpperCase() === "SKY444" || promoCode.toUpperCase() === "SKYCOIN") {
+    if (
+      promoCode.toUpperCase() === "SKY444" ||
+      promoCode.toUpperCase() === "SKYCOIN"
+    ) {
       setPromoApplied(true);
       toast.success("Promo code applied! 20% off your first month.");
     } else {
@@ -83,7 +116,9 @@ export default function StripeCheckout() {
     }
   };
 
-  const finalPrice = promoApplied ? selectedPlan.price * 0.8 : selectedPlan.price;
+  const finalPrice = promoApplied
+    ? selectedPlan.price * 0.8
+    : selectedPlan.price;
 
   if (step === "success") {
     return (
@@ -92,12 +127,18 @@ export default function StripeCheckout() {
           <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-400" />
           </div>
-          <h1 className="text-3xl font-bold mb-3">Welcome to {selectedPlan.name}!</h1>
+          <h1 className="text-3xl font-bold mb-3">
+            Welcome to {selectedPlan.name}!
+          </h1>
           <p className="text-muted-foreground mb-6">
-            Your subscription is now active. Enjoy all {selectedPlan.name} features.
+            Your subscription is now active. Enjoy all {selectedPlan.name}{" "}
+            features.
           </p>
           <div className="flex gap-3 justify-center">
-            <Button asChild className="bg-gradient-to-r from-purple-600 to-cyan-600">
+            <Button
+              asChild
+              className="bg-gradient-to-r from-purple-600 to-cyan-600"
+            >
               <Link href="/dashboard">Go to Dashboard</Link>
             </Button>
             <Button variant="outline" asChild>
@@ -111,9 +152,11 @@ export default function StripeCheckout() {
 
   return (
     <div className="min-h-screen">
-      <PageHeader title="Upgrade Your Plan" subtitle="Unlock the full power of SKYCOIN4444" />
+      <PageHeader
+        title="Upgrade Your Plan"
+        subtitle="Unlock the full power of SKYCOIN4444"
+      />
       <div className="container py-8 max-w-6xl">
-
         {/* Plan selection */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {SUBSCRIPTION_PLANS.map(plan => (
@@ -127,18 +170,24 @@ export default function StripeCheckout() {
               onClick={() => setSelectedPlan(plan)}
             >
               {plan.badge && (
-                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r ${plan.color} text-white border-0`}>
+                <Badge
+                  className={`absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r ${plan.color} text-white border-0`}
+                >
                   {plan.badge}
                 </Badge>
               )}
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <span>{plan.name}</span>
-                  {selectedPlan.id === plan.id && <CheckCircle className="w-5 h-5 text-purple-400" />}
+                  {selectedPlan.id === plan.id && (
+                    <CheckCircle className="w-5 h-5 text-purple-400" />
+                  )}
                 </CardTitle>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold">${plan.price}</span>
-                  <span className="text-muted-foreground text-sm">/{plan.period}</span>
+                  <span className="text-muted-foreground text-sm">
+                    /{plan.period}
+                  </span>
                 </div>
               </CardHeader>
               <CardContent>
@@ -194,7 +243,11 @@ export default function StripeCheckout() {
                   className="bg-white/5 border-white/10"
                   disabled={promoApplied}
                 />
-                <Button variant="outline" onClick={applyPromo} disabled={promoApplied || !promoCode}>
+                <Button
+                  variant="outline"
+                  onClick={applyPromo}
+                  disabled={promoApplied || !promoCode}
+                >
                   Apply
                 </Button>
               </div>
@@ -213,17 +266,23 @@ export default function StripeCheckout() {
               <div className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 border border-white/10 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Lock className="w-4 h-4 text-green-400" />
-                  <span className="text-sm text-green-400">Secured by Stripe</span>
+                  <span className="text-sm text-green-400">
+                    Secured by Stripe
+                  </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  You'll be redirected to Stripe's secure checkout page to complete your payment.
-                  Your card details are never stored on our servers.
+                  You'll be redirected to Stripe's secure checkout page to
+                  complete your payment. Your card details are never stored on
+                  our servers.
                 </p>
               </div>
 
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <Shield className="w-4 h-4" />
-                <span>256-bit SSL encryption · PCI DSS compliant · 30-day money-back guarantee</span>
+                <span>
+                  256-bit SSL encryption · PCI DSS compliant · 30-day money-back
+                  guarantee
+                </span>
               </div>
 
               <Button
@@ -232,9 +291,15 @@ export default function StripeCheckout() {
                 className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 h-12 text-base"
               >
                 {checkoutMut.isPending ? (
-                  <><Zap className="w-5 h-5 mr-2 animate-spin" />Processing...</>
+                  <>
+                    <Zap className="w-5 h-5 mr-2 animate-spin" />
+                    Processing...
+                  </>
                 ) : (
-                  <><CreditCard className="w-5 h-5 mr-2" />Subscribe for ${finalPrice.toFixed(2)}/mo</>
+                  <>
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Subscribe for ${finalPrice.toFixed(2)}/mo
+                  </>
                 )}
               </Button>
 
@@ -245,7 +310,10 @@ export default function StripeCheckout() {
               )}
 
               <Button variant="ghost" size="sm" asChild className="w-full">
-                <Link href="/"><ArrowLeft className="w-4 h-4 mr-1" />Back to Home</Link>
+                <Link href="/">
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                  Back to Home
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -253,8 +321,16 @@ export default function StripeCheckout() {
 
         {/* Trust badges */}
         <div className="flex flex-wrap justify-center gap-6 mt-8 text-xs text-muted-foreground">
-          {["✓ Cancel anytime", "✓ 30-day money-back", "✓ Instant activation", "✓ 24/7 support", "✓ No contracts"].map(b => (
-            <span key={b} className="flex items-center gap-1">{b}</span>
+          {[
+            "✓ Cancel anytime",
+            "✓ 30-day money-back",
+            "✓ Instant activation",
+            "✓ 24/7 support",
+            "✓ No contracts",
+          ].map(b => (
+            <span key={b} className="flex items-center gap-1">
+              {b}
+            </span>
           ))}
         </div>
       </div>

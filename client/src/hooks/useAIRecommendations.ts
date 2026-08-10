@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
 export interface UserBehavior {
   pageViews: Record<string, number>;
@@ -16,7 +16,7 @@ export interface Recommendation {
   description: string;
   feature: string;
   reason: string;
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
   action: () => void;
   icon?: string;
 }
@@ -27,7 +27,7 @@ export function useAIRecommendations() {
     featureUsage: {},
     timeSpent: {},
     interactions: [],
-    lastActiveFeature: '',
+    lastActiveFeature: "",
     sessionDuration: 0,
     totalSessions: 0,
   });
@@ -63,8 +63,8 @@ export function useAIRecommendations() {
       trackPageView(window.location.pathname);
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   // Generate recommendations based on behavior
@@ -85,9 +85,9 @@ export function useAIRecommendations() {
           title: `Try ${feature.name}`,
           description: `You haven't explored ${feature.name} yet. It could help you ${feature.benefit}.`,
           feature: feature.name,
-          reason: 'Unused feature',
-          priority: 'medium',
-          action: () => window.location.href = feature.url,
+          reason: "Unused feature",
+          priority: "medium",
+          action: () => (window.location.href = feature.url),
           icon: feature.icon,
         });
       });
@@ -99,9 +99,9 @@ export function useAIRecommendations() {
           title: `Complement with ${feature.name}`,
           description: `Based on your usage of ${behavior.lastActiveFeature}, you might like ${feature.name}.`,
           feature: feature.name,
-          reason: 'Related to your activity',
-          priority: 'high',
-          action: () => window.location.href = feature.url,
+          reason: "Related to your activity",
+          priority: "high",
+          action: () => (window.location.href = feature.url),
           icon: feature.icon,
         });
       });
@@ -113,8 +113,8 @@ export function useAIRecommendations() {
           title: tip.title,
           description: tip.description,
           feature: tip.feature,
-          reason: 'Optimization tip',
-          priority: 'low',
+          reason: "Optimization tip",
+          priority: "low",
           action: tip.action,
           icon: tip.icon,
         });
@@ -122,7 +122,7 @@ export function useAIRecommendations() {
 
       setRecommendations(newRecommendations.slice(0, 5)); // Top 5 recommendations
     } catch (error) {
-      console.error('Failed to generate recommendations:', error);
+      console.error("Failed to generate recommendations:", error);
     } finally {
       setIsLoading(false);
     }
@@ -131,38 +131,116 @@ export function useAIRecommendations() {
   // Analyze unused features
   const analyzeUnusedFeatures = (behavior: UserBehavior) => {
     const allFeatures = [
-      { name: 'Mining', url: '/miner-dashboard', benefit: 'earn passive income', icon: '⛏️' },
-      { name: 'Trading', url: '/trading', benefit: 'trade cryptocurrencies', icon: '📈' },
-      { name: 'Gaming', url: '/gaming', benefit: 'earn rewards through games', icon: '🎮' },
-      { name: 'Marketplace', url: '/marketplace', benefit: 'buy and sell items', icon: '🛍️' },
-      { name: 'Governance', url: '/governance', benefit: 'vote on proposals', icon: '🗳️' },
-      { name: 'Charity', url: '/charity', benefit: 'contribute to causes', icon: '❤️' },
-      { name: 'School', url: '/sky-school', benefit: 'learn and earn', icon: '🎓' },
+      {
+        name: "Mining",
+        url: "/miner-dashboard",
+        benefit: "earn passive income",
+        icon: "⛏️",
+      },
+      {
+        name: "Trading",
+        url: "/trading",
+        benefit: "trade cryptocurrencies",
+        icon: "📈",
+      },
+      {
+        name: "Gaming",
+        url: "/gaming",
+        benefit: "earn rewards through games",
+        icon: "🎮",
+      },
+      {
+        name: "Marketplace",
+        url: "/marketplace",
+        benefit: "buy and sell items",
+        icon: "🛍️",
+      },
+      {
+        name: "Governance",
+        url: "/governance",
+        benefit: "vote on proposals",
+        icon: "🗳️",
+      },
+      {
+        name: "Charity",
+        url: "/charity",
+        benefit: "contribute to causes",
+        icon: "❤️",
+      },
+      {
+        name: "School",
+        url: "/sky-school",
+        benefit: "learn and earn",
+        icon: "🎓",
+      },
     ];
 
     return allFeatures
-      .filter(f => !behavior.featureUsage[f.name] || behavior.featureUsage[f.name] === 0)
+      .filter(
+        f =>
+          !behavior.featureUsage[f.name] || behavior.featureUsage[f.name] === 0
+      )
       .slice(0, 2);
   };
 
   // Find related features
   const findRelatedFeatures = (behavior: UserBehavior) => {
     const featureRelations: Record<string, any[]> = {
-      'Mining': [
-        { name: 'Trading', url: '/trading', benefit: 'sell mined coins', icon: '📈' },
-        { name: 'Wallet', url: '/wallet', benefit: 'manage earnings', icon: '💰' },
+      Mining: [
+        {
+          name: "Trading",
+          url: "/trading",
+          benefit: "sell mined coins",
+          icon: "📈",
+        },
+        {
+          name: "Wallet",
+          url: "/wallet",
+          benefit: "manage earnings",
+          icon: "💰",
+        },
       ],
-      'Trading': [
-        { name: 'Marketplace', url: '/marketplace', benefit: 'diversify portfolio', icon: '🛍️' },
-        { name: 'Analytics', url: '/analytics', benefit: 'track performance', icon: '📊' },
+      Trading: [
+        {
+          name: "Marketplace",
+          url: "/marketplace",
+          benefit: "diversify portfolio",
+          icon: "🛍️",
+        },
+        {
+          name: "Analytics",
+          url: "/analytics",
+          benefit: "track performance",
+          icon: "📊",
+        },
       ],
-      'Gaming': [
-        { name: 'Marketplace', url: '/marketplace', benefit: 'sell gaming items', icon: '🛍️' },
-        { name: 'Leaderboard', url: '/leaderboard', benefit: 'compete with others', icon: '🏆' },
+      Gaming: [
+        {
+          name: "Marketplace",
+          url: "/marketplace",
+          benefit: "sell gaming items",
+          icon: "🛍️",
+        },
+        {
+          name: "Leaderboard",
+          url: "/leaderboard",
+          benefit: "compete with others",
+          icon: "🏆",
+        },
       ],
-      'Social': [
-        { name: 'Gaming', url: '/gaming', benefit: 'play with friends', icon: '🎮' },
-        { name: 'Marketplace', url: '/marketplace', benefit: 'share items', icon: '🛍️' },
+      Social: [
+        {
+          name: "Gaming",
+          url: "/gaming",
+          benefit: "play with friends",
+          icon: "🎮",
+        },
+        {
+          name: "Marketplace",
+          url: "/marketplace",
+          benefit: "share items",
+          icon: "🛍️",
+        },
       ],
     };
 
@@ -178,36 +256,36 @@ export function useAIRecommendations() {
     const usedFeatures = Object.keys(behavior.featureUsage).length;
     if (usedFeatures < 3) {
       tips.push({
-        id: 'diversify',
-        title: 'Diversify Your Portfolio',
-        description: 'Try using multiple features to maximize your earnings.',
-        feature: 'Portfolio',
-        action: () => alert('Diversification guide'),
-        icon: '📊',
+        id: "diversify",
+        title: "Diversify Your Portfolio",
+        description: "Try using multiple features to maximize your earnings.",
+        feature: "Portfolio",
+        action: () => alert("Diversification guide"),
+        icon: "📊",
       });
     }
 
     // Tip 2: Daily activity
     if (behavior.totalSessions < 5) {
       tips.push({
-        id: 'daily-activity',
-        title: 'Daily Activity Bonus',
-        description: 'Log in daily to earn bonus rewards.',
-        feature: 'Rewards',
-        action: () => alert('Daily bonus info'),
-        icon: '🎁',
+        id: "daily-activity",
+        title: "Daily Activity Bonus",
+        description: "Log in daily to earn bonus rewards.",
+        feature: "Rewards",
+        action: () => alert("Daily bonus info"),
+        icon: "🎁",
       });
     }
 
     // Tip 3: Command palette
-    if (!behavior.interactions.includes('command-palette')) {
+    if (!behavior.interactions.includes("command-palette")) {
       tips.push({
-        id: 'command-palette',
-        title: 'Use Command Palette',
-        description: 'Press Cmd+K to quickly access any feature.',
-        feature: 'Navigation',
-        action: () => alert('Command palette tutorial'),
-        icon: '⌨️',
+        id: "command-palette",
+        title: "Use Command Palette",
+        description: "Press Cmd+K to quickly access any feature.",
+        feature: "Navigation",
+        action: () => alert("Command palette tutorial"),
+        icon: "⌨️",
       });
     }
 

@@ -3,7 +3,18 @@
  * Data moat, action lock-in, creator lock-in, AI personalization moat, network effects
  */
 import { Link } from "wouter";
-import { ArrowLeft, Shield, Lock, Database, Brain, TrendingUp, Users, Layers, Zap, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  Shield,
+  Lock,
+  Database,
+  Brain,
+  TrendingUp,
+  Users,
+  Layers,
+  Zap,
+  Star,
+} from "lucide-react";
 
 const MOAT_LAYERS = [
   {
@@ -81,12 +92,17 @@ const MOAT_LAYERS = [
 ];
 
 export default function DefensibilityMoat() {
-  const avgStrength = Math.round(MOAT_LAYERS.reduce((s, m) => s + m.strength, 0) / MOAT_LAYERS.length);
+  const avgStrength = Math.round(
+    MOAT_LAYERS.reduce((s, m) => s + m.strength, 0) / MOAT_LAYERS.length
+  );
 
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border/50 px-4 py-3 flex items-center gap-3">
-        <Link href="/" className="p-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground">
+        <Link
+          href="/"
+          className="p-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground"
+        >
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
@@ -94,10 +110,14 @@ export default function DefensibilityMoat() {
             <Shield className="w-5 h-5 text-blue-400" />
             Defensibility & Moat
           </h1>
-          <p className="text-xs text-muted-foreground">Why we win long-term — Phase 18</p>
+          <p className="text-xs text-muted-foreground">
+            Why we win long-term — Phase 18
+          </p>
         </div>
         <div className="ml-auto text-right">
-          <div className="text-sm font-bold text-primary">{avgStrength}/100</div>
+          <div className="text-sm font-bold text-primary">
+            {avgStrength}/100
+          </div>
           <div className="text-xs text-muted-foreground">Moat Score</div>
         </div>
       </div>
@@ -106,24 +126,49 @@ export default function DefensibilityMoat() {
         {/* Positioning */}
         <div className="card p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20">
           <h3 className="font-bold text-sm mb-2">Platform Positioning</h3>
-          <p className="text-sm text-foreground font-medium mb-1">"The execution layer for digital life."</p>
-          <p className="text-xs text-muted-foreground">Not a chat app. Not a social app. Not an AI tool. A controlled execution network with trust, money, and identity.</p>
+          <p className="text-sm text-foreground font-medium mb-1">
+            "The execution layer for digital life."
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Not a chat app. Not a social app. Not an AI tool. A controlled
+            execution network with trust, money, and identity.
+          </p>
         </div>
 
         {/* YC Reality Check */}
         <div className="grid grid-cols-2 gap-2">
           <div className="card p-3 bg-red-500/5 border border-red-500/20">
-            <div className="text-xs font-bold text-red-400 mb-2">YC won't fund</div>
-            {["Complexity", "Feature-heavy apps", "AI demos without safety", "Social without moderation"].map(x => (
-              <div key={x} className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
+            <div className="text-xs font-bold text-red-400 mb-2">
+              YC won't fund
+            </div>
+            {[
+              "Complexity",
+              "Feature-heavy apps",
+              "AI demos without safety",
+              "Social without moderation",
+            ].map(x => (
+              <div
+                key={x}
+                className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1"
+              >
                 <span className="text-red-400">✗</span> {x}
               </div>
             ))}
           </div>
           <div className="card p-3 bg-green-500/5 border border-green-500/20">
-            <div className="text-xs font-bold text-green-400 mb-2">YC funds</div>
-            {["Controlled systems", "Safe financial flows", "Scalable architecture", "Predictable failure handling"].map(x => (
-              <div key={x} className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
+            <div className="text-xs font-bold text-green-400 mb-2">
+              YC funds
+            </div>
+            {[
+              "Controlled systems",
+              "Safe financial flows",
+              "Scalable architecture",
+              "Predictable failure handling",
+            ].map(x => (
+              <div
+                key={x}
+                className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1"
+              >
                 <span className="text-green-400">✓</span> {x}
               </div>
             ))}
@@ -134,21 +179,31 @@ export default function DefensibilityMoat() {
         <div className="space-y-3">
           <h3 className="font-semibold text-sm">8 Moat Layers</h3>
           {MOAT_LAYERS.map(m => (
-            <div key={m.rank} className={`card p-4 border-l-2 ${m.color.replace("text-", "border-")}`}>
+            <div
+              key={m.rank}
+              className={`card p-4 border-l-2 ${m.color.replace("text-", "border-")}`}
+            >
               <div className="flex items-start gap-3 mb-2">
-                <div className={`w-8 h-8 rounded-lg ${m.bg} flex items-center justify-center shrink-0`}>
+                <div
+                  className={`w-8 h-8 rounded-lg ${m.bg} flex items-center justify-center shrink-0`}
+                >
                   <m.icon className={`w-4 h-4 ${m.color}`} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-sm">{m.title}</span>
-                    <span className={`text-xs font-bold ${m.color}`}>{m.strength}</span>
+                    <span className={`text-xs font-bold ${m.color}`}>
+                      {m.strength}
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">{m.desc}</p>
                 </div>
               </div>
               <div className="h-1 bg-secondary rounded-full overflow-hidden">
-                <div className={`h-full rounded-full ${m.color.replace("text-", "bg-")}`} style={{ width: `${m.strength}%`, opacity: 0.7 }} />
+                <div
+                  className={`h-full rounded-full ${m.color.replace("text-", "bg-")}`}
+                  style={{ width: `${m.strength}%`, opacity: 0.7 }}
+                />
               </div>
             </div>
           ))}

@@ -3,7 +3,14 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Globe, Users, MessageSquare, TrendingUp, Eye, EyeOff } from "lucide-react";
+import {
+  Globe,
+  Users,
+  MessageSquare,
+  TrendingUp,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface CommunityPost {
@@ -69,7 +76,8 @@ const MOCK_POSTS: CommunityPost[] = [
     community: "Spanish Hub",
     language: "Spanish",
     title: "¿Cuál es la mejor forma de practicar la pronunciación?",
-    content: "Estoy buscando formas efectivas de mejorar mi pronunciación en español. ¿Alguien tiene sugerencias?",
+    content:
+      "Estoy buscando formas efectivas de mejorar mi pronunciación en español. ¿Alguien tiene sugerencias?",
     timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
     views: 256,
     replies: 24,
@@ -95,15 +103,16 @@ const MOCK_POSTS: CommunityPost[] = [
 ];
 
 export function TranslationEnabledCommunity() {
-  const [selectedCommunity, setSelectedCommunity] = useState(MOCK_COMMUNITIES[0]);
+  const [selectedCommunity, setSelectedCommunity] = useState(
+    MOCK_COMMUNITIES[0]
+  );
   const [translationEnabled, setTranslationEnabled] = useState(true);
   const [targetLanguage, setTargetLanguage] = useState("English");
 
   const getTranslation = (sourceLanguage: string, content: string): string => {
     const translations: Record<string, Record<string, string>> = {
       Chinese: {
-        "学习汉语的最佳方法是什么？":
-          "What is the best way to learn Chinese?",
+        "学习汉语的最佳方法是什么？": "What is the best way to learn Chinese?",
         "我想知道如何更有效地学习汉语。有什么建议吗？我已经学了6个月了。":
           "I want to know how to learn Chinese more effectively. Any suggestions? I've been learning for 6 months.",
       },
@@ -114,7 +123,7 @@ export function TranslationEnabledCommunity() {
           "I'm looking for effective ways to improve my Spanish pronunciation. Does anyone have suggestions?",
       },
       Japanese: {
-        "日本語の敬語について": "About Japanese honorifics",
+        日本語の敬語について: "About Japanese honorifics",
         "敬語の使い方がまだ難しいです。実践的な例を教えてもらえますか?":
           "I still find it difficult to use honorifics. Can you teach me practical examples?",
       },
@@ -144,7 +153,7 @@ export function TranslationEnabledCommunity() {
           {/* Communities Sidebar */}
           <div className="space-y-3">
             <h2 className="font-bold text-white mb-4">Communities</h2>
-            {MOCK_COMMUNITIES.map((community) => (
+            {MOCK_COMMUNITIES.map(community => (
               <Card
                 key={community.id}
                 className={`p-4 cursor-pointer transition-all ${
@@ -182,7 +191,7 @@ export function TranslationEnabledCommunity() {
                 <div className="flex items-center gap-3">
                   <select
                     value={targetLanguage}
-                    onChange={(e) => setTargetLanguage(e.target.value)}
+                    onChange={e => setTargetLanguage(e.target.value)}
                     className="bg-slate-700 border border-slate-600 text-white px-2 py-1 rounded text-xs"
                   >
                     <option>English</option>
@@ -248,7 +257,7 @@ export function TranslationEnabledCommunity() {
             <div className="space-y-4">
               <h3 className="font-bold text-white">Recent Discussions</h3>
 
-              {MOCK_POSTS.map((post) => (
+              {MOCK_POSTS.map(post => (
                 <Card
                   key={post.id}
                   className="bg-slate-800/50 border-slate-700 p-6 hover:border-purple-500/50 transition"

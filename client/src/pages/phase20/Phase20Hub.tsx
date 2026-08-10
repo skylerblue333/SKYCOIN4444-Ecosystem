@@ -1,12 +1,12 @@
 // @ts-nocheck
-import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { trpc } from '@/lib/trpc';
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { trpc } from "@/lib/trpc";
 
 export default function Phase20Hub() {
-  const [activeTab, setActiveTab] = useState('marketplace');
+  const [activeTab, setActiveTab] = useState("marketplace");
 
   // Phase 20A: AI Code Marketplace
   const listCode = trpc.phase20a.listCode.useQuery({});
@@ -36,8 +36,12 @@ export default function Phase20Hub() {
             <Card key={listing.id} className="p-4 bg-gray-900 border-cyan-500">
               <h3 className="font-bold">{listing.title}</h3>
               <p className="text-sm text-gray-400">Price: ${listing.price}</p>
-              <p className="text-sm text-gray-400">Rating: {listing.rating} ({listing.sales} sales)</p>
-              <Button className="mt-2 bg-cyan-600 hover:bg-cyan-700">Buy Code</Button>
+              <p className="text-sm text-gray-400">
+                Rating: {listing.rating} ({listing.sales} sales)
+              </p>
+              <Button className="mt-2 bg-cyan-600 hover:bg-cyan-700">
+                Buy Code
+              </Button>
             </Card>
           ))}
         </TabsContent>
@@ -46,7 +50,9 @@ export default function Phase20Hub() {
           <h2 className="text-2xl font-bold">Real-Time Collaboration</h2>
           <Card className="p-4 bg-gray-900 border-cyan-500">
             <p>Live collaborative coding sessions with AI suggestions</p>
-            <Button className="mt-4 bg-cyan-600 hover:bg-cyan-700">Start Session</Button>
+            <Button className="mt-4 bg-cyan-600 hover:bg-cyan-700">
+              Start Session
+            </Button>
           </Card>
         </TabsContent>
 
@@ -54,7 +60,9 @@ export default function Phase20Hub() {
           <h2 className="text-2xl font-bold">Performance Benchmarks</h2>
           <Card className="p-4 bg-gray-900 border-cyan-500">
             <p>Execution Time: 45ms | Memory: 128MB | Score: 92/100</p>
-            <Button className="mt-4 bg-cyan-600 hover:bg-cyan-700">Analyze Code</Button>
+            <Button className="mt-4 bg-cyan-600 hover:bg-cyan-700">
+              Analyze Code
+            </Button>
           </Card>
         </TabsContent>
 
@@ -64,11 +72,15 @@ export default function Phase20Hub() {
             <div className="grid grid-cols-2 gap-4">
               <Card className="p-4 bg-gray-900 border-cyan-500">
                 <p className="text-sm text-gray-400">DAU</p>
-                <p className="text-2xl font-bold">{dashboard.data.dau?.toLocaleString()}</p>
+                <p className="text-2xl font-bold">
+                  {dashboard.data.dau?.toLocaleString()}
+                </p>
               </Card>
               <Card className="p-4 bg-gray-900 border-cyan-500">
                 <p className="text-sm text-gray-400">MAU</p>
-                <p className="text-2xl font-bold">{dashboard.data.mau?.toLocaleString()}</p>
+                <p className="text-2xl font-bold">
+                  {dashboard.data.mau?.toLocaleString()}
+                </p>
               </Card>
             </div>
           )}
@@ -80,11 +92,15 @@ export default function Phase20Hub() {
             <div className="grid grid-cols-3 gap-4">
               <Card className="p-4 bg-gray-900 border-cyan-500">
                 <p className="text-sm text-gray-400">Total Users</p>
-                <p className="text-2xl font-bold">{metrics.data.totalUsers?.toLocaleString()}</p>
+                <p className="text-2xl font-bold">
+                  {metrics.data.totalUsers?.toLocaleString()}
+                </p>
               </Card>
               <Card className="p-4 bg-gray-900 border-cyan-500">
                 <p className="text-sm text-gray-400">Transactions</p>
-                <p className="text-2xl font-bold">{metrics.data.totalTransactions?.toLocaleString()}</p>
+                <p className="text-2xl font-bold">
+                  {metrics.data.totalTransactions?.toLocaleString()}
+                </p>
               </Card>
               <Card className="p-4 bg-gray-900 border-cyan-500">
                 <p className="text-sm text-gray-400">Volume</p>

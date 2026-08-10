@@ -18,36 +18,96 @@ import { describe, it, expect, beforeEach } from "vitest";
 
 // ─── Commandment 1: Real Database Schema ─────────────────────────────────────
 import {
-  users, posts, comments, likes, follows, communities, communityMembers,
-  channels, messages, streams, stakingPositions, marketplaceListings,
-  charityProjects, wallets, tournaments, subscriptions,
+  users,
+  posts,
+  comments,
+  likes,
+  follows,
+  communities,
+  communityMembers,
+  channels,
+  messages,
+  streams,
+  stakingPositions,
+  marketplaceListings,
+  charityProjects,
+  wallets,
+  tournaments,
+  subscriptions,
 } from "../drizzle";
 import {
-  tournamentWagers, questDefinitions, questProgress, xpTransactions,
-  marketplaceOrders, marketplaceEscrow, sellerProfiles, productReviews,
-  walletConnections, stakingPositionsExtended, swapTransactions, treasuryTransactions,
-  referralCodes, referralConversions, userSessions, funnelEvents,
-  subscriptionBillingHistory, creatorPayouts, platformFeeTransactions, adImpressions,
+  tournamentWagers,
+  questDefinitions,
+  questProgress,
+  xpTransactions,
+  marketplaceOrders,
+  marketplaceEscrow,
+  sellerProfiles,
+  productReviews,
+  walletConnections,
+  stakingPositionsExtended,
+  swapTransactions,
+  treasuryTransactions,
+  referralCodes,
+  referralConversions,
+  userSessions,
+  funnelEvents,
+  subscriptionBillingHistory,
+  creatorPayouts,
+  platformFeeTransactions,
+  adImpressions,
 } from "../drizzle/schema-extended";
 
 // ─── Commandment 2: Unified Event Bus ────────────────────────────────────────
-import { unifiedSystemLoop, platformEventBus, systemHealthMonitor } from "./unified-system-loop";
+import {
+  unifiedSystemLoop,
+  platformEventBus,
+  systemHealthMonitor,
+} from "./unified-system-loop";
 
 // ─── Commandment 3: No Dead Features ─────────────────────────────────────────
-import { rateLimiter, workerPoolManager, circuitBreaker, monetizationVerifier, healthChecker, scalingConfig, redisConfig } from "./scaling-config";
+import {
+  rateLimiter,
+  workerPoolManager,
+  circuitBreaker,
+  monetizationVerifier,
+  healthChecker,
+  scalingConfig,
+  redisConfig,
+} from "./scaling-config";
 
 // ─── Commandment 4: Real-Time Layer ──────────────────────────────────────────
-import { realtimeHub, connectionRegistry, channelManager, presenceTracker, realtimeMetrics } from "./realtime-websocket";
+import {
+  realtimeHub,
+  connectionRegistry,
+  channelManager,
+  presenceTracker,
+  realtimeMetrics,
+} from "./realtime-websocket";
 
 // ─── Commandment 5: Monetization Flows ───────────────────────────────────────
-import { stripeAdapter, s3Adapter, openaiAdapter, cryptoAdapter } from "./production-integrations";
+import {
+  stripeAdapter,
+  s3Adapter,
+  openaiAdapter,
+  cryptoAdapter,
+} from "./production-integrations";
 import { monetizationLedger } from "./monetization-ledger";
 
 // ─── Commandment 6: Horizontal Scaling ───────────────────────────────────────
 // (covered by scaling-config imports above)
 
 // ─── Commandment 7: Real AI ───────────────────────────────────────────────────
-import { feedRankingAI, fraudDetectionAI, trendDetectionAI, contentModerationAI, analyticsTracker, aiContentGenerator, recommendationEngine, aiSearchEnhancer } from "./ai-production";
+import {
+  feedRankingAI,
+  fraudDetectionAI,
+  trendDetectionAI,
+  contentModerationAI,
+  analyticsTracker,
+  aiContentGenerator,
+  recommendationEngine,
+  aiSearchEnhancer,
+} from "./ai-production";
 
 // ─── Commandment 8: Analytics Tracking ───────────────────────────────────────
 // (covered by analyticsTracker above)
@@ -55,9 +115,23 @@ import { feedRankingAI, fraudDetectionAI, trendDetectionAI, contentModerationAI,
 // ─── Commandment 9: All 8 Systems ────────────────────────────────────────────
 import { queueManager, structuredLogger, cacheLayer } from "./queue-workers";
 import { mediaPipeline, videoModerationAI } from "./media-pipeline";
-import { gameFiEngine, questEngine, xpEngine, wagerEscrow } from "./gamefi-production";
-import { marketplaceEngine, escrowEngine, sellerDashboard } from "./marketplace-production";
-import { walletConnectService, stakingEngine, swapEngine, treasuryEngine } from "./crypto-web3-production";
+import {
+  gameFiEngine,
+  questEngine,
+  xpEngine,
+  wagerEscrow,
+} from "./gamefi-production";
+import {
+  marketplaceEngine,
+  escrowEngine,
+  sellerDashboard,
+} from "./marketplace-production";
+import {
+  walletConnectService,
+  stakingEngine,
+  swapEngine,
+  treasuryEngine,
+} from "./crypto-web3-production";
 import { growthEngine, referralSystem, cohortAnalyzer } from "./growth-engine";
 
 // ─── Commandment 10: Platform Thinking ───────────────────────────────────────
@@ -130,7 +204,7 @@ describe("Commandment 1: Real Database Schema", () => {
 describe("Commandment 2: Unified Event Bus", () => {
   it("2A: Platform event bus can emit and receive events", () => {
     let received: unknown = null;
-    const unsub = platformEventBus.subscribe("test.event", (data) => {
+    const unsub = platformEventBus.subscribe("test.event", data => {
       received = data;
     });
 
@@ -141,8 +215,12 @@ describe("Commandment 2: Unified Event Bus", () => {
 
   it("2B: Event bus supports multiple subscribers", () => {
     const received: unknown[] = [];
-    const unsub1 = platformEventBus.subscribe("multi.test", (d) => received.push(d));
-    const unsub2 = platformEventBus.subscribe("multi.test", (d) => received.push(d));
+    const unsub1 = platformEventBus.subscribe("multi.test", d =>
+      received.push(d)
+    );
+    const unsub2 = platformEventBus.subscribe("multi.test", d =>
+      received.push(d)
+    );
 
     platformEventBus.emit("multi.test", { n: 1 });
     expect(received.length).toBe(2);
@@ -168,7 +246,9 @@ describe("Commandment 2: Unified Event Bus", () => {
 
   it("2E: Event bus unsubscribe works correctly", () => {
     let count = 0;
-    const unsub = platformEventBus.subscribe("unsub.test", () => { count++; });
+    const unsub = platformEventBus.subscribe("unsub.test", () => {
+      count++;
+    });
     platformEventBus.emit("unsub.test", {});
     unsub();
     platformEventBus.emit("unsub.test", {});
@@ -242,7 +322,11 @@ describe("Commandment 3: No Dead Features", () => {
 
 describe("Commandment 4: Real-Time Layer Covers All 7 Systems", () => {
   it("4A: Connection registry tracks connections", () => {
-    const connId = connectionRegistry.register({ userId: 1, deviceType: "mobile", ipAddress: "127.0.0.1" });
+    const connId = connectionRegistry.register({
+      userId: 1,
+      deviceType: "mobile",
+      ipAddress: "127.0.0.1",
+    });
     expect(connId).toBeTruthy();
     const conn = connectionRegistry.get(connId);
     expect(conn?.userId).toBe(1);
@@ -250,9 +334,20 @@ describe("Commandment 4: Real-Time Layer Covers All 7 Systems", () => {
   });
 
   it("4B: Channel manager supports all 7 real-time systems", () => {
-    const systems = ["social", "gaming", "marketplace", "streaming", "crypto", "notifications", "community"];
+    const systems = [
+      "social",
+      "gaming",
+      "marketplace",
+      "streaming",
+      "crypto",
+      "notifications",
+      "community",
+    ];
     for (const system of systems) {
-      const channelId = channelManager.createChannel(`${system}:test_${Date.now()}`, system as "social");
+      const channelId = channelManager.createChannel(
+        `${system}:test_${Date.now()}`,
+        system as "social"
+      );
       expect(channelId).toBeTruthy();
     }
   });
@@ -273,10 +368,17 @@ describe("Commandment 4: Real-Time Layer Covers All 7 Systems", () => {
 
   it("4E: Realtime hub can broadcast to channels", () => {
     const channelId = channelManager.createChannel("test:broadcast", "social");
-    const connId = connectionRegistry.register({ userId: 99, deviceType: "desktop", ipAddress: "127.0.0.1" });
+    const connId = connectionRegistry.register({
+      userId: 99,
+      deviceType: "desktop",
+      ipAddress: "127.0.0.1",
+    });
     channelManager.subscribe(channelId, connId);
 
-    const result = realtimeHub.broadcast(channelId, { type: "test", data: "hello" });
+    const result = realtimeHub.broadcast(channelId, {
+      type: "test",
+      data: "hello",
+    });
     expect(result.channelId).toBe(channelId);
     expect(result.recipientCount).toBeGreaterThanOrEqual(0);
 
@@ -330,8 +432,20 @@ describe("Commandment 5: Monetization Flows Are Executable", () => {
 
   it("5D: Monetization ledger calculates MRR correctly", () => {
     // Record some subscription revenue
-    monetizationLedger.recordRevenue({ userId: 2, amount: 9.99, currency: "USD", revenueType: "subscription", metadata: {} });
-    monetizationLedger.recordRevenue({ userId: 3, amount: 29.99, currency: "USD", revenueType: "subscription", metadata: {} });
+    monetizationLedger.recordRevenue({
+      userId: 2,
+      amount: 9.99,
+      currency: "USD",
+      revenueType: "subscription",
+      metadata: {},
+    });
+    monetizationLedger.recordRevenue({
+      userId: 3,
+      amount: 29.99,
+      currency: "USD",
+      revenueType: "subscription",
+      metadata: {},
+    });
 
     const mrr = monetizationLedger.getMRR();
     expect(mrr).toBeGreaterThan(0);
@@ -357,7 +471,13 @@ describe("Commandment 5: Monetization Flows Are Executable", () => {
 
 describe("Commandment 6: Platform Scales Horizontally", () => {
   it("6A: Worker pool configs cover all critical job types", () => {
-    const criticalPools = ["media.transcode", "media.moderation", "payments.process", "payouts.execute", "blockchain.transaction"];
+    const criticalPools = [
+      "media.transcode",
+      "media.moderation",
+      "payments.process",
+      "payouts.execute",
+      "blockchain.transaction",
+    ];
     for (const pool of criticalPools) {
       expect(workerPoolManager.getStats(pool)).toBeDefined();
     }
@@ -378,21 +498,34 @@ describe("Commandment 6: Platform Scales Horizontally", () => {
   });
 
   it("6D: Cache TTLs are defined for all critical data types", () => {
-    const requiredTTLs = ["userProfile", "userFeed", "trendingPosts", "tokenPrices", "leaderboard", "session"];
+    const requiredTTLs = [
+      "userProfile",
+      "userFeed",
+      "trendingPosts",
+      "tokenPrices",
+      "leaderboard",
+      "session",
+    ];
     for (const ttl of requiredTTLs) {
       expect(redisConfig.ttl[ttl]).toBeGreaterThan(0);
     }
   });
 
   it("6E: Queue workers support all job types", () => {
-    const result = queueManager.enqueue("media.transcode", { fileKey: "test.mp4", userId: 1 });
+    const result = queueManager.enqueue("media.transcode", {
+      fileKey: "test.mp4",
+      userId: 1,
+    });
     expect(result).toHaveProperty("jobId");
     expect(result).toHaveProperty("queueName");
     expect(result.queueName).toBe("media.transcode");
   });
 
   it("6F: Structured logger outputs JSON-compatible logs", () => {
-    const log = structuredLogger.info("test message", { userId: 1, action: "test" });
+    const log = structuredLogger.info("test message", {
+      userId: 1,
+      action: "test",
+    });
     expect(log).toHaveProperty("level");
     expect(log).toHaveProperty("message");
     expect(log).toHaveProperty("timestamp");
@@ -422,7 +555,7 @@ describe("Commandment 7: AI Is Functional (No Math.random Scoring)", () => {
       mediaType: "image" as const,
     };
 
-        const fixedNow = signals.createdAt.getTime() + 3_600_000; // pin clock for determinism
+    const fixedNow = signals.createdAt.getTime() + 3_600_000; // pin clock for determinism
     const result1 = feedRankingAI.rankPost(signals, fixedNow);
     const result2 = feedRankingAI.rankPost(signals, fixedNow);
     // Same inputs must produce same output (deterministic)
@@ -437,16 +570,33 @@ describe("Commandment 7: AI Is Functional (No Math.random Scoring)", () => {
 
   it("7B: Feed ranking correctly orders posts by quality", () => {
     const highQuality = {
-      postId: 1, authorId: 1, createdAt: new Date(Date.now() - 1_800_000),
-      likeCount: 500, commentCount: 100, shareCount: 50, viewCount: 10000,
-      authorFollowerCount: 100000, authorEngagementRate: 0.08,
-      isVerified: true, isPremium: true, hasMedia: true, mediaType: "video" as const,
+      postId: 1,
+      authorId: 1,
+      createdAt: new Date(Date.now() - 1_800_000),
+      likeCount: 500,
+      commentCount: 100,
+      shareCount: 50,
+      viewCount: 10000,
+      authorFollowerCount: 100000,
+      authorEngagementRate: 0.08,
+      isVerified: true,
+      isPremium: true,
+      hasMedia: true,
+      mediaType: "video" as const,
     };
     const lowQuality = {
-      postId: 2, authorId: 2, createdAt: new Date(Date.now() - 86_400_000),
-      likeCount: 1, commentCount: 0, shareCount: 0, viewCount: 5,
-      authorFollowerCount: 10, authorEngagementRate: 0.01,
-      isVerified: false, isPremium: false, hasMedia: false,
+      postId: 2,
+      authorId: 2,
+      createdAt: new Date(Date.now() - 86_400_000),
+      likeCount: 1,
+      commentCount: 0,
+      shareCount: 0,
+      viewCount: 5,
+      authorFollowerCount: 10,
+      authorEngagementRate: 0.01,
+      isVerified: false,
+      isPremium: false,
+      hasMedia: false,
     };
 
     const highScore = feedRankingAI.rankPost(highQuality).score;
@@ -456,19 +606,36 @@ describe("Commandment 7: AI Is Functional (No Math.random Scoring)", () => {
 
   it("7C: Fraud detection uses behavioral analysis, not random", () => {
     const cleanUser = {
-      userId: 1, action: "post.create", ipAddress: "1.2.3.4",
-      userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+      userId: 1,
+      action: "post.create",
+      ipAddress: "1.2.3.4",
+      userAgent:
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
       timestamp: new Date(),
       metadata: {},
-      historicalBehavior: { accountAgeDays: 365, totalActions: 1000, flaggedActions: 2, uniqueIPs: 3, failedPayments: 0 },
+      historicalBehavior: {
+        accountAgeDays: 365,
+        totalActions: 1000,
+        flaggedActions: 2,
+        uniqueIPs: 3,
+        failedPayments: 0,
+      },
     };
 
     const botUser = {
-      userId: 2, action: "post.create", ipAddress: "1.2.3.5",
+      userId: 2,
+      action: "post.create",
+      ipAddress: "1.2.3.5",
       userAgent: "bot/1.0 crawler",
       timestamp: new Date(),
       metadata: { actionsPerMinute: 50 },
-      historicalBehavior: { accountAgeDays: 0, totalActions: 100, flaggedActions: 30, uniqueIPs: 20, failedPayments: 5 },
+      historicalBehavior: {
+        accountAgeDays: 0,
+        totalActions: 100,
+        flaggedActions: 30,
+        uniqueIPs: 20,
+        failedPayments: 5,
+      },
     };
 
     const cleanAssessment = fraudDetectionAI.assess(cleanUser);
@@ -483,15 +650,28 @@ describe("Commandment 7: AI Is Functional (No Math.random Scoring)", () => {
 
   it("7D: Trend detection uses velocity-based scoring", () => {
     const breakingTrend = {
-      topic: "breaking_news", mentionCount: 5000, velocityPerHour: 1000,
-      uniqueAuthors: 2000, engagementRate: 0.15, sentiment: 0.3, isBreaking: true,
+      topic: "breaking_news",
+      mentionCount: 5000,
+      velocityPerHour: 1000,
+      uniqueAuthors: 2000,
+      engagementRate: 0.15,
+      sentiment: 0.3,
+      isBreaking: true,
     };
     const steadyTrend = {
-      topic: "steady_topic", mentionCount: 100, velocityPerHour: 5,
-      uniqueAuthors: 80, engagementRate: 0.03, sentiment: 0.1, isBreaking: false,
+      topic: "steady_topic",
+      mentionCount: 100,
+      velocityPerHour: 5,
+      uniqueAuthors: 80,
+      engagementRate: 0.03,
+      sentiment: 0.1,
+      isBreaking: false,
     };
 
-    const results = trendDetectionAI.analyzeTrends([breakingTrend, steadyTrend]);
+    const results = trendDetectionAI.analyzeTrends([
+      breakingTrend,
+      steadyTrend,
+    ]);
     expect(results[0]?.topic).toBe("breaking_news");
     expect(results[0]?.category).toBe("breaking");
     expect(results[1]?.category).not.toBe("breaking");
@@ -501,18 +681,26 @@ describe("Commandment 7: AI Is Functional (No Math.random Scoring)", () => {
     const result = await contentModerationAI.moderate(
       "This is a normal post about technology",
       "post_test_1",
-      "post",
+      "post"
     );
     expect(result).toHaveProperty("decision");
     expect(result).toHaveProperty("confidence");
     expect(result).toHaveProperty("categories");
-    expect(["approved", "flagged", "rejected", "review_required"]).toContain(result.decision);
+    expect(["approved", "flagged", "rejected", "review_required"]).toContain(
+      result.decision
+    );
   });
 
   it("7F: AI search enhancer parses intent without random", async () => {
-    const buyIntent = await aiSearchEnhancer.parseIntent("buy NFT artwork cheap");
-    const infoIntent = await aiSearchEnhancer.parseIntent("how does staking work");
-    const socialIntent = await aiSearchEnhancer.parseIntent("@creator latest post");
+    const buyIntent = await aiSearchEnhancer.parseIntent(
+      "buy NFT artwork cheap"
+    );
+    const infoIntent = await aiSearchEnhancer.parseIntent(
+      "how does staking work"
+    );
+    const socialIntent = await aiSearchEnhancer.parseIntent(
+      "@creator latest post"
+    );
 
     expect(buyIntent.intent).toBe("transactional");
     expect(infoIntent.intent).toBe("informational");
@@ -544,7 +732,10 @@ describe("Commandment 8: Every Action Generates Tracked Analytics", () => {
   });
 
   it("8C: Revenue events are tracked with full metadata", () => {
-    analyticsTracker.trackRevenue(1, 9.99, "USD", "subscription", { tier: "pro", period: "monthly" });
+    analyticsTracker.trackRevenue(1, 9.99, "USD", "subscription", {
+      tier: "pro",
+      period: "monthly",
+    });
     const stats = analyticsTracker.getStats();
     expect(stats.totalEvents).toBeGreaterThan(0);
     const topTypes = stats.topEventTypes.map(t => t.type);
@@ -552,7 +743,14 @@ describe("Commandment 8: Every Action Generates Tracked Analytics", () => {
   });
 
   it("8D: AI inference calls generate analytics events", () => {
-    analyticsTracker.trackAiInference("feed_ranking", "scoring_v2", 100, 50, 15, 1);
+    analyticsTracker.trackAiInference(
+      "feed_ranking",
+      "scoring_v2",
+      100,
+      50,
+      15,
+      1
+    );
     const stats = analyticsTracker.getStats();
     const aiEvents = stats.topEventTypes.find(t => t.type === "ai.inference");
     expect(aiEvents).toBeDefined();
@@ -561,10 +759,18 @@ describe("Commandment 8: Every Action Generates Tracked Analytics", () => {
 
   it("8E: Feed ranking automatically tracks analytics", () => {
     const posts = Array.from({ length: 5 }, (_, i) => ({
-      postId: i + 1, authorId: 1, createdAt: new Date(Date.now() - i * 3_600_000),
-      likeCount: 10 - i, commentCount: 5 - i, shareCount: 2, viewCount: 100,
-      authorFollowerCount: 1000, authorEngagementRate: 0.05,
-      isVerified: false, isPremium: false, hasMedia: false,
+      postId: i + 1,
+      authorId: 1,
+      createdAt: new Date(Date.now() - i * 3_600_000),
+      likeCount: 10 - i,
+      commentCount: 5 - i,
+      shareCount: 2,
+      viewCount: 100,
+      authorFollowerCount: 1000,
+      authorEngagementRate: 0.05,
+      isVerified: false,
+      isPremium: false,
+      hasMedia: false,
     }));
 
     feedRankingAI.rankFeed(posts);
@@ -575,11 +781,17 @@ describe("Commandment 8: Every Action Generates Tracked Analytics", () => {
 
   it("8F: Fraud detection automatically tracks analytics", () => {
     fraudDetectionAI.assess({
-      userId: 1, action: "payment.create", ipAddress: "1.2.3.4",
-      userAgent: "Mozilla/5.0", timestamp: new Date(), metadata: { amount: 50 },
+      userId: 1,
+      action: "payment.create",
+      ipAddress: "1.2.3.4",
+      userAgent: "Mozilla/5.0",
+      timestamp: new Date(),
+      metadata: { amount: 50 },
     });
     const stats = analyticsTracker.getStats();
-    const fraudEvents = stats.topEventTypes.find(t => t.type === "fraud.assessed");
+    const fraudEvents = stats.topEventTypes.find(
+      t => t.type === "fraud.assessed"
+    );
     expect(fraudEvents).toBeDefined();
   });
 
@@ -642,7 +854,11 @@ describe("Commandment 9: All 8 Systems Function End-to-End", () => {
 
     expect(quest).toHaveProperty("id");
 
-    const progress = await questEngine.updateProgress(quest.id, 1, "post.create");
+    const progress = await questEngine.updateProgress(
+      quest.id,
+      1,
+      "post.create"
+    );
     expect(progress).toHaveProperty("questId");
     expect(progress).toHaveProperty("completed");
   });
@@ -686,7 +902,10 @@ describe("Commandment 9: All 8 Systems Function End-to-End", () => {
   });
 
   it("9G: Crypto wallet connect generates SIWE challenge", async () => {
-    const challenge = await walletConnectService.generateChallenge("0x1234567890abcdef1234567890abcdef12345678", 1);
+    const challenge = await walletConnectService.generateChallenge(
+      "0x1234567890abcdef1234567890abcdef12345678",
+      1
+    );
     expect(challenge).toHaveProperty("message");
     expect(challenge).toHaveProperty("nonce");
     expect(challenge.message).toContain("Sign in with Ethereum");
@@ -789,9 +1008,12 @@ describe("Commandment 10: Platform Thinks as One Unified System", () => {
   it("10F: Cross-system event ordering is preserved", async () => {
     const events: string[] = [];
 
-    const unsub = platformEventBus.subscribe("system.cascade", (data: unknown) => {
-      events.push((data as { step: string }).step);
-    });
+    const unsub = platformEventBus.subscribe(
+      "system.cascade",
+      (data: unknown) => {
+        events.push((data as { step: string }).step);
+      }
+    );
 
     platformEventBus.emit("system.cascade", { step: "1_social" });
     platformEventBus.emit("system.cascade", { step: "2_economy" });
@@ -803,7 +1025,9 @@ describe("Commandment 10: Platform Thinks as One Unified System", () => {
 
   it("10G: Platform event bus handles high-frequency events without loss", () => {
     let count = 0;
-    const unsub = platformEventBus.subscribe("high.freq", () => { count++; });
+    const unsub = platformEventBus.subscribe("high.freq", () => {
+      count++;
+    });
 
     for (let i = 0; i < 1000; i++) {
       platformEventBus.emit("high.freq", { i });

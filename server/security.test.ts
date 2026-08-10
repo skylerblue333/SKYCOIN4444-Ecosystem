@@ -3,7 +3,13 @@
  * Tests for rate limiting, input sanitization, trust scoring, and security headers.
  */
 import { describe, it, expect } from "vitest";
-import { sanitizeHtml, isValidEmail, sanitizeContent, calculateTrustScore, sanitizeSqlInput } from "./security";
+import {
+  sanitizeHtml,
+  isValidEmail,
+  sanitizeContent,
+  calculateTrustScore,
+  sanitizeSqlInput,
+} from "./security";
 
 // ═══════════════════════════════════════════════════════════════
 // HTML SANITIZATION TESTS

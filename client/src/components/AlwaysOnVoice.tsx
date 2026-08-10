@@ -44,15 +44,19 @@ export function AlwaysOnVoice() {
       else engineModule.resume();
     }
     // Also dispatch a custom event the engine hook listens to
-    window.dispatchEvent(new CustomEvent("voice-mute-toggle", { detail: { muted: next } }));
+    window.dispatchEvent(
+      new CustomEvent("voice-mute-toggle", { detail: { muted: next } })
+    );
   }, [muted]);
 
   if (!voiceState.supported) return null;
   if (voiceState.status === "denied") return null;
 
-  const isListening  = !muted && voiceState.status === "listening";
+  const isListening = !muted && voiceState.status === "listening";
   const isProcessing = !muted && voiceState.status === "processing";
-  const isConnecting = !muted && (voiceState.status === "restarting" || voiceState.status === "starting");
+  const isConnecting =
+    !muted &&
+    (voiceState.status === "restarting" || voiceState.status === "starting");
 
   return (
     <div
@@ -75,7 +79,11 @@ export function AlwaysOnVoice() {
         {/* Left: status icon + label */}
         <div
           className="flex items-center gap-1.5 pl-2.5 pr-1 py-1 text-[11px] font-medium"
-          style={{ color: isListening ? "oklch(0.80 0.20 200)" : "oklch(0.45 0.04 275)" }}
+          style={{
+            color: isListening
+              ? "oklch(0.80 0.20 200)"
+              : "oklch(0.45 0.04 275)",
+          }}
         >
           {isProcessing ? (
             <Loader2 className="w-2.5 h-2.5 animate-spin shrink-0" />
@@ -89,17 +97,24 @@ export function AlwaysOnVoice() {
               {isListening && (
                 <span
                   className="absolute inset-0 rounded-full animate-ping"
-                  style={{ background: "oklch(0.72 0.28 200 / 0.4)", animationDuration: "2s" }}
+                  style={{
+                    background: "oklch(0.72 0.28 200 / 0.4)",
+                    animationDuration: "2s",
+                  }}
                 />
               )}
             </span>
           )}
           <span>
-            {muted        ? "Muted"        :
-             isProcessing ? "Heard you…"   :
-             isConnecting ? "Connecting…"  :
-             isListening  ? "Listening"    :
-             "Voice"}
+            {muted
+              ? "Muted"
+              : isProcessing
+                ? "Heard you…"
+                : isConnecting
+                  ? "Connecting…"
+                  : isListening
+                    ? "Listening"
+                    : "Voice"}
           </span>
           {isListening && (
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
@@ -118,10 +133,11 @@ export function AlwaysOnVoice() {
           }}
           title={muted ? "Unmute voice commands" : "Mute voice commands"}
         >
-          {muted
-            ? <VolumeX className="w-3 h-3" />
-            : <Volume2 className="w-3 h-3" />
-          }
+          {muted ? (
+            <VolumeX className="w-3 h-3" />
+          ) : (
+            <Volume2 className="w-3 h-3" />
+          )}
         </button>
       </div>
 

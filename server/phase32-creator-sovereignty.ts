@@ -8,9 +8,11 @@
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 export type StorefrontStatus = "draft" | "active" | "paused" | "suspended";
-export type MembershipTier = "free" | "supporter" | "member" | "vip" | "founding";
+export type MembershipTier =
+  "free" | "supporter" | "member" | "vip" | "founding";
 export type PayrollFrequency = "weekly" | "biweekly" | "monthly";
-export type PayrollRole = "editor" | "moderator" | "manager" | "contributor" | "designer" | "developer";
+export type PayrollRole =
+  "editor" | "moderator" | "manager" | "contributor" | "designer" | "developer";
 export type TokenEconomyType = "utility" | "governance" | "reward" | "access";
 export type AffiliateStatus = "pending" | "active" | "paused" | "terminated";
 
@@ -37,7 +39,12 @@ export interface CreatorStorefront {
 export interface AudienceExport {
   id: string;
   creatorId: number;
-  exportType: "email_list" | "follower_list" | "subscriber_list" | "buyer_list" | "full_crm";
+  exportType:
+    | "email_list"
+    | "follower_list"
+    | "subscriber_list"
+    | "buyer_list"
+    | "full_crm";
   format: "csv" | "json" | "xlsx";
   totalRecords: number;
   filePath?: string;
@@ -166,7 +173,14 @@ export interface TreasuryTransaction {
   id: string;
   creatorId: number;
   type: "inflow" | "outflow";
-  category: "revenue" | "payroll" | "investment" | "charity" | "tax" | "refund" | "other";
+  category:
+    | "revenue"
+    | "payroll"
+    | "investment"
+    | "charity"
+    | "tax"
+    | "refund"
+    | "other";
   amount: number;
   currency: string;
   description: string;
@@ -262,7 +276,11 @@ export const storefrontEngine = {
       description: params.description,
       status: "draft",
       currency: params.currency ?? "USD",
-      theme: { primary: "#6366f1", secondary: "#8b5cf6", background: "#0f0f23" },
+      theme: {
+        primary: "#6366f1",
+        secondary: "#8b5cf6",
+        background: "#0f0f23",
+      },
       totalRevenue: 0,
       totalOrders: 0,
       totalProducts: 0,
@@ -291,7 +309,9 @@ export const storefrontEngine = {
   },
 
   getByCreator(creatorId: number): CreatorStorefront[] {
-    return Array.from(_storefronts.values()).filter(s => s.creatorId === creatorId);
+    return Array.from(_storefronts.values()).filter(
+      s => s.creatorId === creatorId
+    );
   },
 
   getBySlug(slug: string): CreatorStorefront | null {
@@ -307,7 +327,10 @@ export const storefrontEngine = {
     return s;
   },
 
-  setCustomDomain(storefrontId: string, domain: string): CreatorStorefront | null {
+  setCustomDomain(
+    storefrontId: string,
+    domain: string
+  ): CreatorStorefront | null {
     const s = _storefronts.get(storefrontId);
     if (!s) return null;
     s.customDomain = domain;
@@ -415,7 +438,11 @@ export const membershipEngine = {
   }): MembershipSubscription | null {
     const membership = _memberships.get(params.membershipId);
     if (!membership || !membership.isActive) return null;
-    if (membership.maxMembers && membership.currentMembers >= membership.maxMembers) return null;
+    if (
+      membership.maxMembers &&
+      membership.currentMembers >= membership.maxMembers
+    )
+      return null;
 
     const renewsAt = new Date();
     if (membership.billingCycle === "monthly") {
@@ -448,17 +475,21 @@ export const membershipEngine = {
     sub.status = "cancelled";
     sub.cancelledAt = new Date();
     const membership = _memberships.get(sub.membershipId);
-    if (membership) membership.currentMembers = Math.max(0, membership.currentMembers - 1);
+    if (membership)
+      membership.currentMembers = Math.max(0, membership.currentMembers - 1);
     return sub;
   },
 
   getCreatorMemberships(creatorId: number): CreatorMembership[] {
-    return Array.from(_memberships.values()).filter(m => m.creatorId === creatorId);
+    return Array.from(_memberships.values()).filter(
+      m => m.creatorId === creatorId
+    );
   },
 
   getUserSubscriptions(userId: number): MembershipSubscription[] {
-    return Array.from(_subscriptions.values())
-      .filter(s => s.userId === userId && s.status === "active");
+    return Array.from(_subscriptions.values()).filter(
+      s => s.userId === userId && s.status === "active"
+    );
   },
 
   getMembershipStats(creatorId: number): {
@@ -466,7 +497,9 @@ export const membershipEngine = {
     totalRevenue: number;
     byTier: Record<string, number>;
   } {
-    const memberships = Array.from(_memberships.values()).filter(m => m.creatorId === creatorId);
+    const memberships = Array.from(_memberships.values()).filter(
+      m => m.creatorId === creatorId
+    );
     const byTier: Record<string, number> = {};
     let totalMembers = 0;
     let totalRevenue = 0;
@@ -510,7 +543,11 @@ export const tokenEconomyEngine = {
     return economy;
   },
 
-  distributeTokens(economyId: string, userId: number, amount: number): TokenHolder | null {
+  distributeTokens(
+    economyId: string,
+    userId: number,
+    amount: number
+  ): TokenHolder | null {
     const economy = _tokenEconomies.get(economyId);
     if (!economy || !economy.isActive) return null;
     if (economy.rewardPool < amount) return null;
@@ -547,7 +584,9 @@ export const tokenEconomyEngine = {
   },
 
   getCreatorEconomies(creatorId: number): CreatorTokenEconomy[] {
-    return Array.from(_tokenEconomies.values()).filter(e => e.creatorId === creatorId);
+    return Array.from(_tokenEconomies.values()).filter(
+      e => e.creatorId === creatorId
+    );
   },
 
   updatePrice(economyId: string, newPrice: number): CreatorTokenEconomy | null {
@@ -586,12 +625,17 @@ export const revenueShareEngine = {
     return share;
   },
 
-  distributeRevenue(creatorId: number, totalRevenue: number): Array<{ share: RevenueShare; payout: number }> {
-    const shares = Array.from(_revenueShares.values())
-      .filter(s => s.creatorId === creatorId && s.isActive);
+  distributeRevenue(
+    creatorId: number,
+    totalRevenue: number
+  ): Array<{ share: RevenueShare; payout: number }> {
+    const shares = Array.from(_revenueShares.values()).filter(
+      s => s.creatorId === creatorId && s.isActive
+    );
     const results: Array<{ share: RevenueShare; payout: number }> = [];
     for (const share of shares) {
-      const payout = share.fixedAmount ?? (totalRevenue * share.sharePercentage / 100);
+      const payout =
+        share.fixedAmount ?? (totalRevenue * share.sharePercentage) / 100;
       share.totalPaid += payout;
       results.push({ share, payout });
     }
@@ -599,7 +643,9 @@ export const revenueShareEngine = {
   },
 
   getCreatorShares(creatorId: number): RevenueShare[] {
-    return Array.from(_revenueShares.values()).filter(s => s.creatorId === creatorId);
+    return Array.from(_revenueShares.values()).filter(
+      s => s.creatorId === creatorId
+    );
   },
 
   deactivateShare(shareId: string): RevenueShare | null {
@@ -622,8 +668,10 @@ export const payrollEngine = {
     frequency: PayrollFrequency;
   }): PayrollEntry {
     const nextPaymentAt = new Date();
-    if (params.frequency === "weekly") nextPaymentAt.setDate(nextPaymentAt.getDate() + 7);
-    else if (params.frequency === "biweekly") nextPaymentAt.setDate(nextPaymentAt.getDate() + 14);
+    if (params.frequency === "weekly")
+      nextPaymentAt.setDate(nextPaymentAt.getDate() + 7);
+    else if (params.frequency === "biweekly")
+      nextPaymentAt.setDate(nextPaymentAt.getDate() + 14);
     else nextPaymentAt.setMonth(nextPaymentAt.getMonth() + 1);
 
     const entry: PayrollEntry = {
@@ -664,8 +712,14 @@ export const payrollEngine = {
     entry.totalPaid += entry.amount;
     entry.lastPaidAt = new Date();
     // Advance next payment date
-    if (entry.frequency === "weekly") entry.nextPaymentAt = new Date(entry.nextPaymentAt.getTime() + 7 * 86400000);
-    else if (entry.frequency === "biweekly") entry.nextPaymentAt = new Date(entry.nextPaymentAt.getTime() + 14 * 86400000);
+    if (entry.frequency === "weekly")
+      entry.nextPaymentAt = new Date(
+        entry.nextPaymentAt.getTime() + 7 * 86400000
+      );
+    else if (entry.frequency === "biweekly")
+      entry.nextPaymentAt = new Date(
+        entry.nextPaymentAt.getTime() + 14 * 86400000
+      );
     else {
       entry.nextPaymentAt = new Date(entry.nextPaymentAt);
       entry.nextPaymentAt.setMonth(entry.nextPaymentAt.getMonth() + 1);
@@ -675,7 +729,10 @@ export const payrollEngine = {
     const treasury = _treasuries.get(entry.creatorId);
     if (treasury) {
       treasury.totalOutflow += entry.amount;
-      treasury.payrollBalance = Math.max(0, treasury.payrollBalance - entry.amount);
+      treasury.payrollBalance = Math.max(
+        0,
+        treasury.payrollBalance - entry.amount
+      );
       treasury.lastUpdatedAt = new Date();
     }
 
@@ -683,7 +740,9 @@ export const payrollEngine = {
   },
 
   getCreatorPayroll(creatorId: number): PayrollEntry[] {
-    return Array.from(_payrollEntries.values()).filter(e => e.creatorId === creatorId);
+    return Array.from(_payrollEntries.values()).filter(
+      e => e.creatorId === creatorId
+    );
   },
 
   getPaymentHistory(creatorId: number): PayrollPayment[] {
@@ -693,8 +752,9 @@ export const payrollEngine = {
   },
 
   getMonthlyPayrollCost(creatorId: number): number {
-    const entries = Array.from(_payrollEntries.values())
-      .filter(e => e.creatorId === creatorId && e.isActive);
+    const entries = Array.from(_payrollEntries.values()).filter(
+      e => e.creatorId === creatorId && e.isActive
+    );
     let monthly = 0;
     for (const e of entries) {
       if (e.frequency === "weekly") monthly += e.amount * 4.33;
@@ -735,7 +795,12 @@ export const creatorTreasuryEngine = {
     return treasury;
   },
 
-  deposit(creatorId: number, amount: number, category: TreasuryTransaction["category"], description: string): TreasuryTransaction {
+  deposit(
+    creatorId: number,
+    amount: number,
+    category: TreasuryTransaction["category"],
+    description: string
+  ): TreasuryTransaction {
     const treasury = this.getOrCreate(creatorId);
     treasury.totalBalance += amount;
     treasury.totalInflow += amount;
@@ -760,7 +825,13 @@ export const creatorTreasuryEngine = {
     return tx;
   },
 
-  withdraw(creatorId: number, amount: number, category: TreasuryTransaction["category"], description: string, recipientId?: number): TreasuryTransaction | null {
+  withdraw(
+    creatorId: number,
+    amount: number,
+    category: TreasuryTransaction["category"],
+    description: string,
+    recipientId?: number
+  ): TreasuryTransaction | null {
     const treasury = _treasuries.get(creatorId);
     if (!treasury || treasury.operatingBalance < amount) return null;
     treasury.totalBalance -= amount;
@@ -802,16 +873,35 @@ export const creatorTreasuryEngine = {
     runway: number;
   } {
     const treasury = _treasuries.get(creatorId);
-    if (!treasury) return { balance: 0, monthlyInflow: 0, monthlyOutflow: 0, payrollCost: 0, runway: 0 };
+    if (!treasury)
+      return {
+        balance: 0,
+        monthlyInflow: 0,
+        monthlyOutflow: 0,
+        payrollCost: 0,
+        runway: 0,
+      };
     const payrollCost = payrollEngine.getMonthlyPayrollCost(creatorId);
-    const runway = payrollCost > 0 ? Math.floor(treasury.totalBalance / payrollCost) : 999;
+    const runway =
+      payrollCost > 0 ? Math.floor(treasury.totalBalance / payrollCost) : 999;
     // Approximate monthly from last 30 days of transactions
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000);
-    const recentTxs = Array.from(_treasuryTxs.values())
-      .filter(t => t.creatorId === creatorId && t.createdAt >= thirtyDaysAgo);
-    const monthlyInflow = recentTxs.filter(t => t.type === "inflow").reduce((s, t) => s + t.amount, 0);
-    const monthlyOutflow = recentTxs.filter(t => t.type === "outflow").reduce((s, t) => s + t.amount, 0);
-    return { balance: treasury.totalBalance, monthlyInflow, monthlyOutflow, payrollCost, runway };
+    const recentTxs = Array.from(_treasuryTxs.values()).filter(
+      t => t.creatorId === creatorId && t.createdAt >= thirtyDaysAgo
+    );
+    const monthlyInflow = recentTxs
+      .filter(t => t.type === "inflow")
+      .reduce((s, t) => s + t.amount, 0);
+    const monthlyOutflow = recentTxs
+      .filter(t => t.type === "outflow")
+      .reduce((s, t) => s + t.amount, 0);
+    return {
+      balance: treasury.totalBalance,
+      monthlyInflow,
+      monthlyOutflow,
+      payrollCost,
+      runway,
+    };
   },
 };
 
@@ -868,8 +958,13 @@ export const affiliateNetworkEngine = {
     return link;
   },
 
-  recordConversion(affiliateCode: string, saleAmount: number): AffiliateLink | null {
-    const link = Array.from(_affiliateLinks.values()).find(l => l.code === affiliateCode);
+  recordConversion(
+    affiliateCode: string,
+    saleAmount: number
+  ): AffiliateLink | null {
+    const link = Array.from(_affiliateLinks.values()).find(
+      l => l.code === affiliateCode
+    );
     if (!link || link.status !== "active") return null;
     const program = _affiliatePrograms.get(link.programId);
     if (!program) return null;
@@ -884,14 +979,18 @@ export const affiliateNetworkEngine = {
   },
 
   recordClick(affiliateCode: string): boolean {
-    const link = Array.from(_affiliateLinks.values()).find(l => l.code === affiliateCode);
+    const link = Array.from(_affiliateLinks.values()).find(
+      l => l.code === affiliateCode
+    );
     if (!link) return false;
     link.clicks++;
     link.lastClickAt = new Date();
     return true;
   },
 
-  processPayout(affiliateLinkId: string): { paid: number; link: AffiliateLink } | null {
+  processPayout(
+    affiliateLinkId: string
+  ): { paid: number; link: AffiliateLink } | null {
     const link = _affiliateLinks.get(affiliateLinkId);
     if (!link) return null;
     const program = _affiliatePrograms.get(link.programId);
@@ -912,7 +1011,9 @@ export const affiliateNetworkEngine = {
     pendingPayout: number;
     totalPaid: number;
   } {
-    const links = Array.from(_affiliateLinks.values()).filter(l => l.affiliateId === affiliateId);
+    const links = Array.from(_affiliateLinks.values()).filter(
+      l => l.affiliateId === affiliateId
+    );
     return {
       totalLinks: links.length,
       totalClicks: links.reduce((s, l) => s + l.clicks, 0),
@@ -957,10 +1058,14 @@ export const rewardSystemEngine = {
     return system;
   },
 
-  triggerReward(systemId: string, userId: number): { rewarded: boolean; amount: number } {
+  triggerReward(
+    systemId: string,
+    userId: number
+  ): { rewarded: boolean; amount: number } {
     const system = _rewardSystems.get(systemId);
     if (!system || !system.isActive) return { rewarded: false, amount: 0 };
-    if (system.spentBudget + system.rewardAmount > system.totalBudget) return { rewarded: false, amount: 0 };
+    if (system.spentBudget + system.rewardAmount > system.totalBudget)
+      return { rewarded: false, amount: 0 };
 
     system.spentBudget += system.rewardAmount;
     if (system.spentBudget >= system.totalBudget) system.isActive = false;
@@ -968,10 +1073,16 @@ export const rewardSystemEngine = {
   },
 
   getCreatorSystems(creatorId: number): CreatorRewardSystem[] {
-    return Array.from(_rewardSystems.values()).filter(s => s.creatorId === creatorId);
+    return Array.from(_rewardSystems.values()).filter(
+      s => s.creatorId === creatorId
+    );
   },
 
-  getSystemStats(systemId: string): { budgetUsed: number; budgetRemaining: number; percentUsed: number } | null {
+  getSystemStats(systemId: string): {
+    budgetUsed: number;
+    budgetRemaining: number;
+    percentUsed: number;
+  } | null {
     const system = _rewardSystems.get(systemId);
     if (!system) return null;
     return {
@@ -1002,7 +1113,9 @@ export const creatorSovereigntyDashboard = {
       treasury: creatorTreasuryEngine.getTreasuryStats(creatorId),
       payroll: payrollEngine.getCreatorPayroll(creatorId),
       revenueShares: revenueShareEngine.getCreatorShares(creatorId),
-      affiliatePrograms: Array.from(_affiliatePrograms.values()).filter(p => p.creatorId === creatorId),
+      affiliatePrograms: Array.from(_affiliatePrograms.values()).filter(
+        p => p.creatorId === creatorId
+      ),
       rewardSystems: rewardSystemEngine.getCreatorSystems(creatorId),
     };
   },

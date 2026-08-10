@@ -10,11 +10,29 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
-import { Video, Upload, X, Hash, Clock, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
+import {
+  Video,
+  Upload,
+  X,
+  Hash,
+  Clock,
+  Sparkles,
+  ArrowLeft,
+  Loader2,
+} from "lucide-react";
 import { Link } from "wouter";
 import { getLoginUrl } from "@/const";
 
-const EFFECTS = ["None", "Glow", "Neon", "Vintage", "Blur BG", "Mirror", "Slow Mo", "Speed Up"];
+const EFFECTS = [
+  "None",
+  "Glow",
+  "Neon",
+  "Vintage",
+  "Blur BG",
+  "Mirror",
+  "Slow Mo",
+  "Speed Up",
+];
 const AUDIO_TRACKS = [
   { id: "none", name: "Original Audio" },
   { id: "sky444-anthem", name: "SKY444 Anthem 🎵" },
@@ -24,8 +42,9 @@ const AUDIO_TRACKS = [
 ];
 
 export default function CreateReel() {
+  const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
-  
+
   const fileRef = useRef<HTMLInputElement>(null);
   const [caption, setCaption] = useState("");
   const [hashtagInput, setHashtagInput] = useState("");
@@ -43,7 +62,7 @@ export default function CreateReel() {
       toast.success("Reel published! 🎉");
       navigate("/reels");
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(err.message || "Failed to publish reel");
       setIsUploading(false);
     },
@@ -54,7 +73,9 @@ export default function CreateReel() {
       <div className="container py-16 max-w-lg text-center">
         <Video className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
         <h2 className="text-xl font-bold mb-2">Sign in to create reels</h2>
-        <p className="text-muted-foreground mb-6">Share your story with the SKYCOIN4444 community</p>
+        <p className="text-muted-foreground mb-6">
+          Share your story with the SKYCOIN4444 community
+        </p>
         <a href={getLoginUrl()}>
           <Button className="btn-primary">Sign In</Button>
         </a>
@@ -65,8 +86,14 @@ export default function CreateReel() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("video/")) { toast.error("Please select a video file"); return; }
-    if (file.size > 100 * 1024 * 1024) { toast.error("Video must be under 100MB"); return; }
+    if (!file.type.startsWith("video/")) {
+      toast.error("Please select a video file");
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("Video must be under 100MB");
+      return;
+    }
     setVideoFile(file);
     const url = URL.createObjectURL(file);
     setVideoPreview(url);
@@ -79,10 +106,14 @@ export default function CreateReel() {
     setHashtagInput("");
   };
 
-  const removeHashtag = (tag: string) => setHashtags(prev => prev.filter(t => t !== tag));
+  const removeHashtag = (tag: string) =>
+    setHashtags(prev => prev.filter(t => t !== tag));
 
   const handleSubmit = async () => {
-    if (!caption.trim()) { toast.error("Add a caption to your reel"); return; }
+    if (!caption.trim()) {
+      toast.error("Add a caption to your reel");
+      return;
+    }
     setIsUploading(true);
 
     try {
@@ -93,7 +124,11 @@ export default function CreateReel() {
         // Upload video file
         const formData = new FormData();
         formData.append("file", videoFile);
-        const res = await fetch("/api/upload", { method: "POST", body: formData, credentials: "include" });
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
         if (res.ok) {
           const data = await res.json();
           videoUrl = data.url || "";
@@ -107,7 +142,11 @@ export default function CreateReel() {
         duration,
         caption: caption.trim(),
         hashtags,
-        audioTrack: selectedAudio !== "none" ? (AUDIO_TRACKS.find(a => a.id === selectedAudio)?.name || selectedAudio) : undefined,
+        audioTrack:
+          selectedAudio !== "none"
+            ? AUDIO_TRACKS.find(a => a.id === selectedAudio)?.name ||
+              selectedAudio
+            : undefined,
       });
     } catch {
       setIsUploading(false);
@@ -129,9 +168,17 @@ export default function CreateReel() {
           <Label className="text-sm font-medium mb-3 block">Video</Label>
           {videoPreview ? (
             <div className="relative rounded-xl overflow-hidden bg-black aspect-[9/16] max-h-64">
-              <video src={videoPreview} className="w-full h-full object-contain" controls muted />
+              <video
+                src={videoPreview}
+                className="w-full h-full object-contain"
+                controls
+                muted
+              />
               <button
-                onClick={() => { setVideoFile(null); setVideoPreview(null); }}
+                onClick={() => {
+                  setVideoFile(null);
+                  setVideoPreview(null);
+                }}
                 className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
               >
                 <X className="w-4 h-4 text-white" />
@@ -144,12 +191,22 @@ export default function CreateReel() {
             >
               <Upload className="w-8 h-8 text-muted-foreground" />
               <div className="text-sm text-muted-foreground text-center">
-                <span className="text-primary font-medium">Click to upload</span> or drag and drop<br />
+                <span className="text-primary font-medium">
+                  Click to upload
+                </span>{" "}
+                or drag and drop
+                <br />
                 MP4, MOV, WebM · Max 100MB · Up to 90 seconds
               </div>
             </button>
           )}
-          <input ref={fileRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
         </Card>
 
         {/* Caption */}
@@ -162,7 +219,9 @@ export default function CreateReel() {
             className="min-h-[80px] resize-none"
             maxLength={500}
           />
-          <div className="text-xs text-muted-foreground text-right mt-1">{caption.length}/500</div>
+          <div className="text-xs text-muted-foreground text-right mt-1">
+            {caption.length}/500
+          </div>
         </Card>
 
         {/* Hashtags */}
@@ -174,16 +233,25 @@ export default function CreateReel() {
             <Input
               value={hashtagInput}
               onChange={e => setHashtagInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addHashtag())}
+              onKeyDown={e =>
+                e.key === "Enter" && (e.preventDefault(), addHashtag())
+              }
               placeholder="#crypto #web3 #sky444"
               className="flex-1"
             />
-            <Button variant="outline" onClick={addHashtag} size="sm">Add</Button>
+            <Button variant="outline" onClick={addHashtag} size="sm">
+              Add
+            </Button>
           </div>
           {hashtags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {hashtags.map(tag => (
-                <Badge key={tag} variant="secondary" className="gap-1 cursor-pointer" onClick={() => removeHashtag(tag)}>
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="gap-1 cursor-pointer"
+                  onClick={() => removeHashtag(tag)}
+                >
                   #{tag} <X className="w-3 h-3" />
                 </Badge>
               ))}
@@ -247,13 +315,17 @@ export default function CreateReel() {
         <Card className="p-4 flex items-center justify-between">
           <div>
             <div className="font-medium text-sm">Premium Content</div>
-            <div className="text-xs text-muted-foreground">Only subscribers can view this reel</div>
+            <div className="text-xs text-muted-foreground">
+              Only subscribers can view this reel
+            </div>
           </div>
           <button
             onClick={() => setIsPremium(p => !p)}
             className={`w-11 h-6 rounded-full transition-all ${isPremium ? "bg-primary" : "bg-secondary"} relative`}
           >
-            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${isPremium ? "left-5.5" : "left-0.5"}`} />
+            <span
+              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${isPremium ? "left-5.5" : "left-0.5"}`}
+            />
           </button>
         </Card>
 
@@ -264,9 +336,15 @@ export default function CreateReel() {
           className="w-full btn-primary h-12 text-base"
         >
           {isUploading ? (
-            <><Loader2 className="w-4 h-4 animate-spin mr-2" />Publishing…</>
+            <>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              Publishing…
+            </>
           ) : (
-            <><Video className="w-4 h-4 mr-2" />Publish Reel</>
+            <>
+              <Video className="w-4 h-4 mr-2" />
+              Publish Reel
+            </>
           )}
         </Button>
       </div>

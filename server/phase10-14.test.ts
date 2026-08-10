@@ -65,14 +65,21 @@ describe("Phase 10A: Localization Engine", () => {
   });
 
   it("detects locale from browser headers", () => {
-    const detected = localizationEngine.detectLocale("en-US,en;q=0.9,es;q=0.8", "US");
+    const detected = localizationEngine.detectLocale(
+      "en-US,en;q=0.9,es;q=0.8",
+      "US"
+    );
     expect(detected).toHaveProperty("locale");
     expect(detected).toHaveProperty("confidence");
     expect(detected.confidence).toBeGreaterThan(0);
   });
 
   it("translates content to target language", () => {
-    const result = localizationEngine.translateContent("Hello world", "en", "es");
+    const result = localizationEngine.translateContent(
+      "Hello world",
+      "en",
+      "es"
+    );
     expect(result).toHaveProperty("translated");
     expect(result).toHaveProperty("sourceLanguage");
     expect(result).toHaveProperty("targetLanguage");
@@ -109,7 +116,11 @@ describe("Phase 10A: Localization Engine", () => {
 
 describe("Phase 10B: Regional Economy", () => {
   it("creates a regional pricing tier", () => {
-    const tier = regionalEconomy.createRegionalPricing("LATAM", "USD", 0.6, ["AR", "BR", "MX"]);
+    const tier = regionalEconomy.createRegionalPricing("LATAM", "USD", 0.6, [
+      "AR",
+      "BR",
+      "MX",
+    ]);
     expect(tier).toHaveProperty("region");
     expect(tier.region).toBe("LATAM");
     expect(tier).toHaveProperty("currency");
@@ -132,7 +143,12 @@ describe("Phase 10B: Regional Economy", () => {
   });
 
   it("creates a regional payment method", () => {
-    const method = regionalEconomy.addPaymentMethod("LATAM", "PIX", ["BR"], true);
+    const method = regionalEconomy.addPaymentMethod(
+      "LATAM",
+      "PIX",
+      ["BR"],
+      true
+    );
     expect(method).toHaveProperty("region");
     expect(method).toHaveProperty("method");
     expect(method.method).toBe("PIX");
@@ -146,7 +162,12 @@ describe("Phase 10B: Regional Economy", () => {
   });
 
   it("creates a regional tax config", () => {
-    const tax = regionalEconomy.setTaxConfig("BR", "digital_services", 0.17, "ICMS");
+    const tax = regionalEconomy.setTaxConfig(
+      "BR",
+      "digital_services",
+      0.17,
+      "ICMS"
+    );
     expect(tax).toHaveProperty("country");
     expect(tax.country).toBe("BR");
     expect(tax).toHaveProperty("taxType");
@@ -171,7 +192,13 @@ describe("Phase 10B: Regional Economy", () => {
 
 describe("Phase 10C: Global Discovery", () => {
   it("indexes a piece of content globally", () => {
-    const indexed = globalDiscovery.indexContent("post", "p-1001", "Hello from Brazil!", ["pt", "en"], ["BR", "LATAM"]);
+    const indexed = globalDiscovery.indexContent(
+      "post",
+      "p-1001",
+      "Hello from Brazil!",
+      ["pt", "en"],
+      ["BR", "LATAM"]
+    );
     expect(indexed).toHaveProperty("contentId");
     expect(indexed.contentId).toBe("p-1001");
     expect(indexed).toHaveProperty("languages");
@@ -179,7 +206,10 @@ describe("Phase 10C: Global Discovery", () => {
   });
 
   it("searches globally with language filter", () => {
-    const results = globalDiscovery.search("Hello", { language: "en", limit: 10 });
+    const results = globalDiscovery.search("Hello", {
+      language: "en",
+      limit: 10,
+    });
     expect(results).toHaveProperty("results");
     expect(results).toHaveProperty("total");
     expect(Array.isArray(results.results)).toBe(true);
@@ -211,7 +241,12 @@ describe("Phase 10C: Global Discovery", () => {
 
 describe("Phase 10D: International Compliance", () => {
   it("creates a GDPR consent record", () => {
-    const consent = internationalCompliance.recordConsent(7001, "GDPR", ["analytics", "marketing"], "1.0");
+    const consent = internationalCompliance.recordConsent(
+      7001,
+      "GDPR",
+      ["analytics", "marketing"],
+      "1.0"
+    );
     expect(consent).toHaveProperty("userId");
     expect(consent.userId).toBe(7001);
     expect(consent).toHaveProperty("framework");
@@ -226,13 +261,19 @@ describe("Phase 10D: International Compliance", () => {
   });
 
   it("withdraws consent", () => {
-    const result = internationalCompliance.withdrawConsent(7001, "GDPR", ["marketing"]);
+    const result = internationalCompliance.withdrawConsent(7001, "GDPR", [
+      "marketing",
+    ]);
     expect(result).toHaveProperty("success");
     expect(result.success).toBe(true);
   });
 
   it("creates a data residency rule", () => {
-    const rule = internationalCompliance.setDataResidencyRule("EU", ["user_data", "financial_data"], ["EU-WEST-1", "EU-CENTRAL-1"]);
+    const rule = internationalCompliance.setDataResidencyRule(
+      "EU",
+      ["user_data", "financial_data"],
+      ["EU-WEST-1", "EU-CENTRAL-1"]
+    );
     expect(rule).toHaveProperty("region");
     expect(rule.region).toBe("EU");
     expect(rule).toHaveProperty("dataTypes");
@@ -240,13 +281,22 @@ describe("Phase 10D: International Compliance", () => {
   });
 
   it("checks data residency compliance", () => {
-    const check = internationalCompliance.checkDataResidency("user_data", "EU-WEST-1", "EU");
+    const check = internationalCompliance.checkDataResidency(
+      "user_data",
+      "EU-WEST-1",
+      "EU"
+    );
     expect(check).toHaveProperty("compliant");
     expect(check.compliant).toBe(true);
   });
 
   it("creates a cross-border transfer assessment", () => {
-    const assessment = internationalCompliance.assessCrossBorderTransfer("user_data", "EU", "US", "standard_clauses");
+    const assessment = internationalCompliance.assessCrossBorderTransfer(
+      "user_data",
+      "EU",
+      "US",
+      "standard_clauses"
+    );
     expect(assessment).toHaveProperty("approved");
     expect(assessment).toHaveProperty("mechanism");
     expect(assessment.mechanism).toBe("standard_clauses");
@@ -268,7 +318,12 @@ describe("Phase 11A: Scalable Controls", () => {
   let orgId: string;
 
   it("creates an enterprise organization", () => {
-    const org = enterpriseControls.createOrg("Acme Corp", "acme.com", "enterprise", 500);
+    const org = enterpriseControls.createOrg(
+      "Acme Corp",
+      "acme.com",
+      "enterprise",
+      500
+    );
     expect(org).toHaveProperty("id");
     expect(org).toHaveProperty("name");
     expect(org.name).toBe("Acme Corp");
@@ -284,7 +339,11 @@ describe("Phase 11A: Scalable Controls", () => {
   });
 
   it("creates a role with permissions", () => {
-    const role = enterpriseControls.createRole(orgId, "Content Manager", ["post:create", "post:delete", "community:manage"]);
+    const role = enterpriseControls.createRole(orgId, "Content Manager", [
+      "post:create",
+      "post:delete",
+      "community:manage",
+    ]);
     expect(role).toHaveProperty("id");
     expect(role).toHaveProperty("name");
     expect(role.name).toBe("Content Manager");
@@ -301,7 +360,10 @@ describe("Phase 11A: Scalable Controls", () => {
   });
 
   it("gets user permissions", () => {
-    const role = enterpriseControls.createRole(orgId, "Editor", ["post:create", "post:edit"]);
+    const role = enterpriseControls.createRole(orgId, "Editor", [
+      "post:create",
+      "post:edit",
+    ]);
     enterpriseControls.assignRole(9002, orgId, role.id, 1);
     const permissions = enterpriseControls.getUserPermissions(9002, orgId);
     expect(Array.isArray(permissions)).toBe(true);
@@ -309,16 +371,32 @@ describe("Phase 11A: Scalable Controls", () => {
   });
 
   it("checks if user has a specific permission", () => {
-    const role = enterpriseControls.createRole(orgId, "Admin", ["admin:all", "post:delete"]);
+    const role = enterpriseControls.createRole(orgId, "Admin", [
+      "admin:all",
+      "post:delete",
+    ]);
     enterpriseControls.assignRole(9003, orgId, role.id, 1);
-    const hasPermission = enterpriseControls.hasPermission(9003, orgId, "post:delete");
+    const hasPermission = enterpriseControls.hasPermission(
+      9003,
+      orgId,
+      "post:delete"
+    );
     expect(hasPermission).toBe(true);
-    const noPermission = enterpriseControls.hasPermission(9003, orgId, "billing:manage");
+    const noPermission = enterpriseControls.hasPermission(
+      9003,
+      orgId,
+      "billing:manage"
+    );
     expect(noPermission).toBe(false);
   });
 
   it("requests an audit export", () => {
-    const exportRecord = enterpriseControls.requestAuditExport(orgId, 1, "json", { from: new Date(Date.now() - 86400000), to: new Date() });
+    const exportRecord = enterpriseControls.requestAuditExport(
+      orgId,
+      1,
+      "json",
+      { from: new Date(Date.now() - 86400000), to: new Date() }
+    );
     expect(exportRecord).toHaveProperty("id");
     expect(exportRecord).toHaveProperty("orgId");
     expect(exportRecord.orgId).toBe(orgId);
@@ -327,7 +405,10 @@ describe("Phase 11A: Scalable Controls", () => {
   });
 
   it("configures SSO for an organization", () => {
-    const org = enterpriseControls.configureSso(orgId, "saml", { entityId: "acme-saml", ssoUrl: "https://sso.acme.com" });
+    const org = enterpriseControls.configureSso(orgId, "saml", {
+      entityId: "acme-saml",
+      ssoUrl: "https://sso.acme.com",
+    });
     expect(org).toHaveProperty("ssoProvider");
     expect(org.ssoProvider).toBe("saml");
   });
@@ -337,7 +418,12 @@ describe("Phase 11B: Institution Layer", () => {
   let institutionId: string;
 
   it("registers an institution", () => {
-    const institution = institutionLayer.registerInstitution("MIT", "university", "mit.edu", "US");
+    const institution = institutionLayer.registerInstitution(
+      "MIT",
+      "university",
+      "mit.edu",
+      "US"
+    );
     expect(institution).toHaveProperty("id");
     expect(institution).toHaveProperty("name");
     expect(institution.name).toBe("MIT");
@@ -359,14 +445,25 @@ describe("Phase 11B: Institution Layer", () => {
   });
 
   it("gets institutions by type", () => {
-    institutionLayer.registerInstitution("Harvard", "university", "harvard.edu", "US");
+    institutionLayer.registerInstitution(
+      "Harvard",
+      "university",
+      "harvard.edu",
+      "US"
+    );
     const universities = institutionLayer.getInstitutionsByType("university");
     expect(Array.isArray(universities)).toBe(true);
     expect(universities.length).toBeGreaterThanOrEqual(2);
   });
 
   it("creates a school system", () => {
-    const school = institutionLayer.createSchoolSystem(institutionId, "MIT K-12 Program", "K-12", 1200, 80);
+    const school = institutionLayer.createSchoolSystem(
+      institutionId,
+      "MIT K-12 Program",
+      "K-12",
+      1200,
+      80
+    );
     expect(school).toHaveProperty("id");
     expect(school).toHaveProperty("name");
     expect(school.name).toBe("MIT K-12 Program");
@@ -374,7 +471,12 @@ describe("Phase 11B: Institution Layer", () => {
   });
 
   it("creates a research community", () => {
-    const community = institutionLayer.createResearchCommunity(institutionId, "AI Research Lab", "Artificial Intelligence", true);
+    const community = institutionLayer.createResearchCommunity(
+      institutionId,
+      "AI Research Lab",
+      "Artificial Intelligence",
+      true
+    );
     expect(community).toHaveProperty("id");
     expect(community).toHaveProperty("name");
     expect(community.name).toBe("AI Research Lab");
@@ -383,7 +485,12 @@ describe("Phase 11B: Institution Layer", () => {
   });
 
   it("joins a research community", () => {
-    const community = institutionLayer.createResearchCommunity(institutionId, "Quantum Lab", "Quantum Computing", false);
+    const community = institutionLayer.createResearchCommunity(
+      institutionId,
+      "Quantum Lab",
+      "Quantum Computing",
+      false
+    );
     const joined = institutionLayer.joinResearchCommunity(community.id, 8001);
     expect(joined).toHaveProperty("members");
     expect(joined.members).toContain(8001);
@@ -402,7 +509,12 @@ describe("Phase 11C: White Label Layer", () => {
   let instanceId: string;
 
   it("creates a white label instance", () => {
-    const instance = whiteLabelLayer.createInstance("org-wl-1", "MyBrand Social", "mybrand.social", "professional");
+    const instance = whiteLabelLayer.createInstance(
+      "org-wl-1",
+      "MyBrand Social",
+      "mybrand.social",
+      "professional"
+    );
     expect(instance).toHaveProperty("id");
     expect(instance).toHaveProperty("name");
     expect(instance.name).toBe("MyBrand Social");
@@ -418,7 +530,10 @@ describe("Phase 11C: White Label Layer", () => {
   });
 
   it("updates branding for an instance", () => {
-    const updated = whiteLabelLayer.updateBranding(instanceId, { primaryColor: "#FF6B35", logo: "https://cdn.mybrand.social/logo.png" });
+    const updated = whiteLabelLayer.updateBranding(instanceId, {
+      primaryColor: "#FF6B35",
+      logo: "https://cdn.mybrand.social/logo.png",
+    });
     expect(updated).toHaveProperty("branding");
     expect(updated.branding.primaryColor).toBe("#FF6B35");
   });
@@ -430,12 +545,20 @@ describe("Phase 11C: White Label Layer", () => {
 
   it("disables a feature for an instance", () => {
     whiteLabelLayer.enableFeature(instanceId, "nft_marketplace");
-    const updated = whiteLabelLayer.disableFeature(instanceId, "nft_marketplace");
+    const updated = whiteLabelLayer.disableFeature(
+      instanceId,
+      "nft_marketplace"
+    );
     expect(updated.features).not.toContain("nft_marketplace");
   });
 
   it("creates a partner deployment", () => {
-    const deployment = whiteLabelLayer.createPartnerDeployment("partner-1", instanceId, "us-east-1", "premium");
+    const deployment = whiteLabelLayer.createPartnerDeployment(
+      "partner-1",
+      instanceId,
+      "us-east-1",
+      "premium"
+    );
     expect(deployment).toHaveProperty("id");
     expect(deployment).toHaveProperty("partnerId");
     expect(deployment.partnerId).toBe("partner-1");
@@ -531,7 +654,9 @@ describe("Phase 12A: Economic Intelligence", () => {
 describe("Phase 12B: Autonomous Revenue", () => {
   it("optimizes sponsorship pricing for a creator", () => {
     const pricing = autonomousRevenue.optimizeSponsorshipPricing(
-      3001, "standard", 500,
+      3001,
+      "standard",
+      500,
       { followers: 50000, engagementRate: 0.05, avgViews: 10000 }
     );
     expect(pricing).toHaveProperty("creatorId");
@@ -557,7 +682,10 @@ describe("Phase 12B: Autonomous Revenue", () => {
   });
 
   it("generates treasury yield strategy", () => {
-    const strategy = autonomousRevenue.generateTreasuryYieldStrategy(1000000, "medium");
+    const strategy = autonomousRevenue.generateTreasuryYieldStrategy(
+      1000000,
+      "medium"
+    );
     expect(strategy).toHaveProperty("totalBalance");
     expect(strategy).toHaveProperty("expectedAPY");
     expect(strategy).toHaveProperty("allocations");
@@ -566,7 +694,10 @@ describe("Phase 12B: Autonomous Revenue", () => {
   });
 
   it("optimizes ad CPM", () => {
-    const result = autonomousRevenue.optimizeAd("ad-001", 5.0, ["tech", "crypto"]);
+    const result = autonomousRevenue.optimizeAd("ad-001", 5.0, [
+      "tech",
+      "crypto",
+    ]);
     expect(result).toHaveProperty("adId");
     expect(result).toHaveProperty("optimizedCpm");
     expect(result).toHaveProperty("estimatedImpressions");
@@ -593,7 +724,7 @@ describe("Phase 12B: Autonomous Revenue", () => {
 
 describe("Phase 12C: Economic Risk", () => {
   it("monitors volatility and creates an alert", () => {
-    const alert = economicRisk.monitorVolatility("SKY444", 0.05, 0.10);
+    const alert = economicRisk.monitorVolatility("SKY444", 0.05, 0.1);
     expect(alert).not.toBeNull();
     expect(alert?.asset).toBe("SKY444");
     expect(alert?.severity).toBeDefined();
@@ -607,7 +738,11 @@ describe("Phase 12C: Economic Risk", () => {
   });
 
   it("runs a treasury stress test", () => {
-    const test = economicRisk.runTreasuryStressTest("market_crash", 1000000, 0.4);
+    const test = economicRisk.runTreasuryStressTest(
+      "market_crash",
+      1000000,
+      0.4
+    );
     expect(test).toHaveProperty("scenario");
     expect(test.scenario).toBe("market_crash");
     expect(test).toHaveProperty("passed");
@@ -622,7 +757,11 @@ describe("Phase 12C: Economic Risk", () => {
   });
 
   it("detects economic anomaly", () => {
-    const anomaly = economicRisk.detectEconomicAnomaly("daily_transactions", 1000, 5000);
+    const anomaly = economicRisk.detectEconomicAnomaly(
+      "daily_transactions",
+      1000,
+      5000
+    );
     expect(anomaly).not.toBeNull();
     expect(anomaly?.metric).toBe("daily_transactions");
     expect(anomaly?.severity).toBeDefined();
@@ -664,7 +803,10 @@ describe("Phase 12C: Economic Risk", () => {
 
 describe("Phase 13A: HOPE Multi-Agent Network", () => {
   it("creates an AI agent", () => {
-    const agent = hopeMultiAgentNetwork.createAgent("content_moderator", "ContentGuard-1");
+    const agent = hopeMultiAgentNetwork.createAgent(
+      "content_moderator",
+      "ContentGuard-1"
+    );
     expect(agent).toHaveProperty("id");
     expect(agent).toHaveProperty("type");
     expect(agent.type).toBe("content_moderator");
@@ -708,7 +850,11 @@ describe("Phase 13A: HOPE Multi-Agent Network", () => {
   });
 
   it("gets a task by ID", () => {
-    const task = hopeMultiAgentNetwork.dispatchTask("feed_ranker", "rank_feed", { userId: 1 });
+    const task = hopeMultiAgentNetwork.dispatchTask(
+      "feed_ranker",
+      "rank_feed",
+      { userId: 1 }
+    );
     const fetched = hopeMultiAgentNetwork.getTask(task.id);
     expect(fetched).not.toBeNull();
     expect(fetched?.id).toBe(task.id);
@@ -721,9 +867,19 @@ describe("Phase 13A: HOPE Multi-Agent Network", () => {
   });
 
   it("coordinates multiple agents", () => {
-    const agent1 = hopeMultiAgentNetwork.createAgent("trend_analyzer", "TrendAI-1");
-    const agent2 = hopeMultiAgentNetwork.createAgent("recommendation_engine", "RecAI-1");
-    const coordination = hopeMultiAgentNetwork.coordinateAgents(agent1.id, [agent2.id], "Optimize feed quality");
+    const agent1 = hopeMultiAgentNetwork.createAgent(
+      "trend_analyzer",
+      "TrendAI-1"
+    );
+    const agent2 = hopeMultiAgentNetwork.createAgent(
+      "recommendation_engine",
+      "RecAI-1"
+    );
+    const coordination = hopeMultiAgentNetwork.coordinateAgents(
+      agent1.id,
+      [agent2.id],
+      "Optimize feed quality"
+    );
     expect(coordination).toHaveProperty("id");
     expect(coordination).toHaveProperty("primaryAgentId");
     expect(coordination.primaryAgentId).toBe(agent1.id);
@@ -745,7 +901,10 @@ describe("Phase 13A: HOPE Multi-Agent Network", () => {
 describe("Phase 13B: Autonomous Operations", () => {
   it("routes a support ticket", () => {
     const ticket = autonomousOperations.routeSupportTicket(
-      5001, "technical", "Login issue", "I cannot log in to my account"
+      5001,
+      "technical",
+      "Login issue",
+      "I cannot log in to my account"
     );
     expect(ticket).toHaveProperty("id");
     expect(ticket).toHaveProperty("userId");
@@ -757,7 +916,12 @@ describe("Phase 13B: Autonomous Operations", () => {
   });
 
   it("gets a ticket by ID", () => {
-    const ticket = autonomousOperations.routeSupportTicket(5002, "billing", "Charge issue", "Double charged");
+    const ticket = autonomousOperations.routeSupportTicket(
+      5002,
+      "billing",
+      "Charge issue",
+      "Double charged"
+    );
     const fetched = autonomousOperations.getTicket(ticket.id);
     expect(fetched).not.toBeNull();
     expect(fetched?.id).toBe(ticket.id);
@@ -771,7 +935,10 @@ describe("Phase 13B: Autonomous Operations", () => {
 
   it("responds to an incident", () => {
     const incident = autonomousOperations.respondToIncident(
-      "database_slowdown", "high", "Database queries are running slowly", ["database", "api"]
+      "database_slowdown",
+      "high",
+      "Database queries are running slowly",
+      ["database", "api"]
     );
     expect(incident).toHaveProperty("id");
     expect(incident).toHaveProperty("type");
@@ -783,7 +950,12 @@ describe("Phase 13B: Autonomous Operations", () => {
   });
 
   it("gets an incident by ID", () => {
-    const incident = autonomousOperations.respondToIncident("api_timeout", "medium", "API timeouts", ["api"]);
+    const incident = autonomousOperations.respondToIncident(
+      "api_timeout",
+      "medium",
+      "API timeouts",
+      ["api"]
+    );
     const fetched = autonomousOperations.getIncident(incident.id);
     expect(fetched).not.toBeNull();
     expect(fetched?.id).toBe(incident.id);
@@ -807,7 +979,11 @@ describe("Phase 13B: Autonomous Operations", () => {
   });
 
   it("generates a growth plan for a segment", () => {
-    const plan = autonomousOperations.generateGrowthPlan("new_creators", { followers: 500, posts: 10, engagementRate: 0.03 });
+    const plan = autonomousOperations.generateGrowthPlan("new_creators", {
+      followers: 500,
+      posts: 10,
+      engagementRate: 0.03,
+    });
     expect(plan).toHaveProperty("segment");
     expect(plan.segment).toBe("new_creators");
     expect(plan).toHaveProperty("strategies");
@@ -816,7 +992,10 @@ describe("Phase 13B: Autonomous Operations", () => {
   });
 
   it("orchestrates a live event", () => {
-    const result = autonomousOperations.orchestrateEvent("event-001", "concert");
+    const result = autonomousOperations.orchestrateEvent(
+      "event-001",
+      "concert"
+    );
     expect(result).toHaveProperty("eventId");
     expect(result.eventId).toBe("event-001");
     expect(result).toHaveProperty("orchestrationPlan");
@@ -870,7 +1049,12 @@ describe("Phase 13C: Intelligence Memory", () => {
   });
 
   it("records trust event and updates score", () => {
-    intelligenceMemory.recordTrustEvent(9001, "positive", "helpful_content", 10);
+    intelligenceMemory.recordTrustEvent(
+      9001,
+      "positive",
+      "helpful_content",
+      10
+    );
     const memory = intelligenceMemory.getTrustMemory(9001);
     expect(memory.trustScore).toBeGreaterThan(0);
     expect(memory.positiveEvents).toBeGreaterThan(0);
@@ -885,14 +1069,22 @@ describe("Phase 13C: Intelligence Memory", () => {
   });
 
   it("records fraud signal and increases risk score", () => {
-    intelligenceMemory.recordFraudSignal(9002, "rapid_posting", "192.168.1.1", "device-abc");
+    intelligenceMemory.recordFraudSignal(
+      9002,
+      "rapid_posting",
+      "192.168.1.1",
+      "device-abc"
+    );
     const memory = intelligenceMemory.getFraudMemory(9002);
     expect(memory.riskScore).toBeGreaterThan(0);
     expect(memory.flaggedBehaviors.length).toBeGreaterThan(0);
   });
 
   it("gets economic memory for an entity", () => {
-    const memory = intelligenceMemory.getEconomicMemory("creator-7001", "creator");
+    const memory = intelligenceMemory.getEconomicMemory(
+      "creator-7001",
+      "creator"
+    );
     expect(memory).toHaveProperty("entityId");
     expect(memory.entityId).toBe("creator-7001");
     expect(memory).toHaveProperty("entityType");
@@ -901,8 +1093,16 @@ describe("Phase 13C: Intelligence Memory", () => {
   });
 
   it("records economic event", () => {
-    intelligenceMemory.recordEconomicEvent("creator-7001", "creator", "2024-01", 5000);
-    const memory = intelligenceMemory.getEconomicMemory("creator-7001", "creator");
+    intelligenceMemory.recordEconomicEvent(
+      "creator-7001",
+      "creator",
+      "2024-01",
+      5000
+    );
+    const memory = intelligenceMemory.getEconomicMemory(
+      "creator-7001",
+      "creator"
+    );
     expect(memory.revenueHistory.length).toBeGreaterThan(0);
   });
 
@@ -926,7 +1126,10 @@ describe("Phase 14A: Durability Layer", () => {
   let vaultCreatorId: number;
 
   it("archives an entity", () => {
-    const record = durabilityLayer.archiveEntity("post", "post-10001", { content: "Hello world", authorId: 1 });
+    const record = durabilityLayer.archiveEntity("post", "post-10001", {
+      content: "Hello world",
+      authorId: 1,
+    });
     expect(record).toHaveProperty("id");
     expect(record).toHaveProperty("entityType");
     expect(record.entityType).toBe("post");
@@ -943,14 +1146,22 @@ describe("Phase 14A: Durability Layer", () => {
   });
 
   it("gets all archives for an entity", () => {
-    durabilityLayer.archiveEntity("post", "post-10001", { content: "Updated content", authorId: 1 });
+    durabilityLayer.archiveEntity("post", "post-10001", {
+      content: "Updated content",
+      authorId: 1,
+    });
     const archives = durabilityLayer.getEntityArchives("post", "post-10001");
     expect(Array.isArray(archives)).toBe(true);
     expect(archives.length).toBeGreaterThanOrEqual(2);
   });
 
   it("records an immutable event", () => {
-    const event = durabilityLayer.recordImmutableEvent("post_created", "user-1", "post-10001", { content: "Hello" });
+    const event = durabilityLayer.recordImmutableEvent(
+      "post_created",
+      "user-1",
+      "post-10001",
+      { content: "Hello" }
+    );
     expect(event).toHaveProperty("id");
     expect(event).toHaveProperty("eventType");
     expect(event.eventType).toBe("post_created");
@@ -960,7 +1171,12 @@ describe("Phase 14A: Durability Layer", () => {
   });
 
   it("gets an immutable event by ID", () => {
-    const event = durabilityLayer.recordImmutableEvent("user_joined", "user-2", "platform", {});
+    const event = durabilityLayer.recordImmutableEvent(
+      "user_joined",
+      "user-2",
+      "platform",
+      {}
+    );
     const fetched = durabilityLayer.getImmutableEvent(event.id);
     expect(fetched).not.toBeNull();
     expect(fetched?.id).toBe(event.id);
@@ -995,7 +1211,12 @@ describe("Phase 14A: Durability Layer", () => {
   });
 
   it("archives a community", () => {
-    const archive = durabilityLayer.archiveCommunity("comm-001", "CryptoTalk", 5000, 25000);
+    const archive = durabilityLayer.archiveCommunity(
+      "comm-001",
+      "CryptoTalk",
+      5000,
+      25000
+    );
     expect(archive).toHaveProperty("communityId");
     expect(archive.communityId).toBe("comm-001");
     expect(archive).toHaveProperty("name");
@@ -1028,7 +1249,11 @@ describe("Phase 14B: Governance Permanence", () => {
 
   it("proposes a constitutional amendment", () => {
     const proposal = governancePermanence.proposeConstitutionalAmendment(
-      1, 3, "Free Speech Protection", "All users have the right to express opinions without censorship except for illegal content.", 1
+      1,
+      3,
+      "Free Speech Protection",
+      "All users have the right to express opinions without censorship except for illegal content.",
+      1
     );
     expect(proposal).toHaveProperty("proposalId");
     expect(proposal).toHaveProperty("status");
@@ -1037,8 +1262,19 @@ describe("Phase 14B: Governance Permanence", () => {
   });
 
   it("records a governance action", () => {
-    const proposal = governancePermanence.proposeConstitutionalAmendment(2, 1, "Privacy Rights", "Users own their data.", 1);
-    const record = governancePermanence.recordGovernanceAction(proposal.proposalId, "vote", "user-1", { vote: "for" });
+    const proposal = governancePermanence.proposeConstitutionalAmendment(
+      2,
+      1,
+      "Privacy Rights",
+      "Users own their data.",
+      1
+    );
+    const record = governancePermanence.recordGovernanceAction(
+      proposal.proposalId,
+      "vote",
+      "user-1",
+      { vote: "for" }
+    );
     expect(record).toHaveProperty("id");
     expect(record).toHaveProperty("proposalId");
     expect(record.proposalId).toBe(proposal.proposalId);
@@ -1048,16 +1284,40 @@ describe("Phase 14B: Governance Permanence", () => {
   });
 
   it("gets governance history for a proposal", () => {
-    const proposal = governancePermanence.proposeConstitutionalAmendment(3, 1, "Token Rights", "Token holders have voting rights.", 1);
-    governancePermanence.recordGovernanceAction(proposal.proposalId, "vote", "user-2", { vote: "for" });
-    governancePermanence.recordGovernanceAction(proposal.proposalId, "vote", "user-3", { vote: "against" });
-    const history = governancePermanence.getGovernanceHistory(proposal.proposalId);
+    const proposal = governancePermanence.proposeConstitutionalAmendment(
+      3,
+      1,
+      "Token Rights",
+      "Token holders have voting rights.",
+      1
+    );
+    governancePermanence.recordGovernanceAction(
+      proposal.proposalId,
+      "vote",
+      "user-2",
+      { vote: "for" }
+    );
+    governancePermanence.recordGovernanceAction(
+      proposal.proposalId,
+      "vote",
+      "user-3",
+      { vote: "against" }
+    );
+    const history = governancePermanence.getGovernanceHistory(
+      proposal.proposalId
+    );
     expect(Array.isArray(history)).toBe(true);
     expect(history.length).toBe(2);
   });
 
   it("records a treasury action", () => {
-    const record = governancePermanence.recordTreasuryAction("allocation", 500000, "USD", "treasury-multisig", "US");
+    const record = governancePermanence.recordTreasuryAction(
+      "allocation",
+      500000,
+      "USD",
+      "treasury-multisig",
+      "US"
+    );
     expect(record).toHaveProperty("id");
     expect(record).toHaveProperty("action");
     expect(record.action).toBe("allocation");
@@ -1086,7 +1346,8 @@ describe("Phase 14B: Governance Permanence", () => {
 describe("Phase 14C: Legacy Systems", () => {
   it("creates a creator inheritance plan", () => {
     const inheritance = legacySystems.createCreatorInheritance(
-      12001, 12002,
+      12001,
+      12002,
       { posts: true, revenue: true, subscribers: true, nfts: true },
       "Transfer all assets upon account inactivity for 2 years"
     );
@@ -1107,7 +1368,8 @@ describe("Phase 14C: Legacy Systems", () => {
 
   it("triggers an inheritance", () => {
     const inheritance = legacySystems.createCreatorInheritance(
-      12003, 12004,
+      12003,
+      12004,
       { posts: true, revenue: false, subscribers: true, nfts: false },
       "Transfer posts and subscribers"
     );
@@ -1133,7 +1395,12 @@ describe("Phase 14C: Legacy Systems", () => {
   });
 
   it("initiates a community ownership transfer", () => {
-    const transfer = legacySystems.initiateOwnershipTransfer("comm-legacy-1", 13001, 13002, "Creator retiring");
+    const transfer = legacySystems.initiateOwnershipTransfer(
+      "comm-legacy-1",
+      13001,
+      13002,
+      "Creator retiring"
+    );
     expect(transfer).toHaveProperty("id");
     expect(transfer).toHaveProperty("communityId");
     expect(transfer.communityId).toBe("comm-legacy-1");
@@ -1144,14 +1411,24 @@ describe("Phase 14C: Legacy Systems", () => {
   });
 
   it("votes on a community ownership transfer", () => {
-    const transfer = legacySystems.initiateOwnershipTransfer("comm-legacy-2", 13003, 13004, "Handover");
+    const transfer = legacySystems.initiateOwnershipTransfer(
+      "comm-legacy-2",
+      13003,
+      13004,
+      "Handover"
+    );
     const voted = legacySystems.voteOnTransfer(transfer.id, "for");
     expect(voted).toHaveProperty("votes");
     expect(voted.votes.for).toBeGreaterThan(0);
   });
 
   it("executes a community ownership transfer", () => {
-    const transfer = legacySystems.initiateOwnershipTransfer("comm-legacy-3", 13005, 13006, "Succession");
+    const transfer = legacySystems.initiateOwnershipTransfer(
+      "comm-legacy-3",
+      13005,
+      13006,
+      "Succession"
+    );
     legacySystems.voteOnTransfer(transfer.id, "for");
     legacySystems.voteOnTransfer(transfer.id, "for");
     legacySystems.voteOnTransfer(transfer.id, "for");
@@ -1190,7 +1467,10 @@ describe("Phase 14D: Disaster Recovery", () => {
   });
 
   it("creates a cold storage backup", () => {
-    const backup = disasterRecovery.createColdStorageBackup("full", "us-east-1");
+    const backup = disasterRecovery.createColdStorageBackup(
+      "full",
+      "us-east-1"
+    );
     expect(backup).toHaveProperty("id");
     expect(backup).toHaveProperty("type");
     expect(backup.type).toBe("full");
@@ -1200,7 +1480,10 @@ describe("Phase 14D: Disaster Recovery", () => {
   });
 
   it("gets a cold storage backup by ID", () => {
-    const backup = disasterRecovery.createColdStorageBackup("incremental", "eu-west-1");
+    const backup = disasterRecovery.createColdStorageBackup(
+      "incremental",
+      "eu-west-1"
+    );
     const fetched = disasterRecovery.getColdStorageBackup(backup.id);
     expect(fetched).not.toBeNull();
     expect(fetched?.id).toBe(backup.id);
@@ -1232,7 +1515,10 @@ describe("Phase 14D: Disaster Recovery", () => {
     const config = disasterRecovery.configureFailover(
       "api-gateway",
       "https://api.primary.shadowchat.com",
-      ["https://api.backup1.shadowchat.com", "https://api.backup2.shadowchat.com"]
+      [
+        "https://api.backup1.shadowchat.com",
+        "https://api.backup2.shadowchat.com",
+      ]
     );
     expect(config).toHaveProperty("service");
     expect(config.service).toBe("api-gateway");

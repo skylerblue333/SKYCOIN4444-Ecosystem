@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Code, Copy, ExternalLink, BookOpen, Zap } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Code, Copy, ExternalLink, BookOpen, Zap } from "lucide-react";
 
 export default function APIDocs() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -16,10 +22,10 @@ export default function APIDocs() {
 
   const endpoints = [
     {
-      id: 'feedback-list',
-      method: 'GET',
-      path: '/api/trpc/feedback.list',
-      description: 'Get all feedback items',
+      id: "feedback-list",
+      method: "GET",
+      path: "/api/trpc/feedback.list",
+      description: "Get all feedback items",
       code: `fetch('https://api.skycoin4444.com/api/trpc/feedback.list', {
   method: 'GET',
   headers: {
@@ -31,10 +37,10 @@ export default function APIDocs() {
 .then(data => console.log(data))`,
     },
     {
-      id: 'roadmap-query',
-      method: 'GET',
-      path: '/api/trpc/roadmap.query',
-      description: 'Query roadmap initiatives',
+      id: "roadmap-query",
+      method: "GET",
+      path: "/api/trpc/roadmap.query",
+      description: "Query roadmap initiatives",
       code: `const response = await fetch('https://api.skycoin4444.com/api/trpc/roadmap.query', {
   method: 'GET',
   headers: {
@@ -44,10 +50,10 @@ export default function APIDocs() {
 const data = await response.json();`,
     },
     {
-      id: 'agents-debate',
-      method: 'POST',
-      path: '/api/trpc/agents.debate',
-      description: 'Start multi-agent debate',
+      id: "agents-debate",
+      method: "POST",
+      path: "/api/trpc/agents.debate",
+      description: "Start multi-agent debate",
       code: `fetch('https://api.skycoin4444.com/api/trpc/agents.debate', {
   method: 'POST',
   headers: {
@@ -61,10 +67,10 @@ const data = await response.json();`,
 })`,
     },
     {
-      id: 'order-create',
-      method: 'POST',
-      path: '/api/trpc/orders.create',
-      description: 'Create new SKY STORE order',
+      id: "order-create",
+      method: "POST",
+      path: "/api/trpc/orders.create",
+      description: "Create new SKY STORE order",
       code: `const order = await fetch('https://api.skycoin4444.com/api/trpc/orders.create', {
   method: 'POST',
   headers: {
@@ -80,9 +86,21 @@ const data = await response.json();`,
   ];
 
   const authMethods = [
-    { name: 'Bearer Token', description: 'JWT token in Authorization header', code: 'Authorization: Bearer eyJhbGc...' },
-    { name: 'API Key', description: 'API key in X-API-Key header', code: 'X-API-Key: sk_live_...' },
-    { name: 'OAuth 2.0', description: 'OAuth 2.0 with Manus OAuth provider', code: 'Authorization: Bearer <access_token>' },
+    {
+      name: "Bearer Token",
+      description: "JWT token in Authorization header",
+      code: "Authorization: Bearer eyJhbGc...",
+    },
+    {
+      name: "API Key",
+      description: "API key in X-API-Key header",
+      code: "X-API-Key: sk_live_...",
+    },
+    {
+      name: "OAuth 2.0",
+      description: "OAuth 2.0 with Manus OAuth provider",
+      code: "Authorization: Bearer <access_token>",
+    },
   ];
 
   return (
@@ -90,8 +108,12 @@ const data = await response.json();`,
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">API Documentation</h1>
-          <p className="text-muted-foreground">Complete reference for SKYCOIN4444 REST & GraphQL APIs</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            API Documentation
+          </h1>
+          <p className="text-muted-foreground">
+            Complete reference for SKYCOIN4444 REST & GraphQL APIs
+          </p>
         </div>
 
         {/* Quick Start */}
@@ -104,14 +126,23 @@ const data = await response.json();`,
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="font-medium text-foreground mb-2">1. Get Your API Key</h3>
-              <p className="text-sm text-muted-foreground mb-3">Generate an API key from your account settings</p>
-              <Button className="bg-purple-600 hover:bg-purple-700">Generate API Key</Button>
+              <h3 className="font-medium text-foreground mb-2">
+                1. Get Your API Key
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Generate an API key from your account settings
+              </p>
+              <Button className="bg-purple-600 hover:bg-purple-700">
+                Generate API Key
+              </Button>
             </div>
             <div>
-              <h3 className="font-medium text-foreground mb-2">2. Make Your First Request</h3>
+              <h3 className="font-medium text-foreground mb-2">
+                2. Make Your First Request
+              </h3>
               <div className="bg-muted p-3 rounded-lg font-mono text-xs text-muted-foreground">
-                curl -H "Authorization: Bearer YOUR_TOKEN" https://api.skycoin4444.com/api/trpc/feedback.list
+                curl -H "Authorization: Bearer YOUR_TOKEN"
+                https://api.skycoin4444.com/api/trpc/feedback.list
               </div>
             </div>
           </CardContent>
@@ -121,15 +152,23 @@ const data = await response.json();`,
         <Card className="bg-card border-border mb-6">
           <CardHeader>
             <CardTitle>Authentication</CardTitle>
-            <CardDescription>Choose your preferred authentication method</CardDescription>
+            <CardDescription>
+              Choose your preferred authentication method
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-4">
               {authMethods.map((method, idx) => (
                 <div key={idx} className="border border-border rounded-lg p-4">
-                  <h3 className="font-medium text-foreground mb-1">{method.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-3">{method.description}</p>
-                  <code className="text-xs bg-muted p-2 rounded block text-muted-foreground">{method.code}</code>
+                  <h3 className="font-medium text-foreground mb-1">
+                    {method.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {method.description}
+                  </p>
+                  <code className="text-xs bg-muted p-2 rounded block text-muted-foreground">
+                    {method.code}
+                  </code>
                 </div>
               ))}
             </div>
@@ -140,42 +179,65 @@ const data = await response.json();`,
         <Card className="bg-card border-border mb-6">
           <CardHeader>
             <CardTitle>API Endpoints</CardTitle>
-            <CardDescription>Available REST endpoints for SKYCOIN4444</CardDescription>
+            <CardDescription>
+              Available REST endpoints for SKYCOIN4444
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="feedback-list" className="w-full">
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
                 {endpoints.map(endpoint => (
-                  <TabsTrigger key={endpoint.id} value={endpoint.id} className="text-xs">
+                  <TabsTrigger
+                    key={endpoint.id}
+                    value={endpoint.id}
+                    className="text-xs"
+                  >
                     {endpoint.method}
                   </TabsTrigger>
                 ))}
               </TabsList>
 
               {endpoints.map(endpoint => (
-                <TabsContent key={endpoint.id} value={endpoint.id} className="space-y-4">
+                <TabsContent
+                  key={endpoint.id}
+                  value={endpoint.id}
+                  className="space-y-4"
+                >
                   <div className="flex items-center gap-2 mb-4">
-                    <Badge className={
-                      endpoint.method === 'GET' ? 'bg-blue-600' :
-                      endpoint.method === 'POST' ? 'bg-green-600' :
-                      endpoint.method === 'PUT' ? 'bg-yellow-600' :
-                      'bg-red-600'
-                    }>
+                    <Badge
+                      className={
+                        endpoint.method === "GET"
+                          ? "bg-blue-600"
+                          : endpoint.method === "POST"
+                            ? "bg-green-600"
+                            : endpoint.method === "PUT"
+                              ? "bg-yellow-600"
+                              : "bg-red-600"
+                      }
+                    >
                       {endpoint.method}
                     </Badge>
-                    <code className="text-sm font-mono text-foreground">{endpoint.path}</code>
+                    <code className="text-sm font-mono text-foreground">
+                      {endpoint.path}
+                    </code>
                   </div>
-                  <p className="text-sm text-muted-foreground">{endpoint.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {endpoint.description}
+                  </p>
                   <div className="bg-muted p-4 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-muted-foreground">Example Request</span>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Example Request
+                      </span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(endpoint.code, endpoint.id)}
+                        onClick={() =>
+                          copyToClipboard(endpoint.code, endpoint.id)
+                        }
                       >
                         <Copy className="w-4 h-4" />
-                        {copiedCode === endpoint.id ? 'Copied!' : 'Copy'}
+                        {copiedCode === endpoint.id ? "Copied!" : "Copy"}
                       </Button>
                     </div>
                     <pre className="text-xs text-muted-foreground overflow-auto">
@@ -207,7 +269,9 @@ const data = await response.json();`,
               </div>
               <div className="border border-border rounded-lg p-4">
                 <p className="text-sm font-medium text-foreground">Scalable</p>
-                <p className="text-2xl font-bold text-blue-500 mt-1">Unlimited</p>
+                <p className="text-2xl font-bold text-blue-500 mt-1">
+                  Unlimited
+                </p>
                 <p className="text-xs text-muted-foreground">custom limits</p>
               </div>
             </div>

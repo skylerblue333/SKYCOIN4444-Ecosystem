@@ -63,12 +63,48 @@ const MOCK_STATS: DashboardStats = {
 };
 
 const LANGUAGE_STATS: LanguageStats[] = [
-  { language: "Chinese", learners: 2345, teachers: 456, sessions: 5234, avgRating: 4.8 },
-  { language: "Spanish", learners: 3456, teachers: 678, sessions: 6789, avgRating: 4.7 },
-  { language: "Japanese", learners: 1234, teachers: 234, sessions: 3456, avgRating: 4.6 },
-  { language: "French", learners: 2567, teachers: 345, sessions: 4567, avgRating: 4.8 },
-  { language: "German", learners: 1456, teachers: 234, sessions: 2345, avgRating: 4.5 },
-  { language: "Korean", learners: 1789, teachers: 289, sessions: 3234, avgRating: 4.7 },
+  {
+    language: "Chinese",
+    learners: 2345,
+    teachers: 456,
+    sessions: 5234,
+    avgRating: 4.8,
+  },
+  {
+    language: "Spanish",
+    learners: 3456,
+    teachers: 678,
+    sessions: 6789,
+    avgRating: 4.7,
+  },
+  {
+    language: "Japanese",
+    learners: 1234,
+    teachers: 234,
+    sessions: 3456,
+    avgRating: 4.6,
+  },
+  {
+    language: "French",
+    learners: 2567,
+    teachers: 345,
+    sessions: 4567,
+    avgRating: 4.8,
+  },
+  {
+    language: "German",
+    learners: 1456,
+    teachers: 234,
+    sessions: 2345,
+    avgRating: 4.5,
+  },
+  {
+    language: "Korean",
+    learners: 1789,
+    teachers: 289,
+    sessions: 3234,
+    avgRating: 4.7,
+  },
 ];
 
 const ACTIVITY_DATA = [
@@ -201,7 +237,11 @@ export function UnifiedPlatformDashboard() {
                   />
                   <Legend />
                   <Bar dataKey="sessions" fill="#8b5cf6" name="Sessions" />
-                  <Bar dataKey="translations" fill="#3b82f6" name="Translations" />
+                  <Bar
+                    dataKey="translations"
+                    fill="#3b82f6"
+                    name="Translations"
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </Card>
@@ -236,7 +276,9 @@ export function UnifiedPlatformDashboard() {
           <TabsContent value="languages" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="bg-slate-800/50 border-slate-700 p-6">
-                <h3 className="font-bold text-white mb-4">Language Distribution</h3>
+                <h3 className="font-bold text-white mb-4">
+                  Language Distribution
+                </h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
@@ -269,12 +311,17 @@ export function UnifiedPlatformDashboard() {
                   {LANGUAGE_STATS.map((lang, idx) => (
                     <div key={idx}>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-bold text-white">{lang.language}</span>
+                        <span className="font-bold text-white">
+                          {lang.language}
+                        </span>
                         <Badge className="bg-purple-500/20 text-purple-300">
                           {lang.sessions} sessions
                         </Badge>
                       </div>
-                      <Progress value={(lang.learners / 3500) * 100} className="h-2" />
+                      <Progress
+                        value={(lang.learners / 3500) * 100}
+                        className="h-2"
+                      />
                       <div className="flex justify-between text-xs text-gray-400 mt-1">
                         <span>{lang.learners} learners</span>
                         <span>⭐ {lang.avgRating}</span>
@@ -290,7 +337,9 @@ export function UnifiedPlatformDashboard() {
           <TabsContent value="performance" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="bg-slate-800/50 border-slate-700 p-6">
-                <h3 className="font-bold text-white mb-4">Translation Accuracy</h3>
+                <h3 className="font-bold text-white mb-4">
+                  Translation Accuracy
+                </h3>
                 <div className="space-y-4">
                   {[
                     { lang: "Chinese", accuracy: 96.2 },
@@ -316,7 +365,9 @@ export function UnifiedPlatformDashboard() {
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between mb-2">
-                      <span className="text-white text-sm">API Response Time</span>
+                      <span className="text-white text-sm">
+                        API Response Time
+                      </span>
                       <span className="text-green-400 font-bold">45ms</span>
                     </div>
                     <Progress value={90} className="h-2" />
@@ -330,7 +381,9 @@ export function UnifiedPlatformDashboard() {
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
-                      <span className="text-white text-sm">Database Health</span>
+                      <span className="text-white text-sm">
+                        Database Health
+                      </span>
                       <span className="text-green-400 font-bold">98.5%</span>
                     </div>
                     <Progress value={98.5} className="h-2" />
@@ -354,10 +407,15 @@ export function UnifiedPlatformDashboard() {
                 { name: "Maria García", rating: 4.92, sessions: 389 },
                 { name: "Yuki Tanaka", rating: 4.88, sessions: 234 },
               ].map((teacher, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-slate-700/50 rounded">
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-3 bg-slate-700/50 rounded"
+                >
                   <div>
                     <p className="font-bold text-white">{teacher.name}</p>
-                    <p className="text-gray-400 text-xs">{teacher.sessions} sessions</p>
+                    <p className="text-gray-400 text-xs">
+                      {teacher.sessions} sessions
+                    </p>
                   </div>
                   <Badge className="bg-yellow-500/20 text-yellow-400">
                     ⭐ {teacher.rating}
@@ -378,9 +436,14 @@ export function UnifiedPlatformDashboard() {
                 { milestone: "50K active users reached", date: "Yesterday" },
                 { milestone: "100 languages supported", date: "Last week" },
               ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-slate-700/50 rounded">
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-3 bg-slate-700/50 rounded"
+                >
                   <div>
-                    <p className="font-bold text-white text-sm">{item.milestone}</p>
+                    <p className="font-bold text-white text-sm">
+                      {item.milestone}
+                    </p>
                     <p className="text-gray-400 text-xs">{item.date}</p>
                   </div>
                   <Award className="w-5 h-5 text-yellow-400" />

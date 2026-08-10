@@ -8,7 +8,13 @@
  */
 
 import crypto from "crypto";
-import { auditLogger, realtimeAdapter, platformFeeEngine, fraudDetector, openAIAdapter } from "./production-integrations";
+import {
+  auditLogger,
+  realtimeAdapter,
+  platformFeeEngine,
+  fraudDetector,
+  openAIAdapter,
+} from "./production-integrations";
 
 // ─── Event Bus ────────────────────────────────────────────────────────────────
 type EventType =
@@ -52,10 +58,20 @@ interface PlatformEvent {
 }
 
 const _eventBus: PlatformEvent[] = [];
-const _eventHandlers = new Map<EventType, Array<(event: PlatformEvent) => Promise<void>>>();
+const _eventHandlers = new Map<
+  EventType,
+  Array<(event: PlatformEvent) => Promise<void>>
+>();
 
 export const eventBus = {
-  emit(type: EventType, actorId: number, metadata: Record<string, unknown> = {}, targetId?: number, resourceId?: string, resourceType?: string): PlatformEvent {
+  emit(
+    type: EventType,
+    actorId: number,
+    metadata: Record<string, unknown> = {},
+    targetId?: number,
+    resourceId?: string,
+    resourceType?: string
+  ): PlatformEvent {
     const event: PlatformEvent = {
       id: `evt_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`,
       type,
@@ -70,7 +86,9 @@ export const eventBus = {
     };
     _eventBus.push(event);
     // Process asynchronously
-    this._process(event).catch(err => console.error(`[EventBus] Error processing ${type}:`, err));
+    this._process(event).catch(err =>
+      console.error(`[EventBus] Error processing ${type}:`, err)
+    );
     return event;
   },
 
@@ -86,7 +104,10 @@ export const eventBus = {
         await handler(event);
         event.propagatedTo.push(handler.name || "anonymous");
       } catch (err: any) {
-        console.error(`[EventBus] Handler error for ${event.type}:`, err.message);
+        console.error(
+          `[EventBus] Handler error for ${event.type}:`,
+          err.message
+        );
       }
     }
     event.processed = true;
@@ -111,7 +132,9 @@ export const eventBus = {
       totalEvents: _eventBus.length,
       processedEvents: _eventBus.filter(e => e.processed).length,
       byType,
-      last24h: _eventBus.filter(e => Date.now() - e.timestamp.getTime() < 86400000).length,
+      last24h: _eventBus.filter(
+        e => Date.now() - e.timestamp.getTime() < 86400000
+      ).length,
     };
   },
 };
@@ -210,7 +233,10 @@ export const socialGraphLayer = {
     this._updateTrustLevel(userId);
   },
 
-  recordEngagement(targetUserId: number, type: "like" | "comment" | "share"): void {
+  recordEngagement(
+    targetUserId: number,
+    type: "like" | "comment" | "share"
+  ): void {
     const node = this.getOrCreate(targetUserId);
     if (type === "like") node.likesReceived++;
     if (type === "comment") node.commentsReceived++;
@@ -227,13 +253,14 @@ export const socialGraphLayer = {
   },
 
   _calculateReputation(node: UserNode): number {
-    return Math.min(100,
+    return Math.min(
+      100,
       node.followersCount * 0.1 +
-      node.postsCount * 0.5 +
-      node.likesReceived * 0.2 +
-      node.commentsReceived * 0.3 +
-      node.sharesReceived * 0.5 +
-      (node.totalEarningsCents / 100) * 0.01
+        node.postsCount * 0.5 +
+        node.likesReceived * 0.2 +
+        node.commentsReceived * 0.3 +
+        node.sharesReceived * 0.5 +
+        (node.totalEarningsCents / 100) * 0.01
     );
   },
 
@@ -265,7 +292,9 @@ export const socialGraphLayer = {
       totalUsers: nodes.length,
       totalCreators: nodes.filter(n => n.isCreator).length,
       totalFollowEdges: _followEdges.size,
-      averageReputation: nodes.length ? nodes.reduce((s, n) => s + n.reputationScore, 0) / nodes.length : 0,
+      averageReputation: nodes.length
+        ? nodes.reduce((s, n) => s + n.reputationScore, 0) / nodes.length
+        : 0,
       trustDistribution: {
         new: nodes.filter(n => n.trustLevel === "new").length,
         basic: nodes.filter(n => n.trustLevel === "basic").length,
@@ -299,7 +328,12 @@ interface ContentNode {
 const _contentLayer = new Map<string, ContentNode>();
 
 export const contentLayer = {
-  register(params: { contentId: string; contentType: ContentNode["contentType"]; authorId: number; tags?: string[] }): ContentNode {
+  register(params: {
+    contentId: string;
+    contentType: ContentNode["contentType"];
+    authorId: number;
+    tags?: string[];
+  }): ContentNode {
     const node: ContentNode = {
       ...params,
       createdAt: new Date(),
@@ -316,7 +350,14 @@ export const contentLayer = {
     };
     _contentLayer.set(params.contentId, node);
     socialGraphLayer.recordPost(params.authorId);
-    eventBus.emit("post.created", params.authorId, { contentId: params.contentId, contentType: params.contentType }, undefined, params.contentId, params.contentType);
+    eventBus.emit(
+      "post.created",
+      params.authorId,
+      { contentId: params.contentId, contentType: params.contentType },
+      undefined,
+      params.contentId,
+      params.contentType
+    );
     return node;
   },
 
@@ -328,7 +369,14 @@ export const contentLayer = {
     node.viralityScore = this._calculateVirality(node);
     socialGraphLayer.recordEngagement(node.authorId, "like");
     socialGraphLayer.recordActivity(userId);
-    eventBus.emit("post.liked", userId, { contentId }, node.authorId, contentId, "post");
+    eventBus.emit(
+      "post.liked",
+      userId,
+      { contentId },
+      node.authorId,
+      contentId,
+      "post"
+    );
   },
 
   recordComment(contentId: string, userId: number): void {
@@ -338,7 +386,14 @@ export const contentLayer = {
     node.engagementScore = this._calculateEngagement(node);
     socialGraphLayer.recordEngagement(node.authorId, "comment");
     socialGraphLayer.recordActivity(userId);
-    eventBus.emit("comment.created", userId, { contentId }, node.authorId, contentId, "post");
+    eventBus.emit(
+      "comment.created",
+      userId,
+      { contentId },
+      node.authorId,
+      contentId,
+      "post"
+    );
   },
 
   recordShare(contentId: string, userId: number): void {
@@ -348,7 +403,14 @@ export const contentLayer = {
     node.viralityScore = this._calculateVirality(node);
     socialGraphLayer.recordEngagement(node.authorId, "share");
     socialGraphLayer.recordActivity(userId);
-    eventBus.emit("post.shared", userId, { contentId }, node.authorId, contentId, "post");
+    eventBus.emit(
+      "post.shared",
+      userId,
+      { contentId },
+      node.authorId,
+      contentId,
+      "post"
+    );
   },
 
   recordView(contentId: string, userId: number): void {
@@ -373,18 +435,31 @@ export const contentLayer = {
     if (node.reportCount >= 5 && !node.isModerated) {
       node.isModerated = true;
       node.moderationAction = "auto_review";
-      eventBus.emit("moderation.action", node.authorId, { contentId, reason, action: "auto_review" }, undefined, contentId, "post");
+      eventBus.emit(
+        "moderation.action",
+        node.authorId,
+        { contentId, reason, action: "auto_review" },
+        undefined,
+        contentId,
+        "post"
+      );
     }
   },
 
   _calculateEngagement(node: ContentNode): number {
     if (node.viewsCount === 0) return 0;
-    return Math.min(100, ((node.likesCount * 2 + node.commentsCount * 3 + node.sharesCount * 5) / node.viewsCount) * 100);
+    return Math.min(
+      100,
+      ((node.likesCount * 2 + node.commentsCount * 3 + node.sharesCount * 5) /
+        node.viewsCount) *
+        100
+    );
   },
 
   _calculateVirality(node: ContentNode): number {
     const ageHours = (Date.now() - node.createdAt.getTime()) / 3600000;
-    const velocity = (node.sharesCount + node.likesCount * 0.5) / Math.max(1, ageHours);
+    const velocity =
+      (node.sharesCount + node.likesCount * 0.5) / Math.max(1, ageHours);
     return Math.min(100, velocity * 10);
   },
 
@@ -396,7 +471,9 @@ export const contentLayer = {
   },
 
   getCreatorContent(authorId: number): ContentNode[] {
-    return Array.from(_contentLayer.values()).filter(n => n.authorId === authorId);
+    return Array.from(_contentLayer.values()).filter(
+      n => n.authorId === authorId
+    );
   },
 
   getStats() {
@@ -407,7 +484,9 @@ export const contentLayer = {
       totalLikes: nodes.reduce((s, n) => s + n.likesCount, 0),
       totalRevenueCents: nodes.reduce((s, n) => s + n.revenueGeneratedCents, 0),
       moderatedContent: nodes.filter(n => n.isModerated).length,
-      averageEngagement: nodes.length ? nodes.reduce((s, n) => s + n.engagementScore, 0) / nodes.length : 0,
+      averageEngagement: nodes.length
+        ? nodes.reduce((s, n) => s + n.engagementScore, 0) / nodes.length
+        : 0,
     };
   },
 };
@@ -428,7 +507,15 @@ interface Transaction {
   id: string;
   fromUserId?: number;
   toUserId?: number;
-  type: "subscription" | "tip" | "nft_sale" | "marketplace" | "payout" | "platform_fee" | "stake_reward" | "referral_bonus";
+  type:
+    | "subscription"
+    | "tip"
+    | "nft_sale"
+    | "marketplace"
+    | "payout"
+    | "platform_fee"
+    | "stake_reward"
+    | "referral_bonus";
   amountCents: number;
   feeCents: number;
   netCents: number;
@@ -462,7 +549,9 @@ export const economyLayer = {
   /**
    * Record a completed transaction. Every dollar is traceable.
    */
-  recordTransaction(params: Omit<Transaction, "id" | "createdAt">): Transaction {
+  recordTransaction(
+    params: Omit<Transaction, "id" | "createdAt">
+  ): Transaction {
     const tx: Transaction = {
       id: `tx_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`,
       createdAt: new Date(),
@@ -505,7 +594,12 @@ export const economyLayer = {
       action: "record_transaction",
       actorId: tx.fromUserId,
       resourceId: tx.id,
-      metadata: { type: tx.type, amountCents: tx.amountCents, feeCents: tx.feeCents, status: tx.status },
+      metadata: {
+        type: tx.type,
+        amountCents: tx.amountCents,
+        feeCents: tx.feeCents,
+        status: tx.status,
+      },
       success: tx.status !== "failed",
       durationMs: 0,
     });
@@ -513,8 +607,13 @@ export const economyLayer = {
     return tx;
   },
 
-  processSubscriptionPayment(fromUserId: number, toUserId: number, amountCents: number, stripeChargeId: string): Transaction {
-    const feePercent = platformFeeEngine.FEE_SCHEDULE["subscription"] ?? 0.10;
+  processSubscriptionPayment(
+    fromUserId: number,
+    toUserId: number,
+    amountCents: number,
+    stripeChargeId: string
+  ): Transaction {
+    const feePercent = platformFeeEngine.FEE_SCHEDULE["subscription"] ?? 0.1;
     const feeCents = Math.round(amountCents * feePercent);
     const tx = this.recordTransaction({
       fromUserId,
@@ -529,11 +628,21 @@ export const economyLayer = {
       completedAt: new Date(),
       metadata: {},
     });
-    eventBus.emit("payment.completed", fromUserId, { type: "subscription", amountCents, toUserId }, toUserId);
+    eventBus.emit(
+      "payment.completed",
+      fromUserId,
+      { type: "subscription", amountCents, toUserId },
+      toUserId
+    );
     return tx;
   },
 
-  processTip(fromUserId: number, toUserId: number, amountCents: number, contentId?: string): Transaction {
+  processTip(
+    fromUserId: number,
+    toUserId: number,
+    amountCents: number,
+    contentId?: string
+  ): Transaction {
     const feePercent = platformFeeEngine.FEE_SCHEDULE["tip"] ?? 0.05;
     const feeCents = Math.round(amountCents * feePercent);
     const tx = this.recordTransaction({
@@ -548,8 +657,14 @@ export const economyLayer = {
       completedAt: new Date(),
       metadata: { contentId },
     });
-    if (contentId) contentLayer.recordRevenue(contentId, amountCents - feeCents);
-    eventBus.emit("tip.sent", fromUserId, { amountCents, toUserId, contentId }, toUserId);
+    if (contentId)
+      contentLayer.recordRevenue(contentId, amountCents - feeCents);
+    eventBus.emit(
+      "tip.sent",
+      fromUserId,
+      { amountCents, toUserId, contentId },
+      toUserId
+    );
     return tx;
   },
 
@@ -575,7 +690,9 @@ export const economyLayer = {
       completedTransactions: txs.length,
       totalVolumeProcessedCents: txs.reduce((s, t) => s + t.amountCents, 0),
       totalPlatformRevenueCents: this.getPlatformRevenueCents(),
-      averageTransactionCents: txs.length ? txs.reduce((s, t) => s + t.amountCents, 0) / txs.length : 0,
+      averageTransactionCents: txs.length
+        ? txs.reduce((s, t) => s + t.amountCents, 0) / txs.length
+        : 0,
     };
   },
 };
@@ -622,7 +739,10 @@ export const trustLayer = {
     if (!node) return;
     const record = this.getOrCreate(userId);
     record.contentScore = Math.min(100, node.reputationScore);
-    record.communityScore = Math.min(100, node.followersCount * 0.1 + node.postsCount * 0.5);
+    record.communityScore = Math.min(
+      100,
+      node.followersCount * 0.1 + node.postsCount * 0.5
+    );
     record.overallScore = this._calculateOverall(record);
     record.lastUpdated = new Date();
   },
@@ -633,7 +753,12 @@ export const trustLayer = {
       record.paymentScore = Math.min(100, record.paymentScore + 2);
     } else {
       record.paymentScore = Math.max(0, record.paymentScore - 10);
-      fraudDetector.recordSignal({ userId, signalType: "payment_failure", severity: "medium", details: {} });
+      fraudDetector.recordSignal({
+        userId,
+        signalType: "payment_failure",
+        severity: "medium",
+        details: {},
+      });
     }
     record.overallScore = this._calculateOverall(record);
     record.lastUpdated = new Date();
@@ -656,35 +781,52 @@ export const trustLayer = {
     record.banReason = reason;
     record.bannedAt = new Date();
     record.overallScore = 0;
-    fraudDetector.recordSignal({ userId, signalType: "account_banned", severity: "critical", details: { reason } });
+    fraudDetector.recordSignal({
+      userId,
+      signalType: "account_banned",
+      severity: "critical",
+      details: { reason },
+    });
     eventBus.emit("moderation.action", userId, { action: "ban", reason });
-    auditLogger.log({ service: "trust", action: "ban_user", actorId: userId, metadata: { reason }, success: true, durationMs: 0 });
+    auditLogger.log({
+      service: "trust",
+      action: "ban_user",
+      actorId: userId,
+      metadata: { reason },
+      success: true,
+      durationMs: 0,
+    });
   },
 
-  canPerformAction(userId: number, action: string): { allowed: boolean; reason?: string } {
+  canPerformAction(
+    userId: number,
+    action: string
+  ): { allowed: boolean; reason?: string } {
     const record = this.getOrCreate(userId);
     if (record.isBanned) return { allowed: false, reason: "account_banned" };
-    if (fraudDetector.isHighRisk(userId)) return { allowed: false, reason: "high_fraud_risk" };
+    if (fraudDetector.isHighRisk(userId))
+      return { allowed: false, reason: "high_fraud_risk" };
     const minScores: Record<string, number> = {
-      "post": 10,
-      "comment": 5,
-      "payment": 30,
-      "stream": 20,
-      "nft_mint": 40,
-      "community_create": 50,
+      post: 10,
+      comment: 5,
+      payment: 30,
+      stream: 20,
+      nft_mint: 40,
+      community_create: 50,
     };
     const minScore = minScores[action] ?? 0;
-    if (record.overallScore < minScore) return { allowed: false, reason: "insufficient_trust_score" };
+    if (record.overallScore < minScore)
+      return { allowed: false, reason: "insufficient_trust_score" };
     return { allowed: true };
   },
 
   _calculateOverall(record: TrustRecord): number {
     return Math.round(
       record.contentScore * 0.25 +
-      record.paymentScore * 0.25 +
-      record.communityScore * 0.20 +
-      record.identityScore * 0.20 +
-      Math.max(0, 50 - record.fraudScore) * 0.10
+        record.paymentScore * 0.25 +
+        record.communityScore * 0.2 +
+        record.identityScore * 0.2 +
+        Math.max(0, 50 - record.fraudScore) * 0.1
     );
   },
 
@@ -699,7 +841,9 @@ export const trustLayer = {
       bannedUsers: records.filter(r => r.isBanned).length,
       highTrustUsers: records.filter(r => r.overallScore >= 70).length,
       lowTrustUsers: records.filter(r => r.overallScore < 30).length,
-      averageTrustScore: records.length ? records.reduce((s, r) => s + r.overallScore, 0) / records.length : 0,
+      averageTrustScore: records.length
+        ? records.reduce((s, r) => s + r.overallScore, 0) / records.length
+        : 0,
     };
   },
 };
@@ -726,7 +870,9 @@ export const aiRankingLayer = {
 
     return contentIds
       .map(contentId => {
-        const content = (contentLayer as any)["_contentLayer" as any]?.get(contentId) as ContentNode | undefined;
+        const content = (contentLayer as any)["_contentLayer" as any]?.get(
+          contentId
+        ) as ContentNode | undefined;
         if (!content) return null;
 
         const reasons: string[] = [];
@@ -781,16 +927,20 @@ export const aiRankingLayer = {
   /**
    * Get trending topics from real content data.
    */
-  getTrendingTopics(limit = 10): Array<{ tag: string; count: number; momentum: number }> {
+  getTrendingTopics(
+    limit = 10
+  ): Array<{ tag: string; count: number; momentum: number }> {
     const tagCounts = new Map<string, { count: number; recentCount: number }>();
     const cutoff = Date.now() - 24 * 3600000;
 
     // Access internal map via module-level reference
-    for (const [, content] of (_contentLayer as any)._contentLayer ?? new Map()) {
+    for (const [, content] of (_contentLayer as any)._contentLayer ??
+      new Map()) {
       for (const tag of (content as ContentNode).tags) {
         const existing = tagCounts.get(tag) ?? { count: 0, recentCount: 0 };
         existing.count++;
-        if ((content as ContentNode).createdAt.getTime() > cutoff) existing.recentCount++;
+        if ((content as ContentNode).createdAt.getTime() > cutoff)
+          existing.recentCount++;
         tagCounts.set(tag, existing);
       }
     }
@@ -808,15 +958,23 @@ export const aiRankingLayer = {
   /**
    * Recommend creators to follow based on real graph data.
    */
-  recommendCreators(userId: number, limit = 10): Array<{ userId: number; score: number; reason: string }> {
+  recommendCreators(
+    userId: number,
+    limit = 10
+  ): Array<{ userId: number; score: number; reason: string }> {
     const following = new Set(socialGraphLayer.getFollowing(userId));
     const topCreators = socialGraphLayer.getTopCreators(100);
 
     return topCreators
       .filter(c => c.userId !== userId && !following.has(c.userId))
       .map(c => {
-        let score = c.reputationScore;
-        const reason = c.followersCount > 1000 ? "popular_creator" : c.isCreator ? "active_creator" : "rising_creator";
+        const score = c.reputationScore;
+        const reason =
+          c.followersCount > 1000
+            ? "popular_creator"
+            : c.isCreator
+              ? "active_creator"
+              : "rising_creator";
         return { userId: c.userId, score, reason };
       })
       .slice(0, limit);
@@ -843,35 +1001,72 @@ eventBus.on("payment.completed", async function onPaymentCompleted(event) {
 
 eventBus.on("payment.failed", async function onPaymentFailed(event) {
   trustLayer.updateFromPayment(event.actorId, false);
-  fraudDetector.recordSignal({ userId: event.actorId, signalType: "payment_failure", severity: "medium", details: event.metadata });
+  fraudDetector.recordSignal({
+    userId: event.actorId,
+    signalType: "payment_failure",
+    severity: "medium",
+    details: event.metadata,
+  });
 });
 
 eventBus.on("user.followed", async function onUserFollowed(event) {
   const { followeeId } = event.metadata as { followeeId?: number };
   if (followeeId) {
     trustLayer.updateFromSocialGraph(followeeId);
-    await realtimeAdapter.push({ type: "new_follower", recipientId: followeeId, data: { followerId: event.actorId }, priority: "normal" });
+    await realtimeAdapter.push({
+      type: "new_follower",
+      recipientId: followeeId,
+      data: { followerId: event.actorId },
+      priority: "normal",
+    });
   }
 });
 
 eventBus.on("post.liked", async function onPostLiked(event) {
   if (event.targetId) {
     trustLayer.updateFromSocialGraph(event.targetId);
-    await realtimeAdapter.push({ type: "post_liked", recipientId: event.targetId, data: { contentId: event.resourceId, likerId: event.actorId }, priority: "low" });
+    await realtimeAdapter.push({
+      type: "post_liked",
+      recipientId: event.targetId,
+      data: { contentId: event.resourceId, likerId: event.actorId },
+      priority: "low",
+    });
   }
 });
 
 eventBus.on("moderation.action", async function onModerationAction(event) {
-  const { action, reason } = event.metadata as { action?: string; reason?: string };
-  auditLogger.log({ service: "moderation", action: action ?? "unknown", actorId: event.actorId, metadata: { reason }, success: true, durationMs: 0 });
+  const { action, reason } = event.metadata as {
+    action?: string;
+    reason?: string;
+  };
+  auditLogger.log({
+    service: "moderation",
+    action: action ?? "unknown",
+    actorId: event.actorId,
+    metadata: { reason },
+    success: true,
+    durationMs: 0,
+  });
   if (action === "ban") {
-    await realtimeAdapter.push({ type: "account_action", recipientId: event.actorId, data: { action: "banned", reason }, priority: "critical" });
+    await realtimeAdapter.push({
+      type: "account_action",
+      recipientId: event.actorId,
+      data: { action: "banned", reason },
+      priority: "critical",
+    });
   }
 });
 
 eventBus.on("fraud.detected", async function onFraudDetected(event) {
   trustLayer.ban(event.actorId, "fraud_detected");
-  auditLogger.log({ service: "fraud", action: "auto_ban", actorId: event.actorId, metadata: event.metadata, success: true, durationMs: 0 });
+  auditLogger.log({
+    service: "fraud",
+    action: "auto_ban",
+    actorId: event.actorId,
+    metadata: event.metadata,
+    success: true,
+    durationMs: 0,
+  });
 });
 
 // ─── Unified Platform Dashboard ───────────────────────────────────────────────
@@ -895,7 +1090,10 @@ export const platformDashboard = {
     const issues: string[] = [];
     const snapshot = this.getSnapshot();
 
-    if (snapshot.trust.bannedUsers / Math.max(1, snapshot.social.totalUsers) > 0.05) {
+    if (
+      snapshot.trust.bannedUsers / Math.max(1, snapshot.social.totalUsers) >
+      0.05
+    ) {
       issues.push("High ban rate (>5%)");
     }
     if (snapshot.fraud.highRiskUsers > 100) {
@@ -932,24 +1130,40 @@ export const platformEventBus = {
   emit(event: string, data: unknown): void {
     const handlers = _cmdBusHandlers.get(event) ?? [];
     for (const h of handlers) {
-      try { h(data); } catch { /* isolate */ }
+      try {
+        h(data);
+      } catch {
+        /* isolate */
+      }
     }
   },
 };
 
 export const systemHealthMonitor = {
-  getSystemHealth(): { overall: string; systems: Record<string, { status: string }> } {
+  getSystemHealth(): {
+    overall: string;
+    systems: Record<string, { status: string }>;
+  } {
     const status = platformDashboard.getHealthStatus();
     const snap = platformDashboard.getSnapshot();
     return {
       overall: status.healthy ? "healthy" : "degraded",
       systems: {
         social: { status: snap.social.totalUsers >= 0 ? "healthy" : "error" },
-        content: { status: snap.content.totalContent >= 0 ? "healthy" : "error" },
-        economy: { status: snap.economy.totalVolumeProcessedCents >= 0 ? "healthy" : "error" },
-        trust: { status: snap.trust.bannedUsers < 1000 ? "healthy" : "degraded" },
+        content: {
+          status: snap.content.totalContent >= 0 ? "healthy" : "error",
+        },
+        economy: {
+          status:
+            snap.economy.totalVolumeProcessedCents >= 0 ? "healthy" : "error",
+        },
+        trust: {
+          status: snap.trust.bannedUsers < 1000 ? "healthy" : "degraded",
+        },
         ai: { status: "healthy" },
-        fraud: { status: snap.fraud.highRiskUsers < 500 ? "healthy" : "degraded" },
+        fraud: {
+          status: snap.fraud.highRiskUsers < 500 ? "healthy" : "degraded",
+        },
         audit: { status: snap.audit.failures < 100 ? "healthy" : "degraded" },
         streaming: { status: "healthy" },
       },
@@ -962,25 +1176,70 @@ export const unifiedSystemLoop = {
     type: string;
     userId: number;
     data?: Record<string, unknown>;
-  }): Promise<{ processed: boolean; cascades: string[]; eventType: string; triggeredSystems: string[] }> {
+  }): Promise<{
+    processed: boolean;
+    cascades: string[];
+    eventType: string;
+    triggeredSystems: string[];
+  }> {
     const cascades: string[] = [];
     // Split on first dot only so "user.post_created" -> domain="user", rest="post_created"
     const dotIdx = event.type.indexOf(".");
     const domain = dotIdx !== -1 ? event.type.slice(0, dotIdx) : event.type;
     const action = dotIdx !== -1 ? event.type.slice(dotIdx + 1) : "";
 
-    if ((domain === "user" || domain === "social") && action === "post_created") {
+    if (
+      (domain === "user" || domain === "social") &&
+      action === "post_created"
+    ) {
       socialGraphLayer.recordPost(event.userId);
-      cascades.push("content.indexed", "feed.updated", "reputation.recalculated", "analytics.tracked");
+      cascades.push(
+        "content.indexed",
+        "feed.updated",
+        "reputation.recalculated",
+        "analytics.tracked"
+      );
     } else if (domain === "social" && action === "user_followed") {
       socialGraphLayer.recordActivity(event.userId);
       cascades.push("social.graph_updated", "recommendations.refreshed");
-    } else if (domain === "crypto" && (action === "tokens_staked" || action === "stake_created")) {
-      economyLayer.recordTransaction({ fromUserId: event.userId, type: "stake_reward", amountCents: ((event.data?.amount as number) ?? 0) * 100, feeCents: 0, netCents: ((event.data?.amount as number) ?? 0) * 100, currency: "SKYCOIN", status: "completed", metadata: {} });
-      cascades.push("crypto.stake_recorded", "economy.staking_updated", "reputation.boosted");
-    } else if (domain === "marketplace" && (action === "purchase_completed" || action === "order_completed")) {
-      economyLayer.recordTransaction({ fromUserId: event.userId, type: "marketplace", amountCents: ((event.data?.amount as number) ?? 0) * 100, feeCents: 0, netCents: ((event.data?.amount as number) ?? 0) * 100, currency: "USD", status: "completed", metadata: {} });
-      cascades.push("monetization.revenue_recorded", "economy.revenue_recorded", "creator.payout_queued");
+    } else if (
+      domain === "crypto" &&
+      (action === "tokens_staked" || action === "stake_created")
+    ) {
+      economyLayer.recordTransaction({
+        fromUserId: event.userId,
+        type: "stake_reward",
+        amountCents: ((event.data?.amount as number) ?? 0) * 100,
+        feeCents: 0,
+        netCents: ((event.data?.amount as number) ?? 0) * 100,
+        currency: "SKYCOIN",
+        status: "completed",
+        metadata: {},
+      });
+      cascades.push(
+        "crypto.stake_recorded",
+        "economy.staking_updated",
+        "reputation.boosted"
+      );
+    } else if (
+      domain === "marketplace" &&
+      (action === "purchase_completed" || action === "order_completed")
+    ) {
+      economyLayer.recordTransaction({
+        fromUserId: event.userId,
+        type: "marketplace",
+        amountCents: ((event.data?.amount as number) ?? 0) * 100,
+        feeCents: 0,
+        netCents: ((event.data?.amount as number) ?? 0) * 100,
+        currency: "USD",
+        status: "completed",
+        metadata: {},
+      });
+      cascades.push(
+        "monetization.revenue_recorded",
+        "economy.revenue_recorded",
+        "creator.payout_queued"
+      );
     } else if (domain === "stream") {
       cascades.push("streaming.session_updated", "analytics.tracked");
     } else if (domain === "nft") {
@@ -993,6 +1252,11 @@ export const unifiedSystemLoop = {
     (platformEventBus as any).emit(event.type, event.userId);
     // Map cascade strings to system names for the commandments test
     const triggeredSystems = [...new Set(cascades.map(c => c.split(".")[0]))];
-    return { processed: true, cascades, triggeredSystems, eventType: event.type };
+    return {
+      processed: true,
+      cascades,
+      triggeredSystems,
+      eventType: event.type,
+    };
   },
 };

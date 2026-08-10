@@ -11,7 +11,11 @@ if (process.env.STRIPE_SECRET_KEY) {
 }
 
 export const STRIPE_PLANS = {
-  pro: { priceId: process.env.STRIPE_PRO_PRICE_ID || "", name: "Pro", price: 999 },
+  pro: {
+    priceId: process.env.STRIPE_PRO_PRICE_ID || "",
+    name: "Pro",
+    price: 999,
+  },
   enterprise: {
     priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || "",
     name: "Scalable",
@@ -99,8 +103,12 @@ export async function createOrUpdateSubscription(
           stripeSubscriptionId: subscription.id,
           plan: plan as any,
           status: "active",
-          currentPeriodStart: new Date((subscription.current_period_start || 0) * 1000),
-          currentPeriodEnd: new Date((subscription.current_period_end || 0) * 1000),
+          currentPeriodStart: new Date(
+            (subscription.current_period_start || 0) * 1000
+          ),
+          currentPeriodEnd: new Date(
+            (subscription.current_period_end || 0) * 1000
+          ),
         })
         .where(eq(subscriptions.userId, userId));
     }
@@ -144,7 +152,11 @@ export async function cancelSubscription(userId: number) {
 }
 
 // ─── CUSTOMER MANAGEMENT ────────────────────────────────────────────────
-export async function getOrCreateCustomer(userId: number, email: string, name?: string) {
+export async function getOrCreateCustomer(
+  userId: number,
+  email: string,
+  name?: string
+) {
   try {
     if (!stripe) throw new Error("Stripe not configured");
     const customers = await stripe.customers.list({
@@ -172,7 +184,9 @@ export async function getOrCreateCustomer(userId: number, email: string, name?: 
 }
 
 // ─── WEBHOOK HANDLERS ───────────────────────────────────────────────────
-export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+export async function handleCheckoutSessionCompleted(
+  session: Stripe.Checkout.Session
+) {
   try {
     if (!stripe) return;
     const orderId = parseInt(session.metadata?.orderId || "0");
@@ -192,7 +206,10 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
 
     console.log(`[Stripe] Order ${orderId} marked as paid`);
   } catch (error) {
-    console.error("[Stripe] Checkout session completion handler failed:", error);
+    console.error(
+      "[Stripe] Checkout session completion handler failed:",
+      error
+    );
     throw error;
   }
 }
@@ -201,7 +218,9 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
   try {
     if (!stripe) return;
     const customerId = invoice.customer as string;
-    const customer = (await stripe.customers.retrieve(customerId)) as Stripe.Customer;
+    const customer = (await stripe.customers.retrieve(
+      customerId
+    )) as Stripe.Customer;
 
     if (!customer.metadata?.userId) {
       throw new Error("User ID not found in customer metadata");
@@ -223,11 +242,15 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
   }
 }
 
-export async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+export async function handleSubscriptionUpdated(
+  subscription: Stripe.Subscription
+) {
   try {
     if (!stripe) return;
     const customerId = subscription.customer as string;
-    const customer = (await stripe.customers.retrieve(customerId)) as Stripe.Customer;
+    const customer = (await stripe.customers.retrieve(
+      customerId
+    )) as Stripe.Customer;
 
     if (!customer.metadata?.userId) {
       throw new Error("User ID not found in customer metadata");
@@ -249,18 +272,24 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
       })
       .where(eq(subscriptions.userId, userId));
 
-    console.log(`[Stripe] Subscription ${subscription.id} updated for user ${userId}`);
+    console.log(
+      `[Stripe] Subscription ${subscription.id} updated for user ${userId}`
+    );
   } catch (error) {
     console.error("[Stripe] Subscription updated handler failed:", error);
     throw error;
   }
 }
 
-export async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+export async function handleSubscriptionDeleted(
+  subscription: Stripe.Subscription
+) {
   try {
     if (!stripe) return;
     const customerId = subscription.customer as string;
-    const customer = (await stripe.customers.retrieve(customerId)) as Stripe.Customer;
+    const customer = (await stripe.customers.retrieve(
+      customerId
+    )) as Stripe.Customer;
 
     if (!customer.metadata?.userId) {
       throw new Error("User ID not found in customer metadata");
@@ -278,7 +307,9 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
       })
       .where(eq(subscriptions.userId, userId));
 
-    console.log(`[Stripe] Subscription ${subscription.id} deleted for user ${userId}`);
+    console.log(
+      `[Stripe] Subscription ${subscription.id} deleted for user ${userId}`
+    );
   } catch (error) {
     console.error("[Stripe] Subscription deleted handler failed:", error);
     throw error;

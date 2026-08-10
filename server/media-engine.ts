@@ -86,7 +86,10 @@ export interface MediaCollection {
 // ═══════════════════════════════════════════════════════════════
 
 export class ImageProcessingService {
-  private readonly VARIANT_CONFIGS: Record<string, { width: number; height: number; quality: number }> = {
+  private readonly VARIANT_CONFIGS: Record<
+    string,
+    { width: number; height: number; quality: number }
+  > = {
     thumbnail: { width: 150, height: 150, quality: 70 },
     small: { width: 320, height: 320, quality: 75 },
     medium: { width: 640, height: 640, quality: 80 },
@@ -94,16 +97,21 @@ export class ImageProcessingService {
     original: { width: 0, height: 0, quality: 95 },
   };
 
-  async processImage(originalUrl: string, userId: number): Promise<{ variants: ImageVariant[]; metadata: MediaMetadata }> {
+  async processImage(
+    originalUrl: string,
+    userId: number
+  ): Promise<{ variants: ImageVariant[]; metadata: MediaMetadata }> {
     // Generate variants (in production would use Sharp/ImageMagick)
-    const variants: ImageVariant[] = Object.entries(this.VARIANT_CONFIGS).map(([name, config]) => ({
-      name,
-      width: config.width,
-      height: config.height,
-      quality: config.quality,
-      format: "webp" as const,
-      url: `${originalUrl}?w=${config.width}&h=${config.height}&q=${config.quality}&fmt=webp`,
-    }));
+    const variants: ImageVariant[] = Object.entries(this.VARIANT_CONFIGS).map(
+      ([name, config]) => ({
+        name,
+        width: config.width,
+        height: config.height,
+        quality: config.quality,
+        format: "webp" as const,
+        url: `${originalUrl}?w=${config.width}&h=${config.height}&q=${config.quality}&fmt=webp`,
+      })
+    );
 
     // Extract metadata (simulated - in production would read EXIF)
     const metadata: MediaMetadata = {
@@ -119,9 +127,18 @@ export class ImageProcessingService {
   async generateAvatar(userId: number, initials: string): Promise<string> {
     // Generate a deterministic avatar based on userId
     const colors = [
-      "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
-      "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F",
-      "#BB8FCE", "#85C1E9", "#82E0AA", "#F8C471",
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#96CEB4",
+      "#FFEAA7",
+      "#DDA0DD",
+      "#98D8C8",
+      "#F7DC6F",
+      "#BB8FCE",
+      "#85C1E9",
+      "#82E0AA",
+      "#F8C471",
     ];
     const color = colors[userId % colors.length];
     const size = 256;
@@ -137,7 +154,8 @@ export class ImageProcessingService {
 
   private generateBlurhash(): string {
     // Simplified blurhash generation
-    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~";
+    const chars =
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~";
     let hash = "";
     for (let i = 0; i < 28; i++) {
       hash += chars[Math.floor(Math.random() * chars.length)];
@@ -163,7 +181,10 @@ export class MediaLibraryService {
   private assetCounter = 0;
   private collectionCounter = 0;
 
-  async uploadAsset(userId: number, file: { filename: string; mimeType: string; size: number; url: string }): Promise<MediaAsset> {
+  async uploadAsset(
+    userId: number,
+    file: { filename: string; mimeType: string; size: number; url: string }
+  ): Promise<MediaAsset> {
     this.assetCounter++;
     const id = `media_${this.assetCounter}`;
 
@@ -190,7 +211,11 @@ export class MediaLibraryService {
     return this.assets.get(id);
   }
 
-  async getUserAssets(userId: number, type?: MediaAsset["type"], limit = 50): Promise<MediaAsset[]> {
+  async getUserAssets(
+    userId: number,
+    type?: MediaAsset["type"],
+    limit = 50
+  ): Promise<MediaAsset[]> {
     const assets = Array.from(this.assets.values())
       .filter(a => a.userId === userId && a.status !== "deleted")
       .filter(a => !type || a.type === type)
@@ -206,7 +231,11 @@ export class MediaLibraryService {
     return true;
   }
 
-  async createCollection(userId: number, name: string, description?: string): Promise<MediaCollection> {
+  async createCollection(
+    userId: number,
+    name: string,
+    description?: string
+  ): Promise<MediaCollection> {
     this.collectionCounter++;
     const id = `coll_${this.collectionCounter}`;
 
@@ -224,7 +253,11 @@ export class MediaLibraryService {
     return collection;
   }
 
-  async addToCollection(collectionId: string, assetId: string, userId: number): Promise<boolean> {
+  async addToCollection(
+    collectionId: string,
+    assetId: string,
+    userId: number
+  ): Promise<boolean> {
     const collection = this.collections.get(collectionId);
     if (!collection || collection.userId !== userId) return false;
     if (!collection.assetIds.includes(assetId)) {
@@ -254,11 +287,30 @@ export class MediaLibraryService {
 export class StorageQuotaService {
   private quotas: Map<number, StorageQuota> = new Map();
 
-  private readonly TIER_LIMITS: Record<string, { maxBytes: number; maxFiles: number; maxBandwidth: number }> = {
-    free: { maxBytes: 500 * 1024 * 1024, maxFiles: 100, maxBandwidth: 5 * 1024 * 1024 * 1024 }, // 500MB, 100 files, 5GB/mo
-    creator: { maxBytes: 5 * 1024 * 1024 * 1024, maxFiles: 1000, maxBandwidth: 50 * 1024 * 1024 * 1024 }, // 5GB, 1000 files, 50GB/mo
-    premium: { maxBytes: 50 * 1024 * 1024 * 1024, maxFiles: 10000, maxBandwidth: 500 * 1024 * 1024 * 1024 }, // 50GB, 10K files, 500GB/mo
-    enterprise: { maxBytes: 500 * 1024 * 1024 * 1024, maxFiles: 100000, maxBandwidth: 5 * 1024 * 1024 * 1024 * 1024 }, // 500GB, 100K files, 5TB/mo
+  private readonly TIER_LIMITS: Record<
+    string,
+    { maxBytes: number; maxFiles: number; maxBandwidth: number }
+  > = {
+    free: {
+      maxBytes: 500 * 1024 * 1024,
+      maxFiles: 100,
+      maxBandwidth: 5 * 1024 * 1024 * 1024,
+    }, // 500MB, 100 files, 5GB/mo
+    creator: {
+      maxBytes: 5 * 1024 * 1024 * 1024,
+      maxFiles: 1000,
+      maxBandwidth: 50 * 1024 * 1024 * 1024,
+    }, // 5GB, 1000 files, 50GB/mo
+    premium: {
+      maxBytes: 50 * 1024 * 1024 * 1024,
+      maxFiles: 10000,
+      maxBandwidth: 500 * 1024 * 1024 * 1024,
+    }, // 50GB, 10K files, 500GB/mo
+    enterprise: {
+      maxBytes: 500 * 1024 * 1024 * 1024,
+      maxFiles: 100000,
+      maxBandwidth: 5 * 1024 * 1024 * 1024 * 1024,
+    }, // 500GB, 100K files, 5TB/mo
   };
 
   async getQuota(userId: number): Promise<StorageQuota> {
@@ -284,15 +336,24 @@ export class StorageQuotaService {
     return quota;
   }
 
-  async checkQuota(userId: number, fileSize: number): Promise<{ allowed: boolean; reason?: string }> {
+  async checkQuota(
+    userId: number,
+    fileSize: number
+  ): Promise<{ allowed: boolean; reason?: string }> {
     const quota = await this.getQuota(userId);
 
     if (quota.usedBytes + fileSize > quota.maxBytes) {
-      return { allowed: false, reason: `Storage limit exceeded. Used: ${this.formatBytes(quota.usedBytes)}, Limit: ${this.formatBytes(quota.maxBytes)}` };
+      return {
+        allowed: false,
+        reason: `Storage limit exceeded. Used: ${this.formatBytes(quota.usedBytes)}, Limit: ${this.formatBytes(quota.maxBytes)}`,
+      };
     }
 
     if (quota.fileCount >= quota.maxFiles) {
-      return { allowed: false, reason: `File count limit reached. Limit: ${quota.maxFiles} files` };
+      return {
+        allowed: false,
+        reason: `File count limit reached. Limit: ${quota.maxFiles} files`,
+      };
     }
 
     return { allowed: true };
@@ -310,7 +371,10 @@ export class StorageQuotaService {
     quota.fileCount = Math.max(0, quota.fileCount - 1);
   }
 
-  async upgradeTier(userId: number, newTier: StorageQuota["tier"]): Promise<StorageQuota> {
+  async upgradeTier(
+    userId: number,
+    newTier: StorageQuota["tier"]
+  ): Promise<StorageQuota> {
     const quota = await this.getQuota(userId);
     const limits = this.TIER_LIMITS[newTier];
     quota.tier = newTier;
@@ -323,7 +387,8 @@ export class StorageQuotaService {
   private formatBytes(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes < 1024 * 1024 * 1024)
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   }
 }
@@ -335,14 +400,18 @@ export class StorageQuotaService {
 export class MediaAnalyticsService {
   private viewCounts: Map<string, number> = new Map();
   private downloadCounts: Map<string, number> = new Map();
-  private bandwidthLog: { assetId: string; bytes: number; timestamp: Date }[] = [];
+  private bandwidthLog: { assetId: string; bytes: number; timestamp: Date }[] =
+    [];
 
   recordView(assetId: string): void {
     this.viewCounts.set(assetId, (this.viewCounts.get(assetId) || 0) + 1);
   }
 
   recordDownload(assetId: string, bytes: number): void {
-    this.downloadCounts.set(assetId, (this.downloadCounts.get(assetId) || 0) + 1);
+    this.downloadCounts.set(
+      assetId,
+      (this.downloadCounts.get(assetId) || 0) + 1
+    );
     this.bandwidthLog.push({ assetId, bytes, timestamp: new Date() });
 
     // Keep last 10000 entries
@@ -380,17 +449,40 @@ export class MediaAnalyticsService {
 
 export class CDNService {
   private readonly CDN_BASE = "/manus-storage";
-  private cacheHeaders: Map<string, { maxAge: number; staleWhileRevalidate: number }> = new Map();
+  private cacheHeaders: Map<
+    string,
+    { maxAge: number; staleWhileRevalidate: number }
+  > = new Map();
 
   constructor() {
     // Default cache policies by content type
-    this.cacheHeaders.set("image", { maxAge: 86400 * 30, staleWhileRevalidate: 86400 }); // 30 days
-    this.cacheHeaders.set("video", { maxAge: 86400 * 7, staleWhileRevalidate: 86400 }); // 7 days
-    this.cacheHeaders.set("audio", { maxAge: 86400 * 7, staleWhileRevalidate: 86400 }); // 7 days
-    this.cacheHeaders.set("document", { maxAge: 86400, staleWhileRevalidate: 3600 }); // 1 day
+    this.cacheHeaders.set("image", {
+      maxAge: 86400 * 30,
+      staleWhileRevalidate: 86400,
+    }); // 30 days
+    this.cacheHeaders.set("video", {
+      maxAge: 86400 * 7,
+      staleWhileRevalidate: 86400,
+    }); // 7 days
+    this.cacheHeaders.set("audio", {
+      maxAge: 86400 * 7,
+      staleWhileRevalidate: 86400,
+    }); // 7 days
+    this.cacheHeaders.set("document", {
+      maxAge: 86400,
+      staleWhileRevalidate: 3600,
+    }); // 1 day
   }
 
-  getOptimizedUrl(originalUrl: string, options?: { width?: number; height?: number; quality?: number; format?: string }): string {
+  getOptimizedUrl(
+    originalUrl: string,
+    options?: {
+      width?: number;
+      height?: number;
+      quality?: number;
+      format?: string;
+    }
+  ): string {
     if (!options) return originalUrl;
 
     const params = new URLSearchParams();
@@ -402,15 +494,21 @@ export class CDNService {
     return `${originalUrl}?${params.toString()}`;
   }
 
-  getCachePolicy(contentType: string): { maxAge: number; staleWhileRevalidate: number } {
+  getCachePolicy(contentType: string): {
+    maxAge: number;
+    staleWhileRevalidate: number;
+  } {
     const type = contentType.split("/")[0];
-    return this.cacheHeaders.get(type) || { maxAge: 3600, staleWhileRevalidate: 600 };
+    return (
+      this.cacheHeaders.get(type) || { maxAge: 3600, staleWhileRevalidate: 600 }
+    );
   }
 
-  generateSrcSet(baseUrl: string, widths: number[] = [320, 640, 960, 1280, 1920]): string {
-    return widths
-      .map(w => `${baseUrl}?w=${w}&fmt=webp ${w}w`)
-      .join(", ");
+  generateSrcSet(
+    baseUrl: string,
+    widths: number[] = [320, 640, 960, 1280, 1920]
+  ): string {
+    return widths.map(w => `${baseUrl}?w=${w}&fmt=webp ${w}w`).join(", ");
   }
 }
 
@@ -423,7 +521,6 @@ export const mediaLibrary = new MediaLibraryService();
 export const storageQuota = new StorageQuotaService();
 export const mediaAnalytics = new MediaAnalyticsService();
 export const cdnService = new CDNService();
-
 
 // ═══════════════════════════════════════════════════════════════
 // MEDIA ENGINE v2 — ADVANCED PIPELINE EXTENSIONS
@@ -447,7 +544,8 @@ export interface UploadSession {
 export interface TranscodingJob {
   id: string;
   assetId: string;
-  targetQuality: "4k" | "1080p" | "720p" | "480p" | "360p" | "thumbnail" | "preview";
+  targetQuality:
+    "4k" | "1080p" | "720p" | "480p" | "360p" | "thumbnail" | "preview";
   status: "queued" | "processing" | "completed" | "failed";
   progress: number;
   startedAt?: number;
@@ -491,12 +589,18 @@ const uploadSessionsV2 = new Map<string, UploadSession>();
 const transcodingQueueV2: TranscodingJob[] = [];
 const videoClipsStore = new Map<string, VideoClip>();
 const extendedAnalytics = new Map<string, ExtendedMediaAnalytics>();
-const uploadQuotasV2 = new Map<number, { usedBytes: number; lastReset: number }>();
+const uploadQuotasV2 = new Map<
+  number,
+  { usedBytes: number; lastReset: number }
+>();
 
 // ─── Chunked Upload Sessions ──────────────────────────────────
 
 export function createUploadSessionV2(params: {
-  uploaderId: number; filename: string; mimeType: string; totalSize: number;
+  uploaderId: number;
+  filename: string;
+  mimeType: string;
+  totalSize: number;
 }): UploadSession {
   const session: UploadSession = {
     id: `upload_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -515,9 +619,14 @@ export function createUploadSessionV2(params: {
   return session;
 }
 
-export function recordChunkUpload(sessionId: string, chunkIndex: number, chunkSize: number): { complete: boolean; progress: number } {
+export function recordChunkUpload(
+  sessionId: string,
+  chunkIndex: number,
+  chunkSize: number
+): { complete: boolean; progress: number } {
   const session = uploadSessionsV2.get(sessionId);
-  if (!session || session.status !== "active") return { complete: false, progress: 0 };
+  if (!session || session.status !== "active")
+    return { complete: false, progress: 0 };
   session.uploadedChunks.add(chunkIndex);
   session.uploadedBytes += chunkSize;
   const progress = session.uploadedBytes / session.totalSize;
@@ -526,14 +635,20 @@ export function recordChunkUpload(sessionId: string, chunkIndex: number, chunkSi
   return { complete, progress };
 }
 
-export function getUploadSessionV2(sessionId: string): UploadSession | undefined {
+export function getUploadSessionV2(
+  sessionId: string
+): UploadSession | undefined {
   return uploadSessionsV2.get(sessionId);
 }
 
 // ─── Video Clips ──────────────────────────────────────────────
 
 export function createVideoClip(params: {
-  sourceAssetId: string; creatorId: number; title: string; startTime: number; endTime: number;
+  sourceAssetId: string;
+  creatorId: number;
+  title: string;
+  startTime: number;
+  endTime: number;
 }): VideoClip {
   const clip: VideoClip = {
     id: `clip_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -562,7 +677,9 @@ export function getVideoClip(clipId: string): VideoClip | undefined {
 }
 
 export function getCreatorClips(creatorId: number): VideoClip[] {
-  return Array.from(videoClipsStore.values()).filter(c => c.creatorId === creatorId);
+  return Array.from(videoClipsStore.values()).filter(
+    c => c.creatorId === creatorId
+  );
 }
 
 export function recordClipView(clipId: string): void {
@@ -577,22 +694,47 @@ export function likeClip(clipId: string): void {
 
 // ─── Extended Analytics ───────────────────────────────────────
 
-export function recordExtendedView(assetId: string, userId?: number, watchDuration?: number): void {
+export function recordExtendedView(
+  assetId: string,
+  userId?: number,
+  watchDuration?: number
+): void {
   let analytics = extendedAnalytics.get(assetId);
   if (!analytics) {
-    analytics = { assetId, views: 0, uniqueViewers: new Set(), avgWatchTime: 0, completionRate: 0, peakViewers: 0, shareCount: 0, downloadCount: 0, bandwidthUsedGB: 0, viewTimeline: [] };
+    analytics = {
+      assetId,
+      views: 0,
+      uniqueViewers: new Set(),
+      avgWatchTime: 0,
+      completionRate: 0,
+      peakViewers: 0,
+      shareCount: 0,
+      downloadCount: 0,
+      bandwidthUsedGB: 0,
+      viewTimeline: [],
+    };
     extendedAnalytics.set(assetId, analytics);
   }
   analytics.views++;
   if (userId) analytics.uniqueViewers.add(userId);
   if (watchDuration) {
-    analytics.avgWatchTime = (analytics.avgWatchTime * (analytics.views - 1) + watchDuration) / analytics.views;
+    analytics.avgWatchTime =
+      (analytics.avgWatchTime * (analytics.views - 1) + watchDuration) /
+      analytics.views;
   }
-  analytics.viewTimeline.push({ timestamp: Date.now(), views: analytics.views });
-  if (analytics.viewTimeline.length > 1000) analytics.viewTimeline.splice(0, 100);
+  analytics.viewTimeline.push({
+    timestamp: Date.now(),
+    views: analytics.views,
+  });
+  if (analytics.viewTimeline.length > 1000)
+    analytics.viewTimeline.splice(0, 100);
 }
 
-export function getExtendedAnalytics(assetId: string): (Omit<ExtendedMediaAnalytics, "uniqueViewers"> & { uniqueViewerCount: number }) | null {
+export function getExtendedAnalytics(assetId: string):
+  | (Omit<ExtendedMediaAnalytics, "uniqueViewers"> & {
+      uniqueViewerCount: number;
+    })
+  | null {
   const a = extendedAnalytics.get(assetId);
   if (!a) return null;
   const { uniqueViewers, ...rest } = a;
@@ -601,7 +743,11 @@ export function getExtendedAnalytics(assetId: string): (Omit<ExtendedMediaAnalyt
 
 // ─── Transcoding Queue v2 ─────────────────────────────────────
 
-export function queueTranscodingJob(assetId: string, quality: TranscodingJob["targetQuality"], priority = 5): TranscodingJob {
+export function queueTranscodingJob(
+  assetId: string,
+  quality: TranscodingJob["targetQuality"],
+  priority = 5
+): TranscodingJob {
   const job: TranscodingJob = {
     id: `transcode_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     assetId,
@@ -616,10 +762,16 @@ export function queueTranscodingJob(assetId: string, quality: TranscodingJob["ta
 }
 
 export function getTranscodingQueue(assetId?: string): TranscodingJob[] {
-  return assetId ? transcodingQueueV2.filter(j => j.assetId === assetId) : [...transcodingQueueV2];
+  return assetId
+    ? transcodingQueueV2.filter(j => j.assetId === assetId)
+    : [...transcodingQueueV2];
 }
 
-export function updateTranscodingProgress(jobId: string, progress: number, status?: TranscodingJob["status"]): boolean {
+export function updateTranscodingProgress(
+  jobId: string,
+  progress: number,
+  status?: TranscodingJob["status"]
+): boolean {
   const job = transcodingQueueV2.find(j => j.id === jobId);
   if (!job) return false;
   job.progress = progress;
@@ -631,20 +783,49 @@ export function updateTranscodingProgress(jobId: string, progress: number, statu
 
 // ─── Upload Quota v2 ──────────────────────────────────────────
 
-export function checkUploadQuotaV2(userId: number, fileSizeBytes: number, tier: "free" | "creator" | "premium" | "admin" = "free"): { allowed: boolean; reason?: string } {
+export function checkUploadQuotaV2(
+  userId: number,
+  fileSizeBytes: number,
+  tier: "free" | "creator" | "premium" | "admin" = "free"
+): { allowed: boolean; reason?: string } {
   const limits = { free: 50, creator: 500, premium: 2000, admin: 10000 };
-  const dailyLimits = { free: 500, creator: 5000, premium: 20000, admin: 100000 };
+  const dailyLimits = {
+    free: 500,
+    creator: 5000,
+    premium: 20000,
+    admin: 100000,
+  };
   const maxBytes = limits[tier] * 1024 * 1024;
-  if (fileSizeBytes > maxBytes) return { allowed: false, reason: `File exceeds ${limits[tier]}MB limit for ${tier} tier` };
-  const quota = uploadQuotasV2.get(userId) || { usedBytes: 0, lastReset: Date.now() };
-  if (Date.now() - quota.lastReset > 86_400_000) { quota.usedBytes = 0; quota.lastReset = Date.now(); }
+  if (fileSizeBytes > maxBytes)
+    return {
+      allowed: false,
+      reason: `File exceeds ${limits[tier]}MB limit for ${tier} tier`,
+    };
+  const quota = uploadQuotasV2.get(userId) || {
+    usedBytes: 0,
+    lastReset: Date.now(),
+  };
+  if (Date.now() - quota.lastReset > 86_400_000) {
+    quota.usedBytes = 0;
+    quota.lastReset = Date.now();
+  }
   const dailyLimitBytes = dailyLimits[tier] * 1024 * 1024;
-  if (quota.usedBytes + fileSizeBytes > dailyLimitBytes) return { allowed: false, reason: `Daily upload limit of ${dailyLimits[tier]}MB reached` };
+  if (quota.usedBytes + fileSizeBytes > dailyLimitBytes)
+    return {
+      allowed: false,
+      reason: `Daily upload limit of ${dailyLimits[tier]}MB reached`,
+    };
   return { allowed: true };
 }
 
-export function recordUploadUsageV2(userId: number, fileSizeBytes: number): void {
-  const quota = uploadQuotasV2.get(userId) || { usedBytes: 0, lastReset: Date.now() };
+export function recordUploadUsageV2(
+  userId: number,
+  fileSizeBytes: number
+): void {
+  const quota = uploadQuotasV2.get(userId) || {
+    usedBytes: 0,
+    lastReset: Date.now(),
+  };
   quota.usedBytes += fileSizeBytes;
   uploadQuotasV2.set(userId, quota);
 }
@@ -654,12 +835,22 @@ export function recordUploadUsageV2(userId: number, fileSizeBytes: number): void
 export function getMediaEngineV2Stats() {
   return {
     uploadSessions: uploadSessionsV2.size,
-    activeUploads: Array.from(uploadSessionsV2.values()).filter(s => s.status === "active").length,
-    transcodingQueued: transcodingQueueV2.filter(j => j.status === "queued").length,
-    transcodingProcessing: transcodingQueueV2.filter(j => j.status === "processing").length,
+    activeUploads: Array.from(uploadSessionsV2.values()).filter(
+      s => s.status === "active"
+    ).length,
+    transcodingQueued: transcodingQueueV2.filter(j => j.status === "queued")
+      .length,
+    transcodingProcessing: transcodingQueueV2.filter(
+      j => j.status === "processing"
+    ).length,
     totalClips: videoClipsStore.size,
-    readyClips: Array.from(videoClipsStore.values()).filter(c => c.status === "ready").length,
+    readyClips: Array.from(videoClipsStore.values()).filter(
+      c => c.status === "ready"
+    ).length,
     trackedAssets: extendedAnalytics.size,
-    totalViewsTracked: Array.from(extendedAnalytics.values()).reduce((s, a) => s + a.views, 0),
+    totalViewsTracked: Array.from(extendedAnalytics.values()).reduce(
+      (s, a) => s + a.views,
+      0
+    ),
   };
 }

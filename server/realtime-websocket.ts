@@ -18,50 +18,85 @@
 // ─── CHANNEL TYPES ────────────────────────────────────────────────────────────
 
 export type WsChannel =
-  | `user:${number}`            // Personal notifications, balance updates
-  | `feed:${number}`            // User's personalized feed
-  | `chat:dm:${string}`         // Direct message thread
-  | `chat:channel:${number}`    // Community channel
-  | `stream:${number}`          // Stream viewer room
-  | `marketplace:${number}`     // Order/listing updates
-  | `tournament:${string}`      // Tournament bracket updates
-  | `wager:${string}`           // Wager status updates
-  | `community:${number}`       // Community activity
-  | `global:feed`               // Trending/global feed
-  | `global:crypto`             // Token price updates
-  | `admin:moderation`;         // Moderation queue
+  | `user:${number}` // Personal notifications, balance updates
+  | `feed:${number}` // User's personalized feed
+  | `chat:dm:${string}` // Direct message thread
+  | `chat:channel:${number}` // Community channel
+  | `stream:${number}` // Stream viewer room
+  | `marketplace:${number}` // Order/listing updates
+  | `tournament:${string}` // Tournament bracket updates
+  | `wager:${string}` // Wager status updates
+  | `community:${number}` // Community activity
+  | `global:feed` // Trending/global feed
+  | `global:crypto` // Token price updates
+  | `admin:moderation`; // Moderation queue
 
 export type WsEventType =
   // Social
-  | "post.created" | "post.liked" | "post.commented" | "post.shared"
-  | "user.followed" | "user.unfollowed"
-  | "story.created" | "reel.created"
+  | "post.created"
+  | "post.liked"
+  | "post.commented"
+  | "post.shared"
+  | "user.followed"
+  | "user.unfollowed"
+  | "story.created"
+  | "reel.created"
   // Chat
-  | "message.sent" | "message.read" | "message.deleted" | "message.edited"
-  | "typing.start" | "typing.stop"
-  | "user.online" | "user.offline"
+  | "message.sent"
+  | "message.read"
+  | "message.deleted"
+  | "message.edited"
+  | "typing.start"
+  | "typing.stop"
+  | "user.online"
+  | "user.offline"
   // Notifications
-  | "notification.new" | "notification.read" | "notification.batch"
+  | "notification.new"
+  | "notification.read"
+  | "notification.batch"
   // Streaming
-  | "stream.started" | "stream.ended" | "stream.viewer.joined" | "stream.viewer.left"
-  | "stream.donation" | "stream.chat.message" | "stream.clip.created"
+  | "stream.started"
+  | "stream.ended"
+  | "stream.viewer.joined"
+  | "stream.viewer.left"
+  | "stream.donation"
+  | "stream.chat.message"
+  | "stream.clip.created"
   | "stream.viewercount.update"
   // Marketplace
-  | "order.created" | "order.status.changed" | "order.delivered"
-  | "listing.price.changed" | "listing.sold"
-  | "dispute.opened" | "dispute.resolved"
+  | "order.created"
+  | "order.status.changed"
+  | "order.delivered"
+  | "listing.price.changed"
+  | "listing.sold"
+  | "dispute.opened"
+  | "dispute.resolved"
   // GameFi
-  | "xp.awarded" | "level.up" | "achievement.unlocked" | "tier.changed"
-  | "tournament.match.started" | "tournament.match.ended" | "tournament.bracket.updated"
-  | "wager.accepted" | "wager.resolved" | "challenge.completed"
+  | "xp.awarded"
+  | "level.up"
+  | "achievement.unlocked"
+  | "tier.changed"
+  | "tournament.match.started"
+  | "tournament.match.ended"
+  | "tournament.bracket.updated"
+  | "wager.accepted"
+  | "wager.resolved"
+  | "challenge.completed"
   | "leaderboard.updated"
   // Crypto/Wallet
-  | "balance.updated" | "stake.created" | "stake.reward.accrued" | "stake.unstaked"
-  | "swap.executed" | "swap.confirmed" | "swap.failed"
-  | "governance.vote.cast" | "governance.proposal.created"
+  | "balance.updated"
+  | "stake.created"
+  | "stake.reward.accrued"
+  | "stake.unstaked"
+  | "swap.executed"
+  | "swap.confirmed"
+  | "swap.failed"
+  | "governance.vote.cast"
+  | "governance.proposal.created"
   | "token.price.updated"
   // System
-  | "system.announcement" | "system.maintenance";
+  | "system.announcement"
+  | "system.maintenance";
 
 export interface WsEvent<T = unknown> {
   id: string;
@@ -87,7 +122,10 @@ const _connections = new Map<string, WsConnection>();
 const _channelSubscribers = new Map<WsChannel, Set<string>>();
 const _userConnections = new Map<number, Set<string>>();
 const _eventHistory = new Map<WsChannel, WsEvent[]>();
-const _presenceMap = new Map<number, { status: "online" | "away" | "offline"; lastSeen: Date }>();
+const _presenceMap = new Map<
+  number,
+  { status: "online" | "away" | "offline"; lastSeen: Date }
+>();
 
 let _eventCounter = 0;
 
@@ -98,7 +136,11 @@ function generateEventId(): string {
 // ─── CONNECTION MANAGER ───────────────────────────────────────────────────────
 
 export const connectionManager = {
-  connect(userId: number, connectionId: string, metadata: Record<string, unknown> = {}): WsConnection {
+  connect(
+    userId: number,
+    connectionId: string,
+    metadata: Record<string, unknown> = {}
+  ): WsConnection {
     const connection: WsConnection = {
       id: connectionId,
       userId,
@@ -122,7 +164,10 @@ export const connectionManager = {
     _presenceMap.set(userId, { status: "online", lastSeen: new Date() });
 
     // Broadcast presence change
-    realtimeBus.publish(`user:${userId}`, "user.online", { userId, status: "online" });
+    realtimeBus.publish(`user:${userId}`, "user.online", {
+      userId,
+      status: "online",
+    });
 
     return connection;
   },
@@ -147,7 +192,10 @@ export const connectionManager = {
       if (userConns.size === 0) {
         _userConnections.delete(conn.userId);
         // User is now offline
-        _presenceMap.set(conn.userId, { status: "offline", lastSeen: new Date() });
+        _presenceMap.set(conn.userId, {
+          status: "offline",
+          lastSeen: new Date(),
+        });
         realtimeBus.publish(`user:${conn.userId}`, "user.offline", {
           userId: conn.userId,
           status: "offline",
@@ -251,7 +299,11 @@ export const realtimeBus = {
    * Publish an event to a channel.
    * In production: this also publishes to Redis pub/sub for multi-instance distribution.
    */
-  publish<T = unknown>(channel: WsChannel, type: WsEventType, payload: T): WsEvent<T> {
+  publish<T = unknown>(
+    channel: WsChannel,
+    type: WsEventType,
+    payload: T
+  ): WsEvent<T> {
     const event: WsEvent<T> = {
       id: generateEventId(),
       channel,
@@ -273,13 +325,21 @@ export const realtimeBus = {
     const channelSubs = _subscribers.get(channel);
     if (channelSubs) {
       for (const handler of channelSubs) {
-        try { handler(event as WsEvent); } catch { /* isolate handler errors */ }
+        try {
+          handler(event as WsEvent);
+        } catch {
+          /* isolate handler errors */
+        }
       }
     }
 
     // Notify wildcard subscribers
     for (const handler of _wildcardSubscribers) {
-      try { handler(event as WsEvent); } catch { /* isolate handler errors */ }
+      try {
+        handler(event as WsEvent);
+      } catch {
+        /* isolate handler errors */
+      }
     }
 
     return event;
@@ -354,15 +414,23 @@ export const realtimeBus = {
 // ─── PRESENCE SYSTEM ─────────────────────────────────────────────────────────
 
 export const presenceSystem = {
-  getStatus(userId: number): { status: "online" | "away" | "offline"; lastSeen: Date } {
-    return _presenceMap.get(userId) ?? { status: "offline", lastSeen: new Date(0) };
+  getStatus(userId: number): {
+    status: "online" | "away" | "offline";
+    lastSeen: Date;
+  } {
+    return (
+      _presenceMap.get(userId) ?? { status: "offline", lastSeen: new Date(0) }
+    );
   },
 
   setAway(userId: number): void {
     const current = _presenceMap.get(userId);
     if (current?.status === "online") {
       _presenceMap.set(userId, { status: "away", lastSeen: new Date() });
-      realtimeBus.publish(`user:${userId}`, "user.online", { userId, status: "away" });
+      realtimeBus.publish(`user:${userId}`, "user.online", {
+        userId,
+        status: "away",
+      });
     }
   },
 
@@ -373,7 +441,9 @@ export const presenceSystem = {
     });
   },
 
-  getBulkStatus(userIds: number[]): Record<number, "online" | "away" | "offline"> {
+  getBulkStatus(
+    userIds: number[]
+  ): Record<number, "online" | "away" | "offline"> {
     const result: Record<number, "online" | "away" | "offline"> = {};
     for (const id of userIds) {
       result[id] = _presenceMap.get(id)?.status ?? "offline";
@@ -395,7 +465,11 @@ export const socialRealtimeService = {
     // Broadcast to author's followers' feeds
     realtimeBus.publish(`user:${post.authorId}`, "post.created", post);
     if (post.communityId) {
-      realtimeBus.publish(`community:${post.communityId}`, "post.created", post);
+      realtimeBus.publish(
+        `community:${post.communityId}`,
+        "post.created",
+        post
+      );
     }
     realtimeBus.publish("global:feed", "post.created", post);
   },
@@ -425,7 +499,11 @@ export const socialRealtimeService = {
     postAuthorId: number;
     content: string;
   }): void {
-    realtimeBus.publish(`user:${comment.postAuthorId}`, "post.commented", comment);
+    realtimeBus.publish(
+      `user:${comment.postAuthorId}`,
+      "post.commented",
+      comment
+    );
     if (comment.authorId !== comment.postAuthorId) {
       realtimeBus.sendToUser(comment.postAuthorId, "notification.new", {
         type: "comment",
@@ -465,34 +543,54 @@ export const chatRealtimeService = {
     content: string;
     sentAt: string;
   }): void {
-    realtimeBus.publish(`chat:channel:${message.channelId}`, "message.sent", message);
+    realtimeBus.publish(
+      `chat:channel:${message.channelId}`,
+      "message.sent",
+      message
+    );
   },
 
-  broadcastTyping(channelOrThread: string, userId: number, isTyping: boolean): void {
-    const channel = channelOrThread.startsWith("dm:") 
-      ? `chat:dm:${channelOrThread.slice(3)}` as WsChannel
-      : `chat:channel:${channelOrThread}` as WsChannel;
-    realtimeBus.publish(channel, isTyping ? "typing.start" : "typing.stop", { userId });
+  broadcastTyping(
+    channelOrThread: string,
+    userId: number,
+    isTyping: boolean
+  ): void {
+    const channel = channelOrThread.startsWith("dm:")
+      ? (`chat:dm:${channelOrThread.slice(3)}` as WsChannel)
+      : (`chat:channel:${channelOrThread}` as WsChannel);
+    realtimeBus.publish(channel, isTyping ? "typing.start" : "typing.stop", {
+      userId,
+    });
   },
 
-  broadcastMessageRead(threadId: string, userId: number, messageId: string): void {
-    realtimeBus.publish(`chat:dm:${threadId}`, "message.read", { userId, messageId });
+  broadcastMessageRead(
+    threadId: string,
+    userId: number,
+    messageId: string
+  ): void {
+    realtimeBus.publish(`chat:dm:${threadId}`, "message.read", {
+      userId,
+      messageId,
+    });
   },
 };
 
 // ─── SYSTEM 3: NOTIFICATIONS REALTIME ────────────────────────────────────────
 
 export const notificationRealtimeService = {
-  send(userId: number, notification: {
-    id: string;
-    type: string;
-    title: string;
-    body: string;
-    actorId?: number;
-    entityId?: string | number;
-    entityType?: string;
-    actionUrl?: string;
-  }): void {
+  send(
+    userId: number,
+    notification: {
+      id: string;
+      type: string;
+      title: string;
+      body: string;
+      actorId?: number;
+      entityId?: string | number;
+      entityType?: string;
+      actionUrl?: string;
+    }
+  ): void {
     realtimeBus.sendToUser(userId, "notification.new", notification);
   },
 
@@ -504,8 +602,14 @@ export const notificationRealtimeService = {
     realtimeBus.sendToUser(userId, "notification.read", { notificationId });
   },
 
-  sendSystemAnnouncement(message: string, priority: "low" | "medium" | "high" = "medium"): void {
-    realtimeBus.publish("global:feed", "system.announcement", { message, priority });
+  sendSystemAnnouncement(
+    message: string,
+    priority: "low" | "medium" | "high" = "medium"
+  ): void {
+    realtimeBus.publish("global:feed", "system.announcement", {
+      message,
+      priority,
+    });
   },
 };
 
@@ -526,36 +630,66 @@ export const streamingRealtimeService = {
     });
   },
 
-  broadcastStreamEnd(streamId: number, stats: { viewerCount: number; duration: number; revenue: number }): void {
-    realtimeBus.publish(`stream:${streamId}`, "stream.ended", { streamId, ...stats });
+  broadcastStreamEnd(
+    streamId: number,
+    stats: { viewerCount: number; duration: number; revenue: number }
+  ): void {
+    realtimeBus.publish(`stream:${streamId}`, "stream.ended", {
+      streamId,
+      ...stats,
+    });
   },
 
-  broadcastViewerJoin(streamId: number, userId: number, viewerCount: number): void {
-    realtimeBus.publish(`stream:${streamId}`, "stream.viewer.joined", { userId, viewerCount });
-    realtimeBus.publish(`stream:${streamId}`, "stream.viewercount.update", { viewerCount });
+  broadcastViewerJoin(
+    streamId: number,
+    userId: number,
+    viewerCount: number
+  ): void {
+    realtimeBus.publish(`stream:${streamId}`, "stream.viewer.joined", {
+      userId,
+      viewerCount,
+    });
+    realtimeBus.publish(`stream:${streamId}`, "stream.viewercount.update", {
+      viewerCount,
+    });
   },
 
-  broadcastViewerLeave(streamId: number, userId: number, viewerCount: number): void {
-    realtimeBus.publish(`stream:${streamId}`, "stream.viewer.left", { userId, viewerCount });
-    realtimeBus.publish(`stream:${streamId}`, "stream.viewercount.update", { viewerCount });
+  broadcastViewerLeave(
+    streamId: number,
+    userId: number,
+    viewerCount: number
+  ): void {
+    realtimeBus.publish(`stream:${streamId}`, "stream.viewer.left", {
+      userId,
+      viewerCount,
+    });
+    realtimeBus.publish(`stream:${streamId}`, "stream.viewercount.update", {
+      viewerCount,
+    });
   },
 
-  broadcastDonation(streamId: number, donation: {
-    donorId: number;
-    amount: number;
-    currency: string;
-    message?: string;
-  }): void {
+  broadcastDonation(
+    streamId: number,
+    donation: {
+      donorId: number;
+      amount: number;
+      currency: string;
+      message?: string;
+    }
+  ): void {
     realtimeBus.publish(`stream:${streamId}`, "stream.donation", donation);
   },
 
-  broadcastStreamChat(streamId: number, message: {
-    id: string;
-    userId: number;
-    content: string;
-    badges?: string[];
-    sentAt: string;
-  }): void {
+  broadcastStreamChat(
+    streamId: number,
+    message: {
+      id: string;
+      userId: number;
+      content: string;
+      badges?: string[];
+      sentAt: string;
+    }
+  ): void {
     realtimeBus.publish(`stream:${streamId}`, "stream.chat.message", message);
   },
 };
@@ -570,7 +704,11 @@ export const marketplaceRealtimeService = {
     status: string;
     updatedAt: string;
   }): void {
-    realtimeBus.publish(`marketplace:${order.buyerId}`, "order.status.changed", order);
+    realtimeBus.publish(
+      `marketplace:${order.buyerId}`,
+      "order.status.changed",
+      order
+    );
     realtimeBus.sendToUser(order.buyerId, "notification.new", {
       type: "order_update",
       entityId: order.id,
@@ -591,7 +729,11 @@ export const marketplaceRealtimeService = {
     oldPrice: number;
     newPrice: number;
   }): void {
-    realtimeBus.publish(`marketplace:${listing.sellerId}`, "listing.price.changed", listing);
+    realtimeBus.publish(
+      `marketplace:${listing.sellerId}`,
+      "listing.price.changed",
+      listing
+    );
   },
 
   broadcastDisputeUpdate(dispute: {
@@ -617,14 +759,17 @@ export const marketplaceRealtimeService = {
 // ─── SYSTEM 6: GAMEFI REALTIME ────────────────────────────────────────────────
 
 export const gamefiRealtimeService = {
-  broadcastXpAward(userId: number, award: {
-    action: string;
-    xpAwarded: number;
-    totalXp: number;
-    level: number;
-    leveledUp: boolean;
-    newTier?: string;
-  }): void {
+  broadcastXpAward(
+    userId: number,
+    award: {
+      action: string;
+      xpAwarded: number;
+      totalXp: number;
+      level: number;
+      leveledUp: boolean;
+      newTier?: string;
+    }
+  ): void {
     realtimeBus.sendToUser(userId, "xp.awarded", award);
     if (award.leveledUp) {
       realtimeBus.sendToUser(userId, "level.up", {
@@ -634,24 +779,31 @@ export const gamefiRealtimeService = {
     }
   },
 
-  broadcastTournamentUpdate(tournamentId: string, update: {
-    type: "match_started" | "match_ended" | "bracket_updated";
-    data: unknown;
-  }): void {
-    const eventType: WsEventType = update.type === "match_started"
-      ? "tournament.match.started"
-      : update.type === "match_ended"
-        ? "tournament.match.ended"
-        : "tournament.bracket.updated";
+  broadcastTournamentUpdate(
+    tournamentId: string,
+    update: {
+      type: "match_started" | "match_ended" | "bracket_updated";
+      data: unknown;
+    }
+  ): void {
+    const eventType: WsEventType =
+      update.type === "match_started"
+        ? "tournament.match.started"
+        : update.type === "match_ended"
+          ? "tournament.match.ended"
+          : "tournament.bracket.updated";
     realtimeBus.publish(`tournament:${tournamentId}`, eventType, update.data);
   },
 
-  broadcastWagerResult(wagerId: string, result: {
-    winnerId: number;
-    loserId: number;
-    amount: number;
-    currency: string;
-  }): void {
+  broadcastWagerResult(
+    wagerId: string,
+    result: {
+      winnerId: number;
+      loserId: number;
+      amount: number;
+      currency: string;
+    }
+  ): void {
     realtimeBus.publish(`wager:${wagerId}`, "wager.resolved", result);
     realtimeBus.sendToUser(result.winnerId, "notification.new", {
       type: "wager_won",
@@ -665,16 +817,25 @@ export const gamefiRealtimeService = {
     });
   },
 
-  broadcastLeaderboardUpdate(type: string, topEntries: Array<{ userId: number; rank: number; score: number }>): void {
-    realtimeBus.publish("global:feed", "leaderboard.updated", { type, topEntries });
+  broadcastLeaderboardUpdate(
+    type: string,
+    topEntries: Array<{ userId: number; rank: number; score: number }>
+  ): void {
+    realtimeBus.publish("global:feed", "leaderboard.updated", {
+      type,
+      topEntries,
+    });
   },
 
-  broadcastAchievementUnlocked(userId: number, achievement: {
-    id: string;
-    name: string;
-    description: string;
-    xpReward: number;
-  }): void {
+  broadcastAchievementUnlocked(
+    userId: number,
+    achievement: {
+      id: string;
+      name: string;
+      description: string;
+      xpReward: number;
+    }
+  ): void {
     realtimeBus.sendToUser(userId, "achievement.unlocked", achievement);
     realtimeBus.sendToUser(userId, "notification.new", {
       type: "achievement",
@@ -686,22 +847,28 @@ export const gamefiRealtimeService = {
 // ─── SYSTEM 7: CRYPTO/WALLET REALTIME ────────────────────────────────────────
 
 export const cryptoRealtimeService = {
-  broadcastBalanceUpdate(userId: number, balance: {
-    token: string;
-    amount: string;
-    change: string;
-    reason: string;
-  }): void {
+  broadcastBalanceUpdate(
+    userId: number,
+    balance: {
+      token: string;
+      amount: string;
+      change: string;
+      reason: string;
+    }
+  ): void {
     realtimeBus.sendToUser(userId, "balance.updated", balance);
   },
 
-  broadcastStakeCreated(userId: number, stake: {
-    id: string;
-    amount: string;
-    apy: number;
-    lockPeriodDays: number;
-    unlocksAt: string;
-  }): void {
+  broadcastStakeCreated(
+    userId: number,
+    stake: {
+      id: string;
+      amount: string;
+      apy: number;
+      lockPeriodDays: number;
+      unlocksAt: string;
+    }
+  ): void {
     realtimeBus.sendToUser(userId, "stake.created", stake);
     realtimeBus.sendToUser(userId, "notification.new", {
       type: "stake_created",
@@ -709,22 +876,28 @@ export const cryptoRealtimeService = {
     });
   },
 
-  broadcastStakeReward(userId: number, reward: {
-    stakeId: string;
-    rewardAmount: string;
-    totalRewards: string;
-  }): void {
+  broadcastStakeReward(
+    userId: number,
+    reward: {
+      stakeId: string;
+      rewardAmount: string;
+      totalRewards: string;
+    }
+  ): void {
     realtimeBus.sendToUser(userId, "stake.reward.accrued", reward);
   },
 
-  broadcastSwapExecuted(userId: number, swap: {
-    id: string;
-    fromToken: string;
-    toToken: string;
-    fromAmount: string;
-    toAmount: string;
-    status: string;
-  }): void {
+  broadcastSwapExecuted(
+    userId: number,
+    swap: {
+      id: string;
+      fromToken: string;
+      toToken: string;
+      fromAmount: string;
+      toAmount: string;
+      status: string;
+    }
+  ): void {
     realtimeBus.sendToUser(userId, "swap.executed", swap);
     if (swap.status === "confirmed") {
       realtimeBus.sendToUser(userId, "swap.confirmed", swap);
@@ -735,7 +908,9 @@ export const cryptoRealtimeService = {
     }
   },
 
-  broadcastTokenPriceUpdate(prices: Record<string, { price: number; change24h: number }>): void {
+  broadcastTokenPriceUpdate(
+    prices: Record<string, { price: number; change24h: number }>
+  ): void {
     realtimeBus.publish("global:crypto", "token.price.updated", prices);
   },
 
@@ -763,32 +938,49 @@ export class RedisAdapter {
   private readonly channelPrefix = "shadowchat:rt:";
 
   constructor(
-    private readonly publishClient: { publish: (channel: string, message: string) => Promise<unknown> },
-    private readonly subscribeClient: { subscribe: (channel: string) => Promise<unknown>; on: (event: string, handler: (...args: unknown[]) => void) => void },
+    private readonly publishClient: {
+      publish: (channel: string, message: string) => Promise<unknown>;
+    },
+    private readonly subscribeClient: {
+      subscribe: (channel: string) => Promise<unknown>;
+      on: (event: string, handler: (...args: unknown[]) => void) => void;
+    }
   ) {}
 
   async init(): Promise<void> {
     // Subscribe to all shadowchat realtime events from other server instances
     await this.subscribeClient.subscribe(`${this.channelPrefix}*`);
-    this.subscribeClient.on("pmessage", (_pattern: unknown, channel: unknown, message: unknown) => {
-      try {
-        const event = JSON.parse(message as string) as WsEvent;
-        const wsChannel = (channel as string).replace(this.channelPrefix, "") as WsChannel;
-        // Re-publish locally (will not loop because we check source)
-        const channelSubs = _subscribers.get(wsChannel);
-        if (channelSubs) {
-          for (const handler of channelSubs) {
-            try { handler(event); } catch { /* isolate */ }
+    this.subscribeClient.on(
+      "pmessage",
+      (_pattern: unknown, channel: unknown, message: unknown) => {
+        try {
+          const event = JSON.parse(message as string) as WsEvent;
+          const wsChannel = (channel as string).replace(
+            this.channelPrefix,
+            ""
+          ) as WsChannel;
+          // Re-publish locally (will not loop because we check source)
+          const channelSubs = _subscribers.get(wsChannel);
+          if (channelSubs) {
+            for (const handler of channelSubs) {
+              try {
+                handler(event);
+              } catch {
+                /* isolate */
+              }
+            }
           }
+        } catch {
+          /* malformed message */
         }
-      } catch { /* malformed message */ }
-    });
+      }
+    );
   }
 
   async publish(channel: WsChannel, event: WsEvent): Promise<void> {
     await this.publishClient.publish(
       `${this.channelPrefix}${channel}`,
-      JSON.stringify(event),
+      JSON.stringify(event)
     );
   }
 }
@@ -821,7 +1013,7 @@ export class WebSocketServer {
     this._connectionCount.value++;
 
     // Wire realtime bus to send events to this connection
-    const unsubscribe = realtimeBus.onAll((event) => {
+    const unsubscribe = realtimeBus.onAll(event => {
       if (conn.subscriptions.has(event.channel)) {
         // In production: ws.send(JSON.stringify(event))
       }
@@ -840,11 +1032,14 @@ export class WebSocketServer {
     };
   }
 
-  handleMessage(connectionId: string, message: {
-    type: "subscribe" | "unsubscribe" | "ping" | "presence";
-    channel?: WsChannel;
-    data?: unknown;
-  }): void {
+  handleMessage(
+    connectionId: string,
+    message: {
+      type: "subscribe" | "unsubscribe" | "ping" | "presence";
+      channel?: WsChannel;
+      data?: unknown;
+    }
+  ): void {
     switch (message.type) {
       case "subscribe":
         if (message.channel) {
@@ -889,7 +1084,12 @@ export function wireSystemEvents(systemEventBus: {
 }): void {
   // Social events
   systemEventBus.on("post.created", (data: unknown) => {
-    const d = data as { id: number; authorId: number; content: string; communityId?: number };
+    const d = data as {
+      id: number;
+      authorId: number;
+      content: string;
+      communityId?: number;
+    };
     socialRealtimeService.broadcastNewPost(d);
   });
 
@@ -905,24 +1105,52 @@ export function wireSystemEvents(systemEventBus: {
 
   // GameFi events
   systemEventBus.on("xp.awarded", (data: unknown) => {
-    const d = data as { userId: number; action: string; xpAwarded: number; totalXp: number; level: number; leveledUp: boolean; newTier?: string };
+    const d = data as {
+      userId: number;
+      action: string;
+      xpAwarded: number;
+      totalXp: number;
+      level: number;
+      leveledUp: boolean;
+      newTier?: string;
+    };
     gamefiRealtimeService.broadcastXpAward(d.userId, d);
   });
 
   // Crypto events
   systemEventBus.on("balance.updated", (data: unknown) => {
-    const d = data as { userId: number; token: string; amount: string; change: string; reason: string };
+    const d = data as {
+      userId: number;
+      token: string;
+      amount: string;
+      change: string;
+      reason: string;
+    };
     cryptoRealtimeService.broadcastBalanceUpdate(d.userId, d);
   });
 
   systemEventBus.on("swap.executed", (data: unknown) => {
-    const d = data as { userId: number; id: string; fromToken: string; toToken: string; fromAmount: string; toAmount: string; status: string };
+    const d = data as {
+      userId: number;
+      id: string;
+      fromToken: string;
+      toToken: string;
+      fromAmount: string;
+      toAmount: string;
+      status: string;
+    };
     cryptoRealtimeService.broadcastSwapExecuted(d.userId, d);
   });
 
   // Marketplace events
   systemEventBus.on("order.status.changed", (data: unknown) => {
-    const d = data as { id: string; buyerId: number; sellerId: number; status: string; updatedAt: string };
+    const d = data as {
+      id: string;
+      buyerId: number;
+      sellerId: number;
+      status: string;
+      updatedAt: string;
+    };
     marketplaceRealtimeService.broadcastOrderUpdate(d);
   });
 }
@@ -930,18 +1158,39 @@ export function wireSystemEvents(systemEventBus: {
 // ─── COMMANDMENT ALIASES ──────────────────────────────────────────────────────
 // Alias exports expected by the 10 Commandments test suite
 
-const _cmdChannels = new Map<string, { id: string; name: string; system: string; subscribers: Set<string> }>();
-const _cmdConnections = new Map<string, { id: string; userId: number; deviceType: string; ipAddress: string; connectedAt: Date }>();
+const _cmdChannels = new Map<
+  string,
+  { id: string; name: string; system: string; subscribers: Set<string> }
+>();
+const _cmdConnections = new Map<
+  string,
+  {
+    id: string;
+    userId: number;
+    deviceType: string;
+    ipAddress: string;
+    connectedAt: Date;
+  }
+>();
 const _cmdPresence = new Map<number, Set<string>>();
 let _cmdMsgCount = 0;
 
 export const connectionRegistry = {
-  register(params: { userId: number; deviceType: string; ipAddress: string }): string {
+  register(params: {
+    userId: number;
+    deviceType: string;
+    ipAddress: string;
+  }): string {
     const id = `conn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     _cmdConnections.set(id, { id, ...params, connectedAt: new Date() });
     return id;
   },
-  get(connId: string): { id: string; userId: number; deviceType: string; ipAddress: string } | null {
+  get(connId: string): {
+    id: string;
+    userId: number;
+    deviceType: string;
+    ipAddress: string;
+  } | null {
     return _cmdConnections.get(connId) ?? null;
   },
   unregister(connId: string): void {
@@ -991,7 +1240,12 @@ export const presenceTracker = {
 };
 
 export const realtimeMetrics = {
-  getSnapshot(): { totalConnections: number; activeChannels: number; messagesPerSecond: number; presenceCount: number } {
+  getSnapshot(): {
+    totalConnections: number;
+    activeChannels: number;
+    messagesPerSecond: number;
+    presenceCount: number;
+  } {
     return {
       totalConnections: _cmdConnections.size,
       activeChannels: _cmdChannels.size,
@@ -999,11 +1253,16 @@ export const realtimeMetrics = {
       presenceCount: presenceTracker.getOnlineCount(),
     };
   },
-  recordMessage(): void { _cmdMsgCount++; },
+  recordMessage(): void {
+    _cmdMsgCount++;
+  },
 };
 
 export const realtimeHub = {
-  broadcast(channelId: string, payload: unknown): { channelId: string; recipientCount: number; payload: unknown } {
+  broadcast(
+    channelId: string,
+    payload: unknown
+  ): { channelId: string; recipientCount: number; payload: unknown } {
     const ch = _cmdChannels.get(channelId);
     const recipientCount = ch ? ch.subscribers.size : 0;
     _cmdMsgCount += recipientCount;

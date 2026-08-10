@@ -48,7 +48,12 @@ const MOCK_TEACHERS: TeachingProfile[] = [
     students: 156,
     hourlyRate: 25,
     bio: "Professional Chinese teacher with 10+ years experience. Specializing in HSK preparation and conversational fluency.",
-    specialties: ["HSK Preparation", "Business Chinese", "Conversational", "Grammar"],
+    specialties: [
+      "HSK Preparation",
+      "Business Chinese",
+      "Conversational",
+      "Grammar",
+    ],
     availability: "Mon-Fri 6-10pm, Sat-Sun all day",
     certifications: ["CTCSOL", "HSK Examiner"],
     reviews: 342,
@@ -66,7 +71,12 @@ const MOCK_TEACHERS: TeachingProfile[] = [
     students: 203,
     hourlyRate: 22,
     bio: "Passionate Spanish teacher from Madrid. Expert in DELE exam prep and Latin American Spanish.",
-    specialties: ["DELE Exam", "Business Spanish", "Latin American", "Pronunciation"],
+    specialties: [
+      "DELE Exam",
+      "Business Spanish",
+      "Latin American",
+      "Pronunciation",
+    ],
     availability: "Daily 3-11pm CET",
     certifications: ["DELE Examiner", "Master's in Education"],
     reviews: 456,
@@ -84,7 +94,12 @@ const MOCK_TEACHERS: TeachingProfile[] = [
     students: 89,
     hourlyRate: 28,
     bio: "Tokyo-based Japanese instructor. Specializing in JLPT preparation and cultural immersion.",
-    specialties: ["JLPT Prep", "Kanji Mastery", "Business Japanese", "Cultural Context"],
+    specialties: [
+      "JLPT Prep",
+      "Kanji Mastery",
+      "Business Japanese",
+      "Cultural Context",
+    ],
     availability: "Tue-Sat 7-11pm JST",
     certifications: ["JLPT N1", "Teaching Certificate"],
     reviews: 198,
@@ -96,7 +111,8 @@ const MOCK_TEACHERS: TeachingProfile[] = [
 
 export function TeachingOpportunities() {
   const [activeTab, setActiveTab] = useState("discover");
-  const [selectedTeacher, setSelectedTeacher] = useState<TeachingProfile | null>(null);
+  const [selectedTeacher, setSelectedTeacher] =
+    useState<TeachingProfile | null>(null);
   const [myProfile, setMyProfile] = useState({
     isTeacher: false,
     language: "English",
@@ -138,7 +154,7 @@ export function TeachingOpportunities() {
           {/* Discover Teachers Tab */}
           <TabsContent value="discover" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {MOCK_TEACHERS.map((teacher) => (
+              {MOCK_TEACHERS.map(teacher => (
                 <Card
                   key={teacher.id}
                   className="bg-slate-800/50 border-slate-700 p-6 hover:border-purple-500/50 transition cursor-pointer"
@@ -148,14 +164,20 @@ export function TeachingOpportunities() {
                   <div className="flex items-start gap-4 mb-4">
                     <div className="text-5xl">{teacher.avatar}</div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-white text-lg">{teacher.name}</h3>
+                      <h3 className="font-bold text-white text-lg">
+                        {teacher.name}
+                      </h3>
                       <Badge className="bg-purple-500/20 text-purple-300 mb-2">
                         {teacher.language}
                       </Badge>
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-yellow-400 font-bold">{teacher.rating}</span>
-                        <span className="text-gray-400 text-sm">({teacher.reviews} reviews)</span>
+                        <span className="text-yellow-400 font-bold">
+                          {teacher.rating}
+                        </span>
+                        <span className="text-gray-400 text-sm">
+                          ({teacher.reviews} reviews)
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -167,19 +189,27 @@ export function TeachingOpportunities() {
                   <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-t border-slate-700 pt-4">
                     <div>
                       <p className="text-gray-400 text-xs">Students</p>
-                      <p className="text-lg font-bold text-purple-400">{teacher.students}</p>
+                      <p className="text-lg font-bold text-purple-400">
+                        {teacher.students}
+                      </p>
                     </div>
                     <div>
                       <p className="text-gray-400 text-xs">Hourly Rate</p>
-                      <p className="text-lg font-bold text-green-400">${teacher.hourlyRate}</p>
+                      <p className="text-lg font-bold text-green-400">
+                        ${teacher.hourlyRate}
+                      </p>
                     </div>
                     <div>
                       <p className="text-gray-400 text-xs">Hours Taught</p>
-                      <p className="text-lg font-bold text-blue-400">{teacher.totalHours}</p>
+                      <p className="text-lg font-bold text-blue-400">
+                        {teacher.totalHours}
+                      </p>
                     </div>
                     <div>
                       <p className="text-gray-400 text-xs">Response Time</p>
-                      <p className="text-lg font-bold text-orange-400">{teacher.responseTime}</p>
+                      <p className="text-lg font-bold text-orange-400">
+                        {teacher.responseTime}
+                      </p>
                     </div>
                   </div>
 
@@ -188,7 +218,10 @@ export function TeachingOpportunities() {
                     <p className="text-gray-400 text-xs mb-2">Specialties</p>
                     <div className="flex flex-wrap gap-1">
                       {teacher.specialties.slice(0, 2).map((spec, idx) => (
-                        <Badge key={idx} className="bg-slate-700 text-gray-300 text-xs">
+                        <Badge
+                          key={idx}
+                          className="bg-slate-700 text-gray-300 text-xs"
+                        >
                           {spec}
                         </Badge>
                       ))}
@@ -226,8 +259,8 @@ export function TeachingOpportunities() {
                   Become a Language Teacher
                 </h2>
                 <p className="text-gray-300 mb-6 max-w-md mx-auto">
-                  Share your language expertise and earn money by teaching students worldwide.
-                  Set your own schedule and rates.
+                  Share your language expertise and earn money by teaching
+                  students worldwide. Set your own schedule and rates.
                 </p>
                 <Button
                   className="bg-purple-600 hover:bg-purple-700 gap-2"
@@ -241,23 +274,39 @@ export function TeachingOpportunities() {
               <div className="space-y-6">
                 {/* Profile Card */}
                 <Card className="bg-slate-800/50 border-slate-700 p-6">
-                  <h3 className="font-bold text-white text-xl mb-4">Teaching Profile</h3>
+                  <h3 className="font-bold text-white text-xl mb-4">
+                    Teaching Profile
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="text-gray-400 text-sm">Language</label>
-                      <p className="text-white font-bold text-lg">{myProfile.language}</p>
+                      <p className="text-white font-bold text-lg">
+                        {myProfile.language}
+                      </p>
                     </div>
                     <div>
-                      <label className="text-gray-400 text-sm">Hourly Rate</label>
-                      <p className="text-white font-bold text-lg">${myProfile.hourlyRate}/hour</p>
+                      <label className="text-gray-400 text-sm">
+                        Hourly Rate
+                      </label>
+                      <p className="text-white font-bold text-lg">
+                        ${myProfile.hourlyRate}/hour
+                      </p>
                     </div>
                     <div>
-                      <label className="text-gray-400 text-sm">Active Students</label>
-                      <p className="text-white font-bold text-lg">{myProfile.students}</p>
+                      <label className="text-gray-400 text-sm">
+                        Active Students
+                      </label>
+                      <p className="text-white font-bold text-lg">
+                        {myProfile.students}
+                      </p>
                     </div>
                     <div>
-                      <label className="text-gray-400 text-sm">Total Earnings</label>
-                      <p className="text-white font-bold text-lg">${myProfile.earnings}</p>
+                      <label className="text-gray-400 text-sm">
+                        Total Earnings
+                      </label>
+                      <p className="text-white font-bold text-lg">
+                        ${myProfile.earnings}
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -279,7 +328,9 @@ export function TeachingOpportunities() {
                       <Users className="w-8 h-8 text-blue-400" />
                       <div>
                         <p className="text-gray-400 text-sm">Students</p>
-                        <p className="text-2xl font-bold text-blue-400">{myProfile.students}</p>
+                        <p className="text-2xl font-bold text-blue-400">
+                          {myProfile.students}
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -301,7 +352,9 @@ export function TeachingOpportunities() {
           {/* Earnings Tab */}
           <TabsContent value="earnings" className="space-y-6">
             <Card className="bg-slate-800/50 border-slate-700 p-6">
-              <h3 className="font-bold text-white text-xl mb-6">Earnings Dashboard</h3>
+              <h3 className="font-bold text-white text-xl mb-6">
+                Earnings Dashboard
+              </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <div className="bg-slate-700/50 rounded p-4">
@@ -327,14 +380,30 @@ export function TeachingOpportunities() {
                 <h4 className="font-bold text-white mb-4">How to Earn More</h4>
                 <div className="space-y-3">
                   {[
-                    { title: "Complete Your Profile", desc: "Add certifications and specialties", progress: 40 },
-                    { title: "Get Your First Review", desc: "Complete 5 sessions to unlock reviews", progress: 0 },
-                    { title: "Build Your Reputation", desc: "Maintain 4.5+ rating for premium badge", progress: 0 },
+                    {
+                      title: "Complete Your Profile",
+                      desc: "Add certifications and specialties",
+                      progress: 40,
+                    },
+                    {
+                      title: "Get Your First Review",
+                      desc: "Complete 5 sessions to unlock reviews",
+                      progress: 0,
+                    },
+                    {
+                      title: "Build Your Reputation",
+                      desc: "Maintain 4.5+ rating for premium badge",
+                      progress: 0,
+                    },
                   ].map((item, idx) => (
                     <div key={idx}>
                       <div className="flex justify-between mb-2">
-                        <span className="text-white font-bold">{item.title}</span>
-                        <span className="text-gray-400 text-sm">{item.progress}%</span>
+                        <span className="text-white font-bold">
+                          {item.title}
+                        </span>
+                        <span className="text-gray-400 text-sm">
+                          {item.progress}%
+                        </span>
                       </div>
                       <Progress value={item.progress} className="h-2" />
                       <p className="text-gray-400 text-xs mt-1">{item.desc}</p>
@@ -355,12 +424,20 @@ export function TeachingOpportunities() {
                   <div className="flex items-start gap-4">
                     <div className="text-6xl">{selectedTeacher.avatar}</div>
                     <div>
-                      <h2 className="text-2xl font-bold text-white">{selectedTeacher.name}</h2>
-                      <p className="text-gray-400">{selectedTeacher.proficiency}</p>
+                      <h2 className="text-2xl font-bold text-white">
+                        {selectedTeacher.name}
+                      </h2>
+                      <p className="text-gray-400">
+                        {selectedTeacher.proficiency}
+                      </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-yellow-400 font-bold">{selectedTeacher.rating}</span>
-                        <span className="text-gray-400">({selectedTeacher.reviews} reviews)</span>
+                        <span className="text-yellow-400 font-bold">
+                          {selectedTeacher.rating}
+                        </span>
+                        <span className="text-gray-400">
+                          ({selectedTeacher.reviews} reviews)
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -383,7 +460,10 @@ export function TeachingOpportunities() {
                     <h3 className="font-bold text-white mb-2">Specialties</h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedTeacher.specialties.map((spec, idx) => (
-                        <Badge key={idx} className="bg-purple-500/20 text-purple-300">
+                        <Badge
+                          key={idx}
+                          className="bg-purple-500/20 text-purple-300"
+                        >
                           {spec}
                         </Badge>
                       ))}
@@ -391,10 +471,15 @@ export function TeachingOpportunities() {
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-white mb-2">Certifications</h3>
+                    <h3 className="font-bold text-white mb-2">
+                      Certifications
+                    </h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedTeacher.certifications.map((cert, idx) => (
-                        <Badge key={idx} className="bg-green-500/20 text-green-300">
+                        <Badge
+                          key={idx}
+                          className="bg-green-500/20 text-green-300"
+                        >
                           {cert}
                         </Badge>
                       ))}

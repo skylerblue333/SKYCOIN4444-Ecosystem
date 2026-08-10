@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Shield, AlertTriangle, CheckCircle, ArrowRight, Lock } from "lucide-react";
+import {
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  ArrowRight,
+  Lock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 
@@ -39,7 +45,9 @@ export default function AgeGate() {
           {/* Top bar */}
           <div className="bg-red-900/20 border-b border-red-500/20 px-6 py-4 flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-red-400" />
-            <span className="text-sm font-bold text-red-300">Adult Content Warning</span>
+            <span className="text-sm font-bold text-red-300">
+              Adult Content Warning
+            </span>
           </div>
 
           <div className="p-8 text-center">
@@ -47,9 +55,14 @@ export default function AgeGate() {
               <Lock className="w-10 h-10 text-red-400" />
             </div>
 
-            <h1 className="text-2xl font-black text-white mb-3">Age Verification Required</h1>
+            <h1 className="text-2xl font-black text-white mb-3">
+              Age Verification Required
+            </h1>
             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              The content you are attempting to access is intended for adults aged <strong className="text-white">18 years or older</strong>. By proceeding, you confirm that you meet this age requirement and that viewing adult content is legal in your jurisdiction.
+              The content you are attempting to access is intended for adults
+              aged <strong className="text-white">18 years or older</strong>. By
+              proceeding, you confirm that you meet this age requirement and
+              that viewing adult content is legal in your jurisdiction.
             </p>
 
             {/* Legal notice */}
@@ -57,7 +70,9 @@ export default function AgeGate() {
               <div className="flex items-start gap-2">
                 <Shield className="w-4 h-4 text-slate-500 mt-0.5 shrink-0" />
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  This platform complies with 18 U.S.C. § 2257 (Record-Keeping Requirements). All performers depicted are at least 18 years of age. Records are maintained by the content custodian.
+                  This platform complies with 18 U.S.C. § 2257 (Record-Keeping
+                  Requirements). All performers depicted are at least 18 years
+                  of age. Records are maintained by the content custodian.
                 </p>
               </div>
             </div>
@@ -84,9 +99,14 @@ export default function AgeGate() {
 
             <p className="text-[11px] text-slate-600 mt-4">
               By clicking "Enter" you agree to our{" "}
-              <span className="text-slate-500 underline cursor-pointer">Terms of Service</span>
-              {" "}and{" "}
-              <span className="text-slate-500 underline cursor-pointer">Content Policy</span>.
+              <span className="text-slate-500 underline cursor-pointer">
+                Terms of Service
+              </span>{" "}
+              and{" "}
+              <span className="text-slate-500 underline cursor-pointer">
+                Content Policy
+              </span>
+              .
             </p>
           </div>
         </div>

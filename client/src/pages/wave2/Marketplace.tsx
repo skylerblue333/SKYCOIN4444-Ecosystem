@@ -1,21 +1,22 @@
 // @ts-nocheck
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/_core/hooks/useAuth';
-import { trpc } from '@/lib/trpc';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 const MarketplacePage: React.FC = () => {
-  
-  const [activeTab, setActiveTab] = useState<'browse' | 'create' | 'orders' | 'sell'>('browse');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [category, setCategory] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<
+    "browse" | "create" | "orders" | "sell"
+  >("browse");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Queries
   const listingsQuery = trpc.wave2Marketplace.listListings.useQuery(
@@ -39,33 +40,35 @@ const MarketplacePage: React.FC = () => {
   );
 
   // Mutations
-  const createListingMutation = trpc.wave2Marketplace.createListing.useMutation({
-    onSuccess: () => {
-      setTitle('');
-      setDescription('');
-      setPrice('');
-      setCategory('');
-      sellerListingsQuery.refetch();
-      toast.success('Listing created successfully');
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to create listing');
-    },
-  });
+  const createListingMutation = trpc.wave2Marketplace.createListing.useMutation(
+    {
+      onSuccess: () => {
+        setTitle("");
+        setDescription("");
+        setPrice("");
+        setCategory("");
+        sellerListingsQuery.refetch();
+        toast.success("Listing created successfully");
+      },
+      onError: error => {
+        toast.error(error.message || "Failed to create listing");
+      },
+    }
+  );
 
   const createOrderMutation = trpc.wave2Marketplace.createOrder.useMutation({
     onSuccess: () => {
       ordersQuery.refetch();
-      toast.success('Order created successfully');
+      toast.success("Order created successfully");
     },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to create order');
+    onError: error => {
+      toast.error(error.message || "Failed to create order");
     },
   });
 
   const handleCreateListing = async () => {
     if (!title || !description || !price || !category) {
-      toast.error('Please fill in all fields');
+      toast.error("Please fill in all fields");
       return;
     }
 
@@ -92,14 +95,14 @@ const MarketplacePage: React.FC = () => {
 
       {/* Tabs */}
       <div className="flex gap-2 border-b">
-        {(['browse', 'create', 'orders', 'sell'] as const).map((tab) => (
+        {(["browse", "create", "orders", "sell"] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 font-medium capitalize ${
               activeTab === tab
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab}
@@ -108,13 +111,13 @@ const MarketplacePage: React.FC = () => {
       </div>
 
       {/* Browse Tab */}
-      {activeTab === 'browse' && (
+      {activeTab === "browse" && (
         <div className="space-y-4">
           <div className="flex gap-2">
             <Input
               placeholder="Search products..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="flex-1"
             />
           </div>
@@ -128,9 +131,14 @@ const MarketplacePage: React.FC = () => {
               </>
             ) : (listingsQuery.data?.listings || []).length > 0 ? (
               (listingsQuery.data?.listings || []).map((listing: any) => (
-                <Card key={listing.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={listing.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardHeader>
-                    <CardTitle className="line-clamp-2">{listing.title}</CardTitle>
+                    <CardTitle className="line-clamp-2">
+                      {listing.title}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground line-clamp-3">
@@ -139,10 +147,14 @@ const MarketplacePage: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-2xl font-bold">${listing.price}</p>
-                        <p className="text-xs text-muted-foreground">{listing.category}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {listing.category}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-muted-foreground">{listing.views} views</p>
+                        <p className="text-xs text-muted-foreground">
+                          {listing.views} views
+                        </p>
                       </div>
                     </div>
                     {isAuthenticated && (
@@ -151,7 +163,9 @@ const MarketplacePage: React.FC = () => {
                         disabled={createOrderMutation.isPending}
                         className="w-full"
                       >
-                        {createOrderMutation.isPending ? 'Buying...' : 'Buy Now'}
+                        {createOrderMutation.isPending
+                          ? "Buying..."
+                          : "Buy Now"}
                       </Button>
                     )}
                   </CardContent>
@@ -165,7 +179,7 @@ const MarketplacePage: React.FC = () => {
       )}
 
       {/* Create Tab */}
-      {activeTab === 'create' && isAuthenticated && (
+      {activeTab === "create" && isAuthenticated && (
         <Card>
           <CardHeader>
             <CardTitle>Create New Listing</CardTitle>
@@ -176,7 +190,7 @@ const MarketplacePage: React.FC = () => {
               <Input
                 placeholder="Product title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={e => setTitle(e.target.value)}
                 className="mt-1"
               />
             </div>
@@ -185,7 +199,7 @@ const MarketplacePage: React.FC = () => {
               <textarea
                 placeholder="Product description"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={e => setDescription(e.target.value)}
                 className="mt-1 w-full p-2 border rounded-md"
                 rows={4}
               />
@@ -197,7 +211,7 @@ const MarketplacePage: React.FC = () => {
                   type="number"
                   placeholder="0.00"
                   value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  onChange={e => setPrice(e.target.value)}
                   className="mt-1"
                 />
               </div>
@@ -206,7 +220,7 @@ const MarketplacePage: React.FC = () => {
                 <Input
                   placeholder="e.g., Electronics"
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={e => setCategory(e.target.value)}
                   className="mt-1"
                 />
               </div>
@@ -217,14 +231,16 @@ const MarketplacePage: React.FC = () => {
               className="w-full"
               size="lg"
             >
-              {createListingMutation.isPending ? 'Creating...' : 'Create Listing'}
+              {createListingMutation.isPending
+                ? "Creating..."
+                : "Create Listing"}
             </Button>
           </CardContent>
         </Card>
       )}
 
       {/* Orders Tab */}
-      {activeTab === 'orders' && isAuthenticated && (
+      {activeTab === "orders" && isAuthenticated && (
         <Card>
           <CardHeader>
             <CardTitle>My Orders</CardTitle>
@@ -238,19 +254,26 @@ const MarketplacePage: React.FC = () => {
             ) : (ordersQuery.data?.orders || []).length > 0 ? (
               <div className="space-y-2">
                 {(ordersQuery.data?.orders || []).map((order: any) => (
-                  <div key={order.id} className="p-3 rounded-lg border border-border">
+                  <div
+                    key={order.id}
+                    className="p-3 rounded-lg border border-border"
+                  >
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-medium">{order.item.title}</p>
-                        <p className="text-xs text-muted-foreground">Qty: {order.quantity}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Qty: {order.quantity}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">${order.totalPrice}</p>
-                        <span className={`text-xs px-2 py-1 rounded inline-block mt-1 ${
-                          order.status === 'COMPLETED'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded inline-block mt-1 ${
+                            order.status === "COMPLETED"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
                           {order.status}
                         </span>
                       </div>
@@ -266,7 +289,7 @@ const MarketplacePage: React.FC = () => {
       )}
 
       {/* Sell Tab */}
-      {activeTab === 'sell' && isAuthenticated && (
+      {activeTab === "sell" && isAuthenticated && (
         <Card>
           <CardHeader>
             <CardTitle>My Listings</CardTitle>
@@ -279,20 +302,29 @@ const MarketplacePage: React.FC = () => {
               </div>
             ) : (sellerListingsQuery.data?.listings || []).length > 0 ? (
               <div className="space-y-2">
-                {(sellerListingsQuery.data?.listings || []).map((listing: any) => (
-                  <div key={listing.id} className="p-3 rounded-lg border border-border">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium">{listing.title}</p>
-                        <p className="text-xs text-muted-foreground">{listing.category}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">${listing.price}</p>
-                        <p className="text-xs text-muted-foreground">{listing.views} views</p>
+                {(sellerListingsQuery.data?.listings || []).map(
+                  (listing: any) => (
+                    <div
+                      key={listing.id}
+                      className="p-3 rounded-lg border border-border"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">{listing.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {listing.category}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">${listing.price}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {listing.views} views
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">No listings yet</p>

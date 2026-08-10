@@ -7,8 +7,20 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import {
-  ArrowLeft, CheckCircle, XCircle, Award, Download, Share2, Trophy,
-  Zap, Target, Brain, Sparkles, Lock, Unlock, BarChart3
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  Award,
+  Download,
+  Share2,
+  Trophy,
+  Zap,
+  Target,
+  Brain,
+  Sparkles,
+  Lock,
+  Unlock,
+  BarChart3,
 } from "lucide-react";
 
 interface Question {
@@ -37,15 +49,17 @@ const QUIZ_DATA: Record<string, QuizData | undefined> = {
     questions: [
       {
         id: "q1",
-        question: "What is the primary characteristic of blockchain technology?",
+        question:
+          "What is the primary characteristic of blockchain technology?",
         options: [
           "Centralized control",
           "Distributed ledger with cryptographic security",
           "Faster than traditional databases",
-          "Requires less storage"
+          "Requires less storage",
         ],
         correctAnswer: 1,
-        explanation: "Blockchain is a distributed ledger technology that maintains records across multiple nodes with cryptographic security, ensuring no single point of failure."
+        explanation:
+          "Blockchain is a distributed ledger technology that maintains records across multiple nodes with cryptographic security, ensuring no single point of failure.",
       },
       {
         id: "q2",
@@ -54,10 +68,11 @@ const QUIZ_DATA: Record<string, QuizData | undefined> = {
           "Vitalik Buterin",
           "Satoshi Nakamoto",
           "Charlie Lee",
-          "Unknown"
+          "Unknown",
         ],
         correctAnswer: 1,
-        explanation: "Bitcoin was created in 2008 by Satoshi Nakamoto, whose true identity remains unknown to this day."
+        explanation:
+          "Bitcoin was created in 2008 by Satoshi Nakamoto, whose true identity remains unknown to this day.",
       },
       {
         id: "q3",
@@ -66,10 +81,11 @@ const QUIZ_DATA: Record<string, QuizData | undefined> = {
           "Data can be easily changed",
           "Once recorded, data cannot be altered",
           "Data is stored in multiple locations",
-          "Data is encrypted"
+          "Data is encrypted",
         ],
         correctAnswer: 1,
-        explanation: "Immutability means that once data is recorded on the blockchain, it cannot be altered or deleted, ensuring data integrity."
+        explanation:
+          "Immutability means that once data is recorded on the blockchain, it cannot be altered or deleted, ensuring data integrity.",
       },
       {
         id: "q4",
@@ -78,24 +94,27 @@ const QUIZ_DATA: Record<string, QuizData | undefined> = {
           "Transparency",
           "Decentralization",
           "Instant processing",
-          "Security"
+          "Security",
         ],
         correctAnswer: 2,
-        explanation: "While blockchain offers transparency, decentralization, and security, instant processing is not guaranteed due to consensus mechanisms and network conditions."
+        explanation:
+          "While blockchain offers transparency, decentralization, and security, instant processing is not guaranteed due to consensus mechanisms and network conditions.",
       },
       {
         id: "q5",
-        question: "What is the difference between public and private blockchains?",
+        question:
+          "What is the difference between public and private blockchains?",
         options: [
           "Public blockchains are faster",
           "Public blockchains are open to anyone, private blockchains are restricted",
           "Private blockchains are more secure",
-          "There is no difference"
+          "There is no difference",
         ],
         correctAnswer: 1,
-        explanation: "Public blockchains are open to anyone and fully decentralized, while private blockchains restrict access to authorized participants."
-      }
-    ]
+        explanation:
+          "Public blockchains are open to anyone and fully decentralized, while private blockchains restrict access to authorized participants.",
+      },
+    ],
   },
   "blockchain-101-lesson-1": {
     courseId: "blockchain-101",
@@ -110,22 +129,25 @@ const QUIZ_DATA: Record<string, QuizData | undefined> = {
           "A database controlled by one entity",
           "A database replicated and synchronized across multiple sites",
           "A traditional accounting ledger",
-          "A centralized server"
+          "A centralized server",
         ],
         correctAnswer: 1,
-        explanation: "A distributed ledger is a database that is consensually shared, replicated, and synchronized across multiple sites or institutions."
+        explanation:
+          "A distributed ledger is a database that is consensually shared, replicated, and synchronized across multiple sites or institutions.",
       },
       {
         id: "q2",
-        question: "Which of the following is an advantage of distributed ledgers?",
+        question:
+          "Which of the following is an advantage of distributed ledgers?",
         options: [
           "Single point of control",
           "Increased resilience and fault tolerance",
           "Slower transaction processing",
-          "Reduced transparency"
+          "Reduced transparency",
         ],
         correctAnswer: 1,
-        explanation: "Distributed ledgers provide increased resilience and fault tolerance because there is no single point of failure."
+        explanation:
+          "Distributed ledgers provide increased resilience and fault tolerance because there is no single point of failure.",
       },
       {
         id: "q3",
@@ -134,10 +156,11 @@ const QUIZ_DATA: Record<string, QuizData | undefined> = {
           "Increasing costs",
           "Tracking products from manufacture to consumer",
           "Reducing transparency",
-          "Centralizing control"
+          "Centralizing control",
         ],
         correctAnswer: 1,
-        explanation: "Distributed ledgers can track products throughout the supply chain, verifying authenticity and reducing counterfeiting."
+        explanation:
+          "Distributed ledgers can track products throughout the supply chain, verifying authenticity and reducing counterfeiting.",
       },
       {
         id: "q4",
@@ -146,25 +169,28 @@ const QUIZ_DATA: Record<string, QuizData | undefined> = {
           "Manual updates",
           "Consensus mechanisms",
           "Central authority",
-          "Random selection"
+          "Random selection",
         ],
         correctAnswer: 1,
-        explanation: "Distributed ledgers use consensus mechanisms to ensure all copies are kept in sync across the network."
+        explanation:
+          "Distributed ledgers use consensus mechanisms to ensure all copies are kept in sync across the network.",
       },
       {
         id: "q5",
-        question: "Which industry can benefit from distributed ledgers for digital identity?",
+        question:
+          "Which industry can benefit from distributed ledgers for digital identity?",
         options: [
           "Only banking",
           "Only healthcare",
           "Multiple industries including finance, healthcare, and government",
-          "None"
+          "None",
         ],
         correctAnswer: 2,
-        explanation: "Distributed ledgers can provide self-sovereign identity solutions across multiple industries for secure, verifiable credentials."
-      }
-    ]
-  }
+        explanation:
+          "Distributed ledgers can provide self-sovereign identity solutions across multiple industries for secure, verifiable credentials.",
+      },
+    ],
+  },
 };
 
 interface QuizResult {
@@ -174,7 +200,13 @@ interface QuizResult {
   timestamp: Date;
 }
 
-export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: string; onComplete?: (result: QuizResult) => void }) {
+export default function SkySchoolQuiz({
+  lessonId,
+  onComplete,
+}: {
+  lessonId: string;
+  onComplete?: (result: QuizResult) => void;
+}) {
   const { isAuthenticated, user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -188,7 +220,9 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
     return (
       <Card className="bg-slate-900/50 border border-white/10">
         <CardContent className="p-6 text-center">
-          <p className="text-slate-400">Quiz not available for this lesson yet.</p>
+          <p className="text-slate-400">
+            Quiz not available for this lesson yet.
+          </p>
         </CardContent>
       </Card>
     );
@@ -209,7 +243,7 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
 
     setAnswers(prev => ({
       ...prev,
-      [question.id]: selectedAnswer as number
+      [question.id]: selectedAnswer as number,
     }));
 
     if (currentQuestion < quiz.questions.length - 1) {
@@ -223,7 +257,7 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
   const calculateResults = () => {
     const finalAnswers: Record<string, number> = {
       ...answers,
-      [question.id]: selectedAnswer as number
+      [question.id]: selectedAnswer as number,
     };
 
     let correctCount = 0;
@@ -240,7 +274,7 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
       score,
       passed,
       answers: finalAnswers,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     setQuizResult(result);
@@ -269,14 +303,17 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
   // Results View
   if (showResults && quizResult) {
     const correctCount = Object.entries(answers).filter(
-      ([qId, answer]) => quiz.questions.find(q => q.id === qId)?.correctAnswer === answer
+      ([qId, answer]) =>
+        quiz.questions.find(q => q.id === qId)?.correctAnswer === answer
     ).length;
 
     return (
       <div className="space-y-6">
         {/* Score Card */}
         <Card className="bg-gradient-to-br from-slate-900/50 to-slate-800/50 border border-white/10 overflow-hidden">
-          <div className={`h-2 w-full ${quizResult.passed ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-orange-500'}`} />
+          <div
+            className={`h-2 w-full ${quizResult.passed ? "bg-gradient-to-r from-green-500 to-emerald-500" : "bg-gradient-to-r from-red-500 to-orange-500"}`}
+          />
           <CardContent className="p-8 text-center">
             <div className="mb-4">
               {quizResult.passed ? (
@@ -285,14 +322,19 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
                 <Target className="w-16 h-16 mx-auto text-orange-400 mb-4" />
               )}
             </div>
-            <h2 className={`text-4xl font-bold mb-2 ${quizResult.passed ? 'text-green-400' : 'text-orange-400'}`}>
+            <h2
+              className={`text-4xl font-bold mb-2 ${quizResult.passed ? "text-green-400" : "text-orange-400"}`}
+            >
               {quizResult.score}%
             </h2>
             <p className="text-xl text-slate-300 mb-4">
-              {quizResult.passed ? "Quiz Passed! 🎉" : "Quiz Failed - Try Again"}
+              {quizResult.passed
+                ? "Quiz Passed! 🎉"
+                : "Quiz Failed - Try Again"}
             </p>
             <p className="text-slate-400">
-              You got {correctCount} out of {quiz.questions.length} questions correct
+              You got {correctCount} out of {quiz.questions.length} questions
+              correct
             </p>
           </CardContent>
         </Card>
@@ -308,12 +350,24 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-slate-900/50 p-6 rounded-lg border border-yellow-500/20 text-center">
-                <p className="text-slate-400 text-sm mb-2">This certifies that</p>
-                <p className="text-xl font-bold text-white mb-2">{user?.name || "Student"}</p>
-                <p className="text-slate-400 text-sm mb-4">has successfully completed</p>
-                <p className="text-lg font-semibold text-yellow-300 mb-4">{quiz.lessonTitle}</p>
-                <p className="text-slate-400 text-sm">with a score of {quizResult.score}%</p>
-                <p className="text-slate-500 text-xs mt-4">{new Date().toLocaleDateString()}</p>
+                <p className="text-slate-400 text-sm mb-2">
+                  This certifies that
+                </p>
+                <p className="text-xl font-bold text-white mb-2">
+                  {user?.name || "Student"}
+                </p>
+                <p className="text-slate-400 text-sm mb-4">
+                  has successfully completed
+                </p>
+                <p className="text-lg font-semibold text-yellow-300 mb-4">
+                  {quiz.lessonTitle}
+                </p>
+                <p className="text-slate-400 text-sm">
+                  with a score of {quizResult.score}%
+                </p>
+                <p className="text-slate-500 text-xs mt-4">
+                  {new Date().toLocaleDateString()}
+                </p>
               </div>
               <div className="flex gap-3">
                 <Button className="flex-1 bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-300 border border-yellow-500/30">
@@ -340,7 +394,10 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
               const isCorrect = userAnswer === q.correctAnswer;
 
               return (
-                <div key={q.id} className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                <div
+                  key={q.id}
+                  className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50"
+                >
                   <div className="flex items-start gap-3 mb-3">
                     {isCorrect ? (
                       <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-1" />
@@ -348,8 +405,12 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
                       <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-1" />
                     )}
                     <div className="flex-1">
-                      <p className="font-semibold text-white mb-2">Question {idx + 1}: {q.question}</p>
-                      <p className={`text-sm mb-2 ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                      <p className="font-semibold text-white mb-2">
+                        Question {idx + 1}: {q.question}
+                      </p>
+                      <p
+                        className={`text-sm mb-2 ${isCorrect ? "text-green-400" : "text-red-400"}`}
+                      >
                         Your answer: {q.options[userAnswer]}
                       </p>
                       {!isCorrect && (
@@ -357,7 +418,9 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
                           Correct answer: {q.options[q.correctAnswer]}
                         </p>
                       )}
-                      <p className="text-sm text-slate-400 italic">{q.explanation}</p>
+                      <p className="text-sm text-slate-400 italic">
+                        {q.explanation}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -389,15 +452,21 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
       {/* Progress */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">{quiz.lessonTitle} Quiz</h2>
-          <p className="text-slate-400">Question {currentQuestion + 1} of {quiz.questions.length}</p>
+          <h2 className="text-2xl font-bold text-white mb-1">
+            {quiz.lessonTitle} Quiz
+          </h2>
+          <p className="text-slate-400">
+            Question {currentQuestion + 1} of {quiz.questions.length}
+          </p>
         </div>
         <div className="text-right">
           <p className="text-sm text-slate-400 mb-2">Progress</p>
           <div className="w-32 h-2 bg-slate-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 transition-all duration-300"
-              style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }}
+              style={{
+                width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%`,
+              }}
             />
           </div>
         </div>
@@ -406,9 +475,14 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
       {/* Question Card */}
       <Card className="bg-slate-900/50 border border-white/10">
         <CardContent className="p-8">
-          <h3 className="text-xl font-semibold text-white mb-6">{question.question}</h3>
+          <h3 className="text-xl font-semibold text-white mb-6">
+            {question.question}
+          </h3>
 
-          <RadioGroup value={selectedAnswer?.toString() || ""} onValueChange={(val) => handleAnswer(parseInt(val))}>
+          <RadioGroup
+            value={selectedAnswer?.toString() || ""}
+            onValueChange={val => handleAnswer(parseInt(val))}
+          >
             <div className="space-y-3">
               {question.options.map((option, idx) => (
                 <Label
@@ -439,7 +513,9 @@ export default function SkySchoolQuiz({ lessonId, onComplete }: { lessonId: stri
           onClick={handleNext}
           disabled={selectedAnswer === null}
         >
-          {currentQuestion === quiz.questions.length - 1 ? "Submit Quiz" : "Next Question"}
+          {currentQuestion === quiz.questions.length - 1
+            ? "Submit Quiz"
+            : "Next Question"}
         </Button>
       </div>
     </div>

@@ -5,7 +5,12 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Clock, Users, Star, Zap, BookOpen, Play, Plus } from "lucide-react";
@@ -131,10 +136,13 @@ const MOCK_SESSIONS: PracticeSession[] = [
 
 export function PracticeSessions() {
   const [sessions, setSessions] = useState<PracticeSession[]>(MOCK_SESSIONS);
-  const [selectedTopic, setSelectedTopic] = useState<PracticeTopic | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<PracticeTopic | null>(
+    null
+  );
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showTopicDetails, setShowTopicDetails] = useState(false);
-  const [selectedSession, setSelectedSession] = useState<PracticeSession | null>(null);
+  const [selectedSession, setSelectedSession] =
+    useState<PracticeSession | null>(null);
   const [filterLevel, setFilterLevel] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
@@ -146,7 +154,7 @@ export function PracticeSessions() {
   const logSessionMutation = trpc.languageExchange.logSession.useMutation();
 
   const filteredSessions = useMemo(() => {
-    return sessions.filter((s) => {
+    return sessions.filter(s => {
       if (filterLevel !== "all" && s.level !== filterLevel) return false;
       if (filterStatus !== "all" && s.status !== filterStatus) return false;
       return true;
@@ -169,9 +177,9 @@ export function PracticeSessions() {
         notes: "Great practice session!",
       },
       {
-        onSuccess: (result) => {
-          setSessions((prev) =>
-            prev.map((s) =>
+        onSuccess: result => {
+          setSessions(prev =>
+            prev.map(s =>
               s.id === session.id
                 ? { ...s, status: "completed", rating: 4.5 }
                 : s
@@ -187,10 +195,8 @@ export function PracticeSessions() {
   };
 
   const handleCancelSession = (sessionId: string) => {
-    setSessions((prev) =>
-      prev.map((s) =>
-        s.id === sessionId ? { ...s, status: "cancelled" } : s
-      )
+    setSessions(prev =>
+      prev.map(s => (s.id === sessionId ? { ...s, status: "cancelled" } : s))
     );
     toast.success("Session cancelled");
   };
@@ -236,7 +242,8 @@ export function PracticeSessions() {
             Practice Sessions
           </h1>
           <p className="text-gray-400">
-            Improve your language skills through interactive practice with native speakers
+            Improve your language skills through interactive practice with
+            native speakers
           </p>
         </div>
 
@@ -246,19 +253,27 @@ export function PracticeSessions() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-gray-400 text-sm">Current Level</p>
-                <p className="text-2xl font-bold text-purple-400">{proficiency.level}</p>
+                <p className="text-2xl font-bold text-purple-400">
+                  {proficiency.level}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Words Learned</p>
-                <p className="text-2xl font-bold text-blue-400">{proficiency.wordsLearned}</p>
+                <p className="text-2xl font-bold text-blue-400">
+                  {proficiency.wordsLearned}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Hours Spent</p>
-                <p className="text-2xl font-bold text-green-400">{proficiency.hoursSpent}</p>
+                <p className="text-2xl font-bold text-green-400">
+                  {proficiency.hoursSpent}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Current Streak</p>
-                <p className="text-2xl font-bold text-orange-400">{proficiency.streakDays} days</p>
+                <p className="text-2xl font-bold text-orange-400">
+                  {proficiency.streakDays} days
+                </p>
               </div>
             </div>
           </Card>
@@ -275,7 +290,7 @@ export function PracticeSessions() {
           {/* Available Topics */}
           <TabsContent value="available" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {PRACTICE_TOPICS.map((topic) => (
+              {PRACTICE_TOPICS.map(topic => (
                 <Card
                   key={topic.id}
                   className="bg-slate-800/50 border-slate-700 hover:border-purple-500/50 transition-all cursor-pointer group"
@@ -293,7 +308,9 @@ export function PracticeSessions() {
                         {topic.difficulty}
                       </Badge>
                     </div>
-                    <p className="text-gray-400 text-sm mb-4">{topic.description}</p>
+                    <p className="text-gray-400 text-sm mb-4">
+                      {topic.description}
+                    </p>
                     <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
                       <Clock className="w-4 h-4" />
                       {topic.estimatedDuration} min
@@ -313,7 +330,7 @@ export function PracticeSessions() {
                       <Button
                         size="sm"
                         className="bg-purple-600 hover:bg-purple-700"
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           handleScheduleSession(topic);
                         }}
@@ -332,10 +349,12 @@ export function PracticeSessions() {
           <TabsContent value="sessions" className="space-y-4">
             <div className="flex gap-4 mb-6">
               <div>
-                <label className="text-sm text-gray-400 block mb-2">Filter by Level</label>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Filter by Level
+                </label>
                 <select
                   value={filterLevel}
-                  onChange={(e) => setFilterLevel(e.target.value)}
+                  onChange={e => setFilterLevel(e.target.value)}
                   className="bg-slate-800 border border-slate-700 text-white rounded px-3 py-2"
                 >
                   <option value="all">All Levels</option>
@@ -346,10 +365,12 @@ export function PracticeSessions() {
                 </select>
               </div>
               <div>
-                <label className="text-sm text-gray-400 block mb-2">Filter by Status</label>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Filter by Status
+                </label>
                 <select
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
+                  onChange={e => setFilterStatus(e.target.value)}
                   className="bg-slate-800 border border-slate-700 text-white rounded px-3 py-2"
                 >
                   <option value="all">All Status</option>
@@ -362,24 +383,29 @@ export function PracticeSessions() {
 
             {filteredSessions.length === 0 ? (
               <Card className="bg-slate-800/50 border-slate-700 p-8 text-center">
-                <p className="text-gray-400">No sessions found. Schedule one to get started!</p>
+                <p className="text-gray-400">
+                  No sessions found. Schedule one to get started!
+                </p>
               </Card>
             ) : (
               <div className="space-y-4">
-                {filteredSessions.map((session) => (
+                {filteredSessions.map(session => (
                   <Card
                     key={session.id}
                     className="bg-slate-800/50 border-slate-700 p-6 hover:border-purple-500/50 transition"
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="font-bold text-white text-lg">{session.partnerName}</h3>
+                        <h3 className="font-bold text-white text-lg">
+                          {session.partnerName}
+                        </h3>
                         <p className="text-gray-400 text-sm">
                           {session.language} • {session.topic}
                         </p>
                       </div>
                       <Badge className={getStatusColor(session.status)}>
-                        {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
+                        {session.status.charAt(0).toUpperCase() +
+                          session.status.slice(1)}
                       </Badge>
                     </div>
 
@@ -401,7 +427,9 @@ export function PracticeSessions() {
                     </div>
 
                     {session.notes && (
-                      <p className="text-gray-400 text-sm mb-4 italic">"{session.notes}"</p>
+                      <p className="text-gray-400 text-sm mb-4 italic">
+                        "{session.notes}"
+                      </p>
                     )}
 
                     <div className="flex gap-2">
@@ -440,12 +468,17 @@ export function PracticeSessions() {
           <TabsContent value="history" className="space-y-4">
             <div className="space-y-4">
               {sessions
-                .filter((s) => s.status === "completed")
-                .map((session) => (
-                  <Card key={session.id} className="bg-slate-800/50 border-slate-700 p-6">
+                .filter(s => s.status === "completed")
+                .map(session => (
+                  <Card
+                    key={session.id}
+                    className="bg-slate-800/50 border-slate-700 p-6"
+                  >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-bold text-white">{session.partnerName}</h3>
+                        <h3 className="font-bold text-white">
+                          {session.partnerName}
+                        </h3>
                         <p className="text-gray-400 text-sm">
                           {session.language} • {session.topic}
                         </p>
@@ -458,11 +491,15 @@ export function PracticeSessions() {
                           <Star className="w-4 h-4 fill-current" />
                           {session.rating?.toFixed(1)}
                         </div>
-                        <p className="text-gray-400 text-sm">{session.duration} min</p>
+                        <p className="text-gray-400 text-sm">
+                          {session.duration} min
+                        </p>
                       </div>
                     </div>
                     {session.notes && (
-                      <p className="text-gray-400 text-sm mt-3 italic">"{session.notes}"</p>
+                      <p className="text-gray-400 text-sm mt-3 italic">
+                        "{session.notes}"
+                      </p>
                     )}
                   </Card>
                 ))}
@@ -476,7 +513,9 @@ export function PracticeSessions() {
         <Dialog open={showTopicDetails} onOpenChange={setShowTopicDetails}>
           <DialogContent className="bg-slate-900 border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-white">{selectedTopic.name}</DialogTitle>
+              <DialogTitle className="text-white">
+                {selectedTopic.name}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <p className="text-gray-400">{selectedTopic.description}</p>
@@ -484,7 +523,10 @@ export function PracticeSessions() {
                 <h4 className="font-bold text-white mb-2">Resources</h4>
                 <ul className="space-y-2">
                   {selectedTopic.resources.map((res, i) => (
-                    <li key={i} className="text-gray-400 flex items-center gap-2">
+                    <li
+                      key={i}
+                      className="text-gray-400 flex items-center gap-2"
+                    >
                       <span className="w-2 h-2 bg-purple-400 rounded-full" />
                       {res}
                     </li>
@@ -494,11 +536,15 @@ export function PracticeSessions() {
               <div className="flex justify-between items-center pt-4 border-t border-slate-700">
                 <div>
                   <p className="text-gray-400 text-sm">Estimated Duration</p>
-                  <p className="text-white font-bold">{selectedTopic.estimatedDuration} minutes</p>
+                  <p className="text-white font-bold">
+                    {selectedTopic.estimatedDuration} minutes
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">XP Reward</p>
-                  <p className="text-yellow-400 font-bold">{selectedTopic.xpReward} XP</p>
+                  <p className="text-yellow-400 font-bold">
+                    {selectedTopic.xpReward} XP
+                  </p>
                 </div>
               </div>
               <Button
@@ -520,11 +566,15 @@ export function PracticeSessions() {
         <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
           <DialogContent className="bg-slate-900 border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-white">Schedule Practice Session</DialogTitle>
+              <DialogTitle className="text-white">
+                Schedule Practice Session
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-gray-400 block mb-2">Select Partner</label>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Select Partner
+                </label>
                 <select className="w-full bg-slate-800 border border-slate-700 text-white rounded px-3 py-2">
                   <option>李明 (Chinese, B2)</option>
                   <option>Maria García (Spanish, C1)</option>
@@ -532,11 +582,18 @@ export function PracticeSessions() {
                 </select>
               </div>
               <div>
-                <label className="text-sm text-gray-400 block mb-2">Preferred Date & Time</label>
-                <Input type="datetime-local" className="bg-slate-800 border-slate-700" />
+                <label className="text-sm text-gray-400 block mb-2">
+                  Preferred Date & Time
+                </label>
+                <Input
+                  type="datetime-local"
+                  className="bg-slate-800 border-slate-700"
+                />
               </div>
               <div>
-                <label className="text-sm text-gray-400 block mb-2">Additional Notes</label>
+                <label className="text-sm text-gray-400 block mb-2">
+                  Additional Notes
+                </label>
                 <Textarea
                   placeholder="Any specific topics or focus areas?"
                   className="bg-slate-800 border-slate-700"

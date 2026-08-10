@@ -8,10 +8,31 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
-  Lock, Eye, EyeOff, DollarSign, Star, Heart, Crown, Shield,
-  Upload, Play, Image, Video, Gift, Users, TrendingUp, Zap,
-  AlertTriangle, CheckCircle2, Settings, Bell, CreditCard,
-  ChevronRight, Flame, Award, MessageSquare,
+  Lock,
+  Eye,
+  EyeOff,
+  DollarSign,
+  Star,
+  Heart,
+  Crown,
+  Shield,
+  Upload,
+  Play,
+  Image,
+  Video,
+  Gift,
+  Users,
+  TrendingUp,
+  Zap,
+  AlertTriangle,
+  CheckCircle,
+  Settings,
+  Bell,
+  CreditCard,
+  ChevronRight,
+  Flame,
+  Award,
+  MessageSquare,
 } from "lucide-react";
 
 // Age Gate Component
@@ -26,29 +47,41 @@ function AgeGate({ onConfirm }: { onConfirm: () => void }) {
             <AlertTriangle className="w-8 h-8 text-red-400" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold mb-2">Age Verification Required</h2>
+            <h2 className="text-2xl font-bold mb-2">
+              Age Verification Required
+            </h2>
             <p className="text-white/50 text-sm leading-relaxed">
-              This section contains adult content intended for users 18 years of age or older.
-              By entering, you confirm you are of legal age in your jurisdiction.
+              This section contains adult content intended for users 18 years of
+              age or older. By entering, you confirm you are of legal age in
+              your jurisdiction.
             </p>
           </div>
           <div className="space-y-3 text-left">
             <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
-              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-white/60">All content creators are verified adults (18+)</p>
+              <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-white/60">
+                All content creators are verified adults (18+)
+              </p>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
-              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-white/60">DMCA compliance and content moderation enforced</p>
+              <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-white/60">
+                DMCA compliance and content moderation enforced
+              </p>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
-              <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-white/60">2257 record-keeping requirements met</p>
+              <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-white/60">
+                2257 record-keeping requirements met
+              </p>
             </div>
           </div>
           <label className="flex items-center gap-3 cursor-pointer">
             <Switch checked={checked} onCheckedChange={setChecked} />
-            <span className="text-sm text-white/70">I confirm I am 18 years of age or older and consent to viewing adult content</span>
+            <span className="text-sm text-white/70">
+              I confirm I am 18 years of age or older and consent to viewing
+              adult content
+            </span>
           </label>
           <div className="flex gap-3">
             <Button
@@ -67,7 +100,8 @@ function AgeGate({ onConfirm }: { onConfirm: () => void }) {
             </Button>
           </div>
           <p className="text-xs text-white/30">
-            This platform complies with 18 U.S.C. § 2257 and GDPR. All performers are verified adults.
+            This platform complies with 18 U.S.C. § 2257 and GDPR. All
+            performers are verified adults.
           </p>
         </CardContent>
       </Card>
@@ -82,7 +116,12 @@ const SUBSCRIPTION_TIERS = [
     color: "border-white/20",
     badge: "text-white/60",
     icon: Heart,
-    perks: ["Access to public posts", "Follow creator updates", "Community chat access", "Monthly exclusive photo"],
+    perks: [
+      "Access to public posts",
+      "Follow creator updates",
+      "Community chat access",
+      "Monthly exclusive photo",
+    ],
   },
   {
     name: "Supporter",
@@ -90,7 +129,13 @@ const SUBSCRIPTION_TIERS = [
     color: "border-purple-500/40",
     badge: "text-purple-400",
     icon: Star,
-    perks: ["Everything in Fan", "Exclusive video content", "Direct message access", "2x monthly exclusives", "Behind-the-scenes content"],
+    perks: [
+      "Everything in Fan",
+      "Exclusive video content",
+      "Direct message access",
+      "2x monthly exclusives",
+      "Behind-the-scenes content",
+    ],
     popular: true,
   },
   {
@@ -99,22 +144,93 @@ const SUBSCRIPTION_TIERS = [
     color: "border-yellow-500/40",
     badge: "text-yellow-400",
     icon: Crown,
-    perks: ["Everything in Supporter", "1-on-1 video calls (monthly)", "Custom content requests", "Early access to all drops", "Personalized shoutouts", "Merch discounts 20%"],
+    perks: [
+      "Everything in Supporter",
+      "1-on-1 video calls (monthly)",
+      "Custom content requests",
+      "Early access to all drops",
+      "Personalized shoutouts",
+      "Merch discounts 20%",
+    ],
   },
 ];
 
 const FEATURED_CREATORS = [
-  { name: "ShadowMuse", handle: "@shadowmuse", tier: "VIP", subscribers: 4820, monthly: "$12.4K", avatar: "🌙", verified: true, categories: ["Art", "Lifestyle"] },
-  { name: "NeonDream", handle: "@neondream", tier: "Supporter", subscribers: 2310, monthly: "$6.8K", avatar: "✨", verified: true, categories: ["Music", "Dance"] },
-  { name: "CryptoGoddess", handle: "@cryptogoddess", tier: "VIP", subscribers: 7650, monthly: "$28.1K", avatar: "💎", verified: true, categories: ["Crypto", "Finance"] },
-  { name: "VoidArtist", handle: "@voidartist", tier: "Fan", subscribers: 890, monthly: "$2.1K", avatar: "🎨", verified: false, categories: ["Art", "Photography"] },
+  {
+    name: "ShadowMuse",
+    handle: "@shadowmuse",
+    tier: "VIP",
+    subscribers: 4820,
+    monthly: "$12.4K",
+    avatar: "🌙",
+    verified: true,
+    categories: ["Art", "Lifestyle"],
+  },
+  {
+    name: "NeonDream",
+    handle: "@neondream",
+    tier: "Supporter",
+    subscribers: 2310,
+    monthly: "$6.8K",
+    avatar: "✨",
+    verified: true,
+    categories: ["Music", "Dance"],
+  },
+  {
+    name: "CryptoGoddess",
+    handle: "@cryptogoddess",
+    tier: "VIP",
+    subscribers: 7650,
+    monthly: "$28.1K",
+    avatar: "💎",
+    verified: true,
+    categories: ["Crypto", "Finance"],
+  },
+  {
+    name: "VoidArtist",
+    handle: "@voidartist",
+    tier: "Fan",
+    subscribers: 890,
+    monthly: "$2.1K",
+    avatar: "🎨",
+    verified: false,
+    categories: ["Art", "Photography"],
+  },
 ];
 
 const PPV_CONTENT = [
-  { title: "Exclusive Photoshoot — Neon City Series", creator: "ShadowMuse", price: 14.99, type: "photo", preview: "🖼️", duration: "42 photos" },
-  { title: "Behind the Scenes — Studio Session", creator: "NeonDream", price: 9.99, type: "video", preview: "🎬", duration: "18 min" },
-  { title: "Crypto Trading Masterclass — Private Session", creator: "CryptoGoddess", price: 29.99, type: "video", preview: "📈", duration: "45 min" },
-  { title: "Digital Art Process — Full Timelapse", creator: "VoidArtist", price: 7.99, type: "video", preview: "🎨", duration: "22 min" },
+  {
+    title: "Exclusive Photoshoot — Neon City Series",
+    creator: "ShadowMuse",
+    price: 14.99,
+    type: "photo",
+    preview: "🖼️",
+    duration: "42 photos",
+  },
+  {
+    title: "Behind the Scenes — Studio Session",
+    creator: "NeonDream",
+    price: 9.99,
+    type: "video",
+    preview: "🎬",
+    duration: "18 min",
+  },
+  {
+    title: "Crypto Trading Masterclass — Private Session",
+    creator: "CryptoGoddess",
+    price: 29.99,
+    type: "video",
+    preview: "📈",
+    duration: "45 min",
+  },
+  {
+    title: "Digital Art Process — Full Timelapse",
+    creator: "VoidArtist",
+    price: 7.99,
+    type: "video",
+    preview: "🎨",
+    duration: "22 min",
+  },
 ];
 
 export default function NSFWPlatform() {
@@ -154,10 +270,15 @@ export default function NSFWPlatform() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-mono">
               <Flame className="w-3 h-3" /> CREATOR PLATFORM — 18+
             </div>
-            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">Age Verified</Badge>
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+              Age Verified
+            </Badge>
           </div>
           <h1 className="text-3xl font-bold text-gradient">ShadowFans</h1>
-          <p className="text-white/50 text-sm mt-1">Premium creator content — subscriptions, PPV, tips, and exclusive drops</p>
+          <p className="text-white/50 text-sm mt-1">
+            Premium creator content — subscriptions, PPV, tips, and exclusive
+            drops
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" className="border-white/10 gap-2" size="sm">
@@ -172,10 +293,30 @@ export default function NSFWPlatform() {
       {/* Stats Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Active Creators", value: "1,284", icon: Users, color: "text-purple-400" },
-          { label: "Total Subscribers", value: "48.2K", icon: Heart, color: "text-pink-400" },
-          { label: "Monthly Payouts", value: "$284K", icon: DollarSign, color: "text-green-400" },
-          { label: "Content Pieces", value: "92.4K", icon: Image, color: "text-cyan-400" },
+          {
+            label: "Active Creators",
+            value: "1,284",
+            icon: Users,
+            color: "text-purple-400",
+          },
+          {
+            label: "Total Subscribers",
+            value: "48.2K",
+            icon: Heart,
+            color: "text-pink-400",
+          },
+          {
+            label: "Monthly Payouts",
+            value: "$284K",
+            icon: DollarSign,
+            color: "text-green-400",
+          },
+          {
+            label: "Content Pieces",
+            value: "92.4K",
+            icon: Image,
+            color: "text-cyan-400",
+          },
         ].map(stat => (
           <Card key={stat.label} className="glass-card border-white/10">
             <CardContent className="p-4 flex items-center gap-3">
@@ -202,7 +343,10 @@ export default function NSFWPlatform() {
         <TabsContent value="discover" className="mt-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {FEATURED_CREATORS.map(creator => (
-              <Card key={creator.handle} className="glass-card border-white/10 hover:border-white/20 transition-colors">
+              <Card
+                key={creator.handle}
+                className="glass-card border-white/10 hover:border-white/20 transition-colors"
+              >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600/40 to-pink-600/40 flex items-center justify-center text-2xl flex-shrink-0">
@@ -211,21 +355,44 @@ export default function NSFWPlatform() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-bold">{creator.name}</h3>
-                        {creator.verified && <CheckCircle2 className="w-4 h-4 text-blue-400" />}
-                        <Badge variant="outline" className="text-xs border-white/10 text-white/40">{creator.tier}</Badge>
+                        {creator.verified && (
+                          <CheckCircle className="w-4 h-4 text-blue-400" />
+                        )}
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-white/10 text-white/40"
+                        >
+                          {creator.tier}
+                        </Badge>
                       </div>
-                      <p className="text-sm text-white/40 mb-2">{creator.handle}</p>
+                      <p className="text-sm text-white/40 mb-2">
+                        {creator.handle}
+                      </p>
                       <div className="flex flex-wrap gap-1 mb-3">
                         {creator.categories.map(c => (
-                          <Badge key={c} className="text-xs bg-white/5 border-white/10 text-white/60">{c}</Badge>
+                          <Badge
+                            key={c}
+                            className="text-xs bg-white/5 border-white/10 text-white/60"
+                          >
+                            {c}
+                          </Badge>
                         ))}
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex gap-4 text-xs text-white/40">
-                          <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {creator.subscribers.toLocaleString()}</span>
-                          <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" /> {creator.monthly}/mo</span>
+                          <span className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />{" "}
+                            {creator.subscribers.toLocaleString()}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" /> {creator.monthly}
+                            /mo
+                          </span>
                         </div>
-                        <Button size="sm" className="gradient-psychedelic text-white text-xs">
+                        <Button
+                          size="sm"
+                          className="gradient-psychedelic text-white text-xs"
+                        >
                           Subscribe
                         </Button>
                       </div>
@@ -241,16 +408,23 @@ export default function NSFWPlatform() {
         <TabsContent value="subscriptions" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {SUBSCRIPTION_TIERS.map(tier => (
-              <Card key={tier.name} className={`glass-card border ${tier.color} relative ${tier.popular ? "ring-1 ring-purple-500/50" : ""}`}>
+              <Card
+                key={tier.name}
+                className={`glass-card border ${tier.color} relative ${tier.popular ? "ring-1 ring-purple-500/50" : ""}`}
+              >
                 {tier.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-purple-600 text-white text-xs px-3">Most Popular</Badge>
+                    <Badge className="bg-purple-600 text-white text-xs px-3">
+                      Most Popular
+                    </Badge>
                   </div>
                 )}
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <tier.icon className={`w-5 h-5 ${tier.badge}`} />
-                    <h3 className={`font-bold text-lg ${tier.badge}`}>{tier.name}</h3>
+                    <h3 className={`font-bold text-lg ${tier.badge}`}>
+                      {tier.name}
+                    </h3>
                   </div>
                   <div className="mb-6">
                     <span className="text-3xl font-bold">${tier.price}</span>
@@ -258,8 +432,11 @@ export default function NSFWPlatform() {
                   </div>
                   <ul className="space-y-2 mb-6">
                     {tier.perks.map(perk => (
-                      <li key={perk} className="flex items-start gap-2 text-sm text-white/70">
-                        <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                      <li
+                        key={perk}
+                        className="flex items-start gap-2 text-sm text-white/70"
+                      >
+                        <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                         {perk}
                       </li>
                     ))}
@@ -279,8 +456,9 @@ export default function NSFWPlatform() {
             <CardContent className="p-4 flex items-center gap-4">
               <Shield className="w-5 h-5 text-green-400 flex-shrink-0" />
               <p className="text-sm text-white/60">
-                All subscriptions are billed monthly and can be cancelled anytime. Payments are processed securely via Stripe.
-                Creator receives 80% of subscription revenue; platform fee is 20%.
+                All subscriptions are billed monthly and can be cancelled
+                anytime. Payments are processed securely via Stripe. Creator
+                receives 80% of subscription revenue; platform fee is 20%.
               </p>
             </CardContent>
           </Card>
@@ -290,7 +468,10 @@ export default function NSFWPlatform() {
         <TabsContent value="ppv" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {PPV_CONTENT.map((item, i) => (
-              <Card key={i} className="glass-card border-white/10 hover:border-white/20 transition-colors group">
+              <Card
+                key={i}
+                className="glass-card border-white/10 hover:border-white/20 transition-colors group"
+              >
                 <CardContent className="p-4">
                   <div className="h-24 bg-gradient-to-br from-purple-900/30 to-pink-900/20 rounded-lg flex items-center justify-center mb-3 relative overflow-hidden">
                     <span className="text-4xl">{item.preview}</span>
@@ -298,14 +479,24 @@ export default function NSFWPlatform() {
                       <Lock className="w-6 h-6 text-white/60" />
                     </div>
                     <Badge className="absolute top-2 right-2 bg-black/60 text-white/80 text-xs">
-                      {item.type === "video" ? <Video className="w-3 h-3 inline mr-1" /> : <Image className="w-3 h-3 inline mr-1" />}
+                      {item.type === "video" ? (
+                        <Video className="w-3 h-3 inline mr-1" />
+                      ) : (
+                        <Image className="w-3 h-3 inline mr-1" />
+                      )}
                       {item.duration}
                     </Badge>
                   </div>
-                  <h3 className="font-semibold text-sm mb-1 leading-snug">{item.title}</h3>
-                  <p className="text-xs text-white/40 mb-3">by {item.creator}</p>
+                  <h3 className="font-semibold text-sm mb-1 leading-snug">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-white/40 mb-3">
+                    by {item.creator}
+                  </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-green-400">${item.price}</span>
+                    <span className="text-lg font-bold text-green-400">
+                      ${item.price}
+                    </span>
                     <Button
                       size="sm"
                       className="gradient-psychedelic text-white text-xs gap-1"
@@ -331,7 +522,9 @@ export default function NSFWPlatform() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm text-white/60 mb-2 block">Select Creator</label>
+                  <label className="text-sm text-white/60 mb-2 block">
+                    Select Creator
+                  </label>
                   <div className="grid grid-cols-2 gap-2">
                     {FEATURED_CREATORS.map(c => (
                       <button
@@ -342,8 +535,12 @@ export default function NSFWPlatform() {
                         <div className="flex items-center gap-2">
                           <span>{c.avatar}</span>
                           <div>
-                            <div className="text-xs font-semibold">{c.name}</div>
-                            <div className="text-xs text-white/40">{c.handle}</div>
+                            <div className="text-xs font-semibold">
+                              {c.name}
+                            </div>
+                            <div className="text-xs text-white/40">
+                              {c.handle}
+                            </div>
                           </div>
                         </div>
                       </button>
@@ -351,7 +548,12 @@ export default function NSFWPlatform() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm text-white/60 mb-2 block">Tip Amount: <span className="text-white font-bold">{tipAmount[0]} SKY444</span></label>
+                  <label className="text-sm text-white/60 mb-2 block">
+                    Tip Amount:{" "}
+                    <span className="text-white font-bold">
+                      {tipAmount[0]} SKY444
+                    </span>
+                  </label>
                   <Slider
                     value={tipAmount}
                     onValueChange={setTipAmount}
@@ -385,21 +587,26 @@ export default function NSFWPlatform() {
             <Card className="glass-card border-white/10">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-400" /> Top Tipped This Week
+                  <TrendingUp className="w-4 h-4 text-green-400" /> Top Tipped
+                  This Week
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {FEATURED_CREATORS.map((c, i) => (
                     <div key={c.handle} className="flex items-center gap-3">
-                      <div className="w-6 text-center text-sm font-bold text-white/30">#{i + 1}</div>
+                      <div className="w-6 text-center text-sm font-bold text-white/30">
+                        #{i + 1}
+                      </div>
                       <span className="text-lg">{c.avatar}</span>
                       <div className="flex-1">
                         <div className="text-sm font-semibold">{c.name}</div>
                         <div className="text-xs text-white/40">{c.handle}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-bold text-yellow-400">{(Math.random() * 5000 + 500).toFixed(0)} SKY444</div>
+                        <div className="text-sm font-bold text-yellow-400">
+                          {(Math.random() * 5000 + 500).toFixed(0)} SKY444
+                        </div>
                         <div className="text-xs text-white/30">this week</div>
                       </div>
                     </div>
@@ -473,8 +680,11 @@ export default function NSFWPlatform() {
                 <CardContent>
                   <ul className="space-y-2">
                     {section.items.map(item => (
-                      <li key={item} className="flex items-start gap-2 text-xs text-white/60">
-                        <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                      <li
+                        key={item}
+                        className="flex items-start gap-2 text-xs text-white/60"
+                      >
+                        <CheckCircle className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -487,10 +697,13 @@ export default function NSFWPlatform() {
             <CardContent className="p-4 flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-white/60">
-                <strong className="text-white">Legal Notice:</strong> ShadowFans operates in full compliance with applicable federal and state laws.
-                All content is produced by consenting adults. For compliance inquiries, contact{" "}
-                <span className="text-purple-400">legal@shadowchat.io</span>. To report illegal content,
-                use the in-platform report button or contact{" "}
+                <strong className="text-white">Legal Notice:</strong> ShadowFans
+                operates in full compliance with applicable federal and state
+                laws. All content is produced by consenting adults. For
+                compliance inquiries, contact{" "}
+                <span className="text-purple-400">legal@shadowchat.io</span>. To
+                report illegal content, use the in-platform report button or
+                contact{" "}
                 <span className="text-purple-400">safety@shadowchat.io</span>.
               </p>
             </CardContent>

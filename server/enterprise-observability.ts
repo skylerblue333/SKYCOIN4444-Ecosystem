@@ -1,9 +1,9 @@
-import crypto from 'crypto';
-import { getDb } from './db';
+import crypto from "crypto";
+import { getDb } from "./db";
 
 /**
  * Scalable Observability Engine
- * 
+ *
  * Capabilities:
  * - Distributed tracing across all services
  * - Metrics collection and aggregation
@@ -23,7 +23,7 @@ interface Trace {
   startTime: number;
   endTime: number;
   duration: number;
-  status: 'success' | 'error' | 'warning';
+  status: "success" | "error" | "warning";
   tags: Record<string, string>;
   logs: Array<{ timestamp: number; message: string; level: string }>;
 }
@@ -40,8 +40,12 @@ interface Metric {
 
 interface SecurityEvent {
   id: string;
-  type: 'suspicious_activity' | 'unauthorized_access' | 'rate_limit_exceeded' | 'anomaly_detected';
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  type:
+    | "suspicious_activity"
+    | "unauthorized_access"
+    | "rate_limit_exceeded"
+    | "anomaly_detected";
+  severity: "low" | "medium" | "high" | "critical";
   userId: string | null;
   description: string;
   context: Record<string, unknown>;
@@ -56,7 +60,7 @@ interface AuditLog {
   resource: string;
   changes: Record<string, { before: unknown; after: unknown }>;
   timestamp: number;
-  status: 'success' | 'failure';
+  status: "success" | "failure";
 }
 
 export class ScalableObservabilityEngine {
@@ -82,7 +86,7 @@ export class ScalableObservabilityEngine {
       startTime: Date.now(),
       endTime: 0,
       duration: 0,
-      status: 'success',
+      status: "success",
       tags: {},
       logs: [],
     };
@@ -98,7 +102,10 @@ export class ScalableObservabilityEngine {
   /**
    * End trace and calculate duration
    */
-  endTrace(trace: Trace, status: 'success' | 'error' | 'warning' = 'success'): void {
+  endTrace(
+    trace: Trace,
+    status: "success" | "error" | "warning" = "success"
+  ): void {
     trace.endTime = Date.now();
     trace.duration = trace.endTime - trace.startTime;
     trace.status = status;
@@ -107,7 +114,7 @@ export class ScalableObservabilityEngine {
   /**
    * Add log to trace
    */
-  addTraceLog(trace: Trace, message: string, level: string = 'info'): void {
+  addTraceLog(trace: Trace, message: string, level: string = "info"): void {
     trace.logs.push({
       timestamp: Date.now(),
       message,
@@ -118,7 +125,13 @@ export class ScalableObservabilityEngine {
   /**
    * Record metric
    */
-  recordMetric(name: string, value: number, unit: string = '', service: string = 'platform', tags: Record<string, string> = {}): void {
+  recordMetric(
+    name: string,
+    value: number,
+    unit: string = "",
+    service: string = "platform",
+    tags: Record<string, string> = {}
+  ): void {
     const metric: Metric = {
       id: crypto.randomUUID(),
       name,
@@ -141,8 +154,8 @@ export class ScalableObservabilityEngine {
    * Record security event
    */
   recordSecurityEvent(
-    type: SecurityEvent['type'],
-    severity: SecurityEvent['severity'],
+    type: SecurityEvent["type"],
+    severity: SecurityEvent["severity"],
     description: string,
     userId: string | null = null,
     context: Record<string, unknown> = {}
@@ -161,7 +174,7 @@ export class ScalableObservabilityEngine {
     this.securityEvents.push(event);
 
     // Alert if critical
-    if (severity === 'critical') {
+    if (severity === "critical") {
       this.triggerSecurityAlert(event);
     }
   }
@@ -174,7 +187,7 @@ export class ScalableObservabilityEngine {
     actor: string,
     resource: string,
     changes: Record<string, { before: unknown; after: unknown }> = {},
-    status: 'success' | 'failure' = 'success'
+    status: "success" | "failure" = "success"
   ): void {
     const log: AuditLog = {
       id: crypto.randomUUID(),
@@ -193,7 +206,9 @@ export class ScalableObservabilityEngine {
    * Trigger security alert
    */
   private triggerSecurityAlert(event: SecurityEvent): void {
-    console.error(`🚨 SECURITY ALERT: ${event.severity.toUpperCase()} - ${event.description}`);
+    console.error(
+      `🚨 SECURITY ALERT: ${event.severity.toUpperCase()} - ${event.description}`
+    );
     // Would integrate with alerting service (PagerDuty, Slack, etc.)
   }
 
@@ -207,16 +222,27 @@ export class ScalableObservabilityEngine {
   /**
    * Get metrics for service
    */
-  getMetricsForService(service: string, timeWindowMs: number = 3600000): Metric[] {
+  getMetricsForService(
+    service: string,
+    timeWindowMs: number = 3600000
+  ): Metric[] {
     const cutoff = Date.now() - timeWindowMs;
-    return this.metrics.filter((m) => m.service === service && m.timestamp > cutoff);
+    return this.metrics.filter(
+      m => m.service === service && m.timestamp > cutoff
+    );
   }
 
   /**
    * Get average metric value
    */
-  getAverageMetric(name: string, service: string, timeWindowMs: number = 3600000): number {
-    const metrics = this.getMetricsForService(service, timeWindowMs).filter((m) => m.name === name);
+  getAverageMetric(
+    name: string,
+    service: string,
+    timeWindowMs: number = 3600000
+  ): number {
+    const metrics = this.getMetricsForService(service, timeWindowMs).filter(
+      m => m.name === name
+    );
     if (metrics.length === 0) return 0;
     return metrics.reduce((sum, m) => sum + m.value, 0) / metrics.length;
   }
@@ -224,12 +250,15 @@ export class ScalableObservabilityEngine {
   /**
    * Get security events
    */
-  getSecurityEvents(timeWindowMs: number = 3600000, severity: SecurityEvent['severity'] | null = null): SecurityEvent[] {
+  getSecurityEvents(
+    timeWindowMs: number = 3600000,
+    severity: SecurityEvent["severity"] | null = null
+  ): SecurityEvent[] {
     const cutoff = Date.now() - timeWindowMs;
-    let events = this.securityEvents.filter((e) => e.timestamp > cutoff);
+    let events = this.securityEvents.filter(e => e.timestamp > cutoff);
 
     if (severity) {
-      events = events.filter((e) => e.severity === severity);
+      events = events.filter(e => e.severity === severity);
     }
 
     return events;
@@ -238,12 +267,15 @@ export class ScalableObservabilityEngine {
   /**
    * Get audit logs
    */
-  getAuditLogs(actor: string | null = null, timeWindowMs: number = 86400000): AuditLog[] {
+  getAuditLogs(
+    actor: string | null = null,
+    timeWindowMs: number = 86400000
+  ): AuditLog[] {
     const cutoff = Date.now() - timeWindowMs;
-    let logs = this.auditLogs.filter((l) => l.timestamp > cutoff);
+    let logs = this.auditLogs.filter(l => l.timestamp > cutoff);
 
     if (actor) {
-      logs = logs.filter((l) => l.actor === actor);
+      logs = logs.filter(l => l.actor === actor);
     }
 
     return logs;
@@ -261,19 +293,29 @@ export class ScalableObservabilityEngine {
       timestamp: Date.now(),
       metrics: {
         total_recorded: this.metrics.length,
-        recent_average_latency_ms: this.getAverageMetric('latency', 'platform'),
-        recent_error_rate: this.getAverageMetric('error_rate', 'platform'),
+        recent_average_latency_ms: this.getAverageMetric("latency", "platform"),
+        recent_error_rate: this.getAverageMetric("error_rate", "platform"),
       },
       security: {
         total_events: this.securityEvents.length,
-        recent_critical_events: this.getSecurityEvents(3600000, 'critical').length,
-        recent_high_severity_events: this.getSecurityEvents(3600000, 'high').length,
+        recent_critical_events: this.getSecurityEvents(3600000, "critical")
+          .length,
+        recent_high_severity_events: this.getSecurityEvents(3600000, "high")
+          .length,
       },
       traces: {
         total_traces: this.traces.size,
         recent_traces: recentTraces.length,
-        average_duration_ms: recentTraces.length > 0 ? recentTraces.reduce((sum, t) => sum + t.duration, 0) / recentTraces.length : 0,
-        error_rate: recentTraces.length > 0 ? recentTraces.filter((t) => t.status === 'error').length / recentTraces.length : 0,
+        average_duration_ms:
+          recentTraces.length > 0
+            ? recentTraces.reduce((sum, t) => sum + t.duration, 0) /
+              recentTraces.length
+            : 0,
+        error_rate:
+          recentTraces.length > 0
+            ? recentTraces.filter(t => t.status === "error").length /
+              recentTraces.length
+            : 0,
       },
       audit: {
         total_logs: this.auditLogs.length,
@@ -286,7 +328,7 @@ export class ScalableObservabilityEngine {
    * Resolve security event
    */
   resolveSecurityEvent(eventId: string): void {
-    const event = this.securityEvents.find((e) => e.id === eventId);
+    const event = this.securityEvents.find(e => e.id === eventId);
     if (event) {
       event.resolved = true;
     }

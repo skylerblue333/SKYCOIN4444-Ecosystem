@@ -1,6 +1,6 @@
 /**
  * WebSocket Integration Layer
- * 
+ *
  * Enables real-time updates for all 10 strategic engines
  * - Live feedback collection
  * - Dynamic roadmap updates
@@ -14,12 +14,12 @@
  * - Simulation progress tracking
  */
 
-import { Server as HTTPServer } from 'http';
-import { WebSocketServer, WebSocket } from 'ws';
-import { IncomingMessage } from 'http';
+import { Server as HTTPServer } from "http";
+import { WebSocketServer, WebSocket } from "ws";
+import { IncomingMessage } from "http";
 
 interface WebSocketMessage {
-  type: 'subscribe' | 'unsubscribe' | 'update' | 'query';
+  type: "subscribe" | "unsubscribe" | "update" | "query";
   channel: string;
   data?: any;
   timestamp: number;
@@ -42,7 +42,7 @@ export class WebSocketIntegration {
   }
 
   private initializeHandlers() {
-    this.wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
+    this.wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
       const userId = this.extractUserId(req);
       const subscriberId = `${userId}-${Date.now()}`;
 
@@ -54,16 +54,16 @@ export class WebSocketIntegration {
 
       this.subscribers.set(subscriberId, subscriber);
 
-      ws.on('message', (data: string) => {
+      ws.on("message", (data: string) => {
         try {
           const message: WebSocketMessage = JSON.parse(data);
           this.handleMessage(subscriberId, message);
         } catch (error) {
-          console.error('WebSocket message error:', error);
+          console.error("WebSocket message error:", error);
         }
       });
 
-      ws.on('close', () => {
+      ws.on("close", () => {
         this.subscribers.delete(subscriberId);
         subscriber.channels.forEach(channel => {
           const channelSubs = this.channels.get(channel);
@@ -73,16 +73,16 @@ export class WebSocketIntegration {
         });
       });
 
-      ws.on('error', (error) => {
-        console.error('WebSocket error:', error);
+      ws.on("error", error => {
+        console.error("WebSocket error:", error);
       });
     });
   }
 
   private extractUserId(req: IncomingMessage): string {
     // Extract user ID from query params or headers
-    const url = new URL(req.url || '', `http://${req.headers.host}`);
-    return url.searchParams.get('userId') || 'anonymous';
+    const url = new URL(req.url || "", `http://${req.headers.host}`);
+    return url.searchParams.get("userId") || "anonymous";
   }
 
   private handleMessage(subscriberId: string, message: WebSocketMessage) {
@@ -90,16 +90,16 @@ export class WebSocketIntegration {
     if (!subscriber) return;
 
     switch (message.type) {
-      case 'subscribe':
+      case "subscribe":
         this.subscribe(subscriberId, message.channel);
         break;
-      case 'unsubscribe':
+      case "unsubscribe":
         this.unsubscribe(subscriberId, message.channel);
         break;
-      case 'update':
+      case "update":
         this.broadcast(message.channel, message.data);
         break;
-      case 'query':
+      case "query":
         this.handleQuery(subscriberId, message.channel, message.data);
         break;
     }
@@ -119,7 +119,7 @@ export class WebSocketIntegration {
     // Send subscription confirmation
     subscriber.ws.send(
       JSON.stringify({
-        type: 'subscribed',
+        type: "subscribed",
         channel,
         timestamp: Date.now(),
       })
@@ -142,7 +142,7 @@ export class WebSocketIntegration {
     if (!subscribers) return;
 
     const message = JSON.stringify({
-      type: 'update',
+      type: "update",
       channel,
       data,
       timestamp: Date.now(),
@@ -165,7 +165,7 @@ export class WebSocketIntegration {
 
     subscriber.ws.send(
       JSON.stringify({
-        type: 'query_response',
+        type: "query_response",
         channel,
         data: response,
         timestamp: Date.now(),
@@ -175,28 +175,28 @@ export class WebSocketIntegration {
 
   private processChannelQuery(channel: string, query: any): any {
     switch (channel) {
-      case 'feedback':
-        return { status: 'ok', feedbackCount: 1280, actionable: 467 };
-      case 'roadmap':
-        return { status: 'ok', itemsCount: 12, avgPriority: 82 };
-      case 'agents':
-        return { status: 'ok', agentsActive: 4, consensusScore: 0.89 };
-      case 'competitors':
-        return { status: 'ok', competitorsTracked: 8, marketShare: 0.28 };
-      case 'behavioral':
-        return { status: 'ok', segmentsAnalyzed: 4, churnRisk: 0.15 };
-      case 'experiments':
-        return { status: 'ok', experimentsRunning: 6, successRate: 0.86 };
-      case 'narratives':
-        return { status: 'ok', narrativesGenerated: 24, avgEngagement: 0.82 };
-      case 'connectors':
-        return { status: 'ok', connectorsActive: 5, uptime: 0.9991 };
-      case 'productbrain':
-        return { status: 'ok', playbooksStored: 12, lessonsLearned: 456 };
-      case 'simulator':
-        return { status: 'ok', simulationsRun: 89, avgAccuracy: 0.87 };
+      case "feedback":
+        return { status: "ok", feedbackCount: 1280, actionable: 467 };
+      case "roadmap":
+        return { status: "ok", itemsCount: 12, avgPriority: 82 };
+      case "agents":
+        return { status: "ok", agentsActive: 4, consensusScore: 0.89 };
+      case "competitors":
+        return { status: "ok", competitorsTracked: 8, marketShare: 0.28 };
+      case "behavioral":
+        return { status: "ok", segmentsAnalyzed: 4, churnRisk: 0.15 };
+      case "experiments":
+        return { status: "ok", experimentsRunning: 6, successRate: 0.86 };
+      case "narratives":
+        return { status: "ok", narrativesGenerated: 24, avgEngagement: 0.82 };
+      case "connectors":
+        return { status: "ok", connectorsActive: 5, uptime: 0.9991 };
+      case "productbrain":
+        return { status: "ok", playbooksStored: 12, lessonsLearned: 456 };
+      case "simulator":
+        return { status: "ok", simulationsRun: 89, avgAccuracy: 0.87 };
       default:
-        return { status: 'error', message: 'Unknown channel' };
+        return { status: "error", message: "Unknown channel" };
     }
   }
 
@@ -216,7 +216,9 @@ export class WebSocketIntegration {
 // Export singleton instance
 let wsInstance: WebSocketIntegration | null = null;
 
-export function initializeWebSocket(httpServer: HTTPServer): WebSocketIntegration {
+export function initializeWebSocket(
+  httpServer: HTTPServer
+): WebSocketIntegration {
   if (!wsInstance) {
     wsInstance = new WebSocketIntegration(httpServer);
   }

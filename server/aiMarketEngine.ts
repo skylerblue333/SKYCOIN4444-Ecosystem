@@ -109,18 +109,50 @@ const AGENT_SIGNAL_TYPES = {
 
 // ─── Rarity Calculation ───────────────────────────────────────────────────────
 
-function calculateRarity(momentum: number, sentiment: number, raised: number): {
+function calculateRarity(
+  momentum: number,
+  sentiment: number,
+  raised: number
+): {
   status: "common" | "uncommon" | "rare" | "epic" | "legendary";
   label: string;
   score: number;
 } {
-  const score = Math.round((momentum * 0.4) + (sentiment * 0.35) + (Math.min(raised / 9500000, 1) * 100 * 0.25));
+  const score = Math.round(
+    momentum * 0.4 +
+      sentiment * 0.35 +
+      Math.min(raised / 9500000, 1) * 100 * 0.25
+  );
 
-  if (score >= 90) return { status: "legendary", label: "Legendary — Once-in-a-Cycle Entry", score };
-  if (score >= 75) return { status: "epic", label: "Epic Opportunity — High Conviction", score };
-  if (score >= 55) return { status: "rare", label: "Rare Opportunity — Strong Fundamentals", score };
-  if (score >= 35) return { status: "uncommon", label: "Uncommon Setup — Accumulation Phase", score };
-  return { status: "common", label: "Common Entry — Standard Risk Profile", score };
+  if (score >= 90)
+    return {
+      status: "legendary",
+      label: "Legendary — Once-in-a-Cycle Entry",
+      score,
+    };
+  if (score >= 75)
+    return {
+      status: "epic",
+      label: "Epic Opportunity — High Conviction",
+      score,
+    };
+  if (score >= 55)
+    return {
+      status: "rare",
+      label: "Rare Opportunity — Strong Fundamentals",
+      score,
+    };
+  if (score >= 35)
+    return {
+      status: "uncommon",
+      label: "Uncommon Setup — Accumulation Phase",
+      score,
+    };
+  return {
+    status: "common",
+    label: "Common Entry — Standard Risk Profile",
+    score,
+  };
 }
 
 // ─── Core Agent Cycle ─────────────────────────────────────────────────────────
@@ -133,20 +165,28 @@ export async function runAgentCycle(agentId?: string): Promise<{
 }> {
   // Pick a random agent or use specified one
   const agent = agentId
-    ? AGENTS.find(a => a.id === agentId) ?? AGENTS[0]
+    ? (AGENTS.find(a => a.id === agentId) ?? AGENTS[0])
     : AGENTS[Math.floor(Math.random() * AGENTS.length)];
 
   // Get current ICO stats
   const [stats] = await db.select().from(icoInvestorStats).limit(1);
-  if (!stats) return { signalsGenerated: 0, statsUpdated: false, rarityUpdated: false, agentName: agent.name };
+  if (!stats)
+    return {
+      signalsGenerated: 0,
+      statsUpdated: false,
+      rarityUpdated: false,
+      agentName: agent.name,
+    };
 
   const currentMomentum = stats.momentumScore;
   const currentSentiment = stats.sentimentScore;
   const currentRaised = parseFloat(stats.totalRaisedUsd);
 
   // Generate signal type
-  const signalTypes = AGENT_SIGNAL_TYPES[agent.id as keyof typeof AGENT_SIGNAL_TYPES];
-  const signalType = signalTypes[Math.floor(Math.random() * signalTypes.length)];
+  const signalTypes =
+    AGENT_SIGNAL_TYPES[agent.id as keyof typeof AGENT_SIGNAL_TYPES];
+  const signalType =
+    signalTypes[Math.floor(Math.random() * signalTypes.length)];
 
   // Generate LLM commentary
   const prompt = `Generate a brief, authentic market signal for SKY444 (SKYCOIN4444).
@@ -190,7 +230,8 @@ Respond in JSON format:
       const parsed = JSON.parse(jsonMatch[0]);
       if (parsed.title) title = parsed.title;
       if (parsed.commentary) commentary = parsed.commentary;
-      if (parsed.confidence) confidence = Math.min(95, Math.max(60, parsed.confidence));
+      if (parsed.confidence)
+        confidence = Math.min(95, Math.max(60, parsed.confidence));
       if (Array.isArray(parsed.tags)) tags = parsed.tags;
     }
   } catch {
@@ -204,11 +245,15 @@ Respond in JSON format:
   await db.insert(marketSignals).values({
     agentId: agent.id,
     signalType,
-    strength: confidence >= 85 ? "strong" : confidence >= 75 ? "moderate" : "weak",
+    strength:
+      confidence >= 85 ? "strong" : confidence >= 75 ? "moderate" : "weak",
     title,
     commentary,
     targetAsset: "SKY444",
-    priceTarget: (parseFloat(stats.tokenPriceUsd) * (1 + Math.random() * 0.3)).toFixed(6),
+    priceTarget: (
+      parseFloat(stats.tokenPriceUsd) *
+      (1 + Math.random() * 0.3)
+    ).toFixed(6),
     confidenceScore: confidence,
     momentumDelta,
     tags,
@@ -232,9 +277,15 @@ Respond in JSON format:
   );
 
   // Update ICO stats — momentum and sentiment drift
-  const newMomentum = Math.min(100, Math.max(20, currentMomentum + parseFloat(momentumDelta)));
+  const newMomentum = Math.min(
+    100,
+    Math.max(20, currentMomentum + parseFloat(momentumDelta))
+  );
   const sentimentDelta = (Math.random() * 3 - 0.5).toFixed(4);
-  const newSentiment = Math.min(100, Math.max(20, currentSentiment + parseFloat(sentimentDelta)));
+  const newSentiment = Math.min(
+    100,
+    Math.max(20, currentSentiment + parseFloat(sentimentDelta))
+  );
 
   // Recalculate rarity
   const rarity = calculateRarity(newMomentum, newSentiment, currentRaised);

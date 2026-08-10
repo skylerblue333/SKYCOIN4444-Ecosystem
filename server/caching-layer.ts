@@ -1,6 +1,6 @@
 /**
  * Advanced Caching Layer for SKYCOIN4444
- * 
+ *
  * Implements multi-tier caching:
  * - In-memory cache (hot data)
  * - Redis cache (distributed)
@@ -8,11 +8,11 @@
  * - API response cache
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // Cache configuration
 export const CacheConfig = {
-  enabled: process.env.CACHE_ENABLED !== 'false',
+  enabled: process.env.CACHE_ENABLED !== "false",
   ttl: {
     short: 60, // 1 minute
     medium: 300, // 5 minutes
@@ -20,7 +20,7 @@ export const CacheConfig = {
     veryLong: 86400, // 1 day
   },
   redis: {
-    url: (process.env.REDIS_URL || 'redis://localhost:6379') as string,
+    url: (process.env.REDIS_URL || "redis://localhost:6379") as string,
     enabled: !!process.env.REDIS_URL,
   },
   memory: {
@@ -33,64 +33,64 @@ export const CacheConfig = {
 export const CacheKeys = {
   // Feedback engine
   feedback: {
-    list: 'feedback:list',
-    stats: 'feedback:stats',
-    trends: 'feedback:trends',
+    list: "feedback:list",
+    stats: "feedback:stats",
+    trends: "feedback:trends",
   },
   // Roadmap engine
   roadmap: {
-    list: 'roadmap:list',
-    stats: 'roadmap:stats',
-    predictions: 'roadmap:predictions',
+    list: "roadmap:list",
+    stats: "roadmap:stats",
+    predictions: "roadmap:predictions",
   },
   // Agent debate
   agents: {
-    list: 'agents:list',
-    debates: 'agents:debates',
-    consensus: 'agents:consensus',
+    list: "agents:list",
+    debates: "agents:debates",
+    consensus: "agents:consensus",
   },
   // Competitive radar
   competitors: {
-    list: 'competitors:list',
-    analysis: 'competitors:analysis',
-    threats: 'competitors:threats',
+    list: "competitors:list",
+    analysis: "competitors:analysis",
+    threats: "competitors:threats",
   },
   // Behavioral intelligence
   behavioral: {
-    cohorts: 'behavioral:cohorts',
-    churn: 'behavioral:churn',
-    segments: 'behavioral:segments',
+    cohorts: "behavioral:cohorts",
+    churn: "behavioral:churn",
+    segments: "behavioral:segments",
   },
   // Experiments
   experiments: {
-    list: 'experiments:list',
-    results: 'experiments:results',
-    recommendations: 'experiments:recommendations',
+    list: "experiments:list",
+    results: "experiments:results",
+    recommendations: "experiments:recommendations",
   },
   // Narratives
   narratives: {
-    list: 'narratives:list',
-    variants: 'narratives:variants',
+    list: "narratives:list",
+    variants: "narratives:variants",
   },
   // Connectors
   connectors: {
-    status: 'connectors:status',
-    diagnostics: 'connectors:diagnostics',
+    status: "connectors:status",
+    diagnostics: "connectors:diagnostics",
   },
   // Product brain
   productBrain: {
-    playbooks: 'productBrain:playbooks',
-    memory: 'productBrain:memory',
+    playbooks: "productBrain:playbooks",
+    memory: "productBrain:memory",
   },
   // Simulator
   simulator: {
-    scenarios: 'simulator:scenarios',
-    results: 'simulator:results',
+    scenarios: "simulator:scenarios",
+    results: "simulator:results",
   },
   // Analytics
   analytics: {
-    metrics: 'analytics:metrics',
-    health: 'analytics:health',
+    metrics: "analytics:metrics",
+    health: "analytics:health",
   },
 };
 
@@ -215,7 +215,11 @@ export const cacheManager = new CacheManager();
 
 // Cache decorator for procedures
 export function withCache(key: string, ttl?: number) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
@@ -235,47 +239,47 @@ export function withCache(key: string, ttl?: number) {
 
 // Cache invalidation helpers
 export async function invalidateFeedbackCache() {
-  await cacheManager.invalidatePattern('feedback:.*');
+  await cacheManager.invalidatePattern("feedback:.*");
 }
 
 export async function invalidateRoadmapCache() {
-  await cacheManager.invalidatePattern('roadmap:.*');
+  await cacheManager.invalidatePattern("roadmap:.*");
 }
 
 export async function invalidateAgentCache() {
-  await cacheManager.invalidatePattern('agents:.*');
+  await cacheManager.invalidatePattern("agents:.*");
 }
 
 export async function invalidateCompetitorCache() {
-  await cacheManager.invalidatePattern('competitors:.*');
+  await cacheManager.invalidatePattern("competitors:.*");
 }
 
 export async function invalidateBehavioralCache() {
-  await cacheManager.invalidatePattern('behavioral:.*');
+  await cacheManager.invalidatePattern("behavioral:.*");
 }
 
 export async function invalidateExperimentCache() {
-  await cacheManager.invalidatePattern('experiments:.*');
+  await cacheManager.invalidatePattern("experiments:.*");
 }
 
 export async function invalidateNarrativeCache() {
-  await cacheManager.invalidatePattern('narratives:.*');
+  await cacheManager.invalidatePattern("narratives:.*");
 }
 
 export async function invalidateConnectorCache() {
-  await cacheManager.invalidatePattern('connectors:.*');
+  await cacheManager.invalidatePattern("connectors:.*");
 }
 
 export async function invalidateProductBrainCache() {
-  await cacheManager.invalidatePattern('productBrain:.*');
+  await cacheManager.invalidatePattern("productBrain:.*");
 }
 
 export async function invalidateSimulatorCache() {
-  await cacheManager.invalidatePattern('simulator:.*');
+  await cacheManager.invalidatePattern("simulator:.*");
 }
 
 export async function invalidateAnalyticsCache() {
-  await cacheManager.invalidatePattern('analytics:.*');
+  await cacheManager.invalidatePattern("analytics:.*");
 }
 
 // Cache statistics

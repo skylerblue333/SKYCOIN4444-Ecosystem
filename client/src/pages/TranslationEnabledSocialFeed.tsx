@@ -41,7 +41,8 @@ const MOCK_POSTS: Post[] = [
     author: "Maria García",
     avatar: "🇪🇸",
     language: "Spanish",
-    content: "¡Acabo de terminar mi clase de inglés! Fue muy divertido practicar con mis compañeros.",
+    content:
+      "¡Acabo de terminar mi clase de inglés! Fue muy divertido practicar con mis compañeros.",
     timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
     likes: 156,
     comments: 32,
@@ -55,7 +56,8 @@ const MOCK_POSTS: Post[] = [
     author: "Yuki Tanaka",
     avatar: "🇯🇵",
     language: "Japanese",
-    content: "新しいプロジェクトに取り組んでいます。言語学習と技術の融合は本当に興味深いです。",
+    content:
+      "新しいプロジェクトに取り組んでいます。言語学習と技術の融合は本当に興味深いです。",
     timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
     likes: 189,
     comments: 28,
@@ -69,7 +71,8 @@ const MOCK_POSTS: Post[] = [
     author: "Pierre Dubois",
     avatar: "🇫🇷",
     language: "French",
-    content: "La pratique régulière est la clé du succès en apprentissage des langues. Continuons ensemble!",
+    content:
+      "La pratique régulière est la clé du succès en apprentissage des langues. Continuons ensemble!",
     timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000),
     likes: 267,
     comments: 51,
@@ -82,14 +85,20 @@ const MOCK_POSTS: Post[] = [
 
 export function TranslationEnabledSocialFeed() {
   const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
-  const [globalTranslationEnabled, setGlobalTranslationEnabled] = useState(true);
-  const [selectedTargetLanguage, setSelectedTargetLanguage] = useState("English");
+  const [globalTranslationEnabled, setGlobalTranslationEnabled] =
+    useState(true);
+  const [selectedTargetLanguage, setSelectedTargetLanguage] =
+    useState("English");
 
   const handleLike = (postId: string) => {
-    setPosts((prev) =>
-      prev.map((post) =>
+    setPosts(prev =>
+      prev.map(post =>
         post.id === postId
-          ? { ...post, liked: !post.liked, likes: post.liked ? post.likes - 1 : post.likes + 1 }
+          ? {
+              ...post,
+              liked: !post.liked,
+              likes: post.liked ? post.likes - 1 : post.likes + 1,
+            }
           : post
       )
     );
@@ -123,10 +132,12 @@ export function TranslationEnabledSocialFeed() {
 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-300">Target Language:</label>
+                <label className="text-sm text-gray-300">
+                  Target Language:
+                </label>
                 <select
                   value={selectedTargetLanguage}
-                  onChange={(e) => setSelectedTargetLanguage(e.target.value)}
+                  onChange={e => setSelectedTargetLanguage(e.target.value)}
                   className="bg-slate-700 border border-slate-600 text-white px-3 py-1 rounded text-sm"
                 >
                   <option>English</option>
@@ -139,7 +150,9 @@ export function TranslationEnabledSocialFeed() {
 
               <Button
                 variant={globalTranslationEnabled ? "default" : "outline"}
-                onClick={() => setGlobalTranslationEnabled(!globalTranslationEnabled)}
+                onClick={() =>
+                  setGlobalTranslationEnabled(!globalTranslationEnabled)
+                }
                 className="gap-2"
               >
                 {globalTranslationEnabled ? (
@@ -160,7 +173,7 @@ export function TranslationEnabledSocialFeed() {
 
         {/* Posts Feed */}
         <div className="space-y-6">
-          {posts.map((post) => (
+          {posts.map(post => (
             <Card
               key={post.id}
               className="bg-slate-800/50 border-slate-700 p-6 hover:border-purple-500/50 transition"

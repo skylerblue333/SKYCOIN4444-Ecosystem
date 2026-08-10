@@ -41,8 +41,15 @@ describe("Phase 6A: Creator CRM", () => {
       platform: "youtube",
       handle: "yt_bob456",
     });
-    const interaction = creatorCRM.recordInteraction(contact.id, "comment", "Great video!");
-    expect(interaction).toMatchObject({ contactId: contact.id, type: "comment" });
+    const interaction = creatorCRM.recordInteraction(
+      contact.id,
+      "comment",
+      "Great video!"
+    );
+    expect(interaction).toMatchObject({
+      contactId: contact.id,
+      type: "comment",
+    });
   });
 
   it("updates contact notes", () => {
@@ -62,8 +69,16 @@ describe("Phase 6A: Creator CRM", () => {
   });
 
   it("gets CRM stats for a creator", () => {
-    creatorCRM.addContact(5, { name: "Fan One", platform: "instagram", handle: "ig_fan1" });
-    creatorCRM.addContact(5, { name: "Fan Two", platform: "twitter", handle: "tw_fan2" });
+    creatorCRM.addContact(5, {
+      name: "Fan One",
+      platform: "instagram",
+      handle: "ig_fan1",
+    });
+    creatorCRM.addContact(5, {
+      name: "Fan Two",
+      platform: "twitter",
+      handle: "tw_fan2",
+    });
     const stats = creatorCRM.getCRMStats(5);
     expect(stats).toHaveProperty("totalContacts");
     expect(stats.totalContacts).toBeGreaterThanOrEqual(2);
@@ -72,28 +87,53 @@ describe("Phase 6A: Creator CRM", () => {
 
 describe("Phase 6A: Audience Segmentation", () => {
   it("creates a segment and retrieves it", () => {
-    const segment = audienceSegmentation.createSegment(1, "Top Fans", "High engagement fans", {
-      engagementLevel: "high",
-    });
+    const segment = audienceSegmentation.createSegment(
+      1,
+      "Top Fans",
+      "High engagement fans",
+      {
+        engagementLevel: "high",
+      }
+    );
     expect(segment).toMatchObject({ creatorId: 1, name: "Top Fans" });
     const segments = audienceSegmentation.getSegments(1);
     expect(segments.some(s => s.name === "Top Fans")).toBe(true);
   });
 
   it("evaluates a segment against audience data", () => {
-    const segment = audienceSegmentation.createSegment(1, "Subscribers", "Paying subscribers", {
-      hasSubscription: true,
-    });
+    const segment = audienceSegmentation.createSegment(
+      1,
+      "Subscribers",
+      "Paying subscribers",
+      {
+        hasSubscription: true,
+      }
+    );
     const result = audienceSegmentation.evaluateSegment(segment.id, [
-      { followDays: 30, totalSpend: 50, hasSubscription: true, engagementScore: 80 },
-      { followDays: 5, totalSpend: 0, hasSubscription: false, engagementScore: 20 },
+      {
+        followDays: 30,
+        totalSpend: 50,
+        hasSubscription: true,
+        engagementScore: 80,
+      },
+      {
+        followDays: 5,
+        totalSpend: 0,
+        hasSubscription: false,
+        engagementScore: 20,
+      },
     ]);
     expect(result).toHaveProperty("memberCount");
     expect(result.memberCount).toBe(1);
   });
 
   it("gets segment insights", () => {
-    const segment = audienceSegmentation.createSegment(2, "Whales", "High spenders", { minSpend: 100 });
+    const segment = audienceSegmentation.createSegment(
+      2,
+      "Whales",
+      "High spenders",
+      { minSpend: 100 }
+    );
     const insights = audienceSegmentation.getSegmentInsights(segment.id);
     expect(insights).toHaveProperty("avgEngagement");
     expect(insights).toHaveProperty("avgSpend");
@@ -137,7 +177,9 @@ describe("Phase 6A: Subscriber Funnels", () => {
   });
 
   it("gets funnels for a creator", () => {
-    subscriberFunnels.createFunnel(3, "Creator Funnel", [{ name: "Step 1", type: "awareness", action: "view" }]);
+    subscriberFunnels.createFunnel(3, "Creator Funnel", [
+      { name: "Step 1", type: "awareness", action: "view" },
+    ]);
     const funnels = subscriberFunnels.getFunnels(3);
     expect(funnels.length).toBeGreaterThan(0);
   });
@@ -156,7 +198,11 @@ describe("Phase 6A: Sponsorship CRM", () => {
       status: "negotiating",
       exclusivityCategories: ["tech"],
     });
-    expect(deal).toMatchObject({ creatorId: 1, brandName: "TechCorp", dealValue: 5000 });
+    expect(deal).toMatchObject({
+      creatorId: 1,
+      brandName: "TechCorp",
+      dealValue: 5000,
+    });
   });
 
   it("updates deal status", () => {
@@ -272,7 +318,12 @@ describe("Phase 6A: Campaign Manager", () => {
       status: "active",
       goals: { revenue: 2000 },
     });
-    campaignManager.recordCampaignResults(campaign.id, { impressions: 10000, clicks: 500, conversions: 50, revenue: 1500 });
+    campaignManager.recordCampaignResults(campaign.id, {
+      impressions: 10000,
+      clicks: 500,
+      conversions: 50,
+      revenue: 1500,
+    });
     const roi = campaignManager.getCampaignROI(campaign.id);
     expect(roi).toHaveProperty("roi");
     expect(roi).toHaveProperty("cpc");
@@ -463,7 +514,14 @@ describe("Phase 6B: Loyalty System", () => {
 
   it("upgrades tier when threshold is reached", () => {
     const result = loyaltySystem.awardPoints(2002, 5000, "bulk_award");
-    expect(["bronze", "silver", "gold", "platinum", "diamond", "legend"]).toContain(result.tier);
+    expect([
+      "bronze",
+      "silver",
+      "gold",
+      "platinum",
+      "diamond",
+      "legend",
+    ]).toContain(result.tier);
   });
 
   it("returns tier benefits", () => {
@@ -592,11 +650,21 @@ describe("Phase 6B: Milestone Rewards", () => {
       streak: 0,
       subscribers: 0,
     });
-    expect(triggered.some(m => m.id.includes("follower") || m.reward.type !== undefined)).toBe(true);
+    expect(
+      triggered.some(
+        m => m.id.includes("follower") || m.reward.type !== undefined
+      )
+    ).toBe(true);
   });
 
   it("gets user milestone history", () => {
-    milestoneRewards.checkMilestones(5003, { followers: 100, posts: 1, revenue: 50, streak: 3, subscribers: 5 });
+    milestoneRewards.checkMilestones(5003, {
+      followers: 100,
+      posts: 1,
+      revenue: 50,
+      streak: 3,
+      subscribers: 5,
+    });
     const history = milestoneRewards.getUserMilestones(5003);
     expect(Array.isArray(history)).toBe(true);
   });
@@ -621,7 +689,12 @@ describe("Phase 6B: Fan Quests", () => {
     const quests = fanQuests.getActiveQuests(6003);
     if (quests.length > 0) {
       fanQuests.startQuest(6003, quests[0].id);
-      const result = fanQuests.recordQuestAction(6003, quests[0].id, quests[0].tasks[0]?.type ?? "post", 1);
+      const result = fanQuests.recordQuestAction(
+        6003,
+        quests[0].id,
+        quests[0].tasks[0]?.type ?? "post",
+        1
+      );
       expect(result).toHaveProperty("progress");
     }
   });
@@ -658,9 +731,27 @@ describe("Phase 6B: Fan Leveling", () => {
 describe("Phase 6B: Supporter Ladders", () => {
   it("creates a supporter ladder", () => {
     const ladder = supporterLadders.createLadder(1, [
-      { rank: 1, title: "Bronze Supporter", minSpend: 0, maxSpend: 99, perks: ["badge"] },
-      { rank: 2, title: "Silver Supporter", minSpend: 100, maxSpend: 499, perks: ["badge", "early_access"] },
-      { rank: 3, title: "Gold Supporter", minSpend: 500, maxSpend: null, perks: ["badge", "early_access", "1on1"] },
+      {
+        rank: 1,
+        title: "Bronze Supporter",
+        minSpend: 0,
+        maxSpend: 99,
+        perks: ["badge"],
+      },
+      {
+        rank: 2,
+        title: "Silver Supporter",
+        minSpend: 100,
+        maxSpend: 499,
+        perks: ["badge", "early_access"],
+      },
+      {
+        rank: 3,
+        title: "Gold Supporter",
+        minSpend: 500,
+        maxSpend: null,
+        perks: ["badge", "early_access", "1on1"],
+      },
     ]);
     expect(ladder).toHaveProperty("creatorId", 1);
     expect(ladder.tiers).toHaveLength(3);
@@ -772,19 +863,31 @@ describe("Phase 6C: Live Event Engine", () => {
 
 describe("Phase 6C: Event Leaderboards", () => {
   it("creates a leaderboard for an event", () => {
-    const lb = eventLeaderboards.createLeaderboard("event_1", "Most Donations", "donations");
+    const lb = eventLeaderboards.createLeaderboard(
+      "event_1",
+      "Most Donations",
+      "donations"
+    );
     expect(lb).toMatchObject({ eventId: "event_1", name: "Most Donations" });
   });
 
   it("records a score", () => {
-    const lb = eventLeaderboards.createLeaderboard("event_2", "Top Cheerers", "cheers");
+    const lb = eventLeaderboards.createLeaderboard(
+      "event_2",
+      "Top Cheerers",
+      "cheers"
+    );
     eventLeaderboards.recordScore(lb.id, 9001, 150);
     const top = eventLeaderboards.getTopN(lb.id, 10);
     expect(top.some(e => e.userId === 9001)).toBe(true);
   });
 
   it("ranks entries correctly", () => {
-    const lb = eventLeaderboards.createLeaderboard("event_3", "Engagement", "engagement");
+    const lb = eventLeaderboards.createLeaderboard(
+      "event_3",
+      "Engagement",
+      "engagement"
+    );
     eventLeaderboards.recordScore(lb.id, 9002, 200);
     eventLeaderboards.recordScore(lb.id, 9003, 350);
     eventLeaderboards.recordScore(lb.id, 9004, 100);
@@ -803,7 +906,10 @@ describe("Phase 6C: Live Raffles", () => {
       maxTickets: 100,
       endsAt: new Date(Date.now() + 3600000),
     });
-    expect(raffle).toMatchObject({ eventId: "event_1", prize: "PlayStation 5" });
+    expect(raffle).toMatchObject({
+      eventId: "event_1",
+      prize: "PlayStation 5",
+    });
   });
 
   it("purchases a raffle ticket", () => {
@@ -848,23 +954,37 @@ import {
 
 describe("Phase 6D: Creator Loans", () => {
   it("applies for a loan", () => {
-    const loan = creatorLoans.applyForLoan(1, 5000, "USD", 90, { type: "staking", value: 10000 });
+    const loan = creatorLoans.applyForLoan(1, 5000, "USD", 90, {
+      type: "staking",
+      value: 10000,
+    });
     expect(loan).toMatchObject({ creatorId: 1, amount: 5000, currency: "USD" });
     expect(["pending", "approved", "rejected"]).toContain(loan.status);
   });
 
   it("rejects loan with insufficient collateral", () => {
-    expect(() => creatorLoans.applyForLoan(1, 100000, "USD", 30, { type: "staking", value: 100 })).toThrow();
+    expect(() =>
+      creatorLoans.applyForLoan(1, 100000, "USD", 30, {
+        type: "staking",
+        value: 100,
+      })
+    ).toThrow();
   });
 
   it("gets creator loans", () => {
-    creatorLoans.applyForLoan(2, 1000, "SKY", 30, { type: "revenue", value: 5000 });
+    creatorLoans.applyForLoan(2, 1000, "SKY", 30, {
+      type: "revenue",
+      value: 5000,
+    });
     const loans = creatorLoans.getCreatorLoans(2);
     expect(loans.length).toBeGreaterThan(0);
   });
 
   it("repays a loan", () => {
-    const loan = creatorLoans.applyForLoan(3, 2000, "USD", 60, { type: "nft", value: 8000 });
+    const loan = creatorLoans.applyForLoan(3, 2000, "USD", 60, {
+      type: "nft",
+      value: 8000,
+    });
     const result = creatorLoans.repayLoan(loan.id, 2000);
     expect(result).toHaveProperty("success", true);
   });
@@ -872,19 +992,57 @@ describe("Phase 6D: Creator Loans", () => {
 
 describe("Phase 6D: Community Grants", () => {
   it("creates a grant program", () => {
-    const grant = communityGrants.createGrantProgram("Creator Fund Q1", 50000, "USD", new Date(), new Date(Date.now() + 30 * 86400000), ["content_creation", "education"]);
-    expect(grant).toMatchObject({ name: "Creator Fund Q1", totalBudget: 50000 });
+    const grant = communityGrants.createGrantProgram(
+      "Creator Fund Q1",
+      50000,
+      "USD",
+      new Date(),
+      new Date(Date.now() + 30 * 86400000),
+      ["content_creation", "education"]
+    );
+    expect(grant).toMatchObject({
+      name: "Creator Fund Q1",
+      totalBudget: 50000,
+    });
   });
 
   it("applies for a grant", () => {
-    const grant = communityGrants.createGrantProgram("Dev Fund", 10000, "USD", new Date(), new Date(Date.now() + 14 * 86400000), ["development"]);
-    const application = communityGrants.applyForGrant(grant.id, 1, "Build a new tool", 2000);
-    expect(application).toMatchObject({ grantId: grant.id, applicantId: 1, requestedAmount: 2000 });
+    const grant = communityGrants.createGrantProgram(
+      "Dev Fund",
+      10000,
+      "USD",
+      new Date(),
+      new Date(Date.now() + 14 * 86400000),
+      ["development"]
+    );
+    const application = communityGrants.applyForGrant(
+      grant.id,
+      1,
+      "Build a new tool",
+      2000
+    );
+    expect(application).toMatchObject({
+      grantId: grant.id,
+      applicantId: 1,
+      requestedAmount: 2000,
+    });
   });
 
   it("approves a grant application", () => {
-    const grant = communityGrants.createGrantProgram("Art Fund", 5000, "USD", new Date(), new Date(Date.now() + 7 * 86400000), ["art"]);
-    const app = communityGrants.applyForGrant(grant.id, 2, "Create digital art", 1000);
+    const grant = communityGrants.createGrantProgram(
+      "Art Fund",
+      5000,
+      "USD",
+      new Date(),
+      new Date(Date.now() + 7 * 86400000),
+      ["art"]
+    );
+    const app = communityGrants.applyForGrant(
+      grant.id,
+      2,
+      "Create digital art",
+      1000
+    );
     communityGrants.approveApplication(app.id, 1000);
     const applications = communityGrants.getApplications(grant.id);
     const updated = applications.find(a => a.id === app.id);
@@ -894,18 +1052,38 @@ describe("Phase 6D: Community Grants", () => {
 
 describe("Phase 6D: Staking Multipliers", () => {
   it("calculates multiplier for bronze tier", () => {
-    const result = stakingMultipliers.calculateMultiplier(1, { loyaltyTier: "bronze", streakDays: 0, communityRole: "member", holdingDays: 0 });
+    const result = stakingMultipliers.calculateMultiplier(1, {
+      loyaltyTier: "bronze",
+      streakDays: 0,
+      communityRole: "member",
+      holdingDays: 0,
+    });
     expect(result.multiplier).toBeGreaterThanOrEqual(1);
   });
 
   it("returns higher multiplier for legend tier", () => {
-    const bronze = stakingMultipliers.calculateMultiplier(1, { loyaltyTier: "bronze", streakDays: 0, communityRole: "member", holdingDays: 0 });
-    const legend = stakingMultipliers.calculateMultiplier(1, { loyaltyTier: "legend", streakDays: 365, communityRole: "moderator", holdingDays: 365 });
+    const bronze = stakingMultipliers.calculateMultiplier(1, {
+      loyaltyTier: "bronze",
+      streakDays: 0,
+      communityRole: "member",
+      holdingDays: 0,
+    });
+    const legend = stakingMultipliers.calculateMultiplier(1, {
+      loyaltyTier: "legend",
+      streakDays: 365,
+      communityRole: "moderator",
+      holdingDays: 365,
+    });
     expect(legend.multiplier).toBeGreaterThan(bronze.multiplier);
   });
 
   it("includes breakdown of multiplier components", () => {
-    const result = stakingMultipliers.calculateMultiplier(1, { loyaltyTier: "gold", streakDays: 30, communityRole: "creator", holdingDays: 90 });
+    const result = stakingMultipliers.calculateMultiplier(1, {
+      loyaltyTier: "gold",
+      streakDays: 30,
+      communityRole: "creator",
+      holdingDays: 90,
+    });
     expect(result).toHaveProperty("breakdown");
     expect(result.breakdown).toHaveProperty("tier");
     expect(result.breakdown).toHaveProperty("streak");
@@ -945,14 +1123,22 @@ describe("Phase 6D: Loyalty Token Rewards", () => {
 
 describe("Phase 6E: HOPE AI", () => {
   it("provides creator copilot insights", () => {
-    const insights = hopeAI.creatorCopilot(1, { recentPosts: 10, avgEngagement: 5.2, followerGrowth: 2.1, revenue: 1500 });
+    const insights = hopeAI.creatorCopilot(1, {
+      recentPosts: 10,
+      avgEngagement: 5.2,
+      followerGrowth: 2.1,
+      revenue: 1500,
+    });
     expect(insights).toHaveProperty("insights");
     expect(insights).toHaveProperty("recommendations");
     expect(Array.isArray(insights.recommendations)).toBe(true);
   });
 
   it("generates a content plan", () => {
-    const plan = hopeAI.contentPlanner(1, "tech", { topInterests: ["AI", "coding"], peakHours: [18, 19, 20] });
+    const plan = hopeAI.contentPlanner(1, "tech", {
+      topInterests: ["AI", "coding"],
+      peakHours: [18, 19, 20],
+    });
     expect(plan).toHaveProperty("weeklyPlan");
     expect(Array.isArray(plan.weeklyPlan)).toBe(true);
   });
@@ -970,12 +1156,19 @@ describe("Phase 6E: HOPE AI", () => {
   });
 
   it("flags harmful content", () => {
-    const result = hopeAI.moderationCopilot("post_2", "Buy fake followers now! Spam spam spam!");
+    const result = hopeAI.moderationCopilot(
+      "post_2",
+      "Buy fake followers now! Spam spam spam!"
+    );
     expect(result.safe).toBe(false);
   });
 
   it("provides growth strategy", () => {
-    const strategy = hopeAI.growthCopilot(1, { currentFollowers: 5000, growthRate: 2.5, topContent: ["video", "reel"] });
+    const strategy = hopeAI.growthCopilot(1, {
+      currentFollowers: 5000,
+      growthRate: 2.5,
+      topContent: ["video", "reel"],
+    });
     expect(strategy).toHaveProperty("strategies");
     expect(Array.isArray(strategy.strategies)).toBe(true);
   });
@@ -994,7 +1187,11 @@ describe("Phase 6F: Discovery Engine", () => {
   });
 
   it("gets personalized content", () => {
-    const personalized = discoveryEngine.getPersonalized(1, ["tech", "crypto"], 10);
+    const personalized = discoveryEngine.getPersonalized(
+      1,
+      ["tech", "crypto"],
+      10
+    );
     expect(Array.isArray(personalized)).toBe(true);
   });
 
@@ -1077,7 +1274,9 @@ describe("Phase 6I: Trust Empire", () => {
   it("adds a verification", () => {
     trustEmpire.addVerification(20002, "email");
     const profile = trustEmpire.getProfile(20002);
-    expect(profile.verifications.some((v: any) => v.type === "email")).toBe(true);
+    expect(profile.verifications.some((v: any) => v.type === "email")).toBe(
+      true
+    );
   });
 
   it("increases trust score with more verifications", () => {

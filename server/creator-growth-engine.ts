@@ -32,7 +32,13 @@ export interface ReferralNode {
 }
 
 export interface ConversionEvent {
-  type: "signup" | "first_post" | "first_stream" | "first_sale" | "subscription_start" | "milestone_reached";
+  type:
+    | "signup"
+    | "first_post"
+    | "first_stream"
+    | "first_sale"
+    | "subscription_start"
+    | "milestone_reached";
   timestamp: Date;
   bonusCoins: number;
 }
@@ -53,7 +59,13 @@ export interface CollabRequest {
   id: string;
   initiatorId: number;
   targetId: number;
-  collabType: "joint_stream" | "co_post" | "guest_appearance" | "series" | "challenge" | "bundle";
+  collabType:
+    | "joint_stream"
+    | "co_post"
+    | "guest_appearance"
+    | "series"
+    | "challenge"
+    | "bundle";
   title: string;
   description: string;
   revenueSplit: { initiator: number; target: number }; // percentages
@@ -110,10 +122,22 @@ export interface CreatorMilestone {
   id: string;
   name: string;
   description: string;
-  category: "followers" | "content" | "revenue" | "engagement" | "community" | "crypto" | "charity";
+  category:
+    | "followers"
+    | "content"
+    | "revenue"
+    | "engagement"
+    | "community"
+    | "crypto"
+    | "charity";
   tier: "bronze" | "silver" | "gold" | "platinum" | "diamond" | "legendary";
   requirement: { metric: string; threshold: number };
-  reward: { coins: number; badge?: string; featureUnlock?: string; titleUnlock?: string };
+  reward: {
+    coins: number;
+    badge?: string;
+    featureUnlock?: string;
+    titleUnlock?: string;
+  };
   isSecret: boolean;
 }
 
@@ -154,7 +178,14 @@ export interface CreatorRanking {
 }
 
 export interface GrowthSuggestion {
-  type: "content" | "collab" | "schedule" | "monetization" | "community" | "crypto" | "charity";
+  type:
+    | "content"
+    | "collab"
+    | "schedule"
+    | "monetization"
+    | "community"
+    | "crypto"
+    | "charity";
   priority: "low" | "medium" | "high" | "critical";
   title: string;
   description: string;
@@ -166,8 +197,8 @@ export interface GrowthSuggestion {
 // ─── COMMISSION TIERS ─────────────────────────────────────────────────────────
 
 const REFERRAL_COMMISSION_RATES = {
-  tier1: 0.05,  // 5% of referred user's earnings
-  tier2: 0.02,  // 2% of tier-2 earnings
+  tier1: 0.05, // 5% of referred user's earnings
+  tier2: 0.02, // 2% of tier-2 earnings
   tier3: 0.005, // 0.5% of tier-3 earnings
 };
 
@@ -194,7 +225,10 @@ export class ReferralTreeService {
     return code;
   }
 
-  async registerReferral(referralCode: string, newUserId: number): Promise<ReferralNode | null> {
+  async registerReferral(
+    referralCode: string,
+    newUserId: number
+  ): Promise<ReferralNode | null> {
     const referrerId = this.codeToReferrer.get(referralCode);
     if (!referrerId || referrerId === newUserId) return null;
 
@@ -213,11 +247,13 @@ export class ReferralTreeService {
       joinedAt: new Date(),
       totalEarningsGenerated: 0,
       commissionPaid: 0,
-      conversionEvents: [{
-        type: "signup",
-        timestamp: new Date(),
-        bonusCoins: CONVERSION_BONUSES.signup,
-      }],
+      conversionEvents: [
+        {
+          type: "signup",
+          timestamp: new Date(),
+          bonusCoins: CONVERSION_BONUSES.signup,
+        },
+      ],
     };
 
     this.referrals.set(key, node);
@@ -259,21 +295,41 @@ export class ReferralTreeService {
     return node;
   }
 
-  async recordConversionEvent(userId: number, eventType: ConversionEvent["type"]): Promise<{ commissionsTriggered: { referrerId: number; coins: number; tier: number }[] }> {
-    const commissionsTriggered: { referrerId: number; coins: number; tier: number }[] = [];
+  async recordConversionEvent(
+    userId: number,
+    eventType: ConversionEvent["type"]
+  ): Promise<{
+    commissionsTriggered: { referrerId: number; coins: number; tier: number }[];
+  }> {
+    const commissionsTriggered: {
+      referrerId: number;
+      coins: number;
+      tier: number;
+    }[] = [];
     const bonus = CONVERSION_BONUSES[eventType];
 
     // Find all referrers across tiers
     for (const [key, node] of this.referrals) {
       if (node.referredId === userId) {
-        const rate = REFERRAL_COMMISSION_RATES[`tier${node.tier}` as keyof typeof REFERRAL_COMMISSION_RATES];
+        const rate =
+          REFERRAL_COMMISSION_RATES[
+            `tier${node.tier}` as keyof typeof REFERRAL_COMMISSION_RATES
+          ];
         const commission = Math.floor(bonus * rate);
 
-        node.conversionEvents.push({ type: eventType, timestamp: new Date(), bonusCoins: bonus });
+        node.conversionEvents.push({
+          type: eventType,
+          timestamp: new Date(),
+          bonusCoins: bonus,
+        });
         node.commissionPaid += commission;
 
         if (commission > 0) {
-          commissionsTriggered.push({ referrerId: node.referrerId, coins: commission, tier: node.tier });
+          commissionsTriggered.push({
+            referrerId: node.referrerId,
+            coins: commission,
+            tier: node.tier,
+          });
         }
       }
     }
@@ -281,19 +337,35 @@ export class ReferralTreeService {
     return { commissionsTriggered };
   }
 
-  async recordEarnings(userId: number, coinsEarned: number): Promise<{ commissionsTriggered: { referrerId: number; coins: number; tier: number }[] }> {
-    const commissionsTriggered: { referrerId: number; coins: number; tier: number }[] = [];
+  async recordEarnings(
+    userId: number,
+    coinsEarned: number
+  ): Promise<{
+    commissionsTriggered: { referrerId: number; coins: number; tier: number }[];
+  }> {
+    const commissionsTriggered: {
+      referrerId: number;
+      coins: number;
+      tier: number;
+    }[] = [];
 
     for (const [key, node] of this.referrals) {
       if (node.referredId === userId) {
-        const rate = REFERRAL_COMMISSION_RATES[`tier${node.tier}` as keyof typeof REFERRAL_COMMISSION_RATES];
+        const rate =
+          REFERRAL_COMMISSION_RATES[
+            `tier${node.tier}` as keyof typeof REFERRAL_COMMISSION_RATES
+          ];
         const commission = Math.floor(coinsEarned * rate);
 
         node.totalEarningsGenerated += coinsEarned;
         node.commissionPaid += commission;
 
         if (commission > 0) {
-          commissionsTriggered.push({ referrerId: node.referrerId, coins: commission, tier: node.tier });
+          commissionsTriggered.push({
+            referrerId: node.referrerId,
+            coins: commission,
+            tier: node.tier,
+          });
         }
       }
     }
@@ -302,24 +374,36 @@ export class ReferralTreeService {
   }
 
   async getReferralTree(creatorId: number): Promise<ReferralTree> {
-    const tier1 = Array.from(this.referrals.values()).filter(n => n.referrerId === creatorId && n.tier === 1);
-    const tier2 = Array.from(this.referrals.values()).filter(n => n.referrerId === creatorId && n.tier === 2);
-    const tier3 = Array.from(this.referrals.values()).filter(n => n.referrerId === creatorId && n.tier === 3);
+    const tier1 = Array.from(this.referrals.values()).filter(
+      n => n.referrerId === creatorId && n.tier === 1
+    );
+    const tier2 = Array.from(this.referrals.values()).filter(
+      n => n.referrerId === creatorId && n.tier === 2
+    );
+    const tier3 = Array.from(this.referrals.values()).filter(
+      n => n.referrerId === creatorId && n.tier === 3
+    );
 
     const allReferrals = [...tier1, ...tier2, ...tier3];
-    const totalEarnings = allReferrals.reduce((sum, n) => sum + n.commissionPaid, 0);
+    const totalEarnings = allReferrals.reduce(
+      (sum, n) => sum + n.commissionPaid,
+      0
+    );
 
     // Build top referrals (tier-1 who themselves have referrals)
     const topReferrals = tier1
       .map(n => ({
         userId: n.referredId,
         earnings: n.commissionPaid,
-        referralCount: (this.referrerToReferreds.get(n.referredId) || new Set()).size,
+        referralCount: (this.referrerToReferreds.get(n.referredId) || new Set())
+          .size,
       }))
       .sort((a, b) => b.earnings - a.earnings)
       .slice(0, 10);
 
-    const converted = tier1.filter(n => n.conversionEvents.some(e => e.type !== "signup"));
+    const converted = tier1.filter(n =>
+      n.conversionEvents.some(e => e.type !== "signup")
+    );
 
     return {
       rootCreatorId: creatorId,
@@ -329,17 +413,28 @@ export class ReferralTreeService {
       tier3Count: tier3.length,
       totalEarningsFromTree: totalEarnings,
       topReferrals,
-      treeDepth: tier3.length > 0 ? 3 : tier2.length > 0 ? 2 : tier1.length > 0 ? 1 : 0,
+      treeDepth:
+        tier3.length > 0 ? 3 : tier2.length > 0 ? 2 : tier1.length > 0 ? 1 : 0,
       conversionRate: tier1.length > 0 ? converted.length / tier1.length : 0,
     };
   }
 
-  async getTopReferrers(limit = 20): Promise<{ creatorId: number; referralCount: number; totalCommissions: number }[]> {
-    const stats = new Map<number, { referralCount: number; totalCommissions: number }>();
+  async getTopReferrers(
+    limit = 20
+  ): Promise<
+    { creatorId: number; referralCount: number; totalCommissions: number }[]
+  > {
+    const stats = new Map<
+      number,
+      { referralCount: number; totalCommissions: number }
+    >();
 
     for (const node of this.referrals.values()) {
       if (node.tier === 1) {
-        const existing = stats.get(node.referrerId) || { referralCount: 0, totalCommissions: 0 };
+        const existing = stats.get(node.referrerId) || {
+          referralCount: 0,
+          totalCommissions: 0,
+        };
         existing.referralCount++;
         existing.totalCommissions += node.commissionPaid;
         stats.set(node.referrerId, existing);
@@ -383,7 +478,9 @@ export class CollabToolsService {
       revenueSplit: split,
       scheduledFor: params.scheduledFor,
       status: "pending",
-      terms: params.terms || `Standard collaboration terms. Revenue split: ${split.initiator}% / ${split.target}%.`,
+      terms:
+        params.terms ||
+        `Standard collaboration terms. Revenue split: ${split.initiator}% / ${split.target}%.`,
       createdAt: new Date(),
     };
 
@@ -391,7 +488,12 @@ export class CollabToolsService {
     return request;
   }
 
-  async respondToCollab(collabId: string, targetId: number, accept: boolean, counterSplit?: { initiator: number; target: number }): Promise<CollabRequest | null> {
+  async respondToCollab(
+    collabId: string,
+    targetId: number,
+    accept: boolean,
+    counterSplit?: { initiator: number; target: number }
+  ): Promise<CollabRequest | null> {
     const request = this.requests.get(collabId);
     if (!request || request.targetId !== targetId) return null;
     if (request.status !== "pending") return null;
@@ -408,7 +510,10 @@ export class CollabToolsService {
     return request;
   }
 
-  async completeCollab(collabId: string, analytics: Omit<CollabAnalytics, "collabId">): Promise<CollabRequest | null> {
+  async completeCollab(
+    collabId: string,
+    analytics: Omit<CollabAnalytics, "collabId">
+  ): Promise<CollabRequest | null> {
     const request = this.requests.get(collabId);
     if (!request || request.status !== "accepted") return null;
 
@@ -421,23 +526,40 @@ export class CollabToolsService {
     return this.analytics.get(collabId) || null;
   }
 
-  async getCreatorCollabs(creatorId: number, status?: CollabRequest["status"]): Promise<CollabRequest[]> {
+  async getCreatorCollabs(
+    creatorId: number,
+    status?: CollabRequest["status"]
+  ): Promise<CollabRequest[]> {
     return Array.from(this.requests.values())
-      .filter(r => (r.initiatorId === creatorId || r.targetId === creatorId) && (!status || r.status === status))
+      .filter(
+        r =>
+          (r.initiatorId === creatorId || r.targetId === creatorId) &&
+          (!status || r.status === status)
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  async findCollabMatches(creatorId: number, collabType?: CollabRequest["collabType"]): Promise<{ creatorId: number; compatibilityScore: number; suggestedCollabType: string }[]> {
+  async findCollabMatches(
+    creatorId: number,
+    collabType?: CollabRequest["collabType"]
+  ): Promise<
+    {
+      creatorId: number;
+      compatibilityScore: number;
+      suggestedCollabType: string;
+    }[]
+  > {
     // In production this queries the audience overlap and niche similarity
     // Here we return a deterministic set based on creator ID
     const suggestions = [];
     for (let i = 1; i <= 5; i++) {
-      const targetId = (creatorId * 7 + i * 13) % 10000 + 1;
+      const targetId = ((creatorId * 7 + i * 13) % 10000) + 1;
       if (targetId !== creatorId) {
         suggestions.push({
           creatorId: targetId,
           compatibilityScore: Math.max(40, 95 - i * 8),
-          suggestedCollabType: collabType || ["joint_stream", "co_post", "challenge"][i % 3],
+          suggestedCollabType:
+            collabType || ["joint_stream", "co_post", "challenge"][i % 3],
         });
       }
     }
@@ -453,7 +575,12 @@ export class SponsorshipMatchmakingService {
   private oppCounter = 0;
   private appCounter = 0;
 
-  async createOpportunity(params: Omit<SponsorshipOpportunity, "id" | "applicants" | "createdAt" | "status">): Promise<SponsorshipOpportunity> {
+  async createOpportunity(
+    params: Omit<
+      SponsorshipOpportunity,
+      "id" | "applicants" | "createdAt" | "status"
+    >
+  ): Promise<SponsorshipOpportunity> {
     const id = `spon_${++this.oppCounter}_${Date.now()}`;
     const opp: SponsorshipOpportunity = {
       id,
@@ -472,7 +599,11 @@ export class SponsorshipMatchmakingService {
     pitch: string;
     proposedRate: number;
     portfolioLinks: string[];
-    creatorMetrics: { followers: number; engagementRate: number; niche: string };
+    creatorMetrics: {
+      followers: number;
+      engagementRate: number;
+      niche: string;
+    };
   }): Promise<SponsorshipApplication> {
     const opp = this.opportunities.get(params.opportunityId);
     if (!opp || opp.status !== "open") {
@@ -480,8 +611,11 @@ export class SponsorshipMatchmakingService {
     }
 
     // Calculate AI match score
-    const meetsMinFollowers = params.creatorMetrics.followers >= opp.requirements.minFollowers;
-    const meetsEngagement = params.creatorMetrics.engagementRate >= opp.requirements.minEngagementRate;
+    const meetsMinFollowers =
+      params.creatorMetrics.followers >= opp.requirements.minFollowers;
+    const meetsEngagement =
+      params.creatorMetrics.engagementRate >=
+      opp.requirements.minEngagementRate;
     const nicheMatch = opp.requirements.niches.some(n =>
       params.creatorMetrics.niche.toLowerCase().includes(n.toLowerCase())
     );
@@ -490,7 +624,11 @@ export class SponsorshipMatchmakingService {
     if (meetsMinFollowers) aiMatchScore += 30;
     if (meetsEngagement) aiMatchScore += 30;
     if (nicheMatch) aiMatchScore += 25;
-    if (params.proposedRate >= opp.budget.min && params.proposedRate <= opp.budget.max) aiMatchScore += 15;
+    if (
+      params.proposedRate >= opp.budget.min &&
+      params.proposedRate <= opp.budget.max
+    )
+      aiMatchScore += 15;
 
     const id = `app_${++this.appCounter}_${Date.now()}`;
     const application: SponsorshipApplication = {
@@ -524,9 +662,16 @@ export class SponsorshipMatchmakingService {
       if (new Date() > opp.applicationDeadline) continue;
 
       let matchScore = 0;
-      if (creatorMetrics.followers >= opp.requirements.minFollowers) matchScore += 30;
-      if (creatorMetrics.engagementRate >= opp.requirements.minEngagementRate) matchScore += 30;
-      if (opp.requirements.niches.some(n => creatorMetrics.niche.toLowerCase().includes(n.toLowerCase()))) matchScore += 25;
+      if (creatorMetrics.followers >= opp.requirements.minFollowers)
+        matchScore += 30;
+      if (creatorMetrics.engagementRate >= opp.requirements.minEngagementRate)
+        matchScore += 30;
+      if (
+        opp.requirements.niches.some(n =>
+          creatorMetrics.niche.toLowerCase().includes(n.toLowerCase())
+        )
+      )
+        matchScore += 25;
       if (matchScore >= 30) {
         results.push({ ...opp, matchScore });
       }
@@ -535,13 +680,21 @@ export class SponsorshipMatchmakingService {
     return results.sort((a, b) => b.matchScore - a.matchScore);
   }
 
-  async getOpportunities(category?: string, status: SponsorshipOpportunity["status"] = "open"): Promise<SponsorshipOpportunity[]> {
+  async getOpportunities(
+    category?: string,
+    status: SponsorshipOpportunity["status"] = "open"
+  ): Promise<SponsorshipOpportunity[]> {
     return Array.from(this.opportunities.values())
-      .filter(o => o.status === status && (!category || o.category === category))
+      .filter(
+        o => o.status === status && (!category || o.category === category)
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  async reviewApplication(applicationId: string, decision: "accepted" | "rejected"): Promise<SponsorshipApplication | null> {
+  async reviewApplication(
+    applicationId: string,
+    decision: "accepted" | "rejected"
+  ): Promise<SponsorshipApplication | null> {
     const app = this.applications.get(applicationId);
     if (!app) return null;
     app.status = decision;
@@ -552,21 +705,183 @@ export class SponsorshipMatchmakingService {
 // ─── CREATOR MILESTONE SERVICE ────────────────────────────────────────────────
 
 const PLATFORM_MILESTONES: CreatorMilestone[] = [
-  { id: "followers_100", name: "Rising Star", description: "Reach 100 followers", category: "followers", tier: "bronze", requirement: { metric: "followers", threshold: 100 }, reward: { coins: 500, badge: "rising_star" }, isSecret: false },
-  { id: "followers_1k", name: "Community Builder", description: "Reach 1,000 followers", category: "followers", tier: "silver", requirement: { metric: "followers", threshold: 1000 }, reward: { coins: 2000, badge: "community_builder", featureUnlock: "custom_channel_banner" }, isSecret: false },
-  { id: "followers_10k", name: "Influencer", description: "Reach 10,000 followers", category: "followers", tier: "gold", requirement: { metric: "followers", threshold: 10000 }, reward: { coins: 10000, badge: "influencer", featureUnlock: "verified_badge", titleUnlock: "Influencer" }, isSecret: false },
-  { id: "followers_100k", name: "Major Creator", description: "Reach 100,000 followers", category: "followers", tier: "platinum", requirement: { metric: "followers", threshold: 100000 }, reward: { coins: 50000, badge: "major_creator", featureUnlock: "priority_support", titleUnlock: "Major Creator" }, isSecret: false },
-  { id: "followers_1m", name: "Platform Legend", description: "Reach 1,000,000 followers", category: "followers", tier: "legendary", requirement: { metric: "followers", threshold: 1000000 }, reward: { coins: 500000, badge: "platform_legend", featureUnlock: "custom_platform_theme", titleUnlock: "Legend" }, isSecret: false },
-  { id: "posts_10", name: "Content Creator", description: "Publish 10 posts", category: "content", tier: "bronze", requirement: { metric: "posts", threshold: 10 }, reward: { coins: 200 }, isSecret: false },
-  { id: "posts_100", name: "Prolific Creator", description: "Publish 100 posts", category: "content", tier: "silver", requirement: { metric: "posts", threshold: 100 }, reward: { coins: 1000, badge: "prolific_creator" }, isSecret: false },
-  { id: "revenue_1k", name: "First Thousand", description: "Earn 1,000 coins in revenue", category: "revenue", tier: "bronze", requirement: { metric: "revenue", threshold: 1000 }, reward: { coins: 500, badge: "earner" }, isSecret: false },
-  { id: "revenue_100k", name: "Top Earner", description: "Earn 100,000 coins in revenue", category: "revenue", tier: "gold", requirement: { metric: "revenue", threshold: 100000 }, reward: { coins: 10000, badge: "top_earner", featureUnlock: "revenue_analytics_pro" }, isSecret: false },
-  { id: "stream_first", name: "First Broadcast", description: "Complete your first live stream", category: "content", tier: "bronze", requirement: { metric: "streams", threshold: 1 }, reward: { coins: 300, badge: "broadcaster" }, isSecret: false },
-  { id: "stream_100", name: "Veteran Streamer", description: "Complete 100 live streams", category: "content", tier: "gold", requirement: { metric: "streams", threshold: 100 }, reward: { coins: 5000, badge: "veteran_streamer", titleUnlock: "Veteran Streamer" }, isSecret: false },
-  { id: "referral_10", name: "Growth Hacker", description: "Refer 10 active creators", category: "community", tier: "silver", requirement: { metric: "referrals", threshold: 10 }, reward: { coins: 3000, badge: "growth_hacker" }, isSecret: false },
-  { id: "charity_1k", name: "Philanthropist", description: "Raise 1,000 coins for charity", category: "charity", tier: "silver", requirement: { metric: "charity_raised", threshold: 1000 }, reward: { coins: 500, badge: "philanthropist" }, isSecret: false },
-  { id: "collab_5", name: "Collaborator", description: "Complete 5 creator collabs", category: "community", tier: "silver", requirement: { metric: "collabs", threshold: 5 }, reward: { coins: 2000, badge: "collaborator" }, isSecret: false },
-  { id: "secret_night_owl", name: "Night Owl", description: "Stream after midnight 10 times", category: "content", tier: "bronze", requirement: { metric: "late_night_streams", threshold: 10 }, reward: { coins: 500, badge: "night_owl" }, isSecret: true },
+  {
+    id: "followers_100",
+    name: "Rising Star",
+    description: "Reach 100 followers",
+    category: "followers",
+    tier: "bronze",
+    requirement: { metric: "followers", threshold: 100 },
+    reward: { coins: 500, badge: "rising_star" },
+    isSecret: false,
+  },
+  {
+    id: "followers_1k",
+    name: "Community Builder",
+    description: "Reach 1,000 followers",
+    category: "followers",
+    tier: "silver",
+    requirement: { metric: "followers", threshold: 1000 },
+    reward: {
+      coins: 2000,
+      badge: "community_builder",
+      featureUnlock: "custom_channel_banner",
+    },
+    isSecret: false,
+  },
+  {
+    id: "followers_10k",
+    name: "Influencer",
+    description: "Reach 10,000 followers",
+    category: "followers",
+    tier: "gold",
+    requirement: { metric: "followers", threshold: 10000 },
+    reward: {
+      coins: 10000,
+      badge: "influencer",
+      featureUnlock: "verified_badge",
+      titleUnlock: "Influencer",
+    },
+    isSecret: false,
+  },
+  {
+    id: "followers_100k",
+    name: "Major Creator",
+    description: "Reach 100,000 followers",
+    category: "followers",
+    tier: "platinum",
+    requirement: { metric: "followers", threshold: 100000 },
+    reward: {
+      coins: 50000,
+      badge: "major_creator",
+      featureUnlock: "priority_support",
+      titleUnlock: "Major Creator",
+    },
+    isSecret: false,
+  },
+  {
+    id: "followers_1m",
+    name: "Platform Legend",
+    description: "Reach 1,000,000 followers",
+    category: "followers",
+    tier: "legendary",
+    requirement: { metric: "followers", threshold: 1000000 },
+    reward: {
+      coins: 500000,
+      badge: "platform_legend",
+      featureUnlock: "custom_platform_theme",
+      titleUnlock: "Legend",
+    },
+    isSecret: false,
+  },
+  {
+    id: "posts_10",
+    name: "Content Creator",
+    description: "Publish 10 posts",
+    category: "content",
+    tier: "bronze",
+    requirement: { metric: "posts", threshold: 10 },
+    reward: { coins: 200 },
+    isSecret: false,
+  },
+  {
+    id: "posts_100",
+    name: "Prolific Creator",
+    description: "Publish 100 posts",
+    category: "content",
+    tier: "silver",
+    requirement: { metric: "posts", threshold: 100 },
+    reward: { coins: 1000, badge: "prolific_creator" },
+    isSecret: false,
+  },
+  {
+    id: "revenue_1k",
+    name: "First Thousand",
+    description: "Earn 1,000 coins in revenue",
+    category: "revenue",
+    tier: "bronze",
+    requirement: { metric: "revenue", threshold: 1000 },
+    reward: { coins: 500, badge: "earner" },
+    isSecret: false,
+  },
+  {
+    id: "revenue_100k",
+    name: "Top Earner",
+    description: "Earn 100,000 coins in revenue",
+    category: "revenue",
+    tier: "gold",
+    requirement: { metric: "revenue", threshold: 100000 },
+    reward: {
+      coins: 10000,
+      badge: "top_earner",
+      featureUnlock: "revenue_analytics_pro",
+    },
+    isSecret: false,
+  },
+  {
+    id: "stream_first",
+    name: "First Broadcast",
+    description: "Complete your first live stream",
+    category: "content",
+    tier: "bronze",
+    requirement: { metric: "streams", threshold: 1 },
+    reward: { coins: 300, badge: "broadcaster" },
+    isSecret: false,
+  },
+  {
+    id: "stream_100",
+    name: "Veteran Streamer",
+    description: "Complete 100 live streams",
+    category: "content",
+    tier: "gold",
+    requirement: { metric: "streams", threshold: 100 },
+    reward: {
+      coins: 5000,
+      badge: "veteran_streamer",
+      titleUnlock: "Veteran Streamer",
+    },
+    isSecret: false,
+  },
+  {
+    id: "referral_10",
+    name: "Growth Hacker",
+    description: "Refer 10 active creators",
+    category: "community",
+    tier: "silver",
+    requirement: { metric: "referrals", threshold: 10 },
+    reward: { coins: 3000, badge: "growth_hacker" },
+    isSecret: false,
+  },
+  {
+    id: "charity_1k",
+    name: "Philanthropist",
+    description: "Raise 1,000 coins for charity",
+    category: "charity",
+    tier: "silver",
+    requirement: { metric: "charity_raised", threshold: 1000 },
+    reward: { coins: 500, badge: "philanthropist" },
+    isSecret: false,
+  },
+  {
+    id: "collab_5",
+    name: "Collaborator",
+    description: "Complete 5 creator collabs",
+    category: "community",
+    tier: "silver",
+    requirement: { metric: "collabs", threshold: 5 },
+    reward: { coins: 2000, badge: "collaborator" },
+    isSecret: false,
+  },
+  {
+    id: "secret_night_owl",
+    name: "Night Owl",
+    description: "Stream after midnight 10 times",
+    category: "content",
+    tier: "bronze",
+    requirement: { metric: "late_night_streams", threshold: 10 },
+    reward: { coins: 500, badge: "night_owl" },
+    isSecret: true,
+  },
 ];
 
 export class CreatorMilestoneService {
@@ -574,10 +889,16 @@ export class CreatorMilestoneService {
   private creatorMetrics = new Map<number, Record<string, number>>();
 
   getMilestones(category?: CreatorMilestone["category"]): CreatorMilestone[] {
-    return PLATFORM_MILESTONES.filter(m => !m.isSecret && (!category || m.category === category));
+    return PLATFORM_MILESTONES.filter(
+      m => !m.isSecret && (!category || m.category === category)
+    );
   }
 
-  async updateMetric(creatorId: number, metric: string, value: number): Promise<CreatorAchievement[]> {
+  async updateMetric(
+    creatorId: number,
+    metric: string,
+    value: number
+  ): Promise<CreatorAchievement[]> {
     const metrics = this.creatorMetrics.get(creatorId) || {};
     metrics[metric] = value;
     this.creatorMetrics.set(creatorId, metrics);
@@ -606,11 +927,20 @@ export class CreatorMilestoneService {
     return newlyUnlocked;
   }
 
-  async claimReward(creatorId: number, milestoneId: string): Promise<{ success: boolean; reward?: CreatorMilestone["reward"]; reason?: string }> {
+  async claimReward(
+    creatorId: number,
+    milestoneId: string
+  ): Promise<{
+    success: boolean;
+    reward?: CreatorMilestone["reward"];
+    reason?: string;
+  }> {
     const key = `${creatorId}:${milestoneId}`;
     const achievement = this.achievements.get(key);
-    if (!achievement) return { success: false, reason: "Milestone not unlocked" };
-    if (achievement.rewardClaimed) return { success: false, reason: "Reward already claimed" };
+    if (!achievement)
+      return { success: false, reason: "Milestone not unlocked" };
+    if (achievement.rewardClaimed)
+      return { success: false, reason: "Reward already claimed" };
 
     const milestone = PLATFORM_MILESTONES.find(m => m.id === milestoneId);
     if (!milestone) return { success: false, reason: "Milestone not found" };
@@ -621,30 +951,44 @@ export class CreatorMilestoneService {
     return { success: true, reward: milestone.reward };
   }
 
-  async getCreatorAchievements(creatorId: number): Promise<{ achievement: CreatorAchievement; milestone: CreatorMilestone }[]> {
+  async getCreatorAchievements(
+    creatorId: number
+  ): Promise<
+    { achievement: CreatorAchievement; milestone: CreatorMilestone }[]
+  > {
     const results = [];
     for (const [key, achievement] of this.achievements) {
       if (achievement.creatorId !== creatorId) continue;
-      const milestone = PLATFORM_MILESTONES.find(m => m.id === achievement.milestoneId);
+      const milestone = PLATFORM_MILESTONES.find(
+        m => m.id === achievement.milestoneId
+      );
       if (milestone) results.push({ achievement, milestone });
     }
-    return results.sort((a, b) => b.achievement.unlockedAt.getTime() - a.achievement.unlockedAt.getTime());
+    return results.sort(
+      (a, b) =>
+        b.achievement.unlockedAt.getTime() - a.achievement.unlockedAt.getTime()
+    );
   }
 
-  async getProgress(creatorId: number): Promise<{ milestone: CreatorMilestone; currentValue: number; progress: number; unlocked: boolean }[]> {
+  async getProgress(creatorId: number): Promise<
+    {
+      milestone: CreatorMilestone;
+      currentValue: number;
+      progress: number;
+      unlocked: boolean;
+    }[]
+  > {
     const metrics = this.creatorMetrics.get(creatorId) || {};
-    return PLATFORM_MILESTONES
-      .filter(m => !m.isSecret)
-      .map(m => {
-        const currentValue = metrics[m.requirement.metric] || 0;
-        const key = `${creatorId}:${m.id}`;
-        return {
-          milestone: m,
-          currentValue,
-          progress: Math.min(1, currentValue / m.requirement.threshold),
-          unlocked: this.achievements.has(key),
-        };
-      });
+    return PLATFORM_MILESTONES.filter(m => !m.isSecret).map(m => {
+      const currentValue = metrics[m.requirement.metric] || 0;
+      const key = `${creatorId}:${m.id}`;
+      return {
+        milestone: m,
+        currentValue,
+        progress: Math.min(1, currentValue / m.requirement.threshold),
+        unlocked: this.achievements.has(key),
+      };
+    });
   }
 }
 
@@ -663,15 +1007,20 @@ export class AudienceOverlapService {
     this.followerSets.get(creatorId)?.delete(followerId);
   }
 
-  async analyzeOverlap(creator1Id: number, creator2Id: number): Promise<AudienceOverlapReport> {
+  async analyzeOverlap(
+    creator1Id: number,
+    creator2Id: number
+  ): Promise<AudienceOverlapReport> {
     const set1 = this.followerSets.get(creator1Id) || new Set<number>();
     const set2 = this.followerSets.get(creator2Id) || new Set<number>();
 
     const shared = new Set([...set1].filter(id => set2.has(id)));
-    const overlapPercent = set1.size > 0 ? (shared.size / Math.min(set1.size, set2.size)) * 100 : 0;
+    const overlapPercent =
+      set1.size > 0 ? (shared.size / Math.min(set1.size, set2.size)) * 100 : 0;
 
     let crossPromotionPotential: AudienceOverlapReport["crossPromotionPotential"];
-    if (overlapPercent < 10) crossPromotionPotential = "excellent"; // Low overlap = high new audience potential
+    if (overlapPercent < 10)
+      crossPromotionPotential = "excellent"; // Low overlap = high new audience potential
     else if (overlapPercent < 25) crossPromotionPotential = "high";
     else if (overlapPercent < 50) crossPromotionPotential = "medium";
     else crossPromotionPotential = "low";
@@ -679,7 +1028,10 @@ export class AudienceOverlapService {
     const estimatedReachGain = Math.floor((set2.size - shared.size) * 0.15); // 15% conversion estimate
 
     const recommendedCollabTypes: string[] = [];
-    if (crossPromotionPotential === "excellent" || crossPromotionPotential === "high") {
+    if (
+      crossPromotionPotential === "excellent" ||
+      crossPromotionPotential === "high"
+    ) {
       recommendedCollabTypes.push("joint_stream", "co_post", "challenge");
     } else {
       recommendedCollabTypes.push("guest_appearance", "series");
@@ -698,7 +1050,17 @@ export class AudienceOverlapService {
     };
   }
 
-  async findBestCollabPartners(creatorId: number, limit = 10): Promise<{ creatorId: number; overlapPercent: number; potential: string; estimatedReachGain: number }[]> {
+  async findBestCollabPartners(
+    creatorId: number,
+    limit = 10
+  ): Promise<
+    {
+      creatorId: number;
+      overlapPercent: number;
+      potential: string;
+      estimatedReachGain: number;
+    }[]
+  > {
     const results = [];
     for (const [otherId] of this.followerSets) {
       if (otherId === creatorId) continue;
@@ -719,10 +1081,17 @@ export class AudienceOverlapService {
 // ─── CREATOR LEADERBOARD SERVICE ─────────────────────────────────────────────
 
 export class CreatorLeaderboardService {
-  private scores = new Map<number, { category: string; metrics: CreatorRanking["metrics"] }>();
+  private scores = new Map<
+    number,
+    { category: string; metrics: CreatorRanking["metrics"] }
+  >();
   private history = new Map<string, number>(); // `${creatorId}:${category}` -> previous rank
 
-  updateCreatorMetrics(creatorId: number, category: string, metrics: CreatorRanking["metrics"]): void {
+  updateCreatorMetrics(
+    creatorId: number,
+    category: string,
+    metrics: CreatorRanking["metrics"]
+  ): void {
     this.scores.set(creatorId, { category, metrics });
   }
 
@@ -736,9 +1105,13 @@ export class CreatorLeaderboardService {
     );
   }
 
-  async getLeaderboard(category?: string, limit = 100): Promise<CreatorRanking[]> {
-    const filtered = Array.from(this.scores.entries())
-      .filter(([, data]) => !category || data.category === category);
+  async getLeaderboard(
+    category?: string,
+    limit = 100
+  ): Promise<CreatorRanking[]> {
+    const filtered = Array.from(this.scores.entries()).filter(
+      ([, data]) => !category || data.category === category
+    );
 
     const ranked = filtered
       .map(([creatorId, data]) => ({
@@ -767,7 +1140,10 @@ export class CreatorLeaderboardService {
     });
   }
 
-  async getCreatorRank(creatorId: number, category?: string): Promise<CreatorRanking | null> {
+  async getCreatorRank(
+    creatorId: number,
+    category?: string
+  ): Promise<CreatorRanking | null> {
     const leaderboard = await this.getLeaderboard(category);
     return leaderboard.find(r => r.creatorId === creatorId) || null;
   }
@@ -776,24 +1152,33 @@ export class CreatorLeaderboardService {
 // ─── AI GROWTH ADVISOR SERVICE ────────────────────────────────────────────────
 
 export class AIGrowthAdvisorService {
-  private suggestionCache = new Map<string, { suggestions: GrowthSuggestion[]; generatedAt: Date }>();
+  private suggestionCache = new Map<
+    string,
+    { suggestions: GrowthSuggestion[]; generatedAt: Date }
+  >();
   private readonly CACHE_TTL_MS = 3600000; // 1 hour
 
-  async generateGrowthPlan(creatorId: number, metrics: {
-    followers: number;
-    followersGrowthRate: number; // % per week
-    avgEngagementRate: number;
-    postsPerWeek: number;
-    streamsPerWeek: number;
-    monthlyRevenue: number;
-    topContentTypes: string[];
-    audienceRetentionRate: number;
-    referralCount: number;
-    collabCount: number;
-  }): Promise<GrowthSuggestion[]> {
+  async generateGrowthPlan(
+    creatorId: number,
+    metrics: {
+      followers: number;
+      followersGrowthRate: number; // % per week
+      avgEngagementRate: number;
+      postsPerWeek: number;
+      streamsPerWeek: number;
+      monthlyRevenue: number;
+      topContentTypes: string[];
+      audienceRetentionRate: number;
+      referralCount: number;
+      collabCount: number;
+    }
+  ): Promise<GrowthSuggestion[]> {
     const cacheKey = `${creatorId}:${JSON.stringify(metrics)}`;
     const cached = this.suggestionCache.get(cacheKey);
-    if (cached && Date.now() - cached.generatedAt.getTime() < this.CACHE_TTL_MS) {
+    if (
+      cached &&
+      Date.now() - cached.generatedAt.getTime() < this.CACHE_TTL_MS
+    ) {
       return cached.suggestions;
     }
 
@@ -807,7 +1192,11 @@ export class AIGrowthAdvisorService {
         title: "Increase posting frequency",
         description: `You're posting ${metrics.postsPerWeek}x/week. Creators who post 5-7x/week see 3x faster follower growth.`,
         estimatedImpact: "+40-60% follower growth rate",
-        actionSteps: ["Schedule 2 additional posts per week", "Use content batching to create multiple posts in one session", "Repurpose stream highlights as short-form posts"],
+        actionSteps: [
+          "Schedule 2 additional posts per week",
+          "Use content batching to create multiple posts in one session",
+          "Repurpose stream highlights as short-form posts",
+        ],
         aiConfidence: 0.92,
       });
     }
@@ -817,9 +1206,14 @@ export class AIGrowthAdvisorService {
         type: "content",
         priority: "high",
         title: "Boost engagement with interactive content",
-        description: "Your engagement rate is below 3%. Polls, Q&As, and challenges typically 3-5x engagement.",
+        description:
+          "Your engagement rate is below 3%. Polls, Q&As, and challenges typically 3-5x engagement.",
         estimatedImpact: "+150-200% engagement rate",
-        actionSteps: ["Add a question or poll to every post", "Run a weekly challenge series", "Respond to every comment in the first hour"],
+        actionSteps: [
+          "Add a question or poll to every post",
+          "Run a weekly challenge series",
+          "Respond to every comment in the first hour",
+        ],
         aiConfidence: 0.88,
       });
     }
@@ -829,9 +1223,14 @@ export class AIGrowthAdvisorService {
         type: "community",
         priority: "medium",
         title: "Activate your referral program",
-        description: "You've referred fewer than 5 creators. Top creators earn 20-30% of their income from referral commissions.",
+        description:
+          "You've referred fewer than 5 creators. Top creators earn 20-30% of their income from referral commissions.",
         estimatedImpact: "+15-25% passive income",
-        actionSteps: ["Share your referral code in your next stream", "Create a 'join me on Shadowchat' post for other platforms", "Offer a personal onboarding call to your first 10 referrals"],
+        actionSteps: [
+          "Share your referral code in your next stream",
+          "Create a 'join me on Shadowchat' post for other platforms",
+          "Offer a personal onboarding call to your first 10 referrals",
+        ],
         aiConfidence: 0.85,
       });
     }
@@ -841,10 +1240,15 @@ export class AIGrowthAdvisorService {
         type: "collab",
         priority: "medium",
         title: "Start collaborating with other creators",
-        description: "Collabs are the fastest way to grow. Creators who collab 2+ times/month grow 4x faster.",
+        description:
+          "Collabs are the fastest way to grow. Creators who collab 2+ times/month grow 4x faster.",
         estimatedImpact: "+200-400% reach expansion",
-        actionSteps: ["Send 3 collab requests to creators in adjacent niches", "Propose a 30-minute joint stream as a low-commitment first collab", "Use the audience overlap tool to find ideal partners"],
-        aiConfidence: 0.90,
+        actionSteps: [
+          "Send 3 collab requests to creators in adjacent niches",
+          "Propose a 30-minute joint stream as a low-commitment first collab",
+          "Use the audience overlap tool to find ideal partners",
+        ],
+        aiConfidence: 0.9,
       });
     }
 
@@ -853,9 +1257,14 @@ export class AIGrowthAdvisorService {
         type: "monetization",
         priority: "high",
         title: "Activate subscription tiers",
-        description: "You're leaving revenue on the table. Even 50 subscribers at $5/month = $250/month in recurring revenue.",
+        description:
+          "You're leaving revenue on the table. Even 50 subscribers at $5/month = $250/month in recurring revenue.",
         estimatedImpact: "+$250-$2,500/month recurring",
-        actionSteps: ["Set up 3 subscription tiers (Basic, Pro, VIP)", "Offer exclusive content for subscribers", "Announce your subscription launch in a dedicated post"],
+        actionSteps: [
+          "Set up 3 subscription tiers (Basic, Pro, VIP)",
+          "Offer exclusive content for subscribers",
+          "Announce your subscription launch in a dedicated post",
+        ],
         aiConfidence: 0.87,
       });
     }
@@ -865,9 +1274,14 @@ export class AIGrowthAdvisorService {
         type: "content",
         priority: "critical",
         title: "Start live streaming",
-        description: "Streamers earn 5-10x more than non-streamers and grow 3x faster due to real-time engagement.",
+        description:
+          "Streamers earn 5-10x more than non-streamers and grow 3x faster due to real-time engagement.",
         estimatedImpact: "+300-500% revenue potential",
-        actionSteps: ["Schedule your first stream this week", "Announce it 48 hours in advance", "Start with a 1-hour Q&A to build comfort"],
+        actionSteps: [
+          "Schedule your first stream this week",
+          "Announce it 48 hours in advance",
+          "Start with a 1-hour Q&A to build comfort",
+        ],
         aiConfidence: 0.95,
       });
     }
@@ -881,9 +1295,19 @@ Return a JSON array with objects: { type, priority, title, description, estimate
 Types: content, collab, schedule, monetization, community, crypto, charity
 Priorities: low, medium, high, critical`;
 
-        const response = await invokeLLM({ messages: [{ role: "system" as const, content: "You are an expert creator growth strategist." }, { role: "user" as const, content: prompt }] });
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system" as const,
+              content: "You are an expert creator growth strategist.",
+            },
+            { role: "user" as const, content: prompt },
+          ],
+        });
         try {
-          const llmSuggestions = JSON.parse(response.choices[0]?.message?.content as string);
+          const llmSuggestions = JSON.parse(
+            response.choices[0]?.message?.content as string
+          );
           if (Array.isArray(llmSuggestions)) {
             suggestions.push(...llmSuggestions.slice(0, 2));
           }
@@ -896,28 +1320,43 @@ Priorities: low, medium, high, critical`;
     }
 
     const result = suggestions.slice(0, 8);
-    this.suggestionCache.set(cacheKey, { suggestions: result, generatedAt: new Date() });
+    this.suggestionCache.set(cacheKey, {
+      suggestions: result,
+      generatedAt: new Date(),
+    });
     return result;
   }
 
-  async getQuickWins(creatorId: number, metrics: { followers: number; postsPerWeek: number; engagementRate: number }): Promise<GrowthSuggestion[]> {
+  async getQuickWins(
+    creatorId: number,
+    metrics: { followers: number; postsPerWeek: number; engagementRate: number }
+  ): Promise<GrowthSuggestion[]> {
     const quickWins: GrowthSuggestion[] = [
       {
         type: "community",
         priority: "high",
         title: "Pin your referral code to your profile",
-        description: "Creators who pin their referral code get 3x more referrals passively.",
+        description:
+          "Creators who pin their referral code get 3x more referrals passively.",
         estimatedImpact: "+3-5 referrals/month",
-        actionSteps: ["Go to profile settings", "Add referral code to bio", "Create a pinned post explaining the benefits"],
+        actionSteps: [
+          "Go to profile settings",
+          "Add referral code to bio",
+          "Create a pinned post explaining the benefits",
+        ],
         aiConfidence: 0.89,
       },
       {
         type: "content",
         priority: "medium",
         title: "Post at peak engagement times",
-        description: "Your audience is most active between 7-9pm local time. Posting then increases reach by 40%.",
+        description:
+          "Your audience is most active between 7-9pm local time. Posting then increases reach by 40%.",
         estimatedImpact: "+40% post reach",
-        actionSteps: ["Schedule your next 5 posts for 7-9pm", "Use the analytics dashboard to confirm your audience's peak times"],
+        actionSteps: [
+          "Schedule your next 5 posts for 7-9pm",
+          "Use the analytics dashboard to confirm your audience's peak times",
+        ],
         aiConfidence: 0.82,
       },
     ];
@@ -937,33 +1376,83 @@ export const aiGrowthAdvisor = new AIGrowthAdvisorService();
 
 // ─── ROUTER COMPATIBILITY METHOD ALIASES ─────────────────────────────────────
 // ReferralTreeService aliases
-(ReferralTreeService.prototype as any).getTree = function(creatorId: number, depth = 3) {
+(ReferralTreeService.prototype as any).getTree = function (
+  creatorId: number,
+  depth = 3
+) {
   return this.getReferralTree(creatorId);
 };
-(ReferralTreeService.prototype as any).trackReferral = function(referrerId: number, referredUserId: number, source?: string) {
-  return this.registerReferral(this.generateReferralCode(referrerId), referredUserId);
+(ReferralTreeService.prototype as any).trackReferral = function (
+  referrerId: number,
+  referredUserId: number,
+  source?: string
+) {
+  return this.registerReferral(
+    this.generateReferralCode(referrerId),
+    referredUserId
+  );
 };
-(ReferralTreeService.prototype as any).getStats = function(creatorId: number) {
-  return this.getReferralTree(creatorId).then((t: any) => ({ total: t.totalReferrals, earnings: t.totalEarnings }));
+(ReferralTreeService.prototype as any).getStats = function (creatorId: number) {
+  return this.getReferralTree(creatorId).then((t: any) => ({
+    total: t.totalReferrals,
+    earnings: t.totalEarnings,
+  }));
 };
 
 // CollabToolsService aliases
-(CollabToolsService.prototype as any).createRequest = function(initiatorId: number, targetCreatorId: number, type: string, message: string, proposedTerms: any) {
-  return this.sendCollabRequest({ initiatorId, targetId: targetCreatorId, collabType: type as any, message, proposedRevenueSplit: proposedTerms });
+(CollabToolsService.prototype as any).createRequest = function (
+  initiatorId: number,
+  targetCreatorId: number,
+  type: string,
+  message: string,
+  proposedTerms: any
+) {
+  return this.sendCollabRequest({
+    initiatorId,
+    targetId: targetCreatorId,
+    collabType: type as any,
+    message,
+    proposedRevenueSplit: proposedTerms,
+  });
 };
-(CollabToolsService.prototype as any).getRequests = function(creatorId: number) {
+(CollabToolsService.prototype as any).getRequests = function (
+  creatorId: number
+) {
   return this.getCreatorCollabs(creatorId);
 };
-(CollabToolsService.prototype as any).respond = function(requestId: string, userId: number, accept: boolean, message?: string) {
+(CollabToolsService.prototype as any).respond = function (
+  requestId: string,
+  userId: number,
+  accept: boolean,
+  message?: string
+) {
   return this.respondToCollab(requestId, userId, accept);
 };
 
 // SponsorshipMatchmakingService aliases
-(SponsorshipMatchmakingService.prototype as any).findMatches = function(creatorId: number, niche?: string, minBudget?: number) {
-  return this.getMatchedOpportunities({ followers: 1000, engagementRate: 0.05, niche: niche || "general", avgViews: 500 });
+(SponsorshipMatchmakingService.prototype as any).findMatches = function (
+  creatorId: number,
+  niche?: string,
+  minBudget?: number
+) {
+  return this.getMatchedOpportunities({
+    followers: 1000,
+    engagementRate: 0.05,
+    niche: niche || "general",
+    avgViews: 500,
+  });
 };
 
 // AIGrowthAdvisorService aliases
-(AIGrowthAdvisorService.prototype as any).getAdvice = function(creatorId: number) {
-  return this.generateGrowthPlan(creatorId, { followers: 1000, engagementRate: 0.05, postsPerWeek: 3, avgViews: 500, revenue: 0, growthRate: 0.1 });
+(AIGrowthAdvisorService.prototype as any).getAdvice = function (
+  creatorId: number
+) {
+  return this.generateGrowthPlan(creatorId, {
+    followers: 1000,
+    engagementRate: 0.05,
+    postsPerWeek: 3,
+    avgViews: 500,
+    revenue: 0,
+    growthRate: 0.1,
+  });
 };

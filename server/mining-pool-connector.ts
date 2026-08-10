@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
-import net from 'net';
-import { invokeLLM } from './_core/llm';
+import { EventEmitter } from "events";
+import net from "net";
+import { invokeLLM } from "./_core/llm";
 
 interface PoolConfig {
   name: string;
@@ -58,7 +58,7 @@ export class MiningPoolConnector extends EventEmitter {
   async connectToPool(config: PoolConfig): Promise<void> {
     return new Promise((resolve, reject) => {
       const socket = net.createConnection(config.port, config.url);
-      
+
       const connection: PoolConnection = {
         socket,
         connected: false,
@@ -76,36 +76,39 @@ export class MiningPoolConnector extends EventEmitter {
         },
       };
 
-      socket.on('connect', () => {
+      socket.on("connect", () => {
         connection.connected = true;
         console.log(`[Mining] Connected to ${config.name} (${config.coin})`);
-        
+
         // Subscribe to mining work
         this.sendStratumCommand(socket, {
           id: 1,
-          method: 'mining.subscribe',
-          params: ['SkycoinMiner/1.0.0'],
+          method: "mining.subscribe",
+          params: ["SkycoinMiner/1.0.0"],
         });
 
         resolve();
       });
 
-      socket.on('data', (data) => {
+      socket.on("data", data => {
         this.handlePoolMessage(connection, config, data.toString());
       });
 
-      socket.on('error', (error) => {
-        console.error(`[Mining] Pool connection error (${config.name}):`, error.message);
+      socket.on("error", error => {
+        console.error(
+          `[Mining] Pool connection error (${config.name}):`,
+          error.message
+        );
         connection.connected = false;
-        this.emit('pool-error', { pool: config.name, error: error.message });
+        this.emit("pool-error", { pool: config.name, error: error.message });
         reject(error);
       });
 
-      socket.on('close', () => {
+      socket.on("close", () => {
         connection.connected = false;
         console.log(`[Mining] Disconnected from ${config.name}`);
-        this.emit('pool-disconnected', { pool: config.name });
-        
+        this.emit("pool-disconnected", { pool: config.name });
+
         // Attempt reconnection after 30 seconds
         setTimeout(() => this.connectToPool(config), 30000);
       });
@@ -117,16 +120,20 @@ export class MiningPoolConnector extends EventEmitter {
   /**
    * Handle messages from mining pool
    */
-  private handlePoolMessage(connection: PoolConnection, config: PoolConfig, data: string): void {
-    const lines = data.split('\n').filter(line => line.trim());
+  private handlePoolMessage(
+    connection: PoolConnection,
+    config: PoolConfig,
+    data: string
+  ): void {
+    const lines = data.split("\n").filter(line => line.trim());
 
     for (const line of lines) {
       try {
         const message = JSON.parse(line);
 
-        if (message.method === 'mining.notify') {
+        if (message.method === "mining.notify") {
           // New work available
-          this.emit('new-work', {
+          this.emit("new-work", {
             pool: config.name,
             coin: config.coin,
             jobId: message.params[0],
@@ -140,20 +147,22 @@ export class MiningPoolConnector extends EventEmitter {
             nTime: message.params[8],
             cleanJobs: message.params[9],
           });
-        } else if (message.method === 'mining.set_difficulty') {
+        } else if (message.method === "mining.set_difficulty") {
           // Difficulty adjustment
           connection.stats.difficulty = message.params[0];
-          console.log(`[Mining] Difficulty updated: ${connection.stats.difficulty} (${config.coin})`);
+          console.log(
+            `[Mining] Difficulty updated: ${connection.stats.difficulty} (${config.coin})`
+          );
         } else if (message.result !== null && message.result !== undefined) {
           // Response to our command
           if (message.id === 1) {
             // Subscribe response
             connection.subscriptionId = message.result[0][1];
-            
+
             // Now authenticate
             this.sendStratumCommand(connection.socket, {
               id: 2,
-              method: 'mining.authorize',
+              method: "mining.authorize",
               params: [config.username, config.password],
             });
           } else if (message.id === 2) {
@@ -161,21 +170,23 @@ export class MiningPoolConnector extends EventEmitter {
             connection.authenticated = message.result === true;
             if (connection.authenticated) {
               console.log(`[Mining] Authenticated to ${config.name}`);
-              this.emit('pool-authenticated', { pool: config.name });
+              this.emit("pool-authenticated", { pool: config.name });
             }
           } else if (message.id && message.id > 2) {
             // Share submission response
             if (message.result === true) {
               connection.stats.shares.accepted++;
               console.log(`[Mining] Share accepted (${config.coin})`);
-              this.emit('share-accepted', {
+              this.emit("share-accepted", {
                 pool: config.name,
                 coin: config.coin,
                 shareId: message.id,
               });
             } else {
               connection.stats.shares.rejected++;
-              console.log(`[Mining] Share rejected: ${message.error?.[1]} (${config.coin})`);
+              console.log(
+                `[Mining] Share rejected: ${message.error?.[1]} (${config.coin})`
+              );
             }
           }
         }
@@ -189,7 +200,7 @@ export class MiningPoolConnector extends EventEmitter {
    * Send command to mining pool
    */
   private sendStratumCommand(socket: net.Socket, command: any): void {
-    socket.write(JSON.stringify(command) + '\n');
+    socket.write(JSON.stringify(command) + "\n");
   }
 
   /**
@@ -198,14 +209,16 @@ export class MiningPoolConnector extends EventEmitter {
   async submitShare(poolName: string, shareData: any): Promise<boolean> {
     const connection = this.connections.get(poolName);
     if (!connection || !connection.authenticated) {
-      console.error(`[Mining] Cannot submit share - not authenticated to ${poolName}`);
+      console.error(
+        `[Mining] Cannot submit share - not authenticated to ${poolName}`
+      );
       return false;
     }
 
     const shareId = Date.now();
     this.sendStratumCommand(connection.socket, {
       id: shareId,
-      method: 'mining.submit',
+      method: "mining.submit",
       params: [
         shareData.username,
         shareData.jobId,
@@ -226,14 +239,16 @@ export class MiningPoolConnector extends EventEmitter {
     if (!connection) return null;
 
     // Update uptime
-    connection.stats.uptime = Math.floor((Date.now() - connection.stats.lastShareTime) / 1000);
+    connection.stats.uptime = Math.floor(
+      (Date.now() - connection.stats.lastShareTime) / 1000
+    );
 
     // Calculate estimated earnings (simplified)
     const coinPrice = this.priceCache.get(connection.stats.coin) || 0;
     const acceptedShares = connection.stats.shares.accepted;
     const blockReward = this.getBlockReward(connection.stats.coin);
     const estimatedEarnings = (acceptedShares / 1000) * blockReward; // Simplified
-    
+
     connection.stats.earnings = estimatedEarnings;
     connection.stats.earningsUSD = estimatedEarnings * coinPrice;
 
@@ -247,7 +262,9 @@ export class MiningPoolConnector extends EventEmitter {
     const stats: MinerStats[] = [];
     for (const [, connection] of this.connections) {
       if (connection.connected) {
-        stats.push(this.getStats(connection.stats.poolName) || connection.stats);
+        stats.push(
+          this.getStats(connection.stats.poolName) || connection.stats
+        );
       }
     }
     return stats;
@@ -257,10 +274,10 @@ export class MiningPoolConnector extends EventEmitter {
    * Initialize price cache
    */
   private initializePriceCache(): void {
-    this.priceCache.set('BTC', 63800);
-    this.priceCache.set('LTC', 89.50);
-    this.priceCache.set('DOGE', 0.072);
-    this.priceCache.set('ETC', 28.45);
+    this.priceCache.set("BTC", 63800);
+    this.priceCache.set("LTC", 89.5);
+    this.priceCache.set("DOGE", 0.072);
+    this.priceCache.set("ETC", 28.45);
   }
 
   /**
@@ -295,9 +312,9 @@ export class MiningPoolConnector extends EventEmitter {
 
         // Use AI to recommend best coin to mine
         const recommendation = await this.getAIRecommendation(profitability);
-        this.emit('ai-recommendation', recommendation);
+        this.emit("ai-recommendation", recommendation);
       } catch (error) {
-        console.error('[Mining] AI optimizer error:', error);
+        console.error("[Mining] AI optimizer error:", error);
       }
     }, 60000); // Run every minute
   }
@@ -310,11 +327,12 @@ export class MiningPoolConnector extends EventEmitter {
       const response = await invokeLLM({
         messages: [
           {
-            role: 'system',
-            content: 'You are a cryptocurrency mining optimizer. Analyze profitability data and recommend which coin to mine for maximum earnings.',
+            role: "system",
+            content:
+              "You are a cryptocurrency mining optimizer. Analyze profitability data and recommend which coin to mine for maximum earnings.",
           },
           {
-            role: 'user',
+            role: "user",
             content: `Current mining profitability:\n${JSON.stringify(profitability, null, 2)}\n\nRecommend the best coin to mine and explain why.`,
           },
         ],
@@ -326,7 +344,7 @@ export class MiningPoolConnector extends EventEmitter {
         profitability,
       };
     } catch (error) {
-      console.error('[Mining] Failed to get AI recommendation:', error);
+      console.error("[Mining] Failed to get AI recommendation:", error);
       return null;
     }
   }

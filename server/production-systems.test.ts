@@ -80,7 +80,9 @@ describe("Phase A: XP Engine", () => {
       await xpEngine.awardXP(1005, "tournament_win", 10.0); // 2000 XP each
     }
     const profile = xpEngine.getProfile(1005);
-    expect(["silver", "gold", "platinum", "diamond", "legend"]).toContain(profile.tier);
+    expect(["silver", "gold", "platinum", "diamond", "legend"]).toContain(
+      profile.tier
+    );
   });
 });
 
@@ -107,14 +109,19 @@ describe("Phase B: Tournament Engine", () => {
   });
 
   it("B2: registers a participant", async () => {
-    const result = await tournamentEngine.register(tournamentId, 2002, "player2");
+    const result = await tournamentEngine.register(
+      tournamentId,
+      2002,
+      "player2"
+    );
     expect(result.success).toBe(true);
     expect(result.position).toBe(1);
   });
 
   it("B3: prevents duplicate registration", async () => {
-    await expect(tournamentEngine.register(tournamentId, 2002, "player2"))
-      .rejects.toThrow("Already registered");
+    await expect(
+      tournamentEngine.register(tournamentId, 2002, "player2")
+    ).rejects.toThrow("Already registered");
   });
 
   it("B4: check-in works", async () => {
@@ -136,7 +143,10 @@ describe("Phase B: Tournament Engine", () => {
 
   it("B7: prize distribution sums to ~100%", async () => {
     const t = tournamentEngine.getTournament(tournamentId)!;
-    const totalPct = t.prizeDistribution.reduce((sum, p) => sum + p.prizePercent, 0);
+    const totalPct = t.prizeDistribution.reduce(
+      (sum, p) => sum + p.prizePercent,
+      0
+    );
     expect(totalPct).toBeLessThanOrEqual(100);
     expect(totalPct).toBeGreaterThan(50);
   });
@@ -159,23 +169,27 @@ describe("Phase C: Wager System", () => {
   });
 
   it("C2: rejects wager below minimum", async () => {
-    await expect(wagerSystem.createWager({
-      challengerId: 3001,
-      challengeeId: 3002,
-      game: "chess",
-      amountCents: 50,
-      currency: "USD",
-    })).rejects.toThrow("Minimum wager");
+    await expect(
+      wagerSystem.createWager({
+        challengerId: 3001,
+        challengeeId: 3002,
+        game: "chess",
+        amountCents: 50,
+        currency: "USD",
+      })
+    ).rejects.toThrow("Minimum wager");
   });
 
   it("C3: rejects self-wager", async () => {
-    await expect(wagerSystem.createWager({
-      challengerId: 3001,
-      challengeeId: 3001,
-      game: "chess",
-      amountCents: 1000,
-      currency: "USD",
-    })).rejects.toThrow("Cannot wager against yourself");
+    await expect(
+      wagerSystem.createWager({
+        challengerId: 3001,
+        challengeeId: 3001,
+        game: "chess",
+        amountCents: 1000,
+        currency: "USD",
+      })
+    ).rejects.toThrow("Cannot wager against yourself");
   });
 
   it("C4: challengee can accept wager", async () => {
@@ -204,7 +218,11 @@ describe("Phase C: Wager System", () => {
       currency: "USD",
     });
     await wagerSystem.acceptWager(newWager.wagerId, 3004);
-    const disputed = await wagerSystem.disputeWager(newWager.wagerId, 3003, "Cheating suspected");
+    const disputed = await wagerSystem.disputeWager(
+      newWager.wagerId,
+      3003,
+      "Cheating suspected"
+    );
     expect(disputed).toBe(true);
     expect(wagerSystem.getWager(newWager.wagerId)!.status).toBe("disputed");
   });
@@ -225,7 +243,9 @@ describe("Phase D: Leaderboards", () => {
     const lb = await leaderboardEngine.getEarningsLeaderboard(10);
     expect(Array.isArray(lb)).toBe(true);
     if (lb.length > 1) {
-      expect(lb[0].totalEarningsCents).toBeGreaterThanOrEqual(lb[1].totalEarningsCents);
+      expect(lb[0].totalEarningsCents).toBeGreaterThanOrEqual(
+        lb[1].totalEarningsCents
+      );
     }
   });
 
@@ -276,7 +296,9 @@ describe("Phase E: Daily Challenges", () => {
     const date = "2025-06-16";
     dailyChallengeEngine.generateChallenge(date);
     await dailyChallengeEngine.completeChallenge(5002, date);
-    await expect(dailyChallengeEngine.completeChallenge(5002, date)).rejects.toThrow("Already completed");
+    await expect(
+      dailyChallengeEngine.completeChallenge(5002, date)
+    ).rejects.toThrow("Already completed");
   });
 
   it("E6: isCompleted returns correct status", async () => {
@@ -390,7 +412,11 @@ describe("Phase H: Cart System", () => {
   });
 
   it("H6: updateQuantity to 0 removes item", () => {
-    cartSystem.addItem(8002, { listingId: "listing_002", quantity: 3, unitPriceCents: 500 });
+    cartSystem.addItem(8002, {
+      listingId: "listing_002",
+      quantity: 3,
+      unitPriceCents: 500,
+    });
     const cart = cartSystem.updateQuantity(8002, "listing_002", 0);
     expect(cart.items).toHaveLength(0);
   });
@@ -451,7 +477,12 @@ describe("Phase I: Order System", () => {
       paymentIntentId: "pi_test_456",
     });
     await orderSystem.confirmPayment(physOrder.orderId, "ch_test_456");
-    const shipped = await orderSystem.markShipped(physOrder.orderId, 9004, "1Z999AA10123456784", "UPS");
+    const shipped = await orderSystem.markShipped(
+      physOrder.orderId,
+      9004,
+      "1Z999AA10123456784",
+      "UPS"
+    );
     expect(shipped.status).toBe("shipped");
     expect(shipped.trackingNumber).toBe("1Z999AA10123456784");
   });
@@ -466,7 +497,11 @@ describe("Phase I: Order System", () => {
       quantity: 1,
       unitPriceCents: 10000,
     });
-    const cancelled = await orderSystem.cancelOrder(cancelOrder.orderId, 9005, "Changed my mind");
+    const cancelled = await orderSystem.cancelOrder(
+      cancelOrder.orderId,
+      9005,
+      "Changed my mind"
+    );
     expect(cancelled.status).toBe("cancelled");
   });
 });
@@ -493,7 +528,8 @@ describe("Phase J: Dispute System", () => {
       orderId: disputeOrderId,
       initiatorId: 10001,
       reason: "Item not as described",
-      description: "The item I received is completely different from the listing.",
+      description:
+        "The item I received is completely different from the listing.",
     });
     disputeId = dispute.disputeId;
     expect(dispute.status).toBe("open");
@@ -511,7 +547,12 @@ describe("Phase J: Dispute System", () => {
   });
 
   it("J3: resolves dispute in buyer's favor", async () => {
-    const resolved = await disputeSystem.resolveDispute(disputeId, 99999, "Buyer's claim is valid", true);
+    const resolved = await disputeSystem.resolveDispute(
+      disputeId,
+      99999,
+      "Buyer's claim is valid",
+      true
+    );
     expect(resolved.status).toBe("resolved_buyer");
     expect(resolved.resolution).toBeTruthy();
   });
@@ -519,7 +560,9 @@ describe("Phase J: Dispute System", () => {
   it("J4: getOpenDisputes returns only open disputes", () => {
     const open = disputeSystem.getOpenDisputes();
     // The resolved dispute should not appear
-    expect(open.every(d => d.status === "open" || d.status === "under_review")).toBe(true);
+    expect(
+      open.every(d => d.status === "open" || d.status === "under_review")
+    ).toBe(true);
   });
 });
 
@@ -537,7 +580,9 @@ describe("Phase K: Seller Dashboard", () => {
 
   it("K2: getReputation returns valid tier", () => {
     const rep = sellerDashboard.getReputation(9002);
-    expect(["new", "rising", "established", "top_seller", "elite"]).toContain(rep.tier);
+    expect(["new", "rising", "established", "top_seller", "elite"]).toContain(
+      rep.tier
+    );
     expect(rep.overallScore).toBeGreaterThanOrEqual(0);
     expect(rep.overallScore).toBeLessThanOrEqual(100);
   });
@@ -662,21 +707,25 @@ describe("Phase N: Staking Engine", () => {
   });
 
   it("N2: rejects stake below minimum", async () => {
-    await expect(stakingEngine.stake({
-      userId: 13001,
-      walletAddress: "0xstaker001",
-      amountFormatted: 50,
-      lockPeriodDays: 30,
-    })).rejects.toThrow("Minimum stake");
+    await expect(
+      stakingEngine.stake({
+        userId: 13001,
+        walletAddress: "0xstaker001",
+        amountFormatted: 50,
+        lockPeriodDays: 30,
+      })
+    ).rejects.toThrow("Minimum stake");
   });
 
   it("N3: rejects lock period below minimum", async () => {
-    await expect(stakingEngine.stake({
-      userId: 13001,
-      walletAddress: "0xstaker001",
-      amountFormatted: 500,
-      lockPeriodDays: 3,
-    })).rejects.toThrow("Minimum lock period");
+    await expect(
+      stakingEngine.stake({
+        userId: 13001,
+        walletAddress: "0xstaker001",
+        amountFormatted: 500,
+        lockPeriodDays: 3,
+      })
+    ).rejects.toThrow("Minimum lock period");
   });
 
   it("N4: accrues rewards over time", async () => {
@@ -714,7 +763,10 @@ describe("Phase N: Staking Engine", () => {
     // Manually expire the lock
     const stake = stakingEngine.getStake(expiredStake.stakeId)!;
     stake.unlockAt = new Date(Date.now() - 1000);
-    const result = await stakingEngine.requestUnstake(expiredStake.stakeId, 13002);
+    const result = await stakingEngine.requestUnstake(
+      expiredStake.stakeId,
+      13002
+    );
     expect(result.canUnstake).toBe(true);
     expect(result.penaltyPct).toBe(0);
   });
@@ -738,11 +790,13 @@ describe("Phase O: DEX Swap Engine", () => {
   });
 
   it("O2: rejects quote for unknown token", async () => {
-    await expect(dexSwapEngine.getQuote({
-      fromToken: "0xUNKNOWN",
-      toToken: "0xUSDC",
-      fromAmount: "1000000",
-    })).rejects.toThrow("Unknown token");
+    await expect(
+      dexSwapEngine.getQuote({
+        fromToken: "0xUNKNOWN",
+        toToken: "0xUSDC",
+        fromAmount: "1000000",
+      })
+    ).rejects.toThrow("Unknown token");
   });
 
   it("O3: executes a swap", async () => {
@@ -757,7 +811,13 @@ describe("Phase O: DEX Swap Engine", () => {
   });
 
   it("O4: confirms a swap", async () => {
-    const confirmed = await dexSwapEngine.confirmSwap(swapId, "0xtxhash", 12345678, "120000", "5000000000000000000");
+    const confirmed = await dexSwapEngine.confirmSwap(
+      swapId,
+      "0xtxhash",
+      12345678,
+      "120000",
+      "5000000000000000000"
+    );
     expect(confirmed.status).toBe("confirmed");
     expect(confirmed.blockNumber).toBe(12345678);
   });
@@ -778,7 +838,10 @@ describe("Phase O: DEX Swap Engine", () => {
       quoteId: failQuote.quoteId,
       walletAddress: "0xswapper002",
     });
-    const failed = await dexSwapEngine.failSwap(failExec.swapId, "Insufficient liquidity");
+    const failed = await dexSwapEngine.failSwap(
+      failExec.swapId,
+      "Insufficient liquidity"
+    );
     expect(failed.status).toBe("failed");
     expect(failed.failureReason).toBe("Insufficient liquidity");
   });
@@ -800,7 +863,10 @@ describe("Phase P: Treasury Engine", () => {
 
   it("P3: allocations sum to 100%", () => {
     const latest = treasuryEngine.getLatestSnapshot()!;
-    const totalPct = latest.allocations.reduce((sum, a) => sum + a.targetPct, 0);
+    const totalPct = latest.allocations.reduce(
+      (sum, a) => sum + a.targetPct,
+      0
+    );
     expect(totalPct).toBe(100);
   });
 
@@ -863,7 +929,9 @@ describe("Phase Q: Vesting Engine", () => {
 
   it("Q5: cannot claim when nothing left to claim", async () => {
     // Immediately after claiming, nothing should be left
-    await expect(vestingEngine.claim(vestingId, 15001)).rejects.toThrow("Nothing to claim");
+    await expect(vestingEngine.claim(vestingId, 15001)).rejects.toThrow(
+      "Nothing to claim"
+    );
   });
 
   it("Q6: getUserSchedules returns schedules", () => {
@@ -907,11 +975,18 @@ describe("Phase R: Governance Engine", () => {
   });
 
   it("R4: getTopVoters returns sorted list", async () => {
-    await stakingEngine.stake({ userId: 16002, walletAddress: "0xvoter002", amountFormatted: 10000, lockPeriodDays: 180 });
+    await stakingEngine.stake({
+      userId: 16002,
+      walletAddress: "0xvoter002",
+      amountFormatted: 10000,
+      lockPeriodDays: 180,
+    });
     const topVoters = governanceEngine.getTopVoters(10);
     expect(topVoters.length).toBeGreaterThan(0);
     if (topVoters.length > 1) {
-      expect(topVoters[0].totalVotingPower).toBeGreaterThanOrEqual(topVoters[1].totalVotingPower);
+      expect(topVoters[0].totalVotingPower).toBeGreaterThanOrEqual(
+        topVoters[1].totalVotingPower
+      );
     }
   });
 });
@@ -940,6 +1015,8 @@ describe("Phase S: Platform Crypto Stats", () => {
       totalGMVCents: expect.any(Number),
       totalPlatformRevenueCents: expect.any(Number),
     });
-    expect(stats.totalPlatformRevenueCents).toBeLessThanOrEqual(stats.totalGMVCents);
+    expect(stats.totalPlatformRevenueCents).toBeLessThanOrEqual(
+      stats.totalGMVCents
+    );
   });
 });

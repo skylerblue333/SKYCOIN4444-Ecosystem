@@ -1,9 +1,9 @@
-import crypto from 'crypto';
-import { getDb } from './db';
+import crypto from "crypto";
+import { getDb } from "./db";
 
 /**
  * Autonomous Economy Optimization Engine
- * 
+ *
  * Capabilities:
  * - Self-adjusting token sinks and sources
  * - Dynamic fee rebalancing
@@ -36,7 +36,12 @@ interface EconomicMetrics {
 
 interface OptimizationAction {
   id: string;
-  type: 'adjust_emission' | 'adjust_sink' | 'adjust_fee' | 'adjust_reward' | 'emergency_brake';
+  type:
+    | "adjust_emission"
+    | "adjust_sink"
+    | "adjust_fee"
+    | "adjust_reward"
+    | "emergency_brake";
   parameter: string;
   oldValue: number;
   newValue: number;
@@ -74,7 +79,9 @@ export class AutonomousEconomyOptimizer {
   /**
    * Optimize economy based on current metrics
    */
-  async optimizeEconomy(metrics: EconomicMetrics): Promise<OptimizationAction[]> {
+  async optimizeEconomy(
+    metrics: EconomicMetrics
+  ): Promise<OptimizationAction[]> {
     const actions: OptimizationAction[] = [];
     this.metricsHistory.push(metrics);
 
@@ -117,7 +124,9 @@ export class AutonomousEconomyOptimizer {
   /**
    * Adjust emission for price stability
    */
-  private async adjustEmissionForStability(metrics: EconomicMetrics): Promise<OptimizationAction> {
+  private async adjustEmissionForStability(
+    metrics: EconomicMetrics
+  ): Promise<OptimizationAction> {
     const oldEmission = this.currentPolicy.emissionRate;
     let newEmission = oldEmission;
 
@@ -131,8 +140,8 @@ export class AutonomousEconomyOptimizer {
 
     return {
       id: crypto.randomUUID(),
-      type: 'adjust_emission',
-      parameter: 'emissionRate',
+      type: "adjust_emission",
+      parameter: "emissionRate",
       oldValue: oldEmission,
       newValue: newEmission,
       reason: `Price volatility ${(metrics.priceVolatility * 100).toFixed(1)}% - stabilizing supply`,
@@ -144,14 +153,16 @@ export class AutonomousEconomyOptimizer {
   /**
    * Increase sink rate
    */
-  private async increaseSinkRate(metrics: EconomicMetrics): Promise<OptimizationAction> {
+  private async increaseSinkRate(
+    metrics: EconomicMetrics
+  ): Promise<OptimizationAction> {
     const oldSink = this.currentPolicy.sinkRate;
     const newSink = Math.min(0.002, oldSink * 1.15);
 
     return {
       id: crypto.randomUUID(),
-      type: 'adjust_sink',
-      parameter: 'sinkRate',
+      type: "adjust_sink",
+      parameter: "sinkRate",
       oldValue: oldSink,
       newValue: newSink,
       reason: `Supply growth ${(metrics.supplyGrowth * 100).toFixed(1)}% exceeds demand - increasing sinks`,
@@ -163,14 +174,16 @@ export class AutonomousEconomyOptimizer {
   /**
    * Increase emission rate
    */
-  private async increaseEmissionRate(metrics: EconomicMetrics): Promise<OptimizationAction> {
+  private async increaseEmissionRate(
+    metrics: EconomicMetrics
+  ): Promise<OptimizationAction> {
     const oldEmission = this.currentPolicy.emissionRate;
     const newEmission = Math.min(0.003, oldEmission * 1.1);
 
     return {
       id: crypto.randomUUID(),
-      type: 'adjust_emission',
-      parameter: 'emissionRate',
+      type: "adjust_emission",
+      parameter: "emissionRate",
       oldValue: oldEmission,
       newValue: newEmission,
       reason: `Demand growth ${(metrics.demandGrowth * 100).toFixed(1)}% exceeds supply - increasing emission`,
@@ -182,14 +195,16 @@ export class AutonomousEconomyOptimizer {
   /**
    * Adjust transaction fee
    */
-  private async adjustTransactionFee(metrics: EconomicMetrics): Promise<OptimizationAction> {
+  private async adjustTransactionFee(
+    metrics: EconomicMetrics
+  ): Promise<OptimizationAction> {
     const oldFee = this.currentPolicy.transactionFee;
     const newFee = Math.min(0.005, oldFee * 1.05);
 
     return {
       id: crypto.randomUUID(),
-      type: 'adjust_fee',
-      parameter: 'transactionFee',
+      type: "adjust_fee",
+      parameter: "transactionFee",
       oldValue: oldFee,
       newValue: newFee,
       reason: `High transaction volume ${metrics.transactionVolume.toLocaleString()} - optimizing fees`,
@@ -201,14 +216,16 @@ export class AutonomousEconomyOptimizer {
   /**
    * Increase staking reward
    */
-  private async increaseStakingReward(metrics: EconomicMetrics): Promise<OptimizationAction> {
+  private async increaseStakingReward(
+    metrics: EconomicMetrics
+  ): Promise<OptimizationAction> {
     const oldReward = this.currentPolicy.stakingReward;
     const newReward = Math.min(0.15, oldReward * 1.2);
 
     return {
       id: crypto.randomUUID(),
-      type: 'adjust_reward',
-      parameter: 'stakingReward',
+      type: "adjust_reward",
+      parameter: "stakingReward",
       oldValue: oldReward,
       newValue: newReward,
       reason: `Low user engagement ${metrics.activeUsers} - increasing staking incentives`,
@@ -220,14 +237,16 @@ export class AutonomousEconomyOptimizer {
   /**
    * Trigger emergency brake
    */
-  private async triggerEmergencyBrake(metrics: EconomicMetrics): Promise<OptimizationAction> {
+  private async triggerEmergencyBrake(
+    metrics: EconomicMetrics
+  ): Promise<OptimizationAction> {
     const oldEmission = this.currentPolicy.emissionRate;
     const newEmission = 0.0001; // Minimal emission
 
     return {
       id: crypto.randomUUID(),
-      type: 'emergency_brake',
-      parameter: 'emissionRate',
+      type: "emergency_brake",
+      parameter: "emissionRate",
       oldValue: oldEmission,
       newValue: newEmission,
       reason: `Market health critical ${(metrics.marketHealth * 100).toFixed(1)}% - emergency measures activated`,
@@ -241,22 +260,22 @@ export class AutonomousEconomyOptimizer {
    */
   private async applyAction(action: OptimizationAction): Promise<void> {
     switch (action.parameter) {
-      case 'emissionRate':
+      case "emissionRate":
         this.currentPolicy.emissionRate = action.newValue;
         break;
-      case 'sinkRate':
+      case "sinkRate":
         this.currentPolicy.sinkRate = action.newValue;
         break;
-      case 'transactionFee':
+      case "transactionFee":
         this.currentPolicy.transactionFee = action.newValue;
         break;
-      case 'stakingReward':
+      case "stakingReward":
         this.currentPolicy.stakingReward = action.newValue;
         break;
-      case 'governanceFee':
+      case "governanceFee":
         this.currentPolicy.governanceFee = action.newValue;
         break;
-      case 'creatorReward':
+      case "creatorReward":
         this.currentPolicy.creatorReward = action.newValue;
         break;
     }
@@ -275,11 +294,19 @@ export class AutonomousEconomyOptimizer {
    */
   calculateMarketHealth(metrics: EconomicMetrics): number {
     const priceStability = Math.max(0, 1 - metrics.priceVolatility);
-    const supplyBalance = Math.max(0, 1 - Math.abs(metrics.supplyGrowth - metrics.demandGrowth) / 2);
+    const supplyBalance = Math.max(
+      0,
+      1 - Math.abs(metrics.supplyGrowth - metrics.demandGrowth) / 2
+    );
     const userEngagement = Math.min(1, metrics.activeUsers / 10000);
     const volumeHealth = Math.min(1, metrics.transactionVolume / 5000000);
 
-    return (priceStability * 0.3 + supplyBalance * 0.3 + userEngagement * 0.2 + volumeHealth * 0.2);
+    return (
+      priceStability * 0.3 +
+      supplyBalance * 0.3 +
+      userEngagement * 0.2 +
+      volumeHealth * 0.2
+    );
   }
 
   /**
@@ -315,15 +342,15 @@ export class AutonomousEconomyOptimizer {
    */
   predictNextAdjustment(metrics: EconomicMetrics): string {
     if (metrics.priceVolatility > 0.2) {
-      return 'Emission rate adjustment expected for price stability';
+      return "Emission rate adjustment expected for price stability";
     }
     if (metrics.supplyGrowth > metrics.demandGrowth * 1.5) {
-      return 'Sink rate increase expected to balance supply';
+      return "Sink rate increase expected to balance supply";
     }
     if (metrics.activeUsers < 5000) {
-      return 'Staking reward increase expected to boost engagement';
+      return "Staking reward increase expected to boost engagement";
     }
-    return 'Economy is balanced - no major adjustments expected';
+    return "Economy is balanced - no major adjustments expected";
   }
 }
 

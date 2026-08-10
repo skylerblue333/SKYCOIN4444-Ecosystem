@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Send, Heart, Smile } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { useAuth } from '@/_core/hooks/useAuth';
+import React, { useState, useEffect } from "react";
+import { Send, Heart, Smile } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface Match {
   id: string;
@@ -28,7 +28,7 @@ export default function DatingMessages() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,14 +43,14 @@ export default function DatingMessages() {
 
   const loadMatches = async () => {
     try {
-      const response = await fetch('/api/dating/matches');
+      const response = await fetch("/api/dating/matches");
       const data = await response.json();
       setMatches(data.matches || []);
       if (data.matches && data.matches.length > 0) {
         setSelectedMatch(data.matches[0]);
       }
     } catch (error) {
-      console.error('Failed to load matches:', error);
+      console.error("Failed to load matches:", error);
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ export default function DatingMessages() {
       const data = await response.json();
       setMessages(data.messages || []);
     } catch (error) {
-      console.error('Failed to load messages:', error);
+      console.error("Failed to load messages:", error);
     }
   };
 
@@ -71,9 +71,9 @@ export default function DatingMessages() {
     if (!newMessage.trim() || !selectedMatch) return;
 
     try {
-      const response = await fetch('/api/dating/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/dating/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           matchId: selectedMatch.id,
           content: newMessage,
@@ -81,11 +81,11 @@ export default function DatingMessages() {
       });
 
       if (response.ok) {
-        setNewMessage('');
+        setNewMessage("");
         loadMessages(selectedMatch.id);
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error("Failed to send message:", error);
     }
   };
 
@@ -112,14 +112,14 @@ export default function DatingMessages() {
               <p className="text-sm">Start swiping to find matches!</p>
             </div>
           ) : (
-            matches.map((match) => (
+            matches.map(match => (
               <div
                 key={match.id}
                 onClick={() => setSelectedMatch(match)}
                 className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
                   selectedMatch?.id === match.id
-                    ? 'bg-pink-50'
-                    : 'hover:bg-gray-50'
+                    ? "bg-pink-50"
+                    : "hover:bg-gray-50"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -133,7 +133,7 @@ export default function DatingMessages() {
                       {match.displayName}
                     </h3>
                     <p className="text-sm text-gray-500 truncate">
-                      {match.lastMessage || 'No messages yet'}
+                      {match.lastMessage || "No messages yet"}
                     </p>
                   </div>
                   {match.unreadCount > 0 && (
@@ -181,28 +181,28 @@ export default function DatingMessages() {
                     </div>
                   </div>
                 ) : (
-                  messages.map((msg) => (
+                  messages.map(msg => (
                     <div
                       key={msg.id}
                       className={`flex ${
                         msg.fromUserId === user?.id?.toString()
-                          ? 'justify-end'
-                          : 'justify-start'
+                          ? "justify-end"
+                          : "justify-start"
                       }`}
                     >
                       <div
                         className={`max-w-xs px-4 py-2 rounded-lg ${
                           msg.fromUserId === user?.id?.toString()
-                            ? 'bg-pink-500 text-white'
-                            : 'bg-gray-100 text-gray-900'
+                            ? "bg-pink-500 text-white"
+                            : "bg-gray-100 text-gray-900"
                         }`}
                       >
                         <p className="text-sm">{msg.content}</p>
                         <p
                           className={`text-xs mt-1 ${
                             msg.fromUserId === user?.id?.toString()
-                              ? 'text-pink-100'
-                              : 'text-gray-500'
+                              ? "text-pink-100"
+                              : "text-gray-500"
                           }`}
                         >
                           {new Date(msg.createdAt).toLocaleTimeString()}
@@ -214,7 +214,10 @@ export default function DatingMessages() {
               </div>
 
               {/* Input */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
+              <form
+                onSubmit={handleSendMessage}
+                className="p-4 border-t border-gray-200"
+              >
                 <div className="flex gap-2">
                   <Button type="button" variant="ghost" size="sm">
                     <Smile className="w-5 h-5 text-gray-600" />
@@ -223,7 +226,7 @@ export default function DatingMessages() {
                     type="text"
                     placeholder="Type a message..."
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={e => setNewMessage(e.target.value)}
                     className="flex-1"
                   />
                   <Button

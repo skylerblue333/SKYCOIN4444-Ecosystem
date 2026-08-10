@@ -7,13 +7,37 @@
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 export type NodeType =
-  | "user" | "creator" | "community" | "wallet" | "post" | "nft"
-  | "product" | "donation" | "referral" | "stream" | "event" | "campaign";
+  | "user"
+  | "creator"
+  | "community"
+  | "wallet"
+  | "post"
+  | "nft"
+  | "product"
+  | "donation"
+  | "referral"
+  | "stream"
+  | "event"
+  | "campaign";
 
 export type EdgeType =
-  | "follows" | "subscribes" | "tips" | "purchases" | "owns_nft" | "donated_to"
-  | "referred" | "collab" | "co_community" | "transacted_with" | "created"
-  | "commented_on" | "liked" | "shared" | "watched" | "mentioned" | "endorsed";
+  | "follows"
+  | "subscribes"
+  | "tips"
+  | "purchases"
+  | "owns_nft"
+  | "donated_to"
+  | "referred"
+  | "collab"
+  | "co_community"
+  | "transacted_with"
+  | "created"
+  | "commented_on"
+  | "liked"
+  | "shared"
+  | "watched"
+  | "mentioned"
+  | "endorsed";
 
 export interface GraphNode {
   id: string;
@@ -54,7 +78,8 @@ export interface InfluenceCluster {
   id: string;
   centerId: string;
   memberIds: string[];
-  clusterType: "creator_network" | "community_hub" | "whale_network" | "viral_chain";
+  clusterType:
+    "creator_network" | "community_hub" | "whale_network" | "viral_chain";
   totalInfluence: number;
   avgTrustScore: number;
   createdAt: Date;
@@ -66,7 +91,14 @@ export interface TransactionFlow {
   toWalletId: string;
   amount: number;
   currency: string;
-  transactionType: "tip" | "purchase" | "stake" | "nft_sale" | "donation" | "payout" | "referral_bonus";
+  transactionType:
+    | "tip"
+    | "purchase"
+    | "stake"
+    | "nft_sale"
+    | "donation"
+    | "payout"
+    | "referral_bonus";
   timestamp: Date;
   blockHash?: string;
   isVerified: boolean;
@@ -76,7 +108,8 @@ export interface ContentLineage {
   id: string;
   originalPostId: string;
   derivedPostId: string;
-  lineageType: "remix" | "quote" | "reply" | "clip" | "translation" | "reaction";
+  lineageType:
+    "remix" | "quote" | "reply" | "clip" | "translation" | "reaction";
   creatorId: number;
   createdAt: Date;
 }
@@ -128,7 +161,17 @@ const _viralChains = new Map<string, ViralChain>();
 // ─── GRAPH CORE ENGINE ────────────────────────────────────────────────────────
 
 export const graphCoreEngine = {
-  addNode(params: Omit<GraphNode, "createdAt" | "updatedAt" | "pageRankScore" | "influenceScore" | "trustScore" | "viralityScore">): GraphNode {
+  addNode(
+    params: Omit<
+      GraphNode,
+      | "createdAt"
+      | "updatedAt"
+      | "pageRankScore"
+      | "influenceScore"
+      | "trustScore"
+      | "viralityScore"
+    >
+  ): GraphNode {
     const node: GraphNode = {
       ...params,
       pageRankScore: 0.15,
@@ -153,13 +196,22 @@ export const graphCoreEngine = {
     return node;
   },
 
-  addEdge(params: Omit<GraphEdge, "id" | "createdAt" | "updatedAt">): GraphEdge {
+  addEdge(
+    params: Omit<GraphEdge, "id" | "createdAt" | "updatedAt">
+  ): GraphEdge {
     const id = `edge_${params.fromNodeId}_${params.edgeType}_${params.toNodeId}_${Date.now()}`;
-    const edge: GraphEdge = { ...params, id, createdAt: new Date(), updatedAt: new Date() };
+    const edge: GraphEdge = {
+      ...params,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     _edges.set(id, edge);
-    if (!_edgesByFrom.has(params.fromNodeId)) _edgesByFrom.set(params.fromNodeId, new Set());
+    if (!_edgesByFrom.has(params.fromNodeId))
+      _edgesByFrom.set(params.fromNodeId, new Set());
     _edgesByFrom.get(params.fromNodeId)!.add(id);
-    if (!_edgesByTo.has(params.toNodeId)) _edgesByTo.set(params.toNodeId, new Set());
+    if (!_edgesByTo.has(params.toNodeId))
+      _edgesByTo.set(params.toNodeId, new Set());
     _edgesByTo.get(params.toNodeId)!.add(id);
     // Update node scores
     this._updateNodeScores(params.toNodeId, params.edgeType, params.weight);
@@ -170,18 +222,36 @@ export const graphCoreEngine = {
     const node = _nodes.get(nodeId);
     if (!node) return;
     const influenceWeights: Record<string, number> = {
-      follows: 0.1, subscribes: 0.3, tips: 0.5, purchases: 0.4, endorsed: 0.6,
-      donated_to: 0.3, collab: 0.4, mentioned: 0.2, shared: 0.2, liked: 0.05,
+      follows: 0.1,
+      subscribes: 0.3,
+      tips: 0.5,
+      purchases: 0.4,
+      endorsed: 0.6,
+      donated_to: 0.3,
+      collab: 0.4,
+      mentioned: 0.2,
+      shared: 0.2,
+      liked: 0.05,
     };
     const trustWeights: Record<string, number> = {
-      transacted_with: 0.2, donated_to: 0.3, endorsed: 0.4, collab: 0.3,
+      transacted_with: 0.2,
+      donated_to: 0.3,
+      endorsed: 0.4,
+      collab: 0.3,
     };
     node.influenceScore += (influenceWeights[edgeType] ?? 0.1) * weight;
-    node.trustScore = Math.min(1, node.trustScore + (trustWeights[edgeType] ?? 0) * weight * 0.1);
+    node.trustScore = Math.min(
+      1,
+      node.trustScore + (trustWeights[edgeType] ?? 0) * weight * 0.1
+    );
     node.updatedAt = new Date();
   },
 
-  getNeighbors(nodeId: string, direction: "out" | "in" | "both" = "both", edgeTypes?: EdgeType[]): { node: GraphNode; edge: GraphEdge }[] {
+  getNeighbors(
+    nodeId: string,
+    direction: "out" | "in" | "both" = "both",
+    edgeTypes?: EdgeType[]
+  ): { node: GraphNode; edge: GraphEdge }[] {
     const results: { node: GraphNode; edge: GraphEdge }[] = [];
     const edgeIds = new Set<string>();
     if (direction === "out" || direction === "both") {
@@ -194,7 +264,8 @@ export const graphCoreEngine = {
       const edge = _edges.get(edgeId);
       if (!edge) continue;
       if (edgeTypes && !edgeTypes.includes(edge.edgeType)) continue;
-      const neighborId = edge.fromNodeId === nodeId ? edge.toNodeId : edge.fromNodeId;
+      const neighborId =
+        edge.fromNodeId === nodeId ? edge.toNodeId : edge.fromNodeId;
       const neighbor = _nodes.get(neighborId);
       if (neighbor) results.push({ node: neighbor, edge });
     }
@@ -203,9 +274,17 @@ export const graphCoreEngine = {
 
   traverseBFS(query: GraphQuery): GraphQueryResult {
     const start = Date.now();
-    const { startNodeId, edgeTypes, maxDepth = 3, minWeight = 0, limit = 100 } = query;
+    const {
+      startNodeId,
+      edgeTypes,
+      maxDepth = 3,
+      minWeight = 0,
+      limit = 100,
+    } = query;
     const visited = new Set<string>([startNodeId]);
-    const queue: Array<{ nodeId: string; depth: number }> = [{ nodeId: startNodeId, depth: 0 }];
+    const queue: Array<{ nodeId: string; depth: number }> = [
+      { nodeId: startNodeId, depth: 0 },
+    ];
     const resultNodes: GraphNode[] = [];
     const resultEdges: GraphEdge[] = [];
     let maxDepthReached = 0;
@@ -239,12 +318,24 @@ export const graphCoreEngine = {
     };
   },
 
-  getGraphStats(): { nodeCount: number; edgeCount: number; byNodeType: Record<string, number>; byEdgeType: Record<string, number> } {
+  getGraphStats(): {
+    nodeCount: number;
+    edgeCount: number;
+    byNodeType: Record<string, number>;
+    byEdgeType: Record<string, number>;
+  } {
     const byNodeType: Record<string, number> = {};
     const byEdgeType: Record<string, number> = {};
-    for (const n of _nodes.values()) byNodeType[n.nodeType] = (byNodeType[n.nodeType] ?? 0) + 1;
-    for (const e of _edges.values()) byEdgeType[e.edgeType] = (byEdgeType[e.edgeType] ?? 0) + 1;
-    return { nodeCount: _nodes.size, edgeCount: _edges.size, byNodeType, byEdgeType };
+    for (const n of _nodes.values())
+      byNodeType[n.nodeType] = (byNodeType[n.nodeType] ?? 0) + 1;
+    for (const e of _edges.values())
+      byEdgeType[e.edgeType] = (byEdgeType[e.edgeType] ?? 0) + 1;
+    return {
+      nodeCount: _nodes.size,
+      edgeCount: _edges.size,
+      byNodeType,
+      byEdgeType,
+    };
   },
 };
 
@@ -256,7 +347,7 @@ export const trustGraphEngine = {
     // BFS to find shortest trust path
     const visited = new Set<string>([fromNodeId]);
     const queue: Array<{ nodeId: string; path: string[]; score: number }> = [
-      { nodeId: fromNodeId, path: [fromNodeId], score: 1.0 }
+      { nodeId: fromNodeId, path: [fromNodeId], score: 1.0 },
     ];
     let bestPath: string[] = [];
     let bestScore = 0;
@@ -276,7 +367,11 @@ export const trustGraphEngine = {
         if (!visited.has(node.id)) {
           visited.add(node.id);
           const newScore = score * edge.weight * node.trustScore;
-          queue.push({ nodeId: node.id, path: [...path, node.id], score: newScore });
+          queue.push({
+            nodeId: node.id,
+            path: [...path, node.id],
+            score: newScore,
+          });
         }
       }
     }
@@ -302,15 +397,24 @@ export const trustGraphEngine = {
     return this.computeTrustPath(fromNodeId, toNodeId).trustScore;
   },
 
-  getTopTrustedNodes(nodeId: string, limit = 10): Array<{ node: GraphNode; trustScore: number }> {
+  getTopTrustedNodes(
+    nodeId: string,
+    limit = 10
+  ): Array<{ node: GraphNode; trustScore: number }> {
     const neighbors = graphCoreEngine.getNeighbors(nodeId, "out");
     return neighbors
-      .map(({ node, edge }) => ({ node, trustScore: edge.weight * node.trustScore }))
+      .map(({ node, edge }) => ({
+        node,
+        trustScore: edge.weight * node.trustScore,
+      }))
       .sort((a, b) => b.trustScore - a.trustScore)
       .slice(0, limit);
   },
 
-  getMutualTrust(nodeIdA: string, nodeIdB: string): { aToB: number; bToA: number; mutual: number } {
+  getMutualTrust(
+    nodeIdA: string,
+    nodeIdB: string
+  ): { aToB: number; bToA: number; mutual: number } {
     const aToB = this.getTrustScore(nodeIdA, nodeIdB);
     const bToA = this.getTrustScore(nodeIdB, nodeIdA);
     return { aToB, bToA, mutual: (aToB + bToA) / 2 };
@@ -334,7 +438,7 @@ export const influenceGraphEngine = {
         const inNeighbors = graphCoreEngine.getNeighbors(nodeId, "in");
         let sum = 0;
         for (const { node: neighbor, edge } of inNeighbors) {
-          const outCount = (_edgesByFrom.get(neighbor.id)?.size ?? 1);
+          const outCount = _edgesByFrom.get(neighbor.id)?.size ?? 1;
           sum += (neighbor.pageRankScore * edge.weight) / outCount;
         }
         newScores.set(nodeId, (1 - dampingFactor) / n + dampingFactor * sum);
@@ -360,7 +464,11 @@ export const influenceGraphEngine = {
 
     for (const node of _nodes.values()) {
       if (processed.has(node.id) || node.nodeType !== "creator") continue;
-      const neighbors = graphCoreEngine.getNeighbors(node.id, "both", ["follows", "collab", "subscribes"]);
+      const neighbors = graphCoreEngine.getNeighbors(node.id, "both", [
+        "follows",
+        "collab",
+        "subscribes",
+      ]);
       if (neighbors.length < 2) continue;
 
       const memberIds = [node.id, ...neighbors.slice(0, 9).map(n => n.node.id)];
@@ -371,8 +479,15 @@ export const influenceGraphEngine = {
         centerId: node.id,
         memberIds,
         clusterType: "creator_network",
-        totalInfluence: memberIds.reduce((s, id) => s + (_nodes.get(id)?.influenceScore ?? 0), 0),
-        avgTrustScore: memberIds.reduce((s, id) => s + (_nodes.get(id)?.trustScore ?? 0), 0) / memberIds.length,
+        totalInfluence: memberIds.reduce(
+          (s, id) => s + (_nodes.get(id)?.influenceScore ?? 0),
+          0
+        ),
+        avgTrustScore:
+          memberIds.reduce(
+            (s, id) => s + (_nodes.get(id)?.trustScore ?? 0),
+            0
+          ) / memberIds.length,
         createdAt: new Date(),
       };
       _influenceClusters.set(cluster.id, cluster);
@@ -382,7 +497,9 @@ export const influenceGraphEngine = {
   },
 
   getInfluenceClusters(): InfluenceCluster[] {
-    return Array.from(_influenceClusters.values()).sort((a, b) => b.totalInfluence - a.totalInfluence);
+    return Array.from(_influenceClusters.values()).sort(
+      (a, b) => b.totalInfluence - a.totalInfluence
+    );
   },
 
   getInfluenceScore(nodeId: string): number {
@@ -402,34 +519,62 @@ export const transactionGraphEngine = {
     const fromNodeId = `wallet_${params.fromWalletId}`;
     const toNodeId = `wallet_${params.toWalletId}`;
     if (!_nodes.has(fromNodeId)) {
-      graphCoreEngine.addNode({ id: fromNodeId, nodeType: "wallet", entityId: params.fromWalletId, label: params.fromWalletId, properties: {} });
+      graphCoreEngine.addNode({
+        id: fromNodeId,
+        nodeType: "wallet",
+        entityId: params.fromWalletId,
+        label: params.fromWalletId,
+        properties: {},
+      });
     }
     if (!_nodes.has(toNodeId)) {
-      graphCoreEngine.addNode({ id: toNodeId, nodeType: "wallet", entityId: params.toWalletId, label: params.toWalletId, properties: {} });
+      graphCoreEngine.addNode({
+        id: toNodeId,
+        nodeType: "wallet",
+        entityId: params.toWalletId,
+        label: params.toWalletId,
+        properties: {},
+      });
     }
     graphCoreEngine.addEdge({
       fromNodeId,
       toNodeId,
       edgeType: "transacted_with",
       weight: Math.min(1, params.amount / 1000),
-      properties: { amount: params.amount, currency: params.currency, type: params.transactionType },
+      properties: {
+        amount: params.amount,
+        currency: params.currency,
+        type: params.transactionType,
+      },
     });
 
     return flow;
   },
 
-  getWalletFlows(walletId: string, direction: "in" | "out" | "both" = "both"): TransactionFlow[] {
-    return Array.from(_transactionFlows.values()).filter(f =>
-      (direction === "both" || direction === "out") && f.fromWalletId === walletId ||
-      (direction === "both" || direction === "in") && f.toWalletId === walletId
+  getWalletFlows(
+    walletId: string,
+    direction: "in" | "out" | "both" = "both"
+  ): TransactionFlow[] {
+    return Array.from(_transactionFlows.values()).filter(
+      f =>
+        ((direction === "both" || direction === "out") &&
+          f.fromWalletId === walletId) ||
+        ((direction === "both" || direction === "in") &&
+          f.toWalletId === walletId)
     );
   },
 
-  getTopWallets(limit = 20): Array<{ walletId: string; totalVolume: number; txCount: number }> {
-    const walletStats: Record<string, { totalVolume: number; txCount: number }> = {};
+  getTopWallets(
+    limit = 20
+  ): Array<{ walletId: string; totalVolume: number; txCount: number }> {
+    const walletStats: Record<
+      string,
+      { totalVolume: number; txCount: number }
+    > = {};
     for (const flow of _transactionFlows.values()) {
       for (const wId of [flow.fromWalletId, flow.toWalletId]) {
-        if (!walletStats[wId]) walletStats[wId] = { totalVolume: 0, txCount: 0 };
+        if (!walletStats[wId])
+          walletStats[wId] = { totalVolume: 0, txCount: 0 };
         walletStats[wId].totalVolume += flow.amount;
         walletStats[wId].txCount++;
       }
@@ -440,8 +585,16 @@ export const transactionGraphEngine = {
       .slice(0, limit);
   },
 
-  detectSuspiciousPatterns(): Array<{ walletId: string; reason: string; riskScore: number }> {
-    const suspicious: Array<{ walletId: string; reason: string; riskScore: number }> = [];
+  detectSuspiciousPatterns(): Array<{
+    walletId: string;
+    reason: string;
+    riskScore: number;
+  }> {
+    const suspicious: Array<{
+      walletId: string;
+      reason: string;
+      riskScore: number;
+    }> = [];
     const walletFlows: Record<string, TransactionFlow[]> = {};
     for (const flow of _transactionFlows.values()) {
       if (!walletFlows[flow.fromWalletId]) walletFlows[flow.fromWalletId] = [];
@@ -449,13 +602,21 @@ export const transactionGraphEngine = {
     }
     for (const [walletId, flows] of Object.entries(walletFlows)) {
       // High velocity: many transactions in short time
-      const recentFlows = flows.filter(f => Date.now() - f.timestamp.getTime() < 3600000);
+      const recentFlows = flows.filter(
+        f => Date.now() - f.timestamp.getTime() < 3600000
+      );
       if (recentFlows.length > 50) {
-        suspicious.push({ walletId, reason: "high_velocity", riskScore: Math.min(1, recentFlows.length / 100) });
+        suspicious.push({
+          walletId,
+          reason: "high_velocity",
+          riskScore: Math.min(1, recentFlows.length / 100),
+        });
       }
       // Circular flow detection
       const toWallets = new Set(flows.map(f => f.toWalletId));
-      const fromFlows = Array.from(_transactionFlows.values()).filter(f => toWallets.has(f.fromWalletId) && f.toWalletId === walletId);
+      const fromFlows = Array.from(_transactionFlows.values()).filter(
+        f => toWallets.has(f.fromWalletId) && f.toWalletId === walletId
+      );
       if (fromFlows.length > 0) {
         suspicious.push({ walletId, reason: "circular_flow", riskScore: 0.7 });
       }
@@ -463,8 +624,13 @@ export const transactionGraphEngine = {
     return suspicious;
   },
 
-  getTransactionVolume(currency?: string): { total: number; byType: Record<string, number> } {
-    const flows = Array.from(_transactionFlows.values()).filter(f => !currency || f.currency === currency);
+  getTransactionVolume(currency?: string): {
+    total: number;
+    byType: Record<string, number>;
+  } {
+    const flows = Array.from(_transactionFlows.values()).filter(
+      f => !currency || f.currency === currency
+    );
     const byType: Record<string, number> = {};
     let total = 0;
     for (const f of flows) {
@@ -495,7 +661,10 @@ export const contentGraphEngine = {
     return lineage;
   },
 
-  getContentTree(postId: string): { original: ContentLineage[]; derived: ContentLineage[] } {
+  getContentTree(postId: string): {
+    original: ContentLineage[];
+    derived: ContentLineage[];
+  } {
     const all = Array.from(_contentLineage.values());
     return {
       original: all.filter(l => l.derivedPostId === postId),
@@ -503,7 +672,9 @@ export const contentGraphEngine = {
     };
   },
 
-  getTopRemixedContent(limit = 10): Array<{ postId: string; remixCount: number }> {
+  getTopRemixedContent(
+    limit = 10
+  ): Array<{ postId: string; remixCount: number }> {
     const counts: Record<string, number> = {};
     for (const l of _contentLineage.values()) {
       counts[l.originalPostId] = (counts[l.originalPostId] ?? 0) + 1;
@@ -514,7 +685,11 @@ export const contentGraphEngine = {
       .map(([postId, remixCount]) => ({ postId, remixCount }));
   },
 
-  getCreatorContentGraph(creatorId: number): { posts: string[]; remixes: ContentLineage[]; derivatives: ContentLineage[] } {
+  getCreatorContentGraph(creatorId: number): {
+    posts: string[];
+    remixes: ContentLineage[];
+    derivatives: ContentLineage[];
+  } {
     const all = Array.from(_contentLineage.values());
     const creatorLineage = all.filter(l => l.creatorId === creatorId);
     const posts = [...new Set(creatorLineage.map(l => l.derivedPostId))];
@@ -529,18 +704,24 @@ export const contentGraphEngine = {
 // ─── VIRALITY GRAPH ENGINE ────────────────────────────────────────────────────
 
 export const viralityGraphEngine = {
-  startChain(originPostId: string, creatorId: number, initialReach: number): ViralChain {
+  startChain(
+    originPostId: string,
+    creatorId: number,
+    initialReach: number
+  ): ViralChain {
     const id = `viral_${originPostId}_${Date.now()}`;
     const chain: ViralChain = {
       id,
       originPostId,
-      chainLinks: [{
-        postId: originPostId,
-        creatorId,
-        shareType: "repost",
-        timestamp: new Date(),
-        reachAtShare: initialReach,
-      }],
+      chainLinks: [
+        {
+          postId: originPostId,
+          creatorId,
+          shareType: "repost",
+          timestamp: new Date(),
+          reachAtShare: initialReach,
+        },
+      ],
       totalReach: initialReach,
       peakVelocity: initialReach,
       duration: 0,
@@ -551,12 +732,15 @@ export const viralityGraphEngine = {
     return chain;
   },
 
-  addChainLink(chainId: string, params: {
-    postId: string;
-    creatorId: number;
-    shareType: "repost" | "quote" | "clip" | "external";
-    reachAtShare: number;
-  }): ViralChain | null {
+  addChainLink(
+    chainId: string,
+    params: {
+      postId: string;
+      creatorId: number;
+      shareType: "repost" | "quote" | "clip" | "external";
+      reachAtShare: number;
+    }
+  ): ViralChain | null {
     const chain = _viralChains.get(chainId);
     if (!chain || !chain.isActive) return null;
     chain.chainLinks.push({ ...params, timestamp: new Date() });
@@ -581,15 +765,23 @@ export const viralityGraphEngine = {
       .slice(0, limit);
   },
 
-  getTopViralContent(limit = 10): Array<{ postId: string; totalReach: number; peakVelocity: number }> {
+  getTopViralContent(
+    limit = 10
+  ): Array<{ postId: string; totalReach: number; peakVelocity: number }> {
     return Array.from(_viralChains.values())
       .sort((a, b) => b.totalReach - a.totalReach)
       .slice(0, limit)
-      .map(c => ({ postId: c.originPostId, totalReach: c.totalReach, peakVelocity: c.peakVelocity }));
+      .map(c => ({
+        postId: c.originPostId,
+        totalReach: c.totalReach,
+        peakVelocity: c.peakVelocity,
+      }));
   },
 
   computeViralityScore(postId: string): number {
-    const chains = Array.from(_viralChains.values()).filter(c => c.originPostId === postId);
+    const chains = Array.from(_viralChains.values()).filter(
+      c => c.originPostId === postId
+    );
     if (chains.length === 0) return 0;
     const totalReach = chains.reduce((s, c) => s + c.totalReach, 0);
     return Math.min(1, totalReach / 100000);
@@ -604,13 +796,16 @@ export const viralityGraphEngine = {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const active = Array.from(_viralChains.values()).filter(c => c.isActive);
-    const todayChains = Array.from(_viralChains.values()).filter(c => c.startedAt >= today);
+    const todayChains = Array.from(_viralChains.values()).filter(
+      c => c.startedAt >= today
+    );
     return {
       activeChains: active.length,
       totalReachToday: todayChains.reduce((s, c) => s + c.totalReach, 0),
-      avgChainLength: active.length > 0
-        ? active.reduce((s, c) => s + c.chainLinks.length, 0) / active.length
-        : 0,
+      avgChainLength:
+        active.length > 0
+          ? active.reduce((s, c) => s + c.chainLinks.length, 0) / active.length
+          : 0,
       topViralPosts: this.getTopViralContent(5),
     };
   },
@@ -622,29 +817,72 @@ export const knowledgeGraphOrchestrator = {
   buildUserGraph(userId: number): GraphQueryResult {
     const nodeId = `user_${userId}`;
     if (!_nodes.has(nodeId)) {
-      graphCoreEngine.addNode({ id: nodeId, nodeType: "user", entityId: userId, label: `User ${userId}`, properties: {} });
+      graphCoreEngine.addNode({
+        id: nodeId,
+        nodeType: "user",
+        entityId: userId,
+        label: `User ${userId}`,
+        properties: {},
+      });
     }
-    return graphCoreEngine.traverseBFS({ startNodeId: nodeId, maxDepth: 2, limit: 50 });
+    return graphCoreEngine.traverseBFS({
+      startNodeId: nodeId,
+      maxDepth: 2,
+      limit: 50,
+    });
   },
 
   buildCreatorGraph(creatorId: number): GraphQueryResult {
     const nodeId = `creator_${creatorId}`;
     if (!_nodes.has(nodeId)) {
-      graphCoreEngine.addNode({ id: nodeId, nodeType: "creator", entityId: creatorId, label: `Creator ${creatorId}`, properties: {} });
+      graphCoreEngine.addNode({
+        id: nodeId,
+        nodeType: "creator",
+        entityId: creatorId,
+        label: `Creator ${creatorId}`,
+        properties: {},
+      });
     }
-    return graphCoreEngine.traverseBFS({ startNodeId: nodeId, maxDepth: 3, limit: 100 });
+    return graphCoreEngine.traverseBFS({
+      startNodeId: nodeId,
+      maxDepth: 3,
+      limit: 100,
+    });
   },
 
-  connectUserToCreator(userId: number, creatorId: number, edgeType: EdgeType, weight = 1.0): GraphEdge {
+  connectUserToCreator(
+    userId: number,
+    creatorId: number,
+    edgeType: EdgeType,
+    weight = 1.0
+  ): GraphEdge {
     const userNodeId = `user_${userId}`;
     const creatorNodeId = `creator_${creatorId}`;
     if (!_nodes.has(userNodeId)) {
-      graphCoreEngine.addNode({ id: userNodeId, nodeType: "user", entityId: userId, label: `User ${userId}`, properties: {} });
+      graphCoreEngine.addNode({
+        id: userNodeId,
+        nodeType: "user",
+        entityId: userId,
+        label: `User ${userId}`,
+        properties: {},
+      });
     }
     if (!_nodes.has(creatorNodeId)) {
-      graphCoreEngine.addNode({ id: creatorNodeId, nodeType: "creator", entityId: creatorId, label: `Creator ${creatorId}`, properties: {} });
+      graphCoreEngine.addNode({
+        id: creatorNodeId,
+        nodeType: "creator",
+        entityId: creatorId,
+        label: `Creator ${creatorId}`,
+        properties: {},
+      });
     }
-    return graphCoreEngine.addEdge({ fromNodeId: userNodeId, toNodeId: creatorNodeId, edgeType, weight, properties: {} });
+    return graphCoreEngine.addEdge({
+      fromNodeId: userNodeId,
+      toNodeId: creatorNodeId,
+      edgeType,
+      weight,
+      properties: {},
+    });
   },
 
   getGraphDashboard(): {

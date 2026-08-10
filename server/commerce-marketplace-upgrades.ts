@@ -4,7 +4,9 @@ import { z } from "zod";
 export const commerceMarketplaceRouter = router({
   // NFT minting
   mintNFT: protectedProcedure
-    .input(z.object({ name: z.string(), metadata: z.record(z.string(), z.any()) }))
+    .input(
+      z.object({ name: z.string(), metadata: z.record(z.string(), z.any()) })
+    )
     .mutation(async ({ input }) => ({
       tokenId: `nft-${Date.now()}`,
       contractAddress: "0x123...",
@@ -13,7 +15,9 @@ export const commerceMarketplaceRouter = router({
 
   // Listing management
   createListing: protectedProcedure
-    .input(z.object({ itemId: z.string(), price: z.number(), duration: z.number() }))
+    .input(
+      z.object({ itemId: z.string(), price: z.number(), duration: z.number() })
+    )
     .mutation(async ({ input }) => ({
       listingId: `listing-${Date.now()}`,
       status: "active",
@@ -39,7 +43,13 @@ export const commerceMarketplaceRouter = router({
 
   // Review system
   submitReview: protectedProcedure
-    .input(z.object({ sellerId: z.string(), rating: z.number(), comment: z.string() }))
+    .input(
+      z.object({
+        sellerId: z.string(),
+        rating: z.number(),
+        comment: z.string(),
+      })
+    )
     .mutation(async ({ input }) => ({
       success: true,
       reviewId: `review-${Date.now()}`,
@@ -83,7 +93,13 @@ export const commerceMarketplaceRouter = router({
 
   // Atomic swaps
   initiateSwap: protectedProcedure
-    .input(z.object({ fromToken: z.string(), toToken: z.string(), amount: z.number() }))
+    .input(
+      z.object({
+        fromToken: z.string(),
+        toToken: z.string(),
+        amount: z.number(),
+      })
+    )
     .mutation(async ({ input }) => ({
       swapId: `swap-${Date.now()}`,
       status: "pending",

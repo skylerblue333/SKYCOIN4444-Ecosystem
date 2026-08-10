@@ -4,7 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, BellOff, Zap, Filter, CheckCheck, BarChart3, Sparkles, Clock } from "lucide-react";
+import {
+  Bell,
+  BellOff,
+  Zap,
+  Filter,
+  CheckCheck,
+  BarChart3,
+  Sparkles,
+  Clock,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -30,14 +39,18 @@ export default function NotificationIntelligence() {
   const [filter, setFilter] = useState<FilterType>("all");
   const utils = trpc.useUtils();
 
-  const { data, isLoading } = trpc.notifIntelligence.getIntelligentFeed.useQuery(
-    { limit: 50, filter, offset: 0 },
-    { refetchInterval: 10000 },
-  );
+  const { data, isLoading } =
+    trpc.notifIntelligence.getIntelligentFeed.useQuery(
+      { limit: 50, filter, offset: 0 },
+      { refetchInterval: 10000 }
+    );
 
-  const { data: summary } = trpc.notifIntelligence.getAISummary.useQuery(undefined, {
-    refetchInterval: 30000,
-  });
+  const { data: summary } = trpc.notifIntelligence.getAISummary.useQuery(
+    undefined,
+    {
+      refetchInterval: 30000,
+    }
+  );
 
   const { data: analytics } = trpc.notifIntelligence.getAnalytics.useQuery();
 
@@ -69,11 +82,15 @@ export default function NotificationIntelligence() {
             <Bell className="w-6 h-6 text-purple-400" />
             Notification Intelligence
           </h1>
-          <p className="text-gray-400 text-sm mt-1">AI-ranked, smart-batched notifications</p>
+          <p className="text-gray-400 text-sm mt-1">
+            AI-ranked, smart-batched notifications
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {unreadCount > 0 && (
-            <Badge className="bg-purple-600 text-white">{unreadCount} unread</Badge>
+            <Badge className="bg-purple-600 text-white">
+              {unreadCount} unread
+            </Badge>
           )}
           <Button
             variant="outline"
@@ -90,15 +107,24 @@ export default function NotificationIntelligence() {
 
       <Tabs defaultValue="feed">
         <TabsList className="bg-gray-900 border border-gray-800 mb-6">
-          <TabsTrigger value="feed" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="feed"
+            className="data-[state=active]:bg-purple-600"
+          >
             <Bell className="w-4 h-4 mr-1" />
             Feed
           </TabsTrigger>
-          <TabsTrigger value="ai-summary" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="ai-summary"
+            className="data-[state=active]:bg-purple-600"
+          >
             <Sparkles className="w-4 h-4 mr-1" />
             AI Summary
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="analytics"
+            className="data-[state=active]:bg-purple-600"
+          >
             <BarChart3 className="w-4 h-4 mr-1" />
             Analytics
           </TabsTrigger>
@@ -108,7 +134,16 @@ export default function NotificationIntelligence() {
         <TabsContent value="feed">
           {/* Filter Bar */}
           <div className="flex gap-2 flex-wrap mb-4">
-            {(["all", "unread", "critical", "high", "medium", "low"] as FilterType[]).map((f) => (
+            {(
+              [
+                "all",
+                "unread",
+                "critical",
+                "high",
+                "medium",
+                "low",
+              ] as FilterType[]
+            ).map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -127,7 +162,10 @@ export default function NotificationIntelligence() {
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-20 bg-gray-900 rounded-xl animate-pulse" />
+                <div
+                  key={i}
+                  className="h-20 bg-gray-900 rounded-xl animate-pulse"
+                />
               ))}
             </div>
           ) : notifications.length === 0 ? (
@@ -137,7 +175,7 @@ export default function NotificationIntelligence() {
             </div>
           ) : (
             <div className="space-y-2">
-              {notifications.map((n) => (
+              {notifications.map(n => (
                 <div
                   key={n.id}
                   className={`p-4 rounded-xl border transition-all cursor-pointer ${
@@ -153,7 +191,9 @@ export default function NotificationIntelligence() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${PRIORITY_COLORS[n.priority] ?? ""}`}>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full border font-medium ${PRIORITY_COLORS[n.priority] ?? ""}`}
+                        >
                           {n.priority}
                         </span>
                         <span className="text-xs text-gray-500 flex items-center gap-1">
@@ -169,11 +209,17 @@ export default function NotificationIntelligence() {
                           <span className="w-2 h-2 bg-purple-500 rounded-full shrink-0" />
                         )}
                       </div>
-                      <p className="text-sm font-medium text-white truncate">{n.title}</p>
-                      <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{n.body}</p>
+                      <p className="text-sm font-medium text-white truncate">
+                        {n.title}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">
+                        {n.body}
+                      </p>
                       <div className="flex items-center gap-1 mt-1.5 text-xs text-gray-600">
                         <Clock className="w-3 h-3" />
-                        {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(n.createdAt), {
+                          addSuffix: true,
+                        })}
                       </div>
                     </div>
                   </div>
@@ -196,16 +242,27 @@ export default function NotificationIntelligence() {
               {summary ? (
                 <div className="space-y-4">
                   <div className="p-4 bg-purple-900/20 border border-purple-700/30 rounded-xl">
-                    <p className="text-gray-200 leading-relaxed">{summary.summary}</p>
+                    <p className="text-gray-200 leading-relaxed">
+                      {summary.summary}
+                    </p>
                   </div>
                   {summary.highlights.length > 0 && (
                     <div>
-                      <p className="text-sm text-gray-400 mb-3 font-medium">Top Activity</p>
+                      <p className="text-sm text-gray-400 mb-3 font-medium">
+                        Top Activity
+                      </p>
                       <div className="space-y-2">
                         {summary.highlights.map((h, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                            <span className="text-sm text-gray-300 capitalize">{h.type.replace(/_/g, " ")}</span>
-                            <Badge className="bg-purple-800 text-purple-200">{h.count}</Badge>
+                          <div
+                            key={i}
+                            className="flex items-center justify-between p-3 bg-gray-800 rounded-lg"
+                          >
+                            <span className="text-sm text-gray-300 capitalize">
+                              {h.type.replace(/_/g, " ")}
+                            </span>
+                            <Badge className="bg-purple-800 text-purple-200">
+                              {h.count}
+                            </Badge>
                           </div>
                         ))}
                       </div>
@@ -234,29 +291,44 @@ export default function NotificationIntelligence() {
             <CardContent>
               {analytics && analytics.byPriority.length > 0 ? (
                 <div className="space-y-3">
-                  {analytics.byPriority.map((row) => (
-                    <div key={row.priority} className="p-4 bg-gray-800 rounded-xl">
+                  {analytics.byPriority.map(row => (
+                    <div
+                      key={row.priority}
+                      className="p-4 bg-gray-800 rounded-xl"
+                    >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">{PRIORITY_ICONS[row.priority] ?? "🔔"}</span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${PRIORITY_COLORS[row.priority] ?? ""}`}>
+                          <span className="text-lg">
+                            {PRIORITY_ICONS[row.priority] ?? "🔔"}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full border font-medium ${PRIORITY_COLORS[row.priority] ?? ""}`}
+                          >
                             {row.priority}
                           </span>
                         </div>
-                        <span className="text-sm text-gray-400">{row.total} total</span>
+                        <span className="text-sm text-gray-400">
+                          {row.total} total
+                        </span>
                       </div>
                       <div className="grid grid-cols-3 gap-3 text-center">
                         <div>
-                          <p className="text-lg font-bold text-white">{row.readRate}%</p>
+                          <p className="text-lg font-bold text-white">
+                            {row.readRate}%
+                          </p>
                           <p className="text-xs text-gray-500">Read rate</p>
                         </div>
                         <div>
-                          <p className="text-lg font-bold text-purple-400">{row.avgScore}</p>
+                          <p className="text-lg font-bold text-purple-400">
+                            {row.avgScore}
+                          </p>
                           <p className="text-xs text-gray-500">Avg score</p>
                         </div>
                         <div>
                           <p className="text-lg font-bold text-blue-400">
-                            {row.avgReadTimeSecs ? `${Math.round(row.avgReadTimeSecs / 60)}m` : "—"}
+                            {row.avgReadTimeSecs
+                              ? `${Math.round(row.avgReadTimeSecs / 60)}m`
+                              : "—"}
                           </p>
                           <p className="text-xs text-gray-500">Avg read time</p>
                         </div>
@@ -274,7 +346,10 @@ export default function NotificationIntelligence() {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p>No analytics data yet. Notifications will appear here once received.</p>
+                  <p>
+                    No analytics data yet. Notifications will appear here once
+                    received.
+                  </p>
                 </div>
               )}
             </CardContent>

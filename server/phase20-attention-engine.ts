@@ -143,7 +143,13 @@ export interface CreatorLoyaltyReward {
 export interface ChurnTrigger {
   id: string;
   userId: number;
-  triggerType: "inactivity_3d" | "inactivity_7d" | "inactivity_14d" | "subscription_lapse" | "engagement_drop" | "creator_left";
+  triggerType:
+    | "inactivity_3d"
+    | "inactivity_7d"
+    | "inactivity_14d"
+    | "subscription_lapse"
+    | "engagement_drop"
+    | "creator_left";
   severity: "low" | "medium" | "high" | "critical";
   triggeredAt: Date;
   interventionSent: boolean;
@@ -156,7 +162,12 @@ export interface ChurnTrigger {
 export interface CreatorComebackPrompt {
   id: string;
   creatorId: number;
-  promptType: "milestone_near" | "trending_topic" | "audience_waiting" | "revenue_opportunity" | "community_activity";
+  promptType:
+    | "milestone_near"
+    | "trending_topic"
+    | "audience_waiting"
+    | "revenue_opportunity"
+    | "community_activity";
   message: string;
   sentAt: Date;
   opened: boolean;
@@ -167,7 +178,11 @@ export interface FriendReEngagementPrompt {
   id: string;
   userId: number;
   targetFriendId: number;
-  promptType: "friend_posted" | "friend_streaming" | "friend_milestone" | "mutual_community_active";
+  promptType:
+    | "friend_posted"
+    | "friend_streaming"
+    | "friend_milestone"
+    | "mutual_community_active";
   message: string;
   sentAt: Date;
   clicked: boolean;
@@ -176,7 +191,12 @@ export interface FriendReEngagementPrompt {
 export interface CommunityRevivalPrompt {
   id: string;
   communityId: string;
-  promptType: "new_post" | "trending_topic" | "event_upcoming" | "member_milestone" | "creator_joined";
+  promptType:
+    | "new_post"
+    | "trending_topic"
+    | "event_upcoming"
+    | "member_milestone"
+    | "creator_joined";
   targetUserIds: number[];
   message: string;
   sentAt: Date;
@@ -202,7 +222,11 @@ const _communityRevivalPrompts = new Map<string, CommunityRevivalPrompt>();
 // ─── FEED INTELLIGENCE V2 ENGINE ─────────────────────────────────────────────
 
 export const feedIntelligenceV2 = {
-  rankFeed(userId: number, posts: FeedPost[], sessionId?: string): FeedRankingV2[] {
+  rankFeed(
+    userId: number,
+    posts: FeedPost[],
+    sessionId?: string
+  ): FeedRankingV2[] {
     const affinityMap = new Map<number, number>();
     for (const [key, profile] of _affinityProfiles.entries()) {
       if (profile.userId === userId) {
@@ -215,12 +239,16 @@ export const feedIntelligenceV2 = {
 
     const ranked: FeedRankingV2[] = posts.map((post, idx) => {
       // Watch-time optimization: reward content with high avg watch time
-      const watchTimeScore = post.views > 0
-        ? Math.min(1, post.watchTimeSeconds / (post.views * 60)) // normalize to 1-min avg
-        : 0.1;
+      const watchTimeScore =
+        post.views > 0
+          ? Math.min(1, post.watchTimeSeconds / (post.views * 60)) // normalize to 1-min avg
+          : 0.1;
 
       // Creator affinity
-      const affinityScore = Math.min(1, (affinityMap.get(post.authorId) ?? 0) / 100);
+      const affinityScore = Math.min(
+        1,
+        (affinityMap.get(post.authorId) ?? 0) / 100
+      );
 
       // Interest cluster matching
       const postTopicSet = new Set(post.topicTags);
@@ -254,18 +282,19 @@ export const feedIntelligenceV2 = {
 
       const finalScore =
         watchTimeScore * 0.25 +
-        affinityScore * 0.20 +
-        interestClusterScore * 0.20 +
-        communityOverlapScore * 0.10 +
-        sessionChainBonus * 0.10 +
-        freshnessScore * 0.10 +
+        affinityScore * 0.2 +
+        interestClusterScore * 0.2 +
+        communityOverlapScore * 0.1 +
+        sessionChainBonus * 0.1 +
+        freshnessScore * 0.1 +
         diversityBonus * 0.05 +
         sponsorBoost;
 
       const explanation: string[] = [];
       if (affinityScore > 0.5) explanation.push("High creator affinity");
-      if (interestClusterScore > 0.3) explanation.push("Matches your interests");
-      if(watchTimeScore > 0.5) explanation.push("High watch-time content");
+      if (interestClusterScore > 0.3)
+        explanation.push("Matches your interests");
+      if (watchTimeScore > 0.5) explanation.push("High watch-time content");
       if (freshnessScore > 0.8) explanation.push("Recent post");
       if (diversityBonus > 0) explanation.push("Diversity injection");
 
@@ -287,47 +316,68 @@ export const feedIntelligenceV2 = {
     });
 
     ranked.sort((a, b) => b.finalScore - a.finalScore);
-    ranked.forEach((r, i) => { r.rankPosition = i + 1; });
+    ranked.forEach((r, i) => {
+      r.rankPosition = i + 1;
+    });
 
     const cacheKey = `feed_${userId}`;
     _feedCache.set(cacheKey, ranked);
     return ranked;
   },
 
-  recordWatchTime(userId: number, postId: string, authorId: number, watchTimeSeconds: number): void {
+  recordWatchTime(
+    userId: number,
+    postId: string,
+    authorId: number,
+    watchTimeSeconds: number
+  ): void {
     const key = `aff_${userId}_${authorId}`;
     const existing = _affinityProfiles.get(key);
     if (existing) {
       existing.totalWatchTimeSeconds += watchTimeSeconds;
       existing.totalViews++;
-      existing.affinityScore = Math.min(100,
-        existing.totalWatchTimeSeconds / 60 * 0.5 +
-        existing.totalLikes * 2 +
-        existing.totalComments * 5 +
-        existing.totalShares * 10 +
-        existing.totalPurchases * 20
+      existing.affinityScore = Math.min(
+        100,
+        (existing.totalWatchTimeSeconds / 60) * 0.5 +
+          existing.totalLikes * 2 +
+          existing.totalComments * 5 +
+          existing.totalShares * 10 +
+          existing.totalPurchases * 20
       );
       existing.lastInteractionAt = new Date();
       existing.updatedAt = new Date();
     } else {
       _affinityProfiles.set(key, {
-        userId, creatorId: authorId,
+        userId,
+        creatorId: authorId,
         totalViews: 1,
         totalWatchTimeSeconds: watchTimeSeconds,
-        totalLikes: 0, totalComments: 0, totalShares: 0, totalPurchases: 0,
-        affinityScore: Math.min(100, watchTimeSeconds / 60 * 0.5),
+        totalLikes: 0,
+        totalComments: 0,
+        totalShares: 0,
+        totalPurchases: 0,
+        affinityScore: Math.min(100, (watchTimeSeconds / 60) * 0.5),
         lastInteractionAt: new Date(),
         updatedAt: new Date(),
       });
     }
   },
 
-  recordInteraction(userId: number, authorId: number, interactionType: "like" | "comment" | "share" | "purchase"): void {
+  recordInteraction(
+    userId: number,
+    authorId: number,
+    interactionType: "like" | "comment" | "share" | "purchase"
+  ): void {
     const key = `aff_${userId}_${authorId}`;
     const existing = _affinityProfiles.get(key) ?? {
-      userId, creatorId: authorId,
-      totalViews: 0, totalWatchTimeSeconds: 0,
-      totalLikes: 0, totalComments: 0, totalShares: 0, totalPurchases: 0,
+      userId,
+      creatorId: authorId,
+      totalViews: 0,
+      totalWatchTimeSeconds: 0,
+      totalLikes: 0,
+      totalComments: 0,
+      totalShares: 0,
+      totalPurchases: 0,
       affinityScore: 0,
       lastInteractionAt: new Date(),
       updatedAt: new Date(),
@@ -336,32 +386,45 @@ export const feedIntelligenceV2 = {
     if (interactionType === "comment") existing.totalComments++;
     if (interactionType === "share") existing.totalShares++;
     if (interactionType === "purchase") existing.totalPurchases++;
-    existing.affinityScore = Math.min(100,
-      existing.totalWatchTimeSeconds / 60 * 0.5 +
-      existing.totalLikes * 2 +
-      existing.totalComments * 5 +
-      existing.totalShares * 10 +
-      existing.totalPurchases * 20
+    existing.affinityScore = Math.min(
+      100,
+      (existing.totalWatchTimeSeconds / 60) * 0.5 +
+        existing.totalLikes * 2 +
+        existing.totalComments * 5 +
+        existing.totalShares * 10 +
+        existing.totalPurchases * 20
     );
     existing.lastInteractionAt = new Date();
     existing.updatedAt = new Date();
     _affinityProfiles.set(key, existing);
   },
 
-  getCreatorAffinity(userId: number, creatorId: number): CreatorAffinityProfile | null {
+  getCreatorAffinity(
+    userId: number,
+    creatorId: number
+  ): CreatorAffinityProfile | null {
     return _affinityProfiles.get(`aff_${userId}_${creatorId}`) ?? null;
   },
 
-  getTopCreatorsByAffinity(userId: number, limit = 10): CreatorAffinityProfile[] {
+  getTopCreatorsByAffinity(
+    userId: number,
+    limit = 10
+  ): CreatorAffinityProfile[] {
     return Array.from(_affinityProfiles.values())
       .filter(p => p.userId === userId)
       .sort((a, b) => b.affinityScore - a.affinityScore)
       .slice(0, limit);
   },
 
-  upsertInterestCluster(userId: number, topics: string[], weight: number): InterestCluster {
+  upsertInterestCluster(
+    userId: number,
+    topics: string[],
+    weight: number
+  ): InterestCluster {
     const clusterId = `cluster_${userId}_${topics.sort().join("_").slice(0, 30)}`;
-    const existing = (_interestClusters.get(userId) ?? []).find(c => c.clusterId === clusterId);
+    const existing = (_interestClusters.get(userId) ?? []).find(
+      c => c.clusterId === clusterId
+    );
     if (existing) {
       existing.weight = weight;
       existing.recentEngagements++;
@@ -369,7 +432,10 @@ export const feedIntelligenceV2 = {
       return existing;
     }
     const cluster: InterestCluster = {
-      clusterId, userId, topics, weight,
+      clusterId,
+      userId,
+      topics,
+      weight,
       recentEngagements: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -387,7 +453,8 @@ export const feedIntelligenceV2 = {
   startSession(userId: number): SessionChain {
     const sessionId = `sess_${userId}_${Date.now()}`;
     const session: SessionChain = {
-      sessionId, userId,
+      sessionId,
+      userId,
       startedAt: new Date(),
       lastActivityAt: new Date(),
       postsViewed: [],
@@ -399,7 +466,11 @@ export const feedIntelligenceV2 = {
     return session;
   },
 
-  recordSessionView(sessionId: string, postId: string, watchTimeSeconds: number): SessionChain | null {
+  recordSessionView(
+    sessionId: string,
+    postId: string,
+    watchTimeSeconds: number
+  ): SessionChain | null {
     const session = _sessionChains.get(sessionId);
     if (!session || !session.isActive) return null;
     session.postsViewed.push(postId);
@@ -416,12 +487,23 @@ export const feedIntelligenceV2 = {
     return session;
   },
 
-  getSessionMetrics(userId: number): { avgSessionLength: number; avgPostsPerSession: number; totalSessions: number } {
-    const sessions = Array.from(_sessionChains.values()).filter(s => s.userId === userId && !s.isActive);
-    if (sessions.length === 0) return { avgSessionLength: 0, avgPostsPerSession: 0, totalSessions: 0 };
+  getSessionMetrics(userId: number): {
+    avgSessionLength: number;
+    avgPostsPerSession: number;
+    totalSessions: number;
+  } {
+    const sessions = Array.from(_sessionChains.values()).filter(
+      s => s.userId === userId && !s.isActive
+    );
+    if (sessions.length === 0)
+      return { avgSessionLength: 0, avgPostsPerSession: 0, totalSessions: 0 };
     return {
-      avgSessionLength: sessions.reduce((s, sess) => s + sess.totalWatchTimeSeconds, 0) / sessions.length,
-      avgPostsPerSession: sessions.reduce((s, sess) => s + sess.postsViewed.length, 0) / sessions.length,
+      avgSessionLength:
+        sessions.reduce((s, sess) => s + sess.totalWatchTimeSeconds, 0) /
+        sessions.length,
+      avgPostsPerSession:
+        sessions.reduce((s, sess) => s + sess.postsViewed.length, 0) /
+        sessions.length,
       totalSessions: sessions.length,
     };
   },
@@ -445,13 +527,15 @@ export const addictionLoopsEngine = {
     if (now < drop.availableFrom || now > drop.availableUntil) return null;
     if (drop.claimedCount >= drop.maxClaims) return null;
     // Check if user already claimed
-    const alreadyClaimed = Array.from(_dailyDropClaims.values())
-      .some(c => c.dropId === dropId && c.userId === userId);
+    const alreadyClaimed = Array.from(_dailyDropClaims.values()).some(
+      c => c.dropId === dropId && c.userId === userId
+    );
     if (alreadyClaimed) return null;
     drop.claimedCount++;
     const claim: DailyDropClaim = {
       id: `claim_${userId}_${dropId}`,
-      dropId, userId,
+      dropId,
+      userId,
       claimedAt: new Date(),
       rewardDelivered: true,
     };
@@ -461,20 +545,33 @@ export const addictionLoopsEngine = {
 
   getActiveDailyDrops(): DailyDrop[] {
     const now = new Date();
-    return Array.from(_dailyDrops.values()).filter(d =>
-      d.isActive && now >= d.availableFrom && now <= d.availableUntil && d.claimedCount < d.maxClaims
+    return Array.from(_dailyDrops.values()).filter(
+      d =>
+        d.isActive &&
+        now >= d.availableFrom &&
+        now <= d.availableUntil &&
+        d.claimedCount < d.maxClaims
     );
   },
 
   getUserDropClaims(userId: number): DailyDropClaim[] {
-    return Array.from(_dailyDropClaims.values()).filter(c => c.userId === userId);
+    return Array.from(_dailyDropClaims.values()).filter(
+      c => c.userId === userId
+    );
   },
 
   // Engagement Ladder
   getOrCreateLadder(userId: number): EngagementLadder {
     const existing = _engagementLadders.get(userId);
     if (existing) return existing;
-    const thresholds = { bronze: 0, silver: 500, gold: 2000, platinum: 5000, diamond: 15000, legend: 50000 };
+    const thresholds = {
+      bronze: 0,
+      silver: 500,
+      gold: 2000,
+      platinum: 5000,
+      diamond: 15000,
+      legend: 50000,
+    };
     const ladder: EngagementLadder = {
       id: `ladder_${userId}`,
       userId,
@@ -490,19 +587,30 @@ export const addictionLoopsEngine = {
     return ladder;
   },
 
-  awardPoints(userId: number, points: number, reason: string): EngagementLadder {
+  awardPoints(
+    userId: number,
+    points: number,
+    reason: string
+  ): EngagementLadder {
     const ladder = this.getOrCreateLadder(userId);
     ladder.currentPoints += points;
     ladder.totalPointsEarned += points;
     // Determine tier
     const tiers: Array<[string, number]> = [
-      ["legend", 50000], ["diamond", 15000], ["platinum", 5000], ["gold", 2000], ["silver", 500], ["bronze", 0]
+      ["legend", 50000],
+      ["diamond", 15000],
+      ["platinum", 5000],
+      ["gold", 2000],
+      ["silver", 500],
+      ["bronze", 0],
     ];
     for (const [tier, threshold] of tiers) {
       if (ladder.currentPoints >= threshold) {
         ladder.currentTier = tier as EngagementLadder["currentTier"];
         const nextTier = tiers[tiers.findIndex(t => t[0] === tier) - 1];
-        ladder.pointsToNextTier = nextTier ? nextTier[1] - ladder.currentPoints : 0;
+        ladder.pointsToNextTier = nextTier
+          ? nextTier[1] - ladder.currentPoints
+          : 0;
         break;
       }
     }
@@ -516,9 +624,24 @@ export const addictionLoopsEngine = {
       bronze: ["Basic badge"],
       silver: ["Silver badge", "5% tip bonus"],
       gold: ["Gold badge", "10% tip bonus", "Priority support"],
-      platinum: ["Platinum badge", "15% tip bonus", "Early access", "Creator DM access"],
-      diamond: ["Diamond badge", "20% tip bonus", "Beta features", "Revenue share boost"],
-      legend: ["Legend badge", "25% tip bonus", "All features", "Platform governance vote"],
+      platinum: [
+        "Platinum badge",
+        "15% tip bonus",
+        "Early access",
+        "Creator DM access",
+      ],
+      diamond: [
+        "Diamond badge",
+        "20% tip bonus",
+        "Beta features",
+        "Revenue share boost",
+      ],
+      legend: [
+        "Legend badge",
+        "25% tip bonus",
+        "All features",
+        "Platform governance vote",
+      ],
     };
     return perks[tier] ?? [];
   },
@@ -534,18 +657,35 @@ export const addictionLoopsEngine = {
   },
 
   // Return Bonuses
-  issueReturnBonus(userId: number, daysSinceLastVisit: number): ReturnBonus | null {
+  issueReturnBonus(
+    userId: number,
+    daysSinceLastVisit: number
+  ): ReturnBonus | null {
     let bonusType: ReturnBonus["bonusType"] | null = null;
     let rewardAmount = 0;
-    if (daysSinceLastVisit >= 30) { bonusType = "day_30"; rewardAmount = 100; }
-    else if (daysSinceLastVisit >= 14) { bonusType = "day_14"; rewardAmount = 50; }
-    else if (daysSinceLastVisit >= 7) { bonusType = "day_7"; rewardAmount = 25; }
-    else if (daysSinceLastVisit >= 3) { bonusType = "day_3"; rewardAmount = 10; }
-    else if (daysSinceLastVisit >= 1) { bonusType = "day_1"; rewardAmount = 5; }
+    if (daysSinceLastVisit >= 30) {
+      bonusType = "day_30";
+      rewardAmount = 100;
+    } else if (daysSinceLastVisit >= 14) {
+      bonusType = "day_14";
+      rewardAmount = 50;
+    } else if (daysSinceLastVisit >= 7) {
+      bonusType = "day_7";
+      rewardAmount = 25;
+    } else if (daysSinceLastVisit >= 3) {
+      bonusType = "day_3";
+      rewardAmount = 10;
+    } else if (daysSinceLastVisit >= 1) {
+      bonusType = "day_1";
+      rewardAmount = 5;
+    }
     if (!bonusType) return null;
     const id = `rb_${userId}_${Date.now()}`;
     const bonus: ReturnBonus = {
-      id, userId, bonusType, rewardAmount,
+      id,
+      userId,
+      bonusType,
+      rewardAmount,
       rewardCurrency: "SKY444",
       triggeredAt: new Date(),
       claimed: false,
@@ -568,17 +708,37 @@ export const addictionLoopsEngine = {
   },
 
   // Creator Loyalty Rewards
-  issueCreatorLoyaltyReward(userId: number, creatorId: number, totalSpent: number, totalWatchHours: number): CreatorLoyaltyReward {
+  issueCreatorLoyaltyReward(
+    userId: number,
+    creatorId: number,
+    totalSpent: number,
+    totalWatchHours: number
+  ): CreatorLoyaltyReward {
     let loyaltyTier: CreatorLoyaltyReward["loyaltyTier"] = "fan";
     let rewardAmount = 0;
-    if (totalSpent >= 1000 || totalWatchHours >= 500) { loyaltyTier = "legend"; rewardAmount = 200; }
-    else if (totalSpent >= 500 || totalWatchHours >= 200) { loyaltyTier = "champion"; rewardAmount = 75; }
-    else if (totalSpent >= 100 || totalWatchHours >= 50) { loyaltyTier = "superfan"; rewardAmount = 25; }
-    else { loyaltyTier = "fan"; rewardAmount = 5; }
+    if (totalSpent >= 1000 || totalWatchHours >= 500) {
+      loyaltyTier = "legend";
+      rewardAmount = 200;
+    } else if (totalSpent >= 500 || totalWatchHours >= 200) {
+      loyaltyTier = "champion";
+      rewardAmount = 75;
+    } else if (totalSpent >= 100 || totalWatchHours >= 50) {
+      loyaltyTier = "superfan";
+      rewardAmount = 25;
+    } else {
+      loyaltyTier = "fan";
+      rewardAmount = 5;
+    }
     const id = `loyalty_${userId}_${creatorId}_${Date.now()}`;
     const reward: CreatorLoyaltyReward = {
-      id, userId, creatorId, loyaltyTier, totalSpent, totalWatchHours,
-      rewardAmount, rewardCurrency: "SKY444",
+      id,
+      userId,
+      creatorId,
+      loyaltyTier,
+      totalSpent,
+      totalWatchHours,
+      rewardAmount,
+      rewardCurrency: "SKY444",
       issuedAt: new Date(),
       claimed: false,
     };
@@ -595,7 +755,9 @@ export const addictionLoopsEngine = {
   },
 
   getUserLoyaltyRewards(userId: number): CreatorLoyaltyReward[] {
-    return Array.from(_creatorLoyaltyRewards.values()).filter(r => r.userId === userId);
+    return Array.from(_creatorLoyaltyRewards.values()).filter(
+      r => r.userId === userId
+    );
   },
 };
 
@@ -603,18 +765,37 @@ export const addictionLoopsEngine = {
 
 export const retentionAI = {
   // Churn Prevention
-  detectChurnTrigger(userId: number, daysSinceLastActivity: number, recentEngagementDrop: boolean, subscriptionLapsed: boolean): ChurnTrigger | null {
+  detectChurnTrigger(
+    userId: number,
+    daysSinceLastActivity: number,
+    recentEngagementDrop: boolean,
+    subscriptionLapsed: boolean
+  ): ChurnTrigger | null {
     let triggerType: ChurnTrigger["triggerType"] | null = null;
     let severity: ChurnTrigger["severity"] = "low";
-    if (subscriptionLapsed) { triggerType = "subscription_lapse"; severity = "critical"; }
-    else if (daysSinceLastActivity >= 14) { triggerType = "inactivity_14d"; severity = "high"; }
-    else if (daysSinceLastActivity >= 7) { triggerType = "inactivity_7d"; severity = "medium"; }
-    else if (daysSinceLastActivity >= 3) { triggerType = "inactivity_3d"; severity = "low"; }
-    else if (recentEngagementDrop) { triggerType = "engagement_drop"; severity = "medium"; }
+    if (subscriptionLapsed) {
+      triggerType = "subscription_lapse";
+      severity = "critical";
+    } else if (daysSinceLastActivity >= 14) {
+      triggerType = "inactivity_14d";
+      severity = "high";
+    } else if (daysSinceLastActivity >= 7) {
+      triggerType = "inactivity_7d";
+      severity = "medium";
+    } else if (daysSinceLastActivity >= 3) {
+      triggerType = "inactivity_3d";
+      severity = "low";
+    } else if (recentEngagementDrop) {
+      triggerType = "engagement_drop";
+      severity = "medium";
+    }
     if (!triggerType) return null;
     const id = `churn_${userId}_${Date.now()}`;
     const trigger: ChurnTrigger = {
-      id, userId, triggerType, severity,
+      id,
+      userId,
+      triggerType,
+      severity,
       triggeredAt: new Date(),
       interventionSent: false,
       resolved: false,
@@ -623,7 +804,10 @@ export const retentionAI = {
     return trigger;
   },
 
-  sendIntervention(triggerId: string, interventionType: ChurnTrigger["interventionType"]): ChurnTrigger | null {
+  sendIntervention(
+    triggerId: string,
+    interventionType: ChurnTrigger["interventionType"]
+  ): ChurnTrigger | null {
     const trigger = _churnTriggers.get(triggerId);
     if (!trigger || trigger.interventionSent) return null;
     trigger.interventionSent = true;
@@ -641,8 +825,8 @@ export const retentionAI = {
   },
 
   getActiveChurnTriggers(severity?: ChurnTrigger["severity"]): ChurnTrigger[] {
-    return Array.from(_churnTriggers.values()).filter(t =>
-      !t.resolved && (!severity || t.severity === severity)
+    return Array.from(_churnTriggers.values()).filter(
+      t => !t.resolved && (!severity || t.severity === severity)
     );
   },
 
@@ -651,10 +835,17 @@ export const retentionAI = {
   },
 
   // Creator Comeback Prompts
-  sendCreatorComebackPrompt(creatorId: number, promptType: CreatorComebackPrompt["promptType"], message: string): CreatorComebackPrompt {
+  sendCreatorComebackPrompt(
+    creatorId: number,
+    promptType: CreatorComebackPrompt["promptType"],
+    message: string
+  ): CreatorComebackPrompt {
     const id = `comeback_${creatorId}_${Date.now()}`;
     const prompt: CreatorComebackPrompt = {
-      id, creatorId, promptType, message,
+      id,
+      creatorId,
+      promptType,
+      message,
       sentAt: new Date(),
       opened: false,
       actedOn: false,
@@ -678,14 +869,25 @@ export const retentionAI = {
   },
 
   getCreatorComebackPrompts(creatorId: number): CreatorComebackPrompt[] {
-    return Array.from(_creatorComebackPrompts.values()).filter(p => p.creatorId === creatorId);
+    return Array.from(_creatorComebackPrompts.values()).filter(
+      p => p.creatorId === creatorId
+    );
   },
 
   // Friend Re-Engagement
-  sendFriendReEngagementPrompt(userId: number, targetFriendId: number, promptType: FriendReEngagementPrompt["promptType"], message: string): FriendReEngagementPrompt {
+  sendFriendReEngagementPrompt(
+    userId: number,
+    targetFriendId: number,
+    promptType: FriendReEngagementPrompt["promptType"],
+    message: string
+  ): FriendReEngagementPrompt {
     const id = `friend_re_${userId}_${targetFriendId}_${Date.now()}`;
     const prompt: FriendReEngagementPrompt = {
-      id, userId, targetFriendId, promptType, message,
+      id,
+      userId,
+      targetFriendId,
+      promptType,
+      message,
       sentAt: new Date(),
       clicked: false,
     };
@@ -701,10 +903,19 @@ export const retentionAI = {
   },
 
   // Community Revival
-  sendCommunityRevivalPrompt(communityId: string, promptType: CommunityRevivalPrompt["promptType"], targetUserIds: number[], message: string): CommunityRevivalPrompt {
+  sendCommunityRevivalPrompt(
+    communityId: string,
+    promptType: CommunityRevivalPrompt["promptType"],
+    targetUserIds: number[],
+    message: string
+  ): CommunityRevivalPrompt {
     const id = `revival_${communityId}_${Date.now()}`;
     const prompt: CommunityRevivalPrompt = {
-      id, communityId, promptType, targetUserIds, message,
+      id,
+      communityId,
+      promptType,
+      targetUserIds,
+      message,
       sentAt: new Date(),
       clickCount: 0,
     };
@@ -732,17 +943,23 @@ export const retentionAI = {
     const resolved = triggers.filter(t => t.resolved).length;
     const interventionsSent = triggers.filter(t => t.interventionSent).length;
     const ladders = Array.from(_engagementLadders.values());
-    const topTier = ladders.length > 0
-      ? ladders.sort((a, b) => b.totalPointsEarned - a.totalPointsEarned)[0].currentTier
-      : "bronze";
+    const topTier =
+      ladders.length > 0
+        ? ladders.sort((a, b) => b.totalPointsEarned - a.totalPointsEarned)[0]
+            .currentTier
+        : "bronze";
     const returnBonuses = Array.from(_returnBonuses.values());
     const claimed = returnBonuses.filter(b => b.claimed).length;
     return {
       activeChurnTriggers: triggers.filter(t => !t.resolved).length,
-      criticalChurnTriggers: triggers.filter(t => !t.resolved && t.severity === "critical").length,
+      criticalChurnTriggers: triggers.filter(
+        t => !t.resolved && t.severity === "critical"
+      ).length,
       interventionsSent,
-      interventionResolvedRate: interventionsSent > 0 ? resolved / interventionsSent : 0,
-      avgReturnBonusClaims: returnBonuses.length > 0 ? claimed / returnBonuses.length : 0,
+      interventionResolvedRate:
+        interventionsSent > 0 ? resolved / interventionsSent : 0,
+      avgReturnBonusClaims:
+        returnBonuses.length > 0 ? claimed / returnBonuses.length : 0,
       topEngagementTier: topTier,
     };
   },

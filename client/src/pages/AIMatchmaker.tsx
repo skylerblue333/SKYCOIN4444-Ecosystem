@@ -3,25 +3,79 @@
  * "Why this match?" — compatibility analysis, behavior prediction, relationship suggestions
  */
 import { useState } from "react";
-import { Brain, Heart, TrendingUp, Shield, MessageCircle, Zap, Star, ChevronRight, RefreshCw } from "lucide-react";
+import {
+  Brain,
+  Heart,
+  TrendingUp,
+  Shield,
+  MessageCircle,
+  Zap,
+  Star,
+  ChevronRight,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 const COMPATIBILITY_DIMENSIONS = [
-  { label: "Communication Style", score: 91, desc: "Both prefer direct, meaningful conversations over small talk." },
-  { label: "Lifestyle Alignment", score: 84, desc: "Similar activity levels and social preferences." },
-  { label: "Values Match", score: 88, desc: "Shared emphasis on authenticity and growth." },
-  { label: "Interest Overlap", score: 76, desc: "3 strong shared interests: crypto, tech, travel." },
-  { label: "Relationship Goals", score: 95, desc: "Both seeking long-term meaningful connection." },
-  { label: "Energy Compatibility", score: 82, desc: "Complementary introvert/extrovert balance." },
+  {
+    label: "Communication Style",
+    score: 91,
+    desc: "Both prefer direct, meaningful conversations over small talk.",
+  },
+  {
+    label: "Lifestyle Alignment",
+    score: 84,
+    desc: "Similar activity levels and social preferences.",
+  },
+  {
+    label: "Values Match",
+    score: 88,
+    desc: "Shared emphasis on authenticity and growth.",
+  },
+  {
+    label: "Interest Overlap",
+    score: 76,
+    desc: "3 strong shared interests: crypto, tech, travel.",
+  },
+  {
+    label: "Relationship Goals",
+    score: 95,
+    desc: "Both seeking long-term meaningful connection.",
+  },
+  {
+    label: "Energy Compatibility",
+    score: 82,
+    desc: "Complementary introvert/extrovert balance.",
+  },
 ];
 
 const BEHAVIOR_PREDICTIONS = [
-  { prediction: "High conversation depth", confidence: 94, icon: MessageCircle, color: "text-blue-400" },
-  { prediction: "Low conflict probability", confidence: 87, icon: Shield, color: "text-green-400" },
-  { prediction: "Strong long-term retention", confidence: 79, icon: TrendingUp, color: "text-purple-400" },
-  { prediction: "Fast initial connection", confidence: 91, icon: Zap, color: "text-yellow-400" },
+  {
+    prediction: "High conversation depth",
+    confidence: 94,
+    icon: MessageCircle,
+    color: "text-blue-400",
+  },
+  {
+    prediction: "Low conflict probability",
+    confidence: 87,
+    icon: Shield,
+    color: "text-green-400",
+  },
+  {
+    prediction: "Strong long-term retention",
+    confidence: 79,
+    icon: TrendingUp,
+    color: "text-purple-400",
+  },
+  {
+    prediction: "Fast initial connection",
+    confidence: 91,
+    icon: Zap,
+    color: "text-yellow-400",
+  },
 ];
 
 const MATCH_SUGGESTIONS = [
@@ -39,7 +93,8 @@ const MATCH_SUGGESTIONS = [
     age: 29,
     overallScore: 88,
     topReason: "Intellectual depth + AI interests",
-    aiNote: "Complementary expertise. High potential for stimulating conversations.",
+    aiNote:
+      "Complementary expertise. High potential for stimulating conversations.",
     badge: "Intellectual Match",
     badgeColor: "bg-purple-500",
   },
@@ -48,7 +103,8 @@ const MATCH_SUGGESTIONS = [
     age: 24,
     overallScore: 82,
     topReason: "Entrepreneurial energy",
-    aiNote: "Shared startup mindset. Good for networking and casual connection.",
+    aiNote:
+      "Shared startup mindset. Good for networking and casual connection.",
     badge: "Energy Match",
     badgeColor: "bg-blue-500",
   },
@@ -78,7 +134,9 @@ export default function AIMatchmaker() {
           </div>
           <div>
             <h1 className="text-xl font-bold">AI Matchmaker</h1>
-            <p className="text-xs text-muted-foreground">Compatibility intelligence engine</p>
+            <p className="text-xs text-muted-foreground">
+              Compatibility intelligence engine
+            </p>
           </div>
         </div>
       </div>
@@ -87,8 +145,16 @@ export default function AIMatchmaker() {
       <div className="card p-4 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-pink-500/20">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-sm">Analyzing match with</h2>
-          <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={handleAnalyze} disabled={analyzing}>
-            <RefreshCw className={`w-3 h-3 ${analyzing ? "animate-spin" : ""}`} />
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 text-xs"
+            onClick={handleAnalyze}
+            disabled={analyzing}
+          >
+            <RefreshCw
+              className={`w-3 h-3 ${analyzing ? "animate-spin" : ""}`}
+            />
             {analyzing ? "Analyzing..." : "Re-analyze"}
           </Button>
         </div>
@@ -117,13 +183,21 @@ export default function AIMatchmaker() {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold">{match.name}, {match.age}</h3>
-              <Badge className={`${match.badgeColor} text-white text-xs`}>{match.badge}</Badge>
+              <h3 className="font-semibold">
+                {match.name}, {match.age}
+              </h3>
+              <Badge className={`${match.badgeColor} text-white text-xs`}>
+                {match.badge}
+              </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">{match.aiNote}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {match.aiNote}
+            </p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-green-400">{match.overallScore}%</div>
+            <div className="text-2xl font-bold text-green-400">
+              {match.overallScore}%
+            </div>
             <div className="text-xs text-muted-foreground">overall</div>
           </div>
         </div>
@@ -141,7 +215,9 @@ export default function AIMatchmaker() {
             <div key={dim.label}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium">{dim.label}</span>
-                <span className={`text-xs font-bold ${dim.score >= 90 ? "text-green-400" : dim.score >= 80 ? "text-blue-400" : "text-yellow-400"}`}>
+                <span
+                  className={`text-xs font-bold ${dim.score >= 90 ? "text-green-400" : dim.score >= 80 ? "text-blue-400" : "text-yellow-400"}`}
+                >
                   {dim.score}%
                 </span>
               </div>
@@ -164,10 +240,15 @@ export default function AIMatchmaker() {
           {BEHAVIOR_PREDICTIONS.map(pred => {
             const PredIcon = pred.icon;
             return (
-              <div key={pred.prediction} className="p-3 rounded-lg bg-secondary/50 border border-border/50">
+              <div
+                key={pred.prediction}
+                className="p-3 rounded-lg bg-secondary/50 border border-border/50"
+              >
                 <PredIcon className={`w-4 h-4 ${pred.color} mb-1.5`} />
                 <div className="text-xs font-medium">{pred.prediction}</div>
-                <div className="text-xs text-muted-foreground">{pred.confidence}% confidence</div>
+                <div className="text-xs text-muted-foreground">
+                  {pred.confidence}% confidence
+                </div>
               </div>
             );
           })}
@@ -176,7 +257,9 @@ export default function AIMatchmaker() {
 
       {/* Relationship suggestions */}
       <div className="card p-4">
-        <h2 className="font-semibold text-sm mb-3">AI Relationship Suggestions</h2>
+        <h2 className="font-semibold text-sm mb-3">
+          AI Relationship Suggestions
+        </h2>
         <div className="space-y-2">
           {[
             "Start with shared interest in crypto — ask about their favorite DeFi protocol.",
@@ -198,7 +281,11 @@ export default function AIMatchmaker() {
           <Heart className="w-4 h-4" />
           Like {match.name.split(" ")[0]}
         </Button>
-        <Button variant="outline" className="flex-1 gap-2" onClick={() => toast("Opening chat...")}>
+        <Button
+          variant="outline"
+          className="flex-1 gap-2"
+          onClick={() => toast("Opening chat...")}
+        >
           <MessageCircle className="w-4 h-4" />
           Message
         </Button>
@@ -209,9 +296,15 @@ export default function AIMatchmaker() {
         <div className="text-2xl">👑</div>
         <div className="flex-1">
           <div className="text-sm font-semibold">Unlock Full AI Analysis</div>
-          <div className="text-xs text-muted-foreground">Deep personality profiling + relationship roadmap</div>
+          <div className="text-xs text-muted-foreground">
+            Deep personality profiling + relationship roadmap
+          </div>
         </div>
-        <Button size="sm" className="bg-yellow-500 hover:bg-yellow-400 text-black shrink-0" onClick={() => toast("Redirecting to Premium...")}>
+        <Button
+          size="sm"
+          className="bg-yellow-500 hover:bg-yellow-400 text-black shrink-0"
+          onClick={() => toast("Redirecting to Premium...")}
+        >
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>

@@ -3,7 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Phone,
@@ -63,11 +68,18 @@ export function VideoChat() {
   const [isRecording, setIsRecording] = useState(false);
   const [translationEnabled, setTranslationEnabled] = useState(true);
   const [callDuration, setCallDuration] = useState(0);
-  const [translationOverlays, setTranslationOverlays] = useState<TranslationOverlay[]>([]);
+  const [translationOverlays, setTranslationOverlays] = useState<
+    TranslationOverlay[]
+  >([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
   const [transcript, setTranscript] = useState<
-    Array<{ speaker: string; text: string; timestamp: string; translated?: string }>
+    Array<{
+      speaker: string;
+      text: string;
+      timestamp: string;
+      translated?: string;
+    }>
   >([]);
   const [selectedLanguagePair, setSelectedLanguagePair] = useState("auto");
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -78,7 +90,7 @@ export function VideoChat() {
   useEffect(() => {
     if (isCallActive) {
       callTimerRef.current = setInterval(() => {
-        setCallDuration((prev) => prev + 1);
+        setCallDuration(prev => prev + 1);
       }, 1000);
     } else {
       if (callTimerRef.current) clearInterval(callTimerRef.current);
@@ -156,7 +168,9 @@ export function VideoChat() {
 
   const handleToggleScreenShare = () => {
     setIsScreenSharing(!isScreenSharing);
-    toast.success(isScreenSharing ? "Screen sharing stopped" : "Screen sharing started");
+    toast.success(
+      isScreenSharing ? "Screen sharing stopped" : "Screen sharing started"
+    );
   };
 
   const handleToggleRecording = () => {
@@ -194,7 +208,8 @@ export function VideoChat() {
                 </h2>
                 <div className="space-y-2 mb-4">
                   <p className="text-gray-300">
-                    <span className="text-gray-400">Language:</span> {MOCK_PARTNER.language}
+                    <span className="text-gray-400">Language:</span>{" "}
+                    {MOCK_PARTNER.language}
                   </p>
                   <p className="text-gray-300">
                     <span className="text-gray-400">Proficiency:</span>{" "}
@@ -206,7 +221,9 @@ export function VideoChat() {
                   </p>
                   <div className="flex items-center gap-2">
                     <span className="text-yellow-400">★</span>
-                    <span className="text-gray-300">{MOCK_PARTNER.rating}/5</span>
+                    <span className="text-gray-300">
+                      {MOCK_PARTNER.rating}/5
+                    </span>
                   </div>
                 </div>
               </div>
@@ -225,7 +242,9 @@ export function VideoChat() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="bg-slate-800/50 border-slate-700 p-6">
               <Globe className="w-8 h-8 text-purple-400 mb-3" />
-              <h3 className="font-bold text-white mb-2">Real-Time Translation</h3>
+              <h3 className="font-bold text-white mb-2">
+                Real-Time Translation
+              </h3>
               <p className="text-gray-400 text-sm">
                 Automatic translation of spoken words with on-screen overlays
               </p>
@@ -258,7 +277,9 @@ export function VideoChat() {
           <div className="flex items-center gap-4">
             <div className="text-4xl">{MOCK_PARTNER.avatar}</div>
             <div>
-              <h2 className="text-xl font-bold text-white">{MOCK_PARTNER.name}</h2>
+              <h2 className="text-xl font-bold text-white">
+                {MOCK_PARTNER.name}
+              </h2>
               <p className="text-gray-400 text-sm">
                 {MOCK_PARTNER.language} • {formatDuration(callDuration)}
               </p>
@@ -411,7 +432,7 @@ export function VideoChat() {
               <input
                 type="checkbox"
                 checked={translationEnabled}
-                onChange={(e) => setTranslationEnabled(e.target.checked)}
+                onChange={e => setTranslationEnabled(e.target.checked)}
                 className="ml-auto w-4 h-4"
               />
             </div>
@@ -464,7 +485,7 @@ export function VideoChat() {
               </label>
               <select
                 value={selectedLanguagePair}
-                onChange={(e) => setSelectedLanguagePair(e.target.value)}
+                onChange={e => setSelectedLanguagePair(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded px-3 py-2"
               >
                 <option>Auto-detect</option>
@@ -479,7 +500,7 @@ export function VideoChat() {
               <input
                 type="checkbox"
                 checked={translationEnabled}
-                onChange={(e) => setTranslationEnabled(e.target.checked)}
+                onChange={e => setTranslationEnabled(e.target.checked)}
                 className="w-4 h-4"
               />
             </div>

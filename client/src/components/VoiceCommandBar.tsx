@@ -16,8 +16,14 @@ interface VoiceCommandBarProps {
 
 export function VoiceCommandBar({ onSearch, onLogout }: VoiceCommandBarProps) {
   const [showHelp, setShowHelp] = useState(false);
-  const { isListening, isSupported, transcript, lastCommand, confidence, toggleListening } =
-    useVoiceCommands({ onSearch, onLogout });
+  const {
+    isListening,
+    isSupported,
+    transcript,
+    lastCommand,
+    confidence,
+    toggleListening,
+  } = useVoiceCommands({ onSearch, onLogout });
 
   if (!isSupported) return null;
 
@@ -50,17 +56,32 @@ export function VoiceCommandBar({ onSearch, onLogout }: VoiceCommandBarProps) {
         <div className="fixed bottom-24 right-6 z-50 bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl p-4 shadow-2xl max-w-xs w-72">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-bold text-red-400 uppercase tracking-widest">Listening…</span>
+            <span className="text-xs font-bold text-red-400 uppercase tracking-widest">
+              Listening…
+            </span>
             <span className="ml-auto text-xs text-muted-foreground">Alt+V</span>
           </div>
           {transcript ? (
-            <p className="text-sm text-foreground font-medium">"{transcript}"</p>
+            <p className="text-sm text-foreground font-medium">
+              "{transcript}"
+            </p>
           ) : (
-            <p className="text-sm text-muted-foreground italic">Say a command…</p>
+            <p className="text-sm text-muted-foreground italic">
+              Say a command…
+            </p>
           )}
           <div className="mt-2 flex flex-wrap gap-1">
-            {["Go to staking", "Swap SKY444", "Search for…", "Burn tokens", "Play arcade"].map(hint => (
-              <span key={hint} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary/50 text-muted-foreground">
+            {[
+              "Go to staking",
+              "Swap SKY444",
+              "Search for…",
+              "Burn tokens",
+              "Play arcade",
+            ].map(hint => (
+              <span
+                key={hint}
+                className="text-[10px] px-2 py-0.5 rounded-full bg-secondary/50 text-muted-foreground"
+              >
                 {hint}
               </span>
             ))}
@@ -74,7 +95,9 @@ export function VoiceCommandBar({ onSearch, onLogout }: VoiceCommandBarProps) {
           <p className="text-xs text-[oklch(0.72 0.28 305)]">
             ✓ "{lastCommand}"
             {confidence > 0 && (
-              <span className="ml-1 text-muted-foreground">({Math.round(confidence * 100)}%)</span>
+              <span className="ml-1 text-muted-foreground">
+                ({Math.round(confidence * 100)}%)
+              </span>
             )}
           </p>
         </div>
@@ -103,22 +126,69 @@ export function VoiceCommandBar({ onSearch, onLogout }: VoiceCommandBarProps) {
           </div>
           <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-secondary/30">
             <Keyboard className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Press <kbd className="px-1 py-0.5 rounded bg-secondary text-foreground text-[10px]">Alt+V</kbd> to toggle</span>
+            <span className="text-xs text-muted-foreground">
+              Press{" "}
+              <kbd className="px-1 py-0.5 rounded bg-secondary text-foreground text-[10px]">
+                Alt+V
+              </kbd>{" "}
+              to toggle
+            </span>
           </div>
           {[
-            { cat: "🧭 Navigation", cmds: ["Go to staking", "Go to marketplace", "Go to arcade", "Go home", "Go back"] },
-            { cat: "💰 Crypto", cmds: ["Stake 1000 SKY", "Swap SKY444 to USDT", "Burn 500 tokens", "Buy SKY444", "Sell ETH", "Open wallet", "Check balance"] },
-            { cat: "🤝 Social", cmds: ["Create post", "Open messages", "Open notifications", "Search for SKY444"] },
-            { cat: "🎮 Gaming", cmds: ["Play snake", "Open arcade", "Go to tournaments"] },
-            { cat: "🤖 AI", cmds: ["Open AI engineer", "Open Hope AI", "Go to analytics"] },
-            { cat: "⚙️ Platform", cmds: ["Go to settings", "Go to admin", "Logout", "Help"] },
+            {
+              cat: "🧭 Navigation",
+              cmds: [
+                "Go to staking",
+                "Go to marketplace",
+                "Go to arcade",
+                "Go home",
+                "Go back",
+              ],
+            },
+            {
+              cat: "💰 Crypto",
+              cmds: [
+                "Stake 1000 SKY",
+                "Swap SKY444 to USDT",
+                "Burn 500 tokens",
+                "Buy SKY444",
+                "Sell ETH",
+                "Open wallet",
+                "Check balance",
+              ],
+            },
+            {
+              cat: "🤝 Social",
+              cmds: [
+                "Create post",
+                "Open messages",
+                "Open notifications",
+                "Search for SKY444",
+              ],
+            },
+            {
+              cat: "🎮 Gaming",
+              cmds: ["Play snake", "Open arcade", "Go to tournaments"],
+            },
+            {
+              cat: "🤖 AI",
+              cmds: ["Open AI engineer", "Open Hope AI", "Go to analytics"],
+            },
+            {
+              cat: "⚙️ Platform",
+              cmds: ["Go to settings", "Go to admin", "Logout", "Help"],
+            },
           ].map(section => (
             <div key={section.cat} className="mb-3">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{section.cat}</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">
+                {section.cat}
+              </p>
               {section.cmds.map(cmd => (
                 <div key={cmd} className="flex items-center gap-2 py-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.72 0.28 305)]/50 shrink-0" />
-                  <span className="text-xs text-foreground/80 font-mono">"{cmd}"</span>
+                  <span className="text-xs text-foreground/80 font-mono">
+                    "{cmd}"
+                  </span>
                 </div>
               ))}
             </div>

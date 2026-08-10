@@ -1,8 +1,8 @@
-import React, { useCallback, useState } from 'react';
-import { Upload, X, Loader2, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useCallback, useState } from "react";
+import { Upload, X, Loader2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface PhotoUploadProps {
   onUpload: (file: File) => Promise<{ url: string; key: string }>;
@@ -36,10 +36,10 @@ export function PhotoUpload({
       };
     }
 
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       return {
         valid: false,
-        error: 'File must be an image',
+        error: "File must be an image",
       };
     }
 
@@ -64,7 +64,7 @@ export function PhotoUpload({
 
         const validation = validateFile(file);
         if (!validation.valid) {
-          setError(validation.error || 'Invalid file');
+          setError(validation.error || "Invalid file");
           continue;
         }
 
@@ -80,7 +80,7 @@ export function PhotoUpload({
         try {
           const result = await onUpload(file);
           // Replace uploading placeholder with actual photo
-          const index = newPhotos.findIndex((p) => p.key === uploadingPhoto.key);
+          const index = newPhotos.findIndex(p => p.key === uploadingPhoto.key);
           if (index !== -1) {
             newPhotos[index] = {
               url: result.url,
@@ -89,9 +89,9 @@ export function PhotoUpload({
             };
           }
         } catch (err) {
-          const index = newPhotos.findIndex((p) => p.key === uploadingPhoto.key);
+          const index = newPhotos.findIndex(p => p.key === uploadingPhoto.key);
           if (index !== -1) {
-            newPhotos[index].error = 'Upload failed';
+            newPhotos[index].error = "Upload failed";
             newPhotos[index].isUploading = false;
           }
         }
@@ -99,7 +99,7 @@ export function PhotoUpload({
 
       const updatedPhotos = [...photos, ...newPhotos];
       setPhotos(updatedPhotos);
-      onPhotosChange?.(updatedPhotos.filter((p) => !p.isUploading && !p.error));
+      onPhotosChange?.(updatedPhotos.filter(p => !p.isUploading && !p.error));
     },
     [photos, maxFiles, onUpload, onPhotosChange]
   );
@@ -123,9 +123,9 @@ export function PhotoUpload({
   );
 
   const handleRemovePhoto = (key: string) => {
-    const updated = photos.filter((p) => p.key !== key);
+    const updated = photos.filter(p => p.key !== key);
     setPhotos(updated);
-    onPhotosChange?.(updated.filter((p) => !p.isUploading && !p.error));
+    onPhotosChange?.(updated.filter(p => !p.isUploading && !p.error));
   };
 
   const canAddMore = photos.length < maxFiles;
@@ -147,8 +147,8 @@ export function PhotoUpload({
           onDrop={handleDrop}
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             isDragging
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
+              ? "border-blue-500 bg-blue-50"
+              : "border-gray-300 hover:border-gray-400"
           }`}
         >
           <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
@@ -162,7 +162,7 @@ export function PhotoUpload({
             type="file"
             multiple
             accept="image/*"
-            onChange={(e) => handleFileSelect(e.target.files)}
+            onChange={e => handleFileSelect(e.target.files)}
             className="hidden"
             id="photo-input"
           />
@@ -177,7 +177,7 @@ export function PhotoUpload({
       {/* Photo Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <AnimatePresence mode="popLayout">
-          {photos.map((photo) => (
+          {photos.map(photo => (
             <motion.div
               key={photo.key}
               initial={{ opacity: 0, scale: 0.8 }}
@@ -224,7 +224,8 @@ export function PhotoUpload({
       {/* Photo Count */}
       {photos.length > 0 && (
         <p className="text-sm text-gray-600">
-          {photos.filter((p) => !p.isUploading && !p.error).length} of {maxFiles} photos
+          {photos.filter(p => !p.isUploading && !p.error).length} of {maxFiles}{" "}
+          photos
         </p>
       )}
     </div>

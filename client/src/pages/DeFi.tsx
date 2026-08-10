@@ -1,29 +1,119 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Layers, Zap, ArrowLeftRight, TrendingUp, Shield, Droplets, Plus, ArrowRight, Activity, DollarSign, BarChart3 } from "lucide-react";
+import {
+  Layers,
+  Zap,
+  ArrowLeftRight,
+  TrendingUp,
+  Shield,
+  Droplets,
+  Plus,
+  ArrowRight,
+  Activity,
+  DollarSign,
+  BarChart3,
+} from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const PROTOCOLS = [
-  { name: "SKY Swap",     type: "DEX",      tvl: "$4.2M",  apy: "18.4%", risk: "Low",    href: "/token-swap",   icon: "🔄", color: "from-purple-500 to-cyan-500" },
-  { name: "SKY Lend",     type: "Lending",  tvl: "$2.8M",  apy: "12.1%", risk: "Low",    href: "/staking",      icon: "🏦", color: "from-blue-500 to-indigo-500" },
-  { name: "SKY Farm",     type: "Yield",    tvl: "$1.9M",  apy: "34.7%", risk: "Medium", href: "/yield-farming",icon: "🌾", color: "from-green-500 to-teal-500"  },
-  { name: "SKY Bridge",   type: "Bridge",   tvl: "$890K",  apy: "—",     risk: "Medium", href: "/cross-chain",  icon: "🌉", color: "from-orange-500 to-red-500"  },
-  { name: "SKY Vault",    type: "Vault",    tvl: "$620K",  apy: "22.3%", risk: "Low",    href: "/staking",      icon: "🔒", color: "from-yellow-500 to-orange-500"},
-  { name: "SKY Perps",    type: "Perps",    tvl: "$340K",  apy: "—",     risk: "High",   href: "/trading",      icon: "📈", color: "from-red-500 to-pink-500"    },
+  {
+    name: "SKY Swap",
+    type: "DEX",
+    tvl: "$4.2M",
+    apy: "18.4%",
+    risk: "Low",
+    href: "/token-swap",
+    icon: "🔄",
+    color: "from-purple-500 to-cyan-500",
+  },
+  {
+    name: "SKY Lend",
+    type: "Lending",
+    tvl: "$2.8M",
+    apy: "12.1%",
+    risk: "Low",
+    href: "/staking",
+    icon: "🏦",
+    color: "from-blue-500 to-indigo-500",
+  },
+  {
+    name: "SKY Farm",
+    type: "Yield",
+    tvl: "$1.9M",
+    apy: "34.7%",
+    risk: "Medium",
+    href: "/yield-farming",
+    icon: "🌾",
+    color: "from-green-500 to-teal-500",
+  },
+  {
+    name: "SKY Bridge",
+    type: "Bridge",
+    tvl: "$890K",
+    apy: "—",
+    risk: "Medium",
+    href: "/cross-chain",
+    icon: "🌉",
+    color: "from-orange-500 to-red-500",
+  },
+  {
+    name: "SKY Vault",
+    type: "Vault",
+    tvl: "$620K",
+    apy: "22.3%",
+    risk: "Low",
+    href: "/staking",
+    icon: "🔒",
+    color: "from-yellow-500 to-orange-500",
+  },
+  {
+    name: "SKY Perps",
+    type: "Perps",
+    tvl: "$340K",
+    apy: "—",
+    risk: "High",
+    href: "/trading",
+    icon: "📈",
+    color: "from-red-500 to-pink-500",
+  },
 ];
 
 const POOLS = [
-  { pair: "SKY444/USDT", tvl: "$1.8M", apy: "24.6%", volume: "$420K", myLiquidity: "$0" },
-  { pair: "SKY444/ETH",  tvl: "$980K", apy: "31.2%", volume: "$218K", myLiquidity: "$0" },
-  { pair: "ETH/USDT",    tvl: "$2.4M", apy: "8.4%",  volume: "$1.2M", myLiquidity: "$0" },
-  { pair: "BTC/USDT",    tvl: "$5.1M", apy: "6.1%",  volume: "$3.8M", myLiquidity: "$0" },
+  {
+    pair: "SKY444/USDT",
+    tvl: "$1.8M",
+    apy: "24.6%",
+    volume: "$420K",
+    myLiquidity: "$0",
+  },
+  {
+    pair: "SKY444/ETH",
+    tvl: "$980K",
+    apy: "31.2%",
+    volume: "$218K",
+    myLiquidity: "$0",
+  },
+  {
+    pair: "ETH/USDT",
+    tvl: "$2.4M",
+    apy: "8.4%",
+    volume: "$1.2M",
+    myLiquidity: "$0",
+  },
+  {
+    pair: "BTC/USDT",
+    tvl: "$5.1M",
+    apy: "6.1%",
+    volume: "$3.8M",
+    myLiquidity: "$0",
+  },
 ];
 
 const TABS = ["Overview", "Pools", "Lending", "Bridges"] as const;
-type Tab = typeof TABS[number];
+type Tab = (typeof TABS)[number];
 
 const RISK_COLOR: Record<string, string> = {
   Low: "bg-green-500/20 text-green-400 border-green-500/30",
@@ -51,10 +141,30 @@ export default function DeFi() {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <StatCard icon={DollarSign} label="Total TVL" value="$10.5M" color="primary" />
-        <StatCard icon={TrendingUp} label="Best APY" value="34.7%" color="success" />
-        <StatCard icon={Activity} label="24h Volume" value="$5.6M" color="accent" />
-        <StatCard icon={BarChart3} label="Protocols" value={PROTOCOLS.length.toString()} color="warning" />
+        <StatCard
+          icon={DollarSign}
+          label="Total TVL"
+          value="$10.5M"
+          color="primary"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Best APY"
+          value="34.7%"
+          color="success"
+        />
+        <StatCard
+          icon={Activity}
+          label="24h Volume"
+          value="$5.6M"
+          color="accent"
+        />
+        <StatCard
+          icon={BarChart3}
+          label="Protocols"
+          value={PROTOCOLS.length.toString()}
+          color="warning"
+        />
       </div>
 
       {/* Tab bar */}
@@ -64,7 +174,9 @@ export default function DeFi() {
             key={t}
             onClick={() => setTab(t)}
             className={`flex-1 py-2.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97] ${
-              tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              tab === t
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t}
@@ -72,17 +184,21 @@ export default function DeFi() {
         ))}
       </div>
 
-      {(tab === "Overview") && (
+      {tab === "Overview" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PROTOCOLS.map(p => (
             <Link key={p.name} href={p.href}>
               <div className="card p-5 hover:border-slate-700/60 active:scale-[0.98] transition-all cursor-pointer group">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${p.color} flex items-center justify-center text-2xl mb-3`}>
+                <div
+                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${p.color} flex items-center justify-center text-2xl mb-3`}
+                >
                   {p.icon}
                 </div>
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="font-bold text-sm">{p.name}</h3>
-                  <Badge variant="outline" className="text-[10px]">{p.type}</Badge>
+                  <Badge variant="outline" className="text-[10px]">
+                    {p.type}
+                  </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
                   <div>
@@ -95,7 +211,9 @@ export default function DeFi() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-3">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border ${RISK_COLOR[p.risk]}`}>
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded-full border ${RISK_COLOR[p.risk]}`}
+                  >
                     {p.risk} Risk
                   </span>
                   <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-primary transition-colors" />
@@ -124,13 +242,23 @@ export default function DeFi() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm">{pool.pair}</div>
-                  <div className="text-xs text-muted-foreground">TVL: {pool.tvl} · Vol: {pool.volume}</div>
+                  <div className="text-xs text-muted-foreground">
+                    TVL: {pool.tvl} · Vol: {pool.volume}
+                  </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-green-400 font-bold text-sm">{pool.apy}</div>
+                  <div className="text-green-400 font-bold text-sm">
+                    {pool.apy}
+                  </div>
                   <div className="text-xs text-muted-foreground">APY</div>
                 </div>
-                <Button size="sm" variant="outline" className="text-xs shrink-0">Add LP</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs shrink-0"
+                >
+                  Add LP
+                </Button>
               </div>
             </Link>
           ))}
@@ -143,7 +271,9 @@ export default function DeFi() {
             <Layers className="w-8 h-8 text-blue-400" />
           </div>
           <h3 className="font-bold text-lg mb-2">SKY Lend Protocol</h3>
-          <p className="text-muted-foreground text-sm mb-4">Supply assets to earn interest or borrow against your collateral.</p>
+          <p className="text-muted-foreground text-sm mb-4">
+            Supply assets to earn interest or borrow against your collateral.
+          </p>
           <Link href="/staking">
             <Button className="btn-primary gap-2">
               <ArrowRight className="w-4 h-4" /> Open Lending
@@ -158,7 +288,9 @@ export default function DeFi() {
             <ArrowLeftRight className="w-8 h-8 text-orange-400" />
           </div>
           <h3 className="font-bold text-lg mb-2">Cross-Chain Bridge</h3>
-          <p className="text-muted-foreground text-sm mb-4">Bridge SKY444 across Ethereum, BSC, Polygon, Avalanche, and Solana.</p>
+          <p className="text-muted-foreground text-sm mb-4">
+            Bridge SKY444 across Ethereum, BSC, Polygon, Avalanche, and Solana.
+          </p>
           <Link href="/cross-chain">
             <Button className="btn-primary gap-2">
               <ArrowRight className="w-4 h-4" /> Open Bridge

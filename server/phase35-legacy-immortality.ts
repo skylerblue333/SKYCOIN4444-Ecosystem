@@ -9,12 +9,22 @@
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
 export type VaultStatus = "active" | "sealed" | "transferred" | "archived";
-export type WillStatus = "draft" | "active" | "triggered" | "executed" | "contested";
+export type WillStatus =
+  "draft" | "active" | "triggered" | "executed" | "contested";
 export type SuccessionStatus = "pending" | "active" | "completed" | "cancelled";
-export type MemorialStatus = "pending_verification" | "active" | "private" | "archived";
+export type MemorialStatus =
+  "pending_verification" | "active" | "private" | "archived";
 export type LegacyContentStatus = "scheduled" | "published" | "cancelled";
-export type ImmortalityTokenTier = "bronze" | "silver" | "gold" | "platinum" | "eternal";
-export type EstateAssetType = "wallet" | "content" | "nft" | "subscription" | "revenue_stream" | "community" | "storefront";
+export type ImmortalityTokenTier =
+  "bronze" | "silver" | "gold" | "platinum" | "eternal";
+export type EstateAssetType =
+  | "wallet"
+  | "content"
+  | "nft"
+  | "subscription"
+  | "revenue_stream"
+  | "community"
+  | "storefront";
 
 export interface LegacyVault {
   id: string;
@@ -39,7 +49,14 @@ export interface LegacyVault {
 export interface LegacyVaultContent {
   id: string;
   vaultId: string;
-  contentType: "message" | "media" | "document" | "credentials" | "wallet_keys" | "nft" | "token";
+  contentType:
+    | "message"
+    | "media"
+    | "document"
+    | "credentials"
+    | "wallet_keys"
+    | "nft"
+    | "token";
   title: string;
   description: string;
   data?: string;
@@ -88,7 +105,11 @@ export interface SuccessionPlan {
   id: string;
   creatorId: number;
   successorId: number;
-  role: "full_successor" | "content_manager" | "financial_manager" | "community_manager";
+  role:
+    | "full_successor"
+    | "content_manager"
+    | "financial_manager"
+    | "community_manager";
   status: SuccessionStatus;
   transferScope: EstateAssetType[];
   transitionPeriodDays: number;
@@ -173,7 +194,13 @@ export interface ImmortalityTokenHolder {
 export interface CulturalPreservationRecord {
   id: string;
   creatorId: number;
-  recordType: "milestone" | "cultural_moment" | "first_post" | "viral_content" | "community_founding" | "award";
+  recordType:
+    | "milestone"
+    | "cultural_moment"
+    | "first_post"
+    | "viral_content"
+    | "community_founding"
+    | "award";
   title: string;
   description: string;
   significance: "local" | "community" | "platform" | "global";
@@ -189,7 +216,8 @@ export interface PlatformMemoryEntry {
   id: string;
   entityType: "user" | "community" | "content" | "event";
   entityId: string;
-  memoryType: "creation" | "milestone" | "interaction" | "achievement" | "legacy";
+  memoryType:
+    "creation" | "milestone" | "interaction" | "achievement" | "legacy";
   title: string;
   description: string;
   participants: number[];
@@ -314,7 +342,13 @@ export const legacyVaultEngine = {
     return _vaults.get(vaultId) ?? null;
   },
 
-  getVaultStats(): { total: number; active: number; sealed: number; transferred: number; totalValue: number } {
+  getVaultStats(): {
+    total: number;
+    active: number;
+    sealed: number;
+    transferred: number;
+    totalValue: number;
+  } {
     const vaults = Array.from(_vaults.values());
     return {
       total: vaults.length,
@@ -411,7 +445,9 @@ export const digitalWillEngine = {
     return will;
   },
 
-  executeWill(willId: string): { will: DigitalWill; transfers: DigitalWillAsset[] } | null {
+  executeWill(
+    willId: string
+  ): { will: DigitalWill; transfers: DigitalWillAsset[] } | null {
     const will = _wills.get(willId);
     if (!will || will.status !== "triggered") return null;
 
@@ -428,9 +464,14 @@ export const digitalWillEngine = {
     return { will, transfers };
   },
 
-  contestWill(willId: string, contestantId: number, reason: string): DigitalWill | null {
+  contestWill(
+    willId: string,
+    contestantId: number,
+    reason: string
+  ): DigitalWill | null {
     const will = _wills.get(willId);
-    if (!will || (will.status !== "triggered" && will.status !== "executed")) return null;
+    if (!will || (will.status !== "triggered" && will.status !== "executed"))
+      return null;
     will.status = "contested";
     will.contestedBy = contestantId;
     will.contestReason = reason;
@@ -442,7 +483,12 @@ export const digitalWillEngine = {
     return Array.from(_wills.values()).filter(w => w.creatorId === creatorId);
   },
 
-  getWillStats(): { total: number; active: number; executed: number; contested: number } {
+  getWillStats(): {
+    total: number;
+    active: number;
+    executed: number;
+    contested: number;
+  } {
     const wills = Array.from(_wills.values());
     return {
       total: wills.length,
@@ -503,7 +549,9 @@ export const successionPlanEngine = {
   },
 
   getCreatorPlans(creatorId: number): SuccessionPlan[] {
-    return Array.from(_successionPlans.values()).filter(p => p.creatorId === creatorId);
+    return Array.from(_successionPlans.values()).filter(
+      p => p.creatorId === creatorId
+    );
   },
 };
 
@@ -584,7 +632,12 @@ export const memorialProfileEngine = {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   },
 
-  getMemorialStats(): { total: number; active: number; totalTributes: number; totalVisits: number } {
+  getMemorialStats(): {
+    total: number;
+    active: number;
+    totalTributes: number;
+    totalVisits: number;
+  } {
     const memorials = Array.from(_memorialProfiles.values());
     return {
       total: memorials.length,
@@ -648,8 +701,9 @@ export const legacyContentScheduler = {
 
   getDueSchedules(): LegacyContentSchedule[] {
     const now = new Date();
-    return Array.from(_legacySchedules.values())
-      .filter(s => s.status === "scheduled" && s.scheduledFor <= now);
+    return Array.from(_legacySchedules.values()).filter(
+      s => s.status === "scheduled" && s.scheduledFor <= now
+    );
   },
 };
 
@@ -679,7 +733,10 @@ export const immortalityTokenEngine = {
       attributes: params.attributes ?? [
         { trait_type: "Creator", value: params.creatorId },
         { trait_type: "Tier", value: params.tier },
-        { trait_type: "Immortality Level", value: params.tier === "eternal" ? "Eternal" : params.tier },
+        {
+          trait_type: "Immortality Level",
+          value: params.tier === "eternal" ? "Eternal" : params.tier,
+        },
       ],
       totalSupply: params.totalSupply,
       mintedCount: 0,
@@ -693,7 +750,11 @@ export const immortalityTokenEngine = {
     return token;
   },
 
-  purchaseToken(tokenId: string, holderId: number, purchasePrice: number): ImmortalityTokenHolder | null {
+  purchaseToken(
+    tokenId: string,
+    holderId: number,
+    purchasePrice: number
+  ): ImmortalityTokenHolder | null {
     const token = _immortalityTokens.get(tokenId);
     if (!token || !token.isActive) return null;
     if (token.mintedCount >= token.totalSupply) return null;
@@ -713,11 +774,15 @@ export const immortalityTokenEngine = {
   },
 
   getCreatorTokens(creatorId: number): ImmortalityToken[] {
-    return Array.from(_immortalityTokens.values()).filter(t => t.creatorId === creatorId);
+    return Array.from(_immortalityTokens.values()).filter(
+      t => t.creatorId === creatorId
+    );
   },
 
   getTokenHolders(tokenId: string): ImmortalityTokenHolder[] {
-    return Array.from(_immortalityHolders.values()).filter(h => h.tokenId === tokenId);
+    return Array.from(_immortalityHolders.values()).filter(
+      h => h.tokenId === tokenId
+    );
   },
 
   isHolder(userId: number, creatorId: number): boolean {
@@ -726,7 +791,12 @@ export const immortalityTokenEngine = {
     );
   },
 
-  getImmortalityStats(): { totalTokens: number; totalMinted: number; totalRevenue: number; byTier: Record<string, number> } {
+  getImmortalityStats(): {
+    totalTokens: number;
+    totalMinted: number;
+    totalRevenue: number;
+    byTier: Record<string, number>;
+  } {
     const tokens = Array.from(_immortalityTokens.values());
     const holders = Array.from(_immortalityHolders.values());
     const byTier: Record<string, number> = {};
@@ -785,19 +855,27 @@ export const culturalPreservationEngine = {
       .sort((a, b) => b.preservedAt.getTime() - a.preservedAt.getTime());
   },
 
-  getGlobalMilestones(significance: CulturalPreservationRecord["significance"], limit = 50): CulturalPreservationRecord[] {
+  getGlobalMilestones(
+    significance: CulturalPreservationRecord["significance"],
+    limit = 50
+  ): CulturalPreservationRecord[] {
     return Array.from(_culturalRecords.values())
       .filter(r => r.significance === significance && r.isPublic)
       .sort((a, b) => b.viewCount - a.viewCount)
       .slice(0, limit);
   },
 
-  getCulturalStats(): { total: number; bySignificance: Record<string, number>; totalViews: number } {
+  getCulturalStats(): {
+    total: number;
+    bySignificance: Record<string, number>;
+    totalViews: number;
+  } {
     const records = Array.from(_culturalRecords.values());
     const bySignificance: Record<string, number> = {};
     let totalViews = 0;
     for (const r of records) {
-      bySignificance[r.significance] = (bySignificance[r.significance] ?? 0) + 1;
+      bySignificance[r.significance] =
+        (bySignificance[r.significance] ?? 0) + 1;
       totalViews += r.viewCount;
     }
     return { total: records.length, bySignificance, totalViews };
@@ -853,7 +931,11 @@ export const platformMemoryEngine = {
       .slice(0, limit);
   },
 
-  getPlatformMemoryStats(): { total: number; preserved: number; byType: Record<string, number> } {
+  getPlatformMemoryStats(): {
+    total: number;
+    preserved: number;
+    byType: Record<string, number>;
+  } {
     const memories = Array.from(_platformMemories.values());
     const byType: Record<string, number> = {};
     let preserved = 0;
@@ -892,7 +974,9 @@ export const legacyImmortalityDashboard = {
     memorials: ReturnType<typeof memorialProfileEngine.getMemorialStats>;
     immortality: ReturnType<typeof immortalityTokenEngine.getImmortalityStats>;
     cultural: ReturnType<typeof culturalPreservationEngine.getCulturalStats>;
-    platformMemory: ReturnType<typeof platformMemoryEngine.getPlatformMemoryStats>;
+    platformMemory: ReturnType<
+      typeof platformMemoryEngine.getPlatformMemoryStats
+    >;
   } {
     return {
       vaults: legacyVaultEngine.getVaultStats(),

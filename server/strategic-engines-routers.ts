@@ -17,9 +17,27 @@ export const feedbackRouter = router({
       // Real feedback from database
       return {
         feedback: [
-          { id: "1", source: "user", priority: "high", impact: 95, status: "active" },
-          { id: "2", source: "agent", priority: "medium", impact: 72, status: "active" },
-          { id: "3", source: "system", priority: "low", impact: 45, status: "resolved" },
+          {
+            id: "1",
+            source: "user",
+            priority: "high",
+            impact: 95,
+            status: "active",
+          },
+          {
+            id: "2",
+            source: "agent",
+            priority: "medium",
+            impact: 72,
+            status: "active",
+          },
+          {
+            id: "3",
+            source: "system",
+            priority: "low",
+            impact: 45,
+            status: "resolved",
+          },
         ],
         total: 3,
         timestamp: new Date(),
@@ -27,7 +45,13 @@ export const feedbackRouter = router({
     }),
 
   submit: protectedProcedure
-    .input(z.object({ source: z.string(), content: z.string(), priority: z.string() }))
+    .input(
+      z.object({
+        source: z.string(),
+        content: z.string(),
+        priority: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       // Save feedback to database
       return { success: true, id: "new-feedback-id", timestamp: new Date() };
@@ -39,8 +63,20 @@ export const roadmapRouter = router({
     // Real roadmap items from database
     return {
       items: [
-        { id: "1", title: "AI Agent Network", priority: 1, impact: 98, signals: 45 },
-        { id: "2", title: "Scalable Features", priority: 2, impact: 87, signals: 38 },
+        {
+          id: "1",
+          title: "AI Agent Network",
+          priority: 1,
+          impact: 98,
+          signals: 45,
+        },
+        {
+          id: "2",
+          title: "Scalable Features",
+          priority: 2,
+          impact: 87,
+          signals: 38,
+        },
         { id: "3", title: "Mobile App", priority: 3, impact: 76, signals: 32 },
       ],
       total: 3,
@@ -51,7 +87,11 @@ export const roadmapRouter = router({
   prioritize: protectedProcedure
     .input(z.object({ itemId: z.string(), newPriority: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      return { success: true, itemId: input.itemId, newPriority: input.newPriority };
+      return {
+        success: true,
+        itemId: input.itemId,
+        newPriority: input.newPriority,
+      };
     }),
 });
 
@@ -60,10 +100,30 @@ export const agentsRouter = router({
     // Real agent perspectives from database
     return {
       agents: [
-        { id: "product", name: "Product Agent", perspective: "Strategic growth", confidence: 0.92 },
-        { id: "engineering", name: "Engineering Agent", perspective: "Technical feasibility", confidence: 0.88 },
-        { id: "finance", name: "Finance Agent", perspective: "Financial impact", confidence: 0.85 },
-        { id: "customer", name: "Customer Agent", perspective: "User satisfaction", confidence: 0.90 },
+        {
+          id: "product",
+          name: "Product Agent",
+          perspective: "Strategic growth",
+          confidence: 0.92,
+        },
+        {
+          id: "engineering",
+          name: "Engineering Agent",
+          perspective: "Technical feasibility",
+          confidence: 0.88,
+        },
+        {
+          id: "finance",
+          name: "Finance Agent",
+          perspective: "Financial impact",
+          confidence: 0.85,
+        },
+        {
+          id: "customer",
+          name: "Customer Agent",
+          perspective: "User satisfaction",
+          confidence: 0.9,
+        },
       ],
       timestamp: new Date(),
     };
@@ -78,7 +138,12 @@ export const agentsRouter = router({
         consensus: 0.87,
         recommendation: "Proceed with feature launch",
         reasoning: "All agents agree on strategic value",
-        auditTrail: ["Product: +1", "Engineering: +1", "Finance: +1", "Customer: +1"],
+        auditTrail: [
+          "Product: +1",
+          "Engineering: +1",
+          "Finance: +1",
+          "Customer: +1",
+        ],
       };
     }),
 });
@@ -92,9 +157,27 @@ export const competitorsRouter = router({
     // Real competitor data from database
     return {
       competitors: [
-        { id: "1", name: "Competitor A", marketShare: 28, growth: 0.35, features: 45 },
-        { id: "2", name: "Competitor B", marketShare: 22, growth: 0.28, features: 38 },
-        { id: "3", name: "Competitor C", marketShare: 18, growth: 0.42, features: 52 },
+        {
+          id: "1",
+          name: "Competitor A",
+          marketShare: 28,
+          growth: 0.35,
+          features: 45,
+        },
+        {
+          id: "2",
+          name: "Competitor B",
+          marketShare: 22,
+          growth: 0.28,
+          features: 38,
+        },
+        {
+          id: "3",
+          name: "Competitor C",
+          marketShare: 18,
+          growth: 0.42,
+          features: 52,
+        },
       ],
       total: 3,
       lastUpdated: new Date(),
@@ -118,7 +201,12 @@ export const behavioralRouter = router({
     // Real user segments from database
     return {
       segments: [
-        { id: "high-value", name: "High Value Users", count: 1250, churnRisk: 0.05 },
+        {
+          id: "high-value",
+          name: "High Value Users",
+          count: 1250,
+          churnRisk: 0.05,
+        },
         { id: "growth", name: "Growth Segment", count: 3400, churnRisk: 0.15 },
         { id: "at-risk", name: "At-Risk Users", count: 850, churnRisk: 0.65 },
       ],
@@ -145,9 +233,24 @@ export const experimentsRouter = router({
     // Real experiments from database
     return {
       experiments: [
-        { id: "1", hypothesis: "Larger CTA increases conversion", status: "running", confidence: 0.86 },
-        { id: "2", hypothesis: "Email timing optimization", status: "running", confidence: 0.79 },
-        { id: "3", hypothesis: "Onboarding flow improvement", status: "completed", confidence: 0.92 },
+        {
+          id: "1",
+          hypothesis: "Larger CTA increases conversion",
+          status: "running",
+          confidence: 0.86,
+        },
+        {
+          id: "2",
+          hypothesis: "Email timing optimization",
+          status: "running",
+          confidence: 0.79,
+        },
+        {
+          id: "3",
+          hypothesis: "Onboarding flow improvement",
+          status: "completed",
+          confidence: 0.92,
+        },
       ],
       total: 3,
       successRate: 0.86,
@@ -204,9 +307,27 @@ export const connectorsRouter = router({
     // Real connector status from database
     return {
       connectors: [
-        { id: "slack", name: "Slack", status: "connected", lastSync: new Date(), syncLatency: 120 },
-        { id: "jira", name: "Jira", status: "connected", lastSync: new Date(), syncLatency: 145 },
-        { id: "figma", name: "Figma", status: "connected", lastSync: new Date(), syncLatency: 98 },
+        {
+          id: "slack",
+          name: "Slack",
+          status: "connected",
+          lastSync: new Date(),
+          syncLatency: 120,
+        },
+        {
+          id: "jira",
+          name: "Jira",
+          status: "connected",
+          lastSync: new Date(),
+          syncLatency: 145,
+        },
+        {
+          id: "figma",
+          name: "Figma",
+          status: "connected",
+          lastSync: new Date(),
+          syncLatency: 98,
+        },
       ],
       total: 3,
       avgUptime: 0.992,
@@ -232,9 +353,27 @@ export const productBrainRouter = router({
     // Real playbooks from database
     return {
       playbooks: [
-        { id: "1", name: "Growth Playbook", version: 3, effectiveness: 0.89, lessons: 45 },
-        { id: "2", name: "Monetization Playbook", version: 2, effectiveness: 0.82, lessons: 32 },
-        { id: "3", name: "Retention Playbook", version: 4, effectiveness: 0.91, lessons: 58 },
+        {
+          id: "1",
+          name: "Growth Playbook",
+          version: 3,
+          effectiveness: 0.89,
+          lessons: 45,
+        },
+        {
+          id: "2",
+          name: "Monetization Playbook",
+          version: 2,
+          effectiveness: 0.82,
+          lessons: 32,
+        },
+        {
+          id: "3",
+          name: "Retention Playbook",
+          version: 4,
+          effectiveness: 0.91,
+          lessons: 58,
+        },
       ],
       total: 3,
       totalLessons: 156,
@@ -264,9 +403,27 @@ export const simulatorRouter = router({
     // Real scenarios from database
     return {
       scenarios: [
-        { id: "baseline", name: "Baseline", year5Revenue: 850, year5Users: 45, year5Valuation: 8500 },
-        { id: "aggressive", name: "Aggressive", year5Revenue: 1250, year5Users: 72, year5Valuation: 12500 },
-        { id: "conservative", name: "Conservative", year5Revenue: 620, year5Users: 28, year5Valuation: 6200 },
+        {
+          id: "baseline",
+          name: "Baseline",
+          year5Revenue: 850,
+          year5Users: 45,
+          year5Valuation: 8500,
+        },
+        {
+          id: "aggressive",
+          name: "Aggressive",
+          year5Revenue: 1250,
+          year5Users: 72,
+          year5Valuation: 12500,
+        },
+        {
+          id: "conservative",
+          name: "Conservative",
+          year5Revenue: 620,
+          year5Users: 28,
+          year5Valuation: 6200,
+        },
       ],
       total: 3,
     };

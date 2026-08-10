@@ -38,7 +38,8 @@ export type PaymentType =
   | "quest_reward"
   | "guild_contribution";
 
-export type PaymentStatus = "pending" | "processing" | "completed" | "failed" | "refunded" | "disputed";
+export type PaymentStatus =
+  "pending" | "processing" | "completed" | "failed" | "refunded" | "disputed";
 
 export interface SubscriptionPlan {
   id: string;
@@ -174,7 +175,7 @@ export class PaymentProcessor {
   private getFeeRate(type: PaymentType): number {
     const feeRates: Record<PaymentType, number> = {
       tip: 0.05, // 5%
-      subscription: 0.10, // 10%
+      subscription: 0.1, // 10%
       marketplace_purchase: 0.08, // 8%
       tournament_entry: 0.03, // 3%
       donation: 0.02, // 2%
@@ -198,14 +199,18 @@ export class PaymentProcessor {
   /**
    * Get user's payment history
    */
-  getUserPayments(userId: number, options?: {
-    type?: PaymentType;
-    status?: PaymentStatus;
-    limit?: number;
-    offset?: number;
-  }): Payment[] {
-    let payments = Array.from(this.payments.values())
-      .filter(p => p.fromUserId === userId || p.toUserId === userId);
+  getUserPayments(
+    userId: number,
+    options?: {
+      type?: PaymentType;
+      status?: PaymentStatus;
+      limit?: number;
+      offset?: number;
+    }
+  ): Payment[] {
+    let payments = Array.from(this.payments.values()).filter(
+      p => p.fromUserId === userId || p.toUserId === userId
+    );
 
     if (options?.type) {
       payments = payments.filter(p => p.type === options.type);
@@ -231,8 +236,9 @@ export class PaymentProcessor {
     byType: Record<string, number>;
   } {
     const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
-    const recent = Array.from(this.payments.values())
-      .filter(p => p.createdAt > cutoff && p.status === "completed");
+    const recent = Array.from(this.payments.values()).filter(
+      p => p.createdAt > cutoff && p.status === "completed"
+    );
 
     const byType: Record<string, number> = {};
     let totalVolume = 0;
@@ -293,14 +299,18 @@ export class SubscriptionBillingEngine {
   /**
    * Subscribe a user to a plan
    */
-  async subscribe(userId: number, planId: string): Promise<ActiveSubscription | null> {
+  async subscribe(
+    userId: number,
+    planId: string
+  ): Promise<ActiveSubscription | null> {
     const plan = this.plans.get(planId);
     if (!plan || !plan.isActive) return null;
 
     // Check max subscribers
     if (plan.maxSubscribers) {
-      const currentCount = Array.from(this.subscriptions.values())
-        .filter(s => s.planId === planId && s.status === "active").length;
+      const currentCount = Array.from(this.subscriptions.values()).filter(
+        s => s.planId === planId && s.status === "active"
+      ).length;
       if (currentCount >= plan.maxSubscribers) return null;
     }
 
@@ -353,7 +363,10 @@ export class SubscriptionBillingEngine {
    */
   hasActiveSubscription(userId: number, creatorId: number): boolean {
     return Array.from(this.subscriptions.values()).some(
-      s => s.userId === userId && s.creatorId === creatorId && s.status === "active"
+      s =>
+        s.userId === userId &&
+        s.creatorId === creatorId &&
+        s.status === "active"
     );
   }
 
@@ -361,24 +374,27 @@ export class SubscriptionBillingEngine {
    * Get creator's subscribers
    */
   getCreatorSubscribers(creatorId: number): ActiveSubscription[] {
-    return Array.from(this.subscriptions.values())
-      .filter(s => s.creatorId === creatorId && s.status === "active");
+    return Array.from(this.subscriptions.values()).filter(
+      s => s.creatorId === creatorId && s.status === "active"
+    );
   }
 
   /**
    * Get user's subscriptions
    */
   getUserSubscriptions(userId: number): ActiveSubscription[] {
-    return Array.from(this.subscriptions.values())
-      .filter(s => s.userId === userId);
+    return Array.from(this.subscriptions.values()).filter(
+      s => s.userId === userId
+    );
   }
 
   /**
    * Get creator's plans
    */
   getCreatorPlans(creatorId: number): SubscriptionPlan[] {
-    return Array.from(this.plans.values())
-      .filter(p => p.creatorId === creatorId);
+    return Array.from(this.plans.values()).filter(
+      p => p.creatorId === creatorId
+    );
   }
 
   /**
@@ -432,8 +448,9 @@ export class SubscriptionBillingEngine {
     churnRate: number;
     averageLifetime: number;
   } {
-    const subs = Array.from(this.subscriptions.values())
-      .filter(s => s.creatorId === creatorId);
+    const subs = Array.from(this.subscriptions.values()).filter(
+      s => s.creatorId === creatorId
+    );
 
     const active = subs.filter(s => s.status === "active");
     const cancelled = subs.filter(s => s.status === "cancelled");
@@ -442,8 +459,12 @@ export class SubscriptionBillingEngine {
     for (const sub of active) {
       const plan = this.plans.get(sub.planId);
       if (plan) {
-        const monthlyPrice = plan.interval === "monthly" ? plan.price :
-          plan.interval === "quarterly" ? plan.price / 3 : plan.price / 12;
+        const monthlyPrice =
+          plan.interval === "monthly"
+            ? plan.price
+            : plan.interval === "quarterly"
+              ? plan.price / 3
+              : plan.price / 12;
         monthlyRecurring += monthlyPrice;
       }
     }
@@ -454,7 +475,9 @@ export class SubscriptionBillingEngine {
     let totalDays = 0;
     for (const sub of subs) {
       const end = sub.cancelledAt || new Date();
-      totalDays += (end.getTime() - sub.currentPeriodStart.getTime()) / (1000 * 60 * 60 * 24);
+      totalDays +=
+        (end.getTime() - sub.currentPeriodStart.getTime()) /
+        (1000 * 60 * 60 * 24);
     }
     const averageLifetime = subs.length > 0 ? totalDays / subs.length : 0;
 
@@ -466,12 +489,21 @@ export class SubscriptionBillingEngine {
     };
   }
 
-  private calculatePeriodEnd(start: Date, interval: "monthly" | "quarterly" | "yearly"): Date {
+  private calculatePeriodEnd(
+    start: Date,
+    interval: "monthly" | "quarterly" | "yearly"
+  ): Date {
     const end = new Date(start);
     switch (interval) {
-      case "monthly": end.setMonth(end.getMonth() + 1); break;
-      case "quarterly": end.setMonth(end.getMonth() + 3); break;
-      case "yearly": end.setFullYear(end.getFullYear() + 1); break;
+      case "monthly":
+        end.setMonth(end.getMonth() + 1);
+        break;
+      case "quarterly":
+        end.setMonth(end.getMonth() + 3);
+        break;
+      case "yearly":
+        end.setFullYear(end.getFullYear() + 1);
+        break;
     }
     return end;
   }
@@ -538,7 +570,8 @@ export class EscrowService {
   disputeEscrow(escrowId: string, disputedBy: number, reason: string): boolean {
     const escrow = this.escrows.get(escrowId);
     if (!escrow || escrow.status !== "held") return false;
-    if (disputedBy !== escrow.buyerId && disputedBy !== escrow.sellerId) return false;
+    if (disputedBy !== escrow.buyerId && disputedBy !== escrow.sellerId)
+      return false;
 
     escrow.status = "disputed";
     escrow.disputeReason = reason;
@@ -565,8 +598,7 @@ export class EscrowService {
    * Get active escrows (held funds)
    */
   getActiveEscrows(): EscrowTransaction[] {
-    return Array.from(this.escrows.values())
-      .filter(e => e.status === "held");
+    return Array.from(this.escrows.values()).filter(e => e.status === "held");
   }
 
   /**
@@ -608,7 +640,12 @@ export class RefundProcessor {
   /**
    * Request a refund
    */
-  requestRefund(paymentId: string, userId: number, reason: string, amount: number): RefundRequest {
+  requestRefund(
+    paymentId: string,
+    userId: number,
+    reason: string,
+    amount: number
+  ): RefundRequest {
     this.idCounter++;
     const refund: RefundRequest = {
       id: `REF-${this.idCounter.toString().padStart(6, "0")}`,
@@ -724,7 +761,11 @@ export class RevenueSharingEngine {
   /**
    * Process a payout
    */
-  processPayout(userId: number): { amount: number; success: boolean; reason?: string } {
+  processPayout(userId: number): {
+    amount: number;
+    success: boolean;
+    reason?: string;
+  } {
     const share = this.getRevenueShare(userId);
 
     if (share.pendingPayout < share.minimumPayout) {
@@ -746,7 +787,9 @@ export class RevenueSharingEngine {
   /**
    * Get top earners
    */
-  getTopEarners(limit: number = 10): Array<{ userId: number; totalEarned: number; pendingPayout: number }> {
+  getTopEarners(
+    limit: number = 10
+  ): Array<{ userId: number; totalEarned: number; pendingPayout: number }> {
     return Array.from(this.shares.values())
       .sort((a, b) => b.totalEarned - a.totalEarned)
       .slice(0, limit)
@@ -781,13 +824,22 @@ export class RevenueSharingEngine {
       if (share.totalEarned > 0) activeCreators++;
     }
 
-    return { totalRevenue, totalPaidOut, totalPending, totalFees, activeCreators };
+    return {
+      totalRevenue,
+      totalPaidOut,
+      totalPending,
+      totalFees,
+      activeCreators,
+    };
   }
 
   /**
    * Update payout schedule
    */
-  updatePayoutSchedule(userId: number, schedule: "weekly" | "biweekly" | "monthly"): void {
+  updatePayoutSchedule(
+    userId: number,
+    schedule: "weekly" | "biweekly" | "monthly"
+  ): void {
     const share = this.getRevenueShare(userId);
     share.payoutSchedule = schedule;
   }
@@ -811,7 +863,10 @@ export class FinancialReporter {
   private paymentProcessor: PaymentProcessor;
   private revenueEngine: RevenueSharingEngine;
 
-  constructor(paymentProcessor: PaymentProcessor, revenueEngine: RevenueSharingEngine) {
+  constructor(
+    paymentProcessor: PaymentProcessor,
+    revenueEngine: RevenueSharingEngine
+  ) {
     this.paymentProcessor = paymentProcessor;
     this.revenueEngine = revenueEngine;
   }
@@ -831,7 +886,10 @@ export class FinancialReporter {
       totalPayouts: platformStats.totalPaidOut,
       transactionCount: volumeStats.transactionCount,
       averageTransactionSize: volumeStats.averageSize,
-      topEarners: topEarners.map(e => ({ userId: e.userId, amount: e.totalEarned })),
+      topEarners: topEarners.map(e => ({
+        userId: e.userId,
+        amount: e.totalEarned,
+      })),
       revenueByType: volumeStats.byType,
       growthRate: 0, // Would compare to previous period
     };
@@ -875,7 +933,9 @@ export function getPaymentProcessor(): PaymentProcessor {
 
 export function getSubscriptionEngine(): SubscriptionBillingEngine {
   if (!subscriptionEngineInstance) {
-    subscriptionEngineInstance = new SubscriptionBillingEngine(getPaymentProcessor());
+    subscriptionEngineInstance = new SubscriptionBillingEngine(
+      getPaymentProcessor()
+    );
   }
   return subscriptionEngineInstance;
 }
@@ -903,7 +963,10 @@ export function getRevenueSharingEngine(): RevenueSharingEngine {
 
 export function getFinancialReporter(): FinancialReporter {
   if (!financialReporterInstance) {
-    financialReporterInstance = new FinancialReporter(getPaymentProcessor(), getRevenueSharingEngine());
+    financialReporterInstance = new FinancialReporter(
+      getPaymentProcessor(),
+      getRevenueSharingEngine()
+    );
   }
   return financialReporterInstance;
 }

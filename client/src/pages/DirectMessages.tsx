@@ -5,7 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Send, Search, Plus, MoreVertical, Paperclip, Smile, Phone, Video } from "lucide-react";
+import {
+  Send,
+  Search,
+  Plus,
+  MoreVertical,
+  Paperclip,
+  Smile,
+  Phone,
+  Video,
+} from "lucide-react";
 
 interface Message {
   id: string;
@@ -92,7 +101,9 @@ const mockMessages: Message[] = [
 ];
 
 export function DirectMessages() {
-  const [selectedConversation, setSelectedConversation] = useState(mockConversations[0]);
+  const [selectedConversation, setSelectedConversation] = useState(
+    mockConversations[0]
+  );
   const [messages, setMessages] = useState(mockMessages);
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -124,7 +135,7 @@ export function DirectMessages() {
     toast.success("Message sent");
   };
 
-  const filteredConversations = mockConversations.filter((conv) =>
+  const filteredConversations = mockConversations.filter(conv =>
     conv.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -141,14 +152,14 @@ export function DirectMessages() {
                 <Input
                   placeholder="Search conversations..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600 text-white text-sm"
                 />
               </div>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto p-0">
               <div className="space-y-1 p-2">
-                {filteredConversations.map((conv) => (
+                {filteredConversations.map(conv => (
                   <button
                     key={conv.id}
                     onClick={() => setSelectedConversation(conv)}
@@ -170,12 +181,18 @@ export function DirectMessages() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium text-white truncate">{conv.name}</p>
+                          <p className="font-medium text-white truncate">
+                            {conv.name}
+                          </p>
                           {conv.unread > 0 && (
-                            <Badge className="bg-red-600 text-white text-xs">{conv.unread}</Badge>
+                            <Badge className="bg-red-600 text-white text-xs">
+                              {conv.unread}
+                            </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-slate-400 truncate">{conv.lastMessage}</p>
+                        <p className="text-xs text-slate-400 truncate">
+                          {conv.lastMessage}
+                        </p>
                       </div>
                     </div>
                   </button>
@@ -197,23 +214,39 @@ export function DirectMessages() {
               <div className="flex items-center gap-3">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={selectedConversation.avatar} />
-                  <AvatarFallback>{selectedConversation.name[0]}</AvatarFallback>
+                  <AvatarFallback>
+                    {selectedConversation.name[0]}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium text-white">{selectedConversation.name}</p>
+                  <p className="font-medium text-white">
+                    {selectedConversation.name}
+                  </p>
                   <p className="text-xs text-slate-400">
                     {selectedConversation.isOnline ? "Online" : "Offline"}
                   </p>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="ghost" className="text-slate-400 hover:text-white">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-slate-400 hover:text-white"
+                >
                   <Phone className="w-4 h-4" />
                 </Button>
-                <Button size="sm" variant="ghost" className="text-slate-400 hover:text-white">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-slate-400 hover:text-white"
+                >
                   <Video className="w-4 h-4" />
                 </Button>
-                <Button size="sm" variant="ghost" className="text-slate-400 hover:text-white">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-slate-400 hover:text-white"
+                >
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </div>
@@ -221,8 +254,11 @@ export function DirectMessages() {
 
             {/* Messages */}
             <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.isOwn ? "justify-end" : "justify-start"}`}>
+              {messages.map(msg => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.isOwn ? "justify-end" : "justify-start"}`}
+                >
                   <div
                     className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                       msg.isOwn
@@ -231,8 +267,13 @@ export function DirectMessages() {
                     }`}
                   >
                     <p className="text-sm">{msg.content}</p>
-                    <p className={`text-xs mt-1 ${msg.isOwn ? "text-purple-200" : "text-slate-400"}`}>
-                      {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    <p
+                      className={`text-xs mt-1 ${msg.isOwn ? "text-purple-200" : "text-slate-400"}`}
+                    >
+                      {msg.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                       {msg.isOwn && ` • ${msg.status}`}
                     </p>
                   </div>
@@ -256,7 +297,7 @@ export function DirectMessages() {
                   type="text"
                   placeholder="Type a message..."
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={e => setNewMessage(e.target.value)}
                   className="flex-1 bg-slate-700 border-slate-600 text-white"
                 />
                 <Button
@@ -267,7 +308,11 @@ export function DirectMessages() {
                 >
                   <Smile className="w-4 h-4" />
                 </Button>
-                <Button type="submit" size="sm" className="bg-purple-600 hover:bg-purple-700">
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
                   <Send className="w-4 h-4" />
                 </Button>
               </form>

@@ -1,9 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
-import { AlertCircle, Heart, MessageCircle, Share2, Eye, Radio } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  AlertCircle,
+  Heart,
+  MessageCircle,
+  Share2,
+  Eye,
+  Radio,
+} from "lucide-react";
 
 interface LiveStream {
   id: string;
@@ -12,7 +19,7 @@ interface LiveStream {
   viewers: number;
   likes: number;
   comments: number;
-  status: 'live' | 'ended' | 'scheduled';
+  status: "live" | "ended" | "scheduled";
   thumbnail: string;
   startTime: number;
   endTime?: number;
@@ -31,7 +38,7 @@ export default function Live() {
   const [activeStream, setActiveStream] = useState<LiveStream | null>(null);
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
@@ -42,62 +49,62 @@ export default function Live() {
     try {
       const mockStreams: LiveStream[] = [
         {
-          id: '1',
-          title: 'SKYCOIN4444 Live Trading Session',
-          streamer: 'Skyler Spillers',
+          id: "1",
+          title: "SKYCOIN4444 Live Trading Session",
+          streamer: "Skyler Spillers",
           viewers: 2543,
           likes: 1200,
           comments: 340,
-          status: 'live',
-          thumbnail: 'https://via.placeholder.com/400x225?text=LIVE+Trading',
+          status: "live",
+          thumbnail: "https://via.placeholder.com/400x225?text=LIVE+Trading",
           startTime: Date.now() - 3600000,
-          category: 'Finance',
+          category: "Finance",
         },
         {
-          id: '2',
-          title: 'Hope AI Product Demo',
-          streamer: 'Hope AI Team',
+          id: "2",
+          title: "Hope AI Product Demo",
+          streamer: "Hope AI Team",
           viewers: 1890,
           likes: 950,
           comments: 280,
-          status: 'live',
-          thumbnail: 'https://via.placeholder.com/400x225?text=AI+Demo',
+          status: "live",
+          thumbnail: "https://via.placeholder.com/400x225?text=AI+Demo",
           startTime: Date.now() - 1800000,
-          category: 'Technology',
+          category: "Technology",
         },
         {
-          id: '3',
-          title: 'ShadowChat Community Q&A',
-          streamer: 'Community Manager',
+          id: "3",
+          title: "ShadowChat Community Q&A",
+          streamer: "Community Manager",
           viewers: 756,
           likes: 420,
           comments: 150,
-          status: 'live',
-          thumbnail: 'https://via.placeholder.com/400x225?text=Community+QA',
+          status: "live",
+          thumbnail: "https://via.placeholder.com/400x225?text=Community+QA",
           startTime: Date.now() - 900000,
-          category: 'Community',
+          category: "Community",
         },
       ];
 
       const mockComments: Comment[] = [
         {
-          id: '1',
-          author: 'CryptoEnthusiast',
-          text: 'Amazing stream! Love the insights on market trends.',
+          id: "1",
+          author: "CryptoEnthusiast",
+          text: "Amazing stream! Love the insights on market trends.",
           timestamp: Date.now() - 120000,
           likes: 45,
         },
         {
-          id: '2',
-          author: 'TechLover',
-          text: 'The AI integration is incredible. This is the future!',
+          id: "2",
+          author: "TechLover",
+          text: "The AI integration is incredible. This is the future!",
           timestamp: Date.now() - 90000,
           likes: 32,
         },
         {
-          id: '3',
-          author: 'SkyFan',
-          text: 'Can\'t wait to see what\'s next for SKYCOIN4444',
+          id: "3",
+          author: "SkyFan",
+          text: "Can't wait to see what's next for SKYCOIN4444",
           timestamp: Date.now() - 60000,
           likes: 28,
         },
@@ -109,7 +116,7 @@ export default function Live() {
       setViewerCount(mockStreams[0].viewers);
       setIsLoading(false);
     } catch (err) {
-      setError('Failed to load live streams. Please try again.');
+      setError("Failed to load live streams. Please try again.");
       setIsLoading(false);
     }
   }, []);
@@ -119,7 +126,7 @@ export default function Live() {
     if (!activeStream) return;
 
     const interval = setInterval(() => {
-      setViewerCount((prev) => {
+      setViewerCount(prev => {
         const change = Math.floor(Math.random() * 100) - 40;
         return Math.max(100, prev + change);
       });
@@ -133,14 +140,14 @@ export default function Live() {
 
     const comment: Comment = {
       id: String(comments.length + 1),
-      author: 'You',
+      author: "You",
       text: newComment,
       timestamp: Date.now(),
       likes: 0,
     };
 
     setComments([comment, ...comments]);
-    setNewComment('');
+    setNewComment("");
   };
 
   const handleLike = () => {
@@ -180,7 +187,10 @@ export default function Live() {
             <Radio className="w-6 h-6 text-red-500 animate-pulse" />
             <h1 className="text-2xl font-bold">LIVE</h1>
           </div>
-          <Button variant="outline" className="border-purple-500 text-purple-400 hover:bg-purple-900">
+          <Button
+            variant="outline"
+            className="border-purple-500 text-purple-400 hover:bg-purple-900"
+          >
             Go Live
           </Button>
         </div>
@@ -208,7 +218,9 @@ export default function Live() {
                     </div>
                     <div className="absolute top-4 right-4 flex items-center gap-2 bg-black/70 px-3 py-1 rounded-full">
                       <Eye className="w-4 h-4" />
-                      <span className="text-sm font-semibold">{viewerCount.toLocaleString()}</span>
+                      <span className="text-sm font-semibold">
+                        {viewerCount.toLocaleString()}
+                      </span>
                     </div>
                     <div className="text-center">
                       <p className="text-4xl font-bold mb-2">▶</p>
@@ -220,27 +232,39 @@ export default function Live() {
                 {/* Stream Info */}
                 <div className="space-y-4">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">{activeStream.title}</h2>
+                    <h2 className="text-2xl font-bold mb-2">
+                      {activeStream.title}
+                    </h2>
                     <p className="text-gray-400">by {activeStream.streamer}</p>
                   </div>
 
                   {/* Actions */}
                   <div className="flex gap-4 flex-wrap">
                     <Button
-                      variant={liked ? 'default' : 'outline'}
+                      variant={liked ? "default" : "outline"}
                       className={`flex items-center gap-2 ${
-                        liked ? 'bg-red-600 hover:bg-red-700' : 'border-purple-500 text-purple-400'
+                        liked
+                          ? "bg-red-600 hover:bg-red-700"
+                          : "border-purple-500 text-purple-400"
                       }`}
                       onClick={handleLike}
                     >
-                      <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
+                      <Heart
+                        className={`w-5 h-5 ${liked ? "fill-current" : ""}`}
+                      />
                       {activeStream.likes.toLocaleString()}
                     </Button>
-                    <Button variant="outline" className="flex items-center gap-2 border-purple-500 text-purple-400">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 border-purple-500 text-purple-400"
+                    >
                       <MessageCircle className="w-5 h-5" />
                       {activeStream.comments.toLocaleString()}
                     </Button>
-                    <Button variant="outline" className="flex items-center gap-2 border-purple-500 text-purple-400">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 border-purple-500 text-purple-400"
+                    >
                       <Share2 className="w-5 h-5" />
                       Share
                     </Button>
@@ -256,8 +280,8 @@ export default function Live() {
                     <Input
                       placeholder="Say something..."
                       value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                      onChange={e => setNewComment(e.target.value)}
+                      onKeyPress={e => e.key === "Enter" && handleAddComment()}
                       className="bg-gray-900 border-gray-700 text-white placeholder-gray-500"
                     />
                     <Button
@@ -271,17 +295,29 @@ export default function Live() {
                   {/* Comments List */}
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {comments.length === 0 ? (
-                      <p className="text-gray-500 text-center py-4">No comments yet. Be the first!</p>
+                      <p className="text-gray-500 text-center py-4">
+                        No comments yet. Be the first!
+                      </p>
                     ) : (
-                      comments.map((comment) => (
-                        <div key={comment.id} className="bg-gray-900/50 p-3 rounded border border-gray-800">
+                      comments.map(comment => (
+                        <div
+                          key={comment.id}
+                          className="bg-gray-900/50 p-3 rounded border border-gray-800"
+                        >
                           <div className="flex items-start justify-between mb-1">
-                            <p className="font-semibold text-purple-400">{comment.author}</p>
+                            <p className="font-semibold text-purple-400">
+                              {comment.author}
+                            </p>
                             <span className="text-xs text-gray-500">
-                              {Math.floor((Date.now() - comment.timestamp) / 60000)}m ago
+                              {Math.floor(
+                                (Date.now() - comment.timestamp) / 60000
+                              )}
+                              m ago
                             </span>
                           </div>
-                          <p className="text-gray-300 text-sm mb-2">{comment.text}</p>
+                          <p className="text-gray-300 text-sm mb-2">
+                            {comment.text}
+                          </p>
                           <button className="text-xs text-gray-500 hover:text-purple-400">
                             👍 {comment.likes}
                           </button>
@@ -302,13 +338,13 @@ export default function Live() {
           {/* Streams List */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold">Live Streams</h3>
-            {streams.map((stream) => (
+            {streams.map(stream => (
               <Card
                 key={stream.id}
                 className={`cursor-pointer transition-all border-2 ${
                   activeStream?.id === stream.id
-                    ? 'border-purple-500 bg-purple-900/20'
-                    : 'border-gray-700 bg-gray-900/50 hover:border-purple-500/50'
+                    ? "border-purple-500 bg-purple-900/20"
+                    : "border-gray-700 bg-gray-900/50 hover:border-purple-500/50"
                 }`}
                 onClick={() => handleStreamSelect(stream)}
               >
@@ -327,7 +363,9 @@ export default function Live() {
                     </div>
                   </div>
                   <div>
-                    <p className="font-semibold text-sm line-clamp-2">{stream.title}</p>
+                    <p className="font-semibold text-sm line-clamp-2">
+                      {stream.title}
+                    </p>
                     <p className="text-xs text-gray-400">{stream.streamer}</p>
                   </div>
                   <div className="flex gap-2 text-xs text-gray-500">

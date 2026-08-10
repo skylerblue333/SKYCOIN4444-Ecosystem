@@ -17,8 +17,23 @@
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type ExternalPlatform = "youtube" | "twitch" | "twitter" | "instagram" | "tiktok" | "facebook" | "linkedin" | "reddit" | "discord";
-export type SyndicationStatus = "pending" | "processing" | "published" | "failed" | "rate_limited" | "unauthorized";
+export type ExternalPlatform =
+  | "youtube"
+  | "twitch"
+  | "twitter"
+  | "instagram"
+  | "tiktok"
+  | "facebook"
+  | "linkedin"
+  | "reddit"
+  | "discord";
+export type SyndicationStatus =
+  | "pending"
+  | "processing"
+  | "published"
+  | "failed"
+  | "rate_limited"
+  | "unauthorized";
 
 export interface SyndicationJob {
   id: string;
@@ -27,7 +42,10 @@ export interface SyndicationJob {
   contentType: "post" | "reel" | "stream_vod" | "article";
   targetPlatforms: ExternalPlatform[];
   status: Record<ExternalPlatform, SyndicationStatus>;
-  results: Record<ExternalPlatform, { url?: string; externalId?: string; error?: string }>;
+  results: Record<
+    ExternalPlatform,
+    { url?: string; externalId?: string; error?: string }
+  >;
   scheduledAt?: Date;
   startedAt?: Date;
   completedAt?: Date;
@@ -39,7 +57,13 @@ export interface ImportJob {
   userId: number;
   sourcePlatform: ExternalPlatform;
   importType: "followers" | "content" | "analytics" | "full_migration";
-  status: "pending" | "authenticating" | "fetching" | "importing" | "completed" | "failed";
+  status:
+    | "pending"
+    | "authenticating"
+    | "fetching"
+    | "importing"
+    | "completed"
+    | "failed";
   progress: number;
   totalItems?: number;
   importedItems: number;
@@ -199,8 +223,12 @@ class SyndicationEngine {
     scheduledAt?: Date
   ): Promise<SyndicationJob> {
     const userConns = this.connections.get(String(userId)) || [];
-    const initialStatus: Record<ExternalPlatform, SyndicationStatus> = {} as any;
-    const initialResults: Record<ExternalPlatform, { url?: string; externalId?: string; error?: string }> = {} as any;
+    const initialStatus: Record<ExternalPlatform, SyndicationStatus> =
+      {} as any;
+    const initialResults: Record<
+      ExternalPlatform,
+      { url?: string; externalId?: string; error?: string }
+    > = {} as any;
 
     for (const platform of targetPlatforms) {
       const conn = userConns.find(c => c.platform === platform && c.isActive);
@@ -234,7 +262,10 @@ class SyndicationEngine {
     for (const platform of job.targetPlatforms) {
       if (job.status[platform] === "unauthorized") continue;
       const conn = userConns.find(c => c.platform === platform && c.isActive);
-      if (!conn) { job.status[platform] = "unauthorized"; continue; }
+      if (!conn) {
+        job.status[platform] = "unauthorized";
+        continue;
+      }
 
       job.status[platform] = "processing";
       try {
@@ -311,13 +342,21 @@ class ImportPipeline {
 
     try {
       job.status = "fetching";
-      const items = await this.fetchFromPlatform(job.sourcePlatform, job.importType);
+      const items = await this.fetchFromPlatform(
+        job.sourcePlatform,
+        job.importType
+      );
       job.totalItems = items.length;
       job.status = "importing";
 
       for (let i = 0; i < items.length; i++) {
         try {
-          await this.importItem(job.userId, job.sourcePlatform, job.importType, items[i]);
+          await this.importItem(
+            job.userId,
+            job.sourcePlatform,
+            job.importType,
+            items[i]
+          );
           job.importedItems++;
         } catch (err: any) {
           job.failedItems++;
@@ -333,7 +372,10 @@ class ImportPipeline {
     }
   }
 
-  private async fetchFromPlatform(platform: ExternalPlatform, importType: ImportJob["importType"]): Promise<unknown[]> {
+  private async fetchFromPlatform(
+    platform: ExternalPlatform,
+    importType: ImportJob["importType"]
+  ): Promise<unknown[]> {
     // In production: call platform APIs with OAuth tokens
     // YouTube: GET /youtube/v3/videos?mine=true
     // Twitch: GET /helix/videos?user_id=...
@@ -341,7 +383,12 @@ class ImportPipeline {
     return [];
   }
 
-  private async importItem(userId: number, platform: ExternalPlatform, importType: ImportJob["importType"], item: unknown): Promise<void> {
+  private async importItem(
+    userId: number,
+    platform: ExternalPlatform,
+    importType: ImportJob["importType"],
+    item: unknown
+  ): Promise<void> {
     // Transform and store the imported item
   }
 
@@ -353,14 +400,40 @@ class ImportPipeline {
     return Array.from(this.jobs.values()).filter(j => j.userId === userId);
   }
 
-  getMigrationChecklist(platform: ExternalPlatform): { step: string; description: string; required: boolean }[] {
+  getMigrationChecklist(
+    platform: ExternalPlatform
+  ): { step: string; description: string; required: boolean }[] {
     const common = [
-      { step: "connect_account", description: `Connect your ${platform} account via OAuth`, required: true },
-      { step: "import_profile", description: "Import profile information and bio", required: true },
-      { step: "import_content", description: "Import your existing content library", required: false },
-      { step: "import_followers", description: "Notify your followers about your new home", required: false },
-      { step: "import_analytics", description: "Import historical analytics data", required: false },
-      { step: "setup_mirroring", description: "Set up automatic content mirroring", required: false },
+      {
+        step: "connect_account",
+        description: `Connect your ${platform} account via OAuth`,
+        required: true,
+      },
+      {
+        step: "import_profile",
+        description: "Import profile information and bio",
+        required: true,
+      },
+      {
+        step: "import_content",
+        description: "Import your existing content library",
+        required: false,
+      },
+      {
+        step: "import_followers",
+        description: "Notify your followers about your new home",
+        required: false,
+      },
+      {
+        step: "import_analytics",
+        description: "Import historical analytics data",
+        required: false,
+      },
+      {
+        step: "setup_mirroring",
+        description: "Set up automatic content mirroring",
+        required: false,
+      },
     ];
     return common;
   }
@@ -404,20 +477,34 @@ class ContentMirrorManager {
     return rule.isActive;
   }
 
-  getApplicableRules(userId: number, contentType: ContentMirrorRule["contentType"]): ContentMirrorRule[] {
-    return (this.rules.get(String(userId)) || []).filter(r => r.isActive && r.contentType === contentType);
+  getApplicableRules(
+    userId: number,
+    contentType: ContentMirrorRule["contentType"]
+  ): ContentMirrorRule[] {
+    return (this.rules.get(String(userId)) || []).filter(
+      r => r.isActive && r.contentType === contentType
+    );
   }
 
-  applyTransformations(content: { caption: string; hashtags: string[] }, rule: ContentMirrorRule): { caption: string; hashtags: string[] } {
+  applyTransformations(
+    content: { caption: string; hashtags: string[] },
+    rule: ContentMirrorRule
+  ): { caption: string; hashtags: string[] } {
     let { caption, hashtags } = content;
-    if (rule.transformations.truncateCaption && caption.length > rule.transformations.truncateCaption) {
-      caption = caption.slice(0, rule.transformations.truncateCaption - 3) + "...";
+    if (
+      rule.transformations.truncateCaption &&
+      caption.length > rule.transformations.truncateCaption
+    ) {
+      caption =
+        caption.slice(0, rule.transformations.truncateCaption - 3) + "...";
     }
     if (rule.transformations.addCTA) {
       caption += `\n\n${rule.transformations.addCTA}`;
     }
     if (rule.transformations.addHashtags) {
-      hashtags = [...new Set([...hashtags, ...rule.transformations.addHashtags])];
+      hashtags = [
+        ...new Set([...hashtags, ...rule.transformations.addHashtags]),
+      ];
     }
     return { caption, hashtags };
   }
@@ -448,9 +535,16 @@ class WebhookSystem {
     return endpoint;
   }
 
-  async deliver(event: string, payload: Record<string, unknown>, userId?: number): Promise<void> {
-    const relevantEndpoints = Array.from(this.endpoints.values()).filter(ep =>
-      ep.isActive && ep.events.includes(event) && (!userId || ep.userId === userId)
+  async deliver(
+    event: string,
+    payload: Record<string, unknown>,
+    userId?: number
+  ): Promise<void> {
+    const relevantEndpoints = Array.from(this.endpoints.values()).filter(
+      ep =>
+        ep.isActive &&
+        ep.events.includes(event) &&
+        (!userId || ep.userId === userId)
     );
 
     for (const endpoint of relevantEndpoints) {
@@ -468,10 +562,16 @@ class WebhookSystem {
     }
   }
 
-  private async attemptDelivery(endpoint: WebhookEndpoint, delivery: WebhookDelivery): Promise<void> {
+  private async attemptDelivery(
+    endpoint: WebhookEndpoint,
+    delivery: WebhookDelivery
+  ): Promise<void> {
     delivery.attempts++;
     try {
-      const signature = this.generateSignature(delivery.payload, endpoint.secret);
+      const signature = this.generateSignature(
+        delivery.payload,
+        endpoint.secret
+      );
       // In production: POST to endpoint.url with signature header
       // const response = await fetch(endpoint.url, { method: "POST", headers: { "X-ShadowChat-Signature": signature, "Content-Type": "application/json" }, body: JSON.stringify(delivery.payload) });
       delivery.status = "delivered";
@@ -486,23 +586,34 @@ class WebhookSystem {
       if (endpoint.failureCount >= 10) endpoint.isActive = false;
       if (delivery.attempts < 3) {
         delivery.status = "retrying";
-        delivery.nextRetryAt = new Date(Date.now() + Math.pow(2, delivery.attempts) * 60000);
+        delivery.nextRetryAt = new Date(
+          Date.now() + Math.pow(2, delivery.attempts) * 60000
+        );
       }
     }
   }
 
-  private generateSignature(payload: Record<string, unknown>, secret: string): string {
+  private generateSignature(
+    payload: Record<string, unknown>,
+    secret: string
+  ): string {
     const body = JSON.stringify(payload);
     // In production: use crypto.createHmac("sha256", secret).update(body).digest("hex")
-    return `sha256=${Buffer.from(body + secret).toString("base64").slice(0, 64)}`;
+    return `sha256=${Buffer.from(body + secret)
+      .toString("base64")
+      .slice(0, 64)}`;
   }
 
   getUserEndpoints(userId: number): WebhookEndpoint[] {
-    return Array.from(this.endpoints.values()).filter(ep => ep.userId === userId);
+    return Array.from(this.endpoints.values()).filter(
+      ep => ep.userId === userId
+    );
   }
 
   getDeliveryHistory(endpointId: string, limit = 50): WebhookDelivery[] {
-    return this.deliveries.filter(d => d.endpointId === endpointId).slice(-limit);
+    return this.deliveries
+      .filter(d => d.endpointId === endpointId)
+      .slice(-limit);
   }
 }
 
@@ -528,7 +639,9 @@ class RSSFeedGenerator {
   }
 
   toXML(feed: RSSFeed): string {
-    const items = feed.items.map(item => `
+    const items = feed.items
+      .map(
+        item => `
     <item>
       <title><![CDATA[${item.title}]]></title>
       <description><![CDATA[${item.description}]]></description>
@@ -536,7 +649,9 @@ class RSSFeedGenerator {
       <guid isPermaLink="true">${item.guid}</guid>
       <pubDate>${item.pubDate.toUTCString()}</pubDate>
       ${item.enclosure ? `<enclosure url="${item.enclosure.url}" type="${item.enclosure.type}" length="${item.enclosure.length}"/>` : ""}
-    </item>`).join("");
+    </item>`
+      )
+      .join("");
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
@@ -565,14 +680,16 @@ class SEOEngine {
       case "profile": {
         const username = data.username as string;
         const displayName = data.displayName as string;
-        const bio = data.bio as string || "";
+        const bio = (data.bio as string) || "";
         const avatar = data.avatar as string;
         return {
           title: `${displayName} (@${username}) — ShadowChat`,
-          description: bio.slice(0, 160) || `Follow ${displayName} on ShadowChat`,
+          description:
+            bio.slice(0, 160) || `Follow ${displayName} on ShadowChat`,
           keywords: [username, displayName, "creator", "shadowchat"],
           ogTitle: `${displayName} on ShadowChat`,
-          ogDescription: bio.slice(0, 200) || `Check out ${displayName}'s profile`,
+          ogDescription:
+            bio.slice(0, 200) || `Check out ${displayName}'s profile`,
           ogImage: avatar,
           ogType: "profile",
           twitterCard: "summary",
@@ -592,8 +709,8 @@ class SEOEngine {
         };
       }
       case "post": {
-        const title = data.title as string || "Post on ShadowChat";
-        const content = data.content as string || "";
+        const title = (data.title as string) || "Post on ShadowChat";
+        const content = (data.content as string) || "";
         const image = data.image as string;
         const author = data.author as string;
         return {
@@ -627,14 +744,25 @@ class SEOEngine {
     }
   }
 
-  generateSitemap(routes: { url: string; lastmod: Date; priority: number; changefreq: string }[]): string {
-    const urlEntries = routes.map(r => `
+  generateSitemap(
+    routes: {
+      url: string;
+      lastmod: Date;
+      priority: number;
+      changefreq: string;
+    }[]
+  ): string {
+    const urlEntries = routes
+      .map(
+        r => `
   <url>
     <loc>https://shadowchat.app${r.url}</loc>
     <lastmod>${r.lastmod.toISOString().slice(0, 10)}</lastmod>
     <changefreq>${r.changefreq}</changefreq>
     <priority>${r.priority}</priority>
-  </url>`).join("");
+  </url>`
+      )
+      .join("");
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

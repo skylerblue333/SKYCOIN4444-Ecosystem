@@ -97,7 +97,9 @@ export const stripeRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const session = await getStripe().checkout.sessions.retrieve(input.sessionId);
+      const session = await getStripe().checkout.sessions.retrieve(
+        input.sessionId
+      );
 
       if (session.payment_status !== "paid") {
         throw new Error("Payment not completed");
@@ -230,7 +232,7 @@ export const stripeRouter = router({
         type: "card",
       });
 
-      return paymentMethods.data.map((pm) => ({
+      return paymentMethods.data.map(pm => ({
         id: pm.id,
         brand: pm.card?.brand,
         last4: pm.card?.last4,

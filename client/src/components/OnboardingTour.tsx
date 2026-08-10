@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, X, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useEffect } from "react";
+import { ChevronRight, ChevronLeft, X, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export interface TourStep {
   id: string;
   title: string;
   description: string;
   target: string; // CSS selector
-  position: 'top' | 'bottom' | 'left' | 'right';
+  position: "top" | "bottom" | "left" | "right";
   action?: () => void;
   videoUrl?: string;
   duration?: number; // in seconds
@@ -20,9 +20,10 @@ export interface Tour {
   name: string;
   description: string;
   steps: TourStep[];
-  category: 'mining' | 'trading' | 'social' | 'gaming' | 'marketplace' | 'governance';
+  category:
+    "mining" | "trading" | "social" | "gaming" | "marketplace" | "governance";
   estimatedTime: number; // in minutes
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  difficulty: "beginner" | "intermediate" | "advanced";
 }
 
 interface OnboardingTourProps {
@@ -31,7 +32,11 @@ interface OnboardingTourProps {
   onSkip: () => void;
 }
 
-export function OnboardingTour({ tour, onComplete, onSkip }: OnboardingTourProps) {
+export function OnboardingTour({
+  tour,
+  onComplete,
+  onSkip,
+}: OnboardingTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -49,19 +54,19 @@ export function OnboardingTour({ tour, onComplete, onSkip }: OnboardingTourProps
     let left = 0;
 
     switch (step.position) {
-      case 'top':
+      case "top":
         top = rect.top - offset;
         left = rect.left + rect.width / 2;
         break;
-      case 'bottom':
+      case "bottom":
         top = rect.bottom + offset;
         left = rect.left + rect.width / 2;
         break;
-      case 'left':
+      case "left":
         top = rect.top + rect.height / 2;
         left = rect.left - offset;
         break;
-      case 'right':
+      case "right":
         top = rect.top + rect.height / 2;
         left = rect.right + offset;
         break;
@@ -101,7 +106,7 @@ export function OnboardingTour({ tour, onComplete, onSkip }: OnboardingTourProps
             left: `${document.querySelector(step.target)?.getBoundingClientRect().left || 0}px`,
             width: `${document.querySelector(step.target)?.getBoundingClientRect().width || 0}px`,
             height: `${document.querySelector(step.target)?.getBoundingClientRect().height || 0}px`,
-            boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.4)',
+            boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.4)",
           }}
         />
       </div>
@@ -112,7 +117,7 @@ export function OnboardingTour({ tour, onComplete, onSkip }: OnboardingTourProps
         style={{
           top: `${position.top}px`,
           left: `${position.left}px`,
-          transform: 'translate(-50%, -50%)',
+          transform: "translate(-50%, -50%)",
         }}
       >
         <div className="p-4">
@@ -137,7 +142,9 @@ export function OnboardingTour({ tour, onComplete, onSkip }: OnboardingTourProps
           </div>
 
           {/* Description */}
-          <p className="text-sm text-muted-foreground mb-4">{step.description}</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            {step.description}
+          </p>
 
           {/* Video (if available) */}
           {step.videoUrl && (
@@ -146,7 +153,7 @@ export function OnboardingTour({ tour, onComplete, onSkip }: OnboardingTourProps
                 src={step.videoUrl}
                 controls
                 className="w-full h-full"
-                style={{ maxHeight: '200px' }}
+                style={{ maxHeight: "200px" }}
               />
             </div>
           )}
@@ -172,11 +179,7 @@ export function OnboardingTour({ tour, onComplete, onSkip }: OnboardingTourProps
               <ChevronLeft className="w-4 h-4 mr-1" />
               Previous
             </Button>
-            <Button
-              size="sm"
-              onClick={handleNext}
-              className="flex-1"
-            >
+            <Button size="sm" onClick={handleNext} className="flex-1">
               {currentStep === tour.steps.length - 1 ? (
                 <>
                   <CheckCircle className="w-4 h-4 mr-1" />
@@ -199,102 +202,106 @@ export function OnboardingTour({ tour, onComplete, onSkip }: OnboardingTourProps
 // Tour catalog
 export const ONBOARDING_TOURS: Tour[] = [
   {
-    id: 'mining-basics',
-    name: 'Mining Basics',
-    description: 'Learn how to start mining and track your earnings',
-    category: 'mining',
-    difficulty: 'beginner',
+    id: "mining-basics",
+    name: "Mining Basics",
+    description: "Learn how to start mining and track your earnings",
+    category: "mining",
+    difficulty: "beginner",
     estimatedTime: 5,
     steps: [
       {
-        id: 'mining-1',
-        title: 'Welcome to Mining',
-        description: 'Start your cryptocurrency mining journey. Click "Start Mining" to begin.',
+        id: "mining-1",
+        title: "Welcome to Mining",
+        description:
+          'Start your cryptocurrency mining journey. Click "Start Mining" to begin.',
         target: '[data-tour="mining-start"]',
-        position: 'bottom',
+        position: "bottom",
       },
       {
-        id: 'mining-2',
-        title: 'View Your Dashboard',
-        description: 'Monitor your mining performance, hashrate, and earnings in real-time.',
+        id: "mining-2",
+        title: "View Your Dashboard",
+        description:
+          "Monitor your mining performance, hashrate, and earnings in real-time.",
         target: '[data-tour="mining-dashboard"]',
-        position: 'right',
+        position: "right",
       },
       {
-        id: 'mining-3',
-        title: 'Manage Pools',
-        description: 'Connect to multiple mining pools for better earnings.',
+        id: "mining-3",
+        title: "Manage Pools",
+        description: "Connect to multiple mining pools for better earnings.",
         target: '[data-tour="mining-pools"]',
-        position: 'right',
+        position: "right",
       },
       {
-        id: 'mining-4',
-        title: 'Withdraw Rewards',
-        description: 'Convert your mined coins to your wallet automatically.',
+        id: "mining-4",
+        title: "Withdraw Rewards",
+        description: "Convert your mined coins to your wallet automatically.",
         target: '[data-tour="mining-withdraw"]',
-        position: 'left',
+        position: "left",
       },
     ],
   },
   {
-    id: 'trading-basics',
-    name: 'Trading Basics',
-    description: 'Learn how to trade cryptocurrencies',
-    category: 'trading',
-    difficulty: 'beginner',
+    id: "trading-basics",
+    name: "Trading Basics",
+    description: "Learn how to trade cryptocurrencies",
+    category: "trading",
+    difficulty: "beginner",
     estimatedTime: 7,
     steps: [
       {
-        id: 'trading-1',
-        title: 'Trading Terminal',
-        description: 'Access the advanced trading interface with real-time charts.',
+        id: "trading-1",
+        title: "Trading Terminal",
+        description:
+          "Access the advanced trading interface with real-time charts.",
         target: '[data-tour="trading-terminal"]',
-        position: 'bottom',
+        position: "bottom",
       },
       {
-        id: 'trading-2',
-        title: 'Place a Trade',
-        description: 'Buy or sell cryptocurrencies with limit and market orders.',
+        id: "trading-2",
+        title: "Place a Trade",
+        description:
+          "Buy or sell cryptocurrencies with limit and market orders.",
         target: '[data-tour="trading-orders"]',
-        position: 'right',
+        position: "right",
       },
       {
-        id: 'trading-3',
-        title: 'View Your Portfolio',
-        description: 'Track your holdings and performance.',
+        id: "trading-3",
+        title: "View Your Portfolio",
+        description: "Track your holdings and performance.",
         target: '[data-tour="trading-portfolio"]',
-        position: 'left',
+        position: "left",
       },
     ],
   },
   {
-    id: 'social-basics',
-    name: 'Social Basics',
-    description: 'Connect with the community',
-    category: 'social',
-    difficulty: 'beginner',
+    id: "social-basics",
+    name: "Social Basics",
+    description: "Connect with the community",
+    category: "social",
+    difficulty: "beginner",
     estimatedTime: 5,
     steps: [
       {
-        id: 'social-1',
-        title: 'Social Feed',
-        description: 'See posts from community members.',
+        id: "social-1",
+        title: "Social Feed",
+        description: "See posts from community members.",
         target: '[data-tour="social-feed"]',
-        position: 'right',
+        position: "right",
       },
       {
-        id: 'social-2',
-        title: 'Create a Post',
-        description: 'Share your thoughts and updates with the community.',
+        id: "social-2",
+        title: "Create a Post",
+        description: "Share your thoughts and updates with the community.",
         target: '[data-tour="social-post"]',
-        position: 'bottom',
+        position: "bottom",
       },
       {
-        id: 'social-3',
-        title: 'Join Communities',
-        description: 'Find and join communities based on your interests.',
+        id: "social-3",
+        title: "Join Communities",
+        description: "Find and join communities based on your interests.",
         target: '[data-tour="social-communities"]',
-        position: 'left',
+        position: "left",
       },
     ],
   },
@@ -330,16 +337,14 @@ export function TourSelection({ onSelectTour, onSkip }: TourSelectionProps) {
                     <Badge variant="secondary">{tour.estimatedTime} min</Badge>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{tour.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {tour.description}
+                </p>
               </button>
             ))}
           </div>
 
-          <Button
-            variant="outline"
-            className="w-full mt-6"
-            onClick={onSkip}
-          >
+          <Button variant="outline" className="w-full mt-6" onClick={onSkip}>
             Skip for Now
           </Button>
         </div>

@@ -6,7 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Send,
@@ -63,9 +68,7 @@ const MOCK_CONVERSATIONS: Conversation[] = [
     lastMessage: "How are you doing today?",
     lastMessageTime: new Date(Date.now() - 5 * 60 * 1000),
     unreadCount: 2,
-    participants: [
-      { id: "p1", name: "李明", avatar: "🇨🇳", online: true },
-    ],
+    participants: [{ id: "p1", name: "李明", avatar: "🇨🇳", online: true }],
     sourceLanguage: "Chinese",
     targetLanguage: "English",
     autoTranslate: true,
@@ -146,10 +149,10 @@ const MOCK_MESSAGES: Message[] = [
 ];
 
 export function UnifiedMessaging() {
-  const [conversations, setConversations] = useState<Conversation[]>(MOCK_CONVERSATIONS);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(
-    MOCK_CONVERSATIONS[0]
-  );
+  const [conversations, setConversations] =
+    useState<Conversation[]>(MOCK_CONVERSATIONS);
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(MOCK_CONVERSATIONS[0]);
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -201,24 +204,24 @@ export function UnifiedMessaging() {
         isTranslated: autoTranslate,
         reactions: [],
       };
-      setMessages((prev) => [...prev, response]);
+      setMessages(prev => [...prev, response]);
     }, 1000);
   };
 
   const handleTranslateMessage = (messageId: string) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
+    setMessages(prev =>
+      prev.map(msg =>
         msg.id === messageId ? { ...msg, isTranslated: !msg.isTranslated } : msg
       )
     );
   };
 
   const handleDeleteMessage = (messageId: string) => {
-    setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+    setMessages(prev => prev.filter(msg => msg.id !== messageId));
     toast.success("Message deleted");
   };
 
-  const filteredConversations = conversations.filter((conv) =>
+  const filteredConversations = conversations.filter(conv =>
     conv.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -246,7 +249,7 @@ export function UnifiedMessaging() {
                 <Input
                   placeholder="Search conversations..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600"
                 />
               </div>
@@ -262,7 +265,7 @@ export function UnifiedMessaging() {
             {/* Conversations List */}
             <ScrollArea className="flex-1">
               <div className="space-y-2 p-3">
-                {filteredConversations.map((conv) => (
+                {filteredConversations.map(conv => (
                   <Card
                     key={conv.id}
                     className={`p-3 cursor-pointer transition-all ${
@@ -276,14 +279,18 @@ export function UnifiedMessaging() {
                       <div className="text-2xl">{conv.avatar}</div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start mb-1">
-                          <h3 className="font-bold text-white truncate">{conv.name}</h3>
+                          <h3 className="font-bold text-white truncate">
+                            {conv.name}
+                          </h3>
                           {conv.unreadCount > 0 && (
                             <Badge className="bg-red-500/20 text-red-400">
                               {conv.unreadCount}
                             </Badge>
                           )}
                         </div>
-                        <p className="text-gray-400 text-xs truncate">{conv.lastMessage}</p>
+                        <p className="text-gray-400 text-xs truncate">
+                          {conv.lastMessage}
+                        </p>
                         <p className="text-gray-500 text-xs mt-1">
                           {conv.lastMessageTime.toLocaleTimeString([], {
                             hour: "2-digit",
@@ -306,13 +313,15 @@ export function UnifiedMessaging() {
                 <div className="flex items-center gap-3">
                   <div className="text-3xl">{selectedConversation.avatar}</div>
                   <div>
-                    <h2 className="font-bold text-white">{selectedConversation.name}</h2>
+                    <h2 className="font-bold text-white">
+                      {selectedConversation.name}
+                    </h2>
                     <p className="text-gray-400 text-sm">
                       {selectedConversation.type === "group"
                         ? `${selectedConversation.participants.length} members`
                         : selectedConversation.participants[0]?.online
-                        ? "Online"
-                        : "Offline"}
+                          ? "Online"
+                          : "Offline"}
                     </p>
                   </div>
                 </div>
@@ -337,13 +346,15 @@ export function UnifiedMessaging() {
               {/* Messages */}
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
-                  {messages.map((msg) => (
+                  {messages.map(msg => (
                     <div
                       key={msg.id}
                       className={`flex gap-3 ${msg.senderId === "user" ? "justify-end" : ""}`}
                     >
                       {msg.senderId !== "user" && (
-                        <div className="text-2xl flex-shrink-0">{msg.senderAvatar}</div>
+                        <div className="text-2xl flex-shrink-0">
+                          {msg.senderAvatar}
+                        </div>
                       )}
 
                       <div
@@ -369,7 +380,9 @@ export function UnifiedMessaging() {
                                 {msg.targetLanguage}
                               </span>
                             </div>
-                            <p className="text-gray-200">{msg.translatedContent}</p>
+                            <p className="text-gray-200">
+                              {msg.translatedContent}
+                            </p>
                           </div>
                         )}
 
@@ -425,8 +438,8 @@ export function UnifiedMessaging() {
                   <Textarea
                     placeholder="Type your message..."
                     value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    onKeyDown={(e) => {
+                    onChange={e => setMessageInput(e.target.value)}
+                    onKeyDown={e => {
                       if (e.key === "Enter" && e.ctrlKey) {
                         handleSendMessage();
                       }
@@ -454,7 +467,9 @@ export function UnifiedMessaging() {
             <div className="flex-1 flex items-center justify-center bg-slate-800/50 border border-slate-700 rounded-lg">
               <div className="text-center">
                 <MessageCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Select a conversation to start messaging</p>
+                <p className="text-gray-400">
+                  Select a conversation to start messaging
+                </p>
               </div>
             </div>
           )}
@@ -465,14 +480,23 @@ export function UnifiedMessaging() {
       <Dialog open={showNewConversation} onOpenChange={setShowNewConversation}>
         <DialogContent className="bg-slate-900 border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Start New Conversation</DialogTitle>
+            <DialogTitle className="text-white">
+              Start New Conversation
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-gray-400 block mb-2">Conversation Type</label>
+              <label className="text-sm text-gray-400 block mb-2">
+                Conversation Type
+              </label>
               <div className="space-y-2">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="type" defaultChecked className="w-4 h-4" />
+                  <input
+                    type="radio"
+                    name="type"
+                    defaultChecked
+                    className="w-4 h-4"
+                  />
                   <span className="text-white">Direct Message</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -482,8 +506,13 @@ export function UnifiedMessaging() {
               </div>
             </div>
             <div>
-              <label className="text-sm text-gray-400 block mb-2">Select Participant</label>
-              <Input placeholder="Search for users..." className="bg-slate-800 border-slate-700" />
+              <label className="text-sm text-gray-400 block mb-2">
+                Select Participant
+              </label>
+              <Input
+                placeholder="Search for users..."
+                className="bg-slate-800 border-slate-700"
+              />
             </div>
             <Button className="w-full bg-purple-600 hover:bg-purple-700">
               Start Conversation
@@ -496,7 +525,9 @@ export function UnifiedMessaging() {
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
         <DialogContent className="bg-slate-900 border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Conversation Settings</DialogTitle>
+            <DialogTitle className="text-white">
+              Conversation Settings
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -504,13 +535,15 @@ export function UnifiedMessaging() {
               <input
                 type="checkbox"
                 checked={autoTranslate}
-                onChange={(e) => setAutoTranslate(e.target.checked)}
+                onChange={e => setAutoTranslate(e.target.checked)}
                 className="w-4 h-4"
               />
             </div>
 
             <div>
-              <label className="text-sm text-gray-400 block mb-2">Language Pair</label>
+              <label className="text-sm text-gray-400 block mb-2">
+                Language Pair
+              </label>
               <select className="w-full bg-slate-800 border border-slate-700 text-white rounded px-3 py-2">
                 <option>Auto-detect</option>
                 <option>English ↔ Chinese</option>
@@ -520,11 +553,17 @@ export function UnifiedMessaging() {
             </div>
 
             <div className="space-y-2">
-              <Button className="w-full bg-slate-700 hover:bg-slate-600" variant="outline">
+              <Button
+                className="w-full bg-slate-700 hover:bg-slate-600"
+                variant="outline"
+              >
                 <Pin className="w-4 h-4 mr-2" />
                 Pin Conversation
               </Button>
-              <Button className="w-full bg-slate-700 hover:bg-slate-600" variant="outline">
+              <Button
+                className="w-full bg-slate-700 hover:bg-slate-600"
+                variant="outline"
+              >
                 <Archive className="w-4 h-4 mr-2" />
                 Archive Conversation
               </Button>

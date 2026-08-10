@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
@@ -6,10 +5,10 @@ import * as db from "./db";
 // Mining configuration
 const MINING_RATES = {
   BTC: 0.00015, // BTC per hour
-  ETH: 0.005,   // ETH per hour
-  SOL: 0.1,     // SOL per hour
-  DOGE: 10,     // DOGE per hour
-  SKY444: 50,   // SKY444 per hour (native token)
+  ETH: 0.005, // ETH per hour
+  SOL: 0.1, // SOL per hour
+  DOGE: 10, // DOGE per hour
+  SKY444: 50, // SKY444 per hour (native token)
 };
 
 const MINING_POWER_MULTIPLIERS = {
@@ -31,16 +30,18 @@ const RARITY_SCORES = {
 export const miningRouter = router({
   // Start mining
   startMining: protectedProcedure
-    .input(z.object({
-      currency: z.enum(["BTC", "ETH", "SOL", "DOGE", "SKY444"]),
-      powerLevel: z.enum(["basic", "pro", "elite", "enterprise"]),
-    }))
+    .input(
+      z.object({
+        currency: z.enum(["BTC", "ETH", "SOL", "DOGE", "SKY444"]),
+        powerLevel: z.enum(["basic", "pro", "elite", "enterprise"]),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const baseRate = MINING_RATES[input.currency];
       const multiplier = MINING_POWER_MULTIPLIERS[input.powerLevel];
       const hourlyEarnings = baseRate * multiplier;
       const dailyEarnings = hourlyEarnings * 24;
-      
+
       return {
         success: true,
         miningSession: {
@@ -52,7 +53,7 @@ export const miningRouter = router({
           monthlyEarnings: dailyEarnings * 30,
           yearlyEarnings: dailyEarnings * 365,
           startedAt: new Date(),
-        }
+        },
       };
     }),
 
@@ -92,7 +93,7 @@ export const miningRouter = router({
       ETH: 2500,
       SOL: 150,
       DOGE: 0.35,
-      SKY444: 2.50,
+      SKY444: 2.5,
     };
 
     const holdings = {
@@ -103,9 +104,12 @@ export const miningRouter = router({
       SKY444: 2500,
     };
 
-    const cryptoValue = Object.entries(holdings).reduce((sum, [currency, amount]) => {
-      return sum + (amount * prices[currency as keyof typeof prices]);
-    }, 0);
+    const cryptoValue = Object.entries(holdings).reduce(
+      (sum, [currency, amount]) => {
+        return sum + amount * prices[currency as keyof typeof prices];
+      },
+      0
+    );
 
     const usdValue = cryptoValue;
     const eurValue = usdValue * 0.92;
@@ -152,12 +156,12 @@ export const miningRouter = router({
         DOGE: 100,
         SKY444: 500,
       },
-      totalValueUSD: 125.50,
+      totalValueUSD: 125.5,
       topCurrency: "SKY444",
       miningEfficiency: 98.5,
-      poolRewards: 12.50,
-      referralBonuses: 5.00,
-      totalEarningsToday: 142.00,
+      poolRewards: 12.5,
+      referralBonuses: 5.0,
+      totalEarningsToday: 142.0,
     };
   }),
 
@@ -176,17 +180,44 @@ export const miningRouter = router({
   // Get mining leaderboard
   getMiningLeaderboard: publicProcedure.query(async () => {
     return [
-      { rank: 1, username: "CryptoKing", totalEarnings: 125000, dailyRate: 500 },
-      { rank: 2, username: "BlockchainMaster", totalEarnings: 95000, dailyRate: 425 },
-      { rank: 3, username: "MiningLegend", totalEarnings: 85000, dailyRate: 380 },
-      { rank: 4, username: "Skyler_Blue", totalEarnings: 42000, dailyRate: 142 },
-      { rank: 5, username: "CryptoVision", totalEarnings: 38000, dailyRate: 135 },
+      {
+        rank: 1,
+        username: "CryptoKing",
+        totalEarnings: 125000,
+        dailyRate: 500,
+      },
+      {
+        rank: 2,
+        username: "BlockchainMaster",
+        totalEarnings: 95000,
+        dailyRate: 425,
+      },
+      {
+        rank: 3,
+        username: "MiningLegend",
+        totalEarnings: 85000,
+        dailyRate: 380,
+      },
+      {
+        rank: 4,
+        username: "Skyler_Blue",
+        totalEarnings: 42000,
+        dailyRate: 142,
+      },
+      {
+        rank: 5,
+        username: "CryptoVision",
+        totalEarnings: 38000,
+        dailyRate: 135,
+      },
     ];
   }),
 
   // Upgrade mining power
   upgradeMiningPower: protectedProcedure
-    .input(z.object({ newLevel: z.enum(["basic", "pro", "elite", "enterprise"]) }))
+    .input(
+      z.object({ newLevel: z.enum(["basic", "pro", "elite", "enterprise"]) })
+    )
     .mutation(async ({ ctx, input }) => {
       return {
         success: true,

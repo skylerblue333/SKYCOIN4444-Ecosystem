@@ -15,8 +15,14 @@ import { eq, desc, and, sql } from "drizzle-orm";
 export type NotificationChannel = "in_app" | "push" | "email" | "sms";
 export type NotificationPriority = "low" | "normal" | "high" | "urgent";
 export type NotificationCategory =
-  | "social" | "financial" | "security" | "system"
-  | "marketing" | "community" | "gaming" | "streaming";
+  | "social"
+  | "financial"
+  | "security"
+  | "system"
+  | "marketing"
+  | "community"
+  | "gaming"
+  | "streaming";
 
 export interface NotificationPayload {
   userId: number;
@@ -102,7 +108,7 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
     name: "New Comment",
     category: "social",
     titleTemplate: "New comment",
-    bodyTemplate: "{{actorName}} commented on your post: \"{{preview}}\"",
+    bodyTemplate: '{{actorName}} commented on your post: "{{preview}}"',
     channels: ["in_app", "push"],
     priority: "normal",
   },
@@ -174,7 +180,8 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
     name: "Stream Raid",
     category: "streaming",
     titleTemplate: "Incoming raid!",
-    bodyTemplate: "{{actorName}} is raiding your stream with {{viewerCount}} viewers",
+    bodyTemplate:
+      "{{actorName}} is raiding your stream with {{viewerCount}} viewers",
     channels: ["in_app", "push"],
     priority: "high",
   },
@@ -183,7 +190,7 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
     name: "Tournament Starting",
     category: "gaming",
     titleTemplate: "Tournament starting soon",
-    bodyTemplate: "\"{{tournamentName}}\" begins in {{timeUntil}}",
+    bodyTemplate: '"{{tournamentName}}" begins in {{timeUntil}}',
     channels: ["in_app", "push"],
     priority: "high",
   },
@@ -192,7 +199,7 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
     name: "Quest Completed",
     category: "gaming",
     titleTemplate: "Quest completed!",
-    bodyTemplate: "You earned {{reward}} for completing \"{{questName}}\"",
+    bodyTemplate: 'You earned {{reward}} for completing "{{questName}}"',
     channels: ["in_app"],
     priority: "normal",
   },
@@ -219,7 +226,8 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
     name: "Staking Reward",
     category: "financial",
     titleTemplate: "Staking rewards available",
-    bodyTemplate: "You have {{amount}} {{currency}} in unclaimed staking rewards",
+    bodyTemplate:
+      "You have {{amount}} {{currency}} in unclaimed staking rewards",
     channels: ["in_app"],
     priority: "normal",
   },
@@ -228,7 +236,8 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
     name: "Item Sold",
     category: "financial",
     titleTemplate: "Item sold!",
-    bodyTemplate: "Your listing \"{{itemTitle}}\" was purchased for {{price}} {{currency}}",
+    bodyTemplate:
+      'Your listing "{{itemTitle}}" was purchased for {{price}} {{currency}}',
     channels: ["in_app", "push"],
     priority: "high",
   },
@@ -237,7 +246,8 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
     name: "New Bid",
     category: "financial",
     titleTemplate: "New bid on your item",
-    bodyTemplate: "{{actorName}} bid {{amount}} {{currency}} on \"{{itemTitle}}\"",
+    bodyTemplate:
+      '{{actorName}} bid {{amount}} {{currency}} on "{{itemTitle}}"',
     channels: ["in_app", "push"],
     priority: "normal",
   },
@@ -246,7 +256,8 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
     name: "System Maintenance",
     category: "system",
     titleTemplate: "Scheduled maintenance",
-    bodyTemplate: "Platform maintenance scheduled for {{dateTime}}. Expected duration: {{duration}}",
+    bodyTemplate:
+      "Platform maintenance scheduled for {{dateTime}}. Expected duration: {{duration}}",
     channels: ["in_app", "email"],
     priority: "normal",
   },
@@ -268,7 +279,8 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
 export class NotificationCenter {
   private preferences: Map<number, UserNotificationPreferences> = new Map();
   private deliveryLog: DeliveryResult[] = [];
-  private rateLimitCounters: Map<number, { count: number; resetAt: number }> = new Map();
+  private rateLimitCounters: Map<number, { count: number; resetAt: number }> =
+    new Map();
   private groupedNotifications: Map<string, NotificationPayload[]> = new Map();
 
   /**
@@ -281,7 +293,14 @@ export class NotificationCenter {
   ): Promise<DeliveryResult[]> {
     const template = TEMPLATES[templateId];
     if (!template) {
-      return [{ notificationId: "", channel: "in_app", status: "failed", failureReason: "Template not found" }];
+      return [
+        {
+          notificationId: "",
+          channel: "in_app",
+          status: "failed",
+          failureReason: "Template not found",
+        },
+      ];
     }
 
     const title = this.interpolateTemplate(template.titleTemplate, variables);
@@ -308,25 +327,53 @@ export class NotificationCenter {
 
     // Check if notifications are enabled
     if (!prefs.enabled) {
-      return [{ notificationId: "", channel: "in_app", status: "suppressed", failureReason: "Notifications disabled" }];
+      return [
+        {
+          notificationId: "",
+          channel: "in_app",
+          status: "suppressed",
+          failureReason: "Notifications disabled",
+        },
+      ];
     }
 
     // Check category preference
     if (!prefs.categories[payload.category]) {
-      return [{ notificationId: "", channel: "in_app", status: "suppressed", failureReason: "Category disabled" }];
+      return [
+        {
+          notificationId: "",
+          channel: "in_app",
+          status: "suppressed",
+          failureReason: "Category disabled",
+        },
+      ];
     }
 
     // Check quiet hours
     if (this.isQuietHours(prefs)) {
       if (payload.priority !== "urgent") {
-        return [{ notificationId: "", channel: "in_app", status: "queued", failureReason: "Quiet hours" }];
+        return [
+          {
+            notificationId: "",
+            channel: "in_app",
+            status: "queued",
+            failureReason: "Quiet hours",
+          },
+        ];
       }
     }
 
     // Check rate limit
     if (!this.checkRateLimit(payload.userId, prefs.maxPerHour)) {
       if (payload.priority !== "urgent") {
-        return [{ notificationId: "", channel: "in_app", status: "suppressed", failureReason: "Rate limited" }];
+        return [
+          {
+            notificationId: "",
+            channel: "in_app",
+            status: "suppressed",
+            failureReason: "Rate limited",
+          },
+        ];
       }
     }
 
@@ -338,7 +385,14 @@ export class NotificationCenter {
 
       // Only deliver if this is the first in the group (batch the rest)
       if (grouped.length > 1) {
-        return [{ notificationId: "", channel: "in_app", status: "queued", failureReason: "Grouped" }];
+        return [
+          {
+            notificationId: "",
+            channel: "in_app",
+            status: "queued",
+            failureReason: "Grouped",
+          },
+        ];
       }
     }
 
@@ -369,36 +423,73 @@ export class NotificationCenter {
     switch (channel) {
       case "in_app":
         // Already persisted to database
-        return { notificationId, channel, status: "delivered", deliveredAt: new Date() };
+        return {
+          notificationId,
+          channel,
+          status: "delivered",
+          deliveredAt: new Date(),
+        };
 
       case "push":
         // In production, this would call a push notification service (FCM, APNs)
-        return { notificationId, channel, status: "delivered", deliveredAt: new Date() };
+        return {
+          notificationId,
+          channel,
+          status: "delivered",
+          deliveredAt: new Date(),
+        };
 
       case "email":
         // In production, this would call an email service (SendGrid, SES)
-        return { notificationId, channel, status: "delivered", deliveredAt: new Date() };
+        return {
+          notificationId,
+          channel,
+          status: "delivered",
+          deliveredAt: new Date(),
+        };
 
       case "sms":
         // In production, this would call an SMS service (Twilio)
-        return { notificationId, channel, status: "delivered", deliveredAt: new Date() };
+        return {
+          notificationId,
+          channel,
+          status: "delivered",
+          deliveredAt: new Date(),
+        };
 
       default:
-        return { notificationId, channel, status: "failed", failureReason: "Unknown channel" };
+        return {
+          notificationId,
+          channel,
+          status: "failed",
+          failureReason: "Unknown channel",
+        };
     }
   }
 
   /**
    * Persist notification to database
    */
-  private async persistNotification(payload: NotificationPayload): Promise<void> {
+  private async persistNotification(
+    payload: NotificationPayload
+  ): Promise<void> {
     const db = await getDb();
     if (!db) return;
 
     try {
       await db.insert(schema.notifications).values({
         userId: payload.userId,
-        type: payload.type as "follow" | "like" | "comment" | "mention" | "repost" | "donation" | "achievement" | "stream_live" | "tournament" | "system",
+        type: payload.type as
+          | "follow"
+          | "like"
+          | "comment"
+          | "mention"
+          | "repost"
+          | "donation"
+          | "achievement"
+          | "stream_live"
+          | "tournament"
+          | "system",
         title: payload.title,
         message: payload.body,
         isRead: false,
@@ -412,12 +503,15 @@ export class NotificationCenter {
   /**
    * Get user's notifications
    */
-  async getUserNotifications(userId: number, options?: {
-    limit?: number;
-    offset?: number;
-    unreadOnly?: boolean;
-    category?: NotificationCategory;
-  }) {
+  async getUserNotifications(
+    userId: number,
+    options?: {
+      limit?: number;
+      offset?: number;
+      unreadOnly?: boolean;
+      category?: NotificationCategory;
+    }
+  ) {
     const db = await getDb();
     if (!db) return [];
 
@@ -443,7 +537,10 @@ export class NotificationCenter {
   /**
    * Mark notifications as read
    */
-  async markAsRead(userId: number, notificationIds?: number[]): Promise<number> {
+  async markAsRead(
+    userId: number,
+    notificationIds?: number[]
+  ): Promise<number> {
     const db = await getDb();
     if (!db) return 0;
 
@@ -451,13 +548,15 @@ export class NotificationCenter {
       // Mark specific notifications
       let updated = 0;
       for (const id of notificationIds) {
-      const result = await db
-        .update(schema.notifications)
-        .set({ isRead: true })
-        .where(and(
-            eq(schema.notifications.id, id),
-            eq(schema.notifications.userId, userId)
-          ));
+        const result = await db
+          .update(schema.notifications)
+          .set({ isRead: true })
+          .where(
+            and(
+              eq(schema.notifications.id, id),
+              eq(schema.notifications.userId, userId)
+            )
+          );
         if (result[0] && "affectedRows" in result[0]) {
           updated += (result[0] as { affectedRows: number }).affectedRows;
         }
@@ -483,10 +582,12 @@ export class NotificationCenter {
     const result = await db
       .select({ count: sql<number>`count(*)` })
       .from(schema.notifications)
-      .where(and(
-        eq(schema.notifications.userId, userId),
-        eq(schema.notifications.isRead, false)
-      ));
+      .where(
+        and(
+          eq(schema.notifications.userId, userId),
+          eq(schema.notifications.isRead, false)
+        )
+      );
 
     return result[0]?.count || 0;
   }
@@ -494,31 +595,51 @@ export class NotificationCenter {
   /**
    * Generate notification digest for a user
    */
-  async generateDigest(userId: number, hoursBack: number = 24): Promise<NotificationDigest> {
+  async generateDigest(
+    userId: number,
+    hoursBack: number = 24
+  ): Promise<NotificationDigest> {
     const db = await getDb();
-    const notifications: Array<{ type: string; title: string; message: string }> = [];
+    const notifications: Array<{
+      type: string;
+      title: string;
+      message: string;
+    }> = [];
 
     if (db) {
       const cutoff = new Date(Date.now() - hoursBack * 60 * 60 * 1000);
       const results = await db
         .select()
         .from(schema.notifications)
-        .where(and(
-          eq(schema.notifications.userId, userId),
-          sql`${schema.notifications.createdAt} > ${cutoff}`
-        ))
+        .where(
+          and(
+            eq(schema.notifications.userId, userId),
+            sql`${schema.notifications.createdAt} > ${cutoff}`
+          )
+        )
         .orderBy(desc(schema.notifications.createdAt));
 
-    for (const r of results) {
-      notifications.push({ type: r.type, title: r.title, message: r.message || "" });
-    }
+      for (const r of results) {
+        notifications.push({
+          type: r.type,
+          title: r.title,
+          message: r.message || "",
+        });
+      }
     }
 
     // Group by type
-    const grouped: Record<string, { count: number; latestTitle: string; latestBody: string }> = {};
+    const grouped: Record<
+      string,
+      { count: number; latestTitle: string; latestBody: string }
+    > = {};
     for (const n of notifications) {
       if (!grouped[n.type]) {
-        grouped[n.type] = { count: 0, latestTitle: n.title, latestBody: n.message };
+        grouped[n.type] = {
+          count: 0,
+          latestTitle: n.title,
+          latestBody: n.message,
+        };
       }
       grouped[n.type].count++;
     }
@@ -546,8 +667,14 @@ export class NotificationCenter {
         enabled: true,
         channels: { in_app: true, push: true, email: true, sms: false },
         categories: {
-          social: true, financial: true, security: true, system: true,
-          marketing: false, community: true, gaming: true, streaming: true,
+          social: true,
+          financial: true,
+          security: true,
+          system: true,
+          marketing: false,
+          community: true,
+          gaming: true,
+          streaming: true,
         },
         digestFrequency: "realtime",
         maxPerHour: 30,
@@ -559,7 +686,10 @@ export class NotificationCenter {
   /**
    * Update user preferences
    */
-  updatePreferences(userId: number, updates: Partial<UserNotificationPreferences>): void {
+  updatePreferences(
+    userId: number,
+    updates: Partial<UserNotificationPreferences>
+  ): void {
     const current = this.getUserPreferences(userId);
     this.preferences.set(userId, { ...current, ...updates, userId });
   }
@@ -577,9 +707,13 @@ export class NotificationCenter {
     byChannel: Record<string, number>;
   } {
     const total = this.deliveryLog.length;
-    const delivered = this.deliveryLog.filter(d => d.status === "delivered").length;
+    const delivered = this.deliveryLog.filter(
+      d => d.status === "delivered"
+    ).length;
     const failed = this.deliveryLog.filter(d => d.status === "failed").length;
-    const suppressed = this.deliveryLog.filter(d => d.status === "suppressed").length;
+    const suppressed = this.deliveryLog.filter(
+      d => d.status === "suppressed"
+    ).length;
     const queued = this.deliveryLog.filter(d => d.status === "queued").length;
 
     const byChannel: Record<string, number> = {};
@@ -610,7 +744,9 @@ export class NotificationCenter {
    */
   async flushGroups(): Promise<number> {
     let flushed = 0;
-    for (const [groupKey, notifications] of Array.from(this.groupedNotifications.entries())) {
+    for (const [groupKey, notifications] of Array.from(
+      this.groupedNotifications.entries()
+    )) {
       if (notifications.length > 1) {
         // Send a summary notification
         const first = notifications[0];
@@ -628,7 +764,10 @@ export class NotificationCenter {
 
   // ─── Private Helpers ─────────────────────────────────────────
 
-  private interpolateTemplate(template: string, variables: Record<string, string | number>): string {
+  private interpolateTemplate(
+    template: string,
+    variables: Record<string, string | number>
+  ): string {
     let result = template;
     for (const [key, value] of Object.entries(variables)) {
       result = result.replace(new RegExp(`{{${key}}}`, "g"), String(value));
@@ -637,13 +776,22 @@ export class NotificationCenter {
   }
 
   private isQuietHours(prefs: UserNotificationPreferences): boolean {
-    if (prefs.quietHoursStart === undefined || prefs.quietHoursEnd === undefined) return false;
+    if (
+      prefs.quietHoursStart === undefined ||
+      prefs.quietHoursEnd === undefined
+    )
+      return false;
     const currentHour = new Date().getUTCHours();
     if (prefs.quietHoursStart < prefs.quietHoursEnd) {
-      return currentHour >= prefs.quietHoursStart && currentHour < prefs.quietHoursEnd;
+      return (
+        currentHour >= prefs.quietHoursStart &&
+        currentHour < prefs.quietHoursEnd
+      );
     }
     // Wraps midnight (e.g., 22:00 - 07:00)
-    return currentHour >= prefs.quietHoursStart || currentHour < prefs.quietHoursEnd;
+    return (
+      currentHour >= prefs.quietHoursStart || currentHour < prefs.quietHoursEnd
+    );
   }
 
   private checkRateLimit(userId: number, maxPerHour: number): boolean {

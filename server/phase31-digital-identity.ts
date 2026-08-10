@@ -8,11 +8,21 @@
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
-export type IdentityTier = "anonymous" | "basic" | "verified" | "sovereign" | "legendary";
-export type VerificationMethod = "email" | "phone" | "kyc" | "social_oauth" | "wallet_sign" | "biometric" | "government_id";
-export type BadgeCategory = "creator" | "contributor" | "governance" | "achievement" | "trust" | "legacy";
+export type IdentityTier =
+  "anonymous" | "basic" | "verified" | "sovereign" | "legendary";
+export type VerificationMethod =
+  | "email"
+  | "phone"
+  | "kyc"
+  | "social_oauth"
+  | "wallet_sign"
+  | "biometric"
+  | "government_id";
+export type BadgeCategory =
+  "creator" | "contributor" | "governance" | "achievement" | "trust" | "legacy";
 export type SybilRiskLevel = "none" | "low" | "medium" | "high" | "critical";
-export type CredentialType = "trust" | "creator" | "governance" | "achievement" | "identity" | "skill";
+export type CredentialType =
+  "trust" | "creator" | "governance" | "achievement" | "identity" | "skill";
 
 export interface CreatorPassport {
   id: string;
@@ -120,7 +130,12 @@ export interface TrustIdentityScore {
 export interface AntiSybilRecord {
   id: string;
   userId: number;
-  checkType: "device_fingerprint" | "ip_cluster" | "behavior_pattern" | "social_graph" | "economic_pattern";
+  checkType:
+    | "device_fingerprint"
+    | "ip_cluster"
+    | "behavior_pattern"
+    | "social_graph"
+    | "economic_pattern";
   riskScore: number;
   riskLevel: SybilRiskLevel;
   evidence: string[];
@@ -290,7 +305,10 @@ export const creatorPassportEngine = {
     return _passports.get(userId) ?? null;
   },
 
-  addVerificationMethod(userId: number, method: VerificationMethod): CreatorPassport | null {
+  addVerificationMethod(
+    userId: number,
+    method: VerificationMethod
+  ): CreatorPassport | null {
     const passport = _passports.get(userId);
     if (!passport) return null;
     if (!passport.verificationMethods.includes(method)) {
@@ -306,17 +324,31 @@ export const creatorPassportEngine = {
     return passport;
   },
 
-  updateStats(userId: number, updates: Partial<Pick<CreatorPassport,
-    "totalFollowers" | "totalPosts" | "totalEarnings" | "totalTips" |
-    "totalDonations" | "reputationScore" | "trustScore" | "governanceParticipation" | "creatorScore"
-  >>): CreatorPassport | null {
+  updateStats(
+    userId: number,
+    updates: Partial<
+      Pick<
+        CreatorPassport,
+        | "totalFollowers"
+        | "totalPosts"
+        | "totalEarnings"
+        | "totalTips"
+        | "totalDonations"
+        | "reputationScore"
+        | "trustScore"
+        | "governanceParticipation"
+        | "creatorScore"
+      >
+    >
+  ): CreatorPassport | null {
     const passport = _passports.get(userId);
     if (!passport) return null;
     Object.assign(passport, updates);
     // Recalculate tier based on creator score
     if (passport.creatorScore >= 10000) passport.tier = "legendary";
     else if (passport.creatorScore >= 5000) passport.tier = "sovereign";
-    else if (passport.verificationMethods.length >= 2) passport.tier = "verified";
+    else if (passport.verificationMethods.length >= 2)
+      passport.tier = "verified";
     return passport;
   },
 
@@ -353,7 +385,11 @@ export const creatorPassportEngine = {
       .slice(0, limit);
   },
 
-  getPassportStats(): { total: number; byTier: Record<string, number>; verified: number } {
+  getPassportStats(): {
+    total: number;
+    byTier: Record<string, number>;
+    verified: number;
+  } {
     const passports = Array.from(_passports.values());
     const byTier: Record<string, number> = {};
     let verified = 0;
@@ -368,23 +404,28 @@ export const creatorPassportEngine = {
 // ─── REPUTATION PASSPORT ENGINE ───────────────────────────────────────────────
 
 export const reputationPassportEngine = {
-  createOrUpdate(userId: number, events: {
-    contentQuality?: number;
-    communityStanding?: number;
-    governanceParticipation?: number;
-    economicContribution?: number;
-    trustworthiness?: number;
-    longevity?: number;
-  }): ReputationPassport {
+  createOrUpdate(
+    userId: number,
+    events: {
+      contentQuality?: number;
+      communityStanding?: number;
+      governanceParticipation?: number;
+      economicContribution?: number;
+      trustworthiness?: number;
+      longevity?: number;
+    }
+  ): ReputationPassport {
     const existing = _reputationPassports.get(userId);
-    const components = existing ? { ...existing.components } : {
-      contentQuality: 50,
-      communityStanding: 50,
-      governanceParticipation: 0,
-      economicContribution: 0,
-      trustworthiness: 50,
-      longevity: 0,
-    };
+    const components = existing
+      ? { ...existing.components }
+      : {
+          contentQuality: 50,
+          communityStanding: 50,
+          governanceParticipation: 0,
+          economicContribution: 0,
+          trustworthiness: 50,
+          longevity: 0,
+        };
 
     // Apply delta updates (clamped 0–100)
     for (const [key, delta] of Object.entries(events)) {
@@ -394,11 +435,11 @@ export const reputationPassportEngine = {
 
     const overallScore = Math.round(
       components.contentQuality * 0.2 +
-      components.communityStanding * 0.2 +
-      components.governanceParticipation * 0.15 +
-      components.economicContribution * 0.15 +
-      components.trustworthiness * 0.2 +
-      components.longevity * 0.1
+        components.communityStanding * 0.2 +
+        components.governanceParticipation * 0.15 +
+        components.economicContribution * 0.15 +
+        components.trustworthiness * 0.2 +
+        components.longevity * 0.1
     );
 
     let tier: IdentityTier = "anonymous";
@@ -413,8 +454,12 @@ export const reputationPassportEngine = {
       overallScore,
       tier,
       components,
-      positiveEvents: (existing?.positiveEvents ?? 0) + Object.values(events).filter(v => (v ?? 0) > 0).length,
-      negativeEvents: (existing?.negativeEvents ?? 0) + Object.values(events).filter(v => (v ?? 0) < 0).length,
+      positiveEvents:
+        (existing?.positiveEvents ?? 0) +
+        Object.values(events).filter(v => (v ?? 0) > 0).length,
+      negativeEvents:
+        (existing?.negativeEvents ?? 0) +
+        Object.values(events).filter(v => (v ?? 0) < 0).length,
       totalInteractions: (existing?.totalInteractions ?? 0) + 1,
       endorsements: existing?.endorsements ?? 0,
       reports: existing?.reports ?? 0,
@@ -435,7 +480,10 @@ export const reputationPassportEngine = {
     const rep = _reputationPassports.get(userId);
     if (!rep) return null;
     rep.endorsements++;
-    rep.components.trustworthiness = Math.min(100, rep.components.trustworthiness + 0.5);
+    rep.components.trustworthiness = Math.min(
+      100,
+      rep.components.trustworthiness + 0.5
+    );
     rep.updatedAt = new Date();
     return rep;
   },
@@ -445,7 +493,10 @@ export const reputationPassportEngine = {
     if (!rep) return null;
     rep.reports++;
     rep.negativeEvents++;
-    rep.components.communityStanding = Math.max(0, rep.components.communityStanding - 2);
+    rep.components.communityStanding = Math.max(
+      0,
+      rep.components.communityStanding - 2
+    );
     rep.updatedAt = new Date();
     return rep;
   },
@@ -504,9 +555,20 @@ export const walletIdentityEngine = {
     return Array.from(_walletFusions.values()).filter(w => w.userId === userId);
   },
 
-  updateWalletStats(userId: number, walletAddress: string, updates: Partial<Pick<WalletIdentityFusion,
-    "totalTransactions" | "totalVolume" | "nftCount" | "stakingBalance" | "governanceVotes"
-  >>): WalletIdentityFusion | null {
+  updateWalletStats(
+    userId: number,
+    walletAddress: string,
+    updates: Partial<
+      Pick<
+        WalletIdentityFusion,
+        | "totalTransactions"
+        | "totalVolume"
+        | "nftCount"
+        | "stakingBalance"
+        | "governanceVotes"
+      >
+    >
+  ): WalletIdentityFusion | null {
     const key = `${userId}:${walletAddress}`;
     const fusion = _walletFusions.get(key);
     if (!fusion) return null;
@@ -515,7 +577,10 @@ export const walletIdentityEngine = {
     return fusion;
   },
 
-  setPrimary(userId: number, walletAddress: string): WalletIdentityFusion | null {
+  setPrimary(
+    userId: number,
+    walletAddress: string
+  ): WalletIdentityFusion | null {
     // Unset all primaries for this user
     for (const [, fusion] of _walletFusions) {
       if (fusion.userId === userId) fusion.isPrimary = false;
@@ -527,7 +592,11 @@ export const walletIdentityEngine = {
     return fusion;
   },
 
-  getWalletStats(): { totalLinked: number; byChain: Record<string, number>; totalVolume: number } {
+  getWalletStats(): {
+    totalLinked: number;
+    byChain: Record<string, number>;
+    totalVolume: number;
+  } {
     const fusions = Array.from(_walletFusions.values());
     const byChain: Record<string, number> = {};
     let totalVolume = 0;
@@ -570,7 +639,11 @@ export const socialIdentityEngine = {
     return Array.from(_socialFusions.values()).filter(s => s.userId === userId);
   },
 
-  syncPlatform(userId: number, platform: string, followerCount: number): SocialIdentityFusion | null {
+  syncPlatform(
+    userId: number,
+    platform: string,
+    followerCount: number
+  ): SocialIdentityFusion | null {
     const key = `${userId}:${platform}`;
     const fusion = _socialFusions.get(key);
     if (!fusion) return null;
@@ -595,35 +668,51 @@ export const trustIdentityEngine = {
     const wallets = walletIdentityEngine.getWallets(userId);
     const socials = socialIdentityEngine.getSocialLinks(userId);
 
-    const identityVerification = Math.min(100,
+    const identityVerification = Math.min(
+      100,
       (passport?.verificationMethods.length ?? 0) * 20 +
-      (wallets.length > 0 ? 20 : 0) +
-      (socials.length > 0 ? 10 : 0)
+        (wallets.length > 0 ? 20 : 0) +
+        (socials.length > 0 ? 10 : 0)
     );
 
     const behaviorHistory = reputation?.components.communityStanding ?? 50;
-    const socialGraph = Math.min(100, (socials.reduce((s, f) => s + f.followerCount, 0) / 1000));
-    const economicHistory = Math.min(100, wallets.reduce((s, w) => s + w.totalVolume, 0) / 100);
-    const governanceHistory = Math.min(100, (passport?.governanceParticipation ?? 0) * 10);
+    const socialGraph = Math.min(
+      100,
+      socials.reduce((s, f) => s + f.followerCount, 0) / 1000
+    );
+    const economicHistory = Math.min(
+      100,
+      wallets.reduce((s, w) => s + w.totalVolume, 0) / 100
+    );
+    const governanceHistory = Math.min(
+      100,
+      (passport?.governanceParticipation ?? 0) * 10
+    );
     const contentQuality = reputation?.components.contentQuality ?? 50;
 
     const overallTrust = Math.round(
       identityVerification * 0.25 +
-      behaviorHistory * 0.2 +
-      socialGraph * 0.1 +
-      economicHistory * 0.15 +
-      governanceHistory * 0.1 +
-      contentQuality * 0.2
+        behaviorHistory * 0.2 +
+        socialGraph * 0.1 +
+        economicHistory * 0.15 +
+        governanceHistory * 0.1 +
+        contentQuality * 0.2
     );
 
     const riskFlags: string[] = [];
     if (wallets.length === 0) riskFlags.push("no_wallet_linked");
-    if ((passport?.verificationMethods.length ?? 0) === 0) riskFlags.push("unverified_identity");
+    if ((passport?.verificationMethods.length ?? 0) === 0)
+      riskFlags.push("unverified_identity");
     if ((reputation?.reports ?? 0) > 5) riskFlags.push("high_report_count");
 
-    const sybilRisk: SybilRiskLevel = riskFlags.length >= 3 ? "high" :
-      riskFlags.length >= 2 ? "medium" :
-      riskFlags.length >= 1 ? "low" : "none";
+    const sybilRisk: SybilRiskLevel =
+      riskFlags.length >= 3
+        ? "high"
+        : riskFlags.length >= 2
+          ? "medium"
+          : riskFlags.length >= 1
+            ? "low"
+            : "none";
 
     const score: TrustIdentityScore = {
       userId,
@@ -668,14 +757,22 @@ export const antiSybilEngine = {
   }): AntiSybilRecord {
     // Compute risk score based on evidence count and related users
     const evidenceScore = Math.min(100, params.evidence.length * 15);
-    const relatedScore = Math.min(50, (params.relatedUserIds?.length ?? 0) * 10);
+    const relatedScore = Math.min(
+      50,
+      (params.relatedUserIds?.length ?? 0) * 10
+    );
     const riskScore = (evidenceScore + relatedScore) / 2;
 
     const riskLevel: SybilRiskLevel =
-      riskScore >= 80 ? "critical" :
-      riskScore >= 60 ? "high" :
-      riskScore >= 40 ? "medium" :
-      riskScore >= 20 ? "low" : "none";
+      riskScore >= 80
+        ? "critical"
+        : riskScore >= 60
+          ? "high"
+          : riskScore >= 40
+            ? "medium"
+            : riskScore >= 20
+              ? "low"
+              : "none";
 
     const record: AntiSybilRecord = {
       id: _generateId("sybil"),
@@ -686,16 +783,26 @@ export const antiSybilEngine = {
       evidence: params.evidence,
       relatedUserIds: params.relatedUserIds ?? [],
       isConfirmed: false,
-      action: riskLevel === "critical" ? "ban" :
-              riskLevel === "high" ? "restrict" :
-              riskLevel === "medium" ? "flag" : "none",
+      action:
+        riskLevel === "critical"
+          ? "ban"
+          : riskLevel === "high"
+            ? "restrict"
+            : riskLevel === "medium"
+              ? "flag"
+              : "none",
       createdAt: new Date(),
     };
     _antiSybilRecords.set(record.id, record);
     return record;
   },
 
-  reviewRecord(recordId: string, reviewerId: number, isConfirmed: boolean, action: AntiSybilRecord["action"]): AntiSybilRecord | null {
+  reviewRecord(
+    recordId: string,
+    reviewerId: number,
+    isConfirmed: boolean,
+    action: AntiSybilRecord["action"]
+  ): AntiSybilRecord | null {
     const record = _antiSybilRecords.get(recordId);
     if (!record) return null;
     record.isConfirmed = isConfirmed;
@@ -705,11 +812,24 @@ export const antiSybilEngine = {
     return record;
   },
 
-  getUserRisk(userId: number): { riskLevel: SybilRiskLevel; records: AntiSybilRecord[] } {
-    const records = Array.from(_antiSybilRecords.values()).filter(r => r.userId === userId);
+  getUserRisk(userId: number): {
+    riskLevel: SybilRiskLevel;
+    records: AntiSybilRecord[];
+  } {
+    const records = Array.from(_antiSybilRecords.values()).filter(
+      r => r.userId === userId
+    );
     const maxRisk = records.reduce((max, r) => {
-      const levels: SybilRiskLevel[] = ["none", "low", "medium", "high", "critical"];
-      return levels.indexOf(r.riskLevel) > levels.indexOf(max) ? r.riskLevel : max;
+      const levels: SybilRiskLevel[] = [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "critical",
+      ];
+      return levels.indexOf(r.riskLevel) > levels.indexOf(max)
+        ? r.riskLevel
+        : max;
     }, "none" as SybilRiskLevel);
     return { riskLevel: maxRisk, records };
   },
@@ -721,7 +841,11 @@ export const antiSybilEngine = {
       .slice(0, limit);
   },
 
-  getSybilStats(): { total: number; byRisk: Record<string, number>; confirmed: number } {
+  getSybilStats(): {
+    total: number;
+    byRisk: Record<string, number>;
+    confirmed: number;
+  } {
     const records = Array.from(_antiSybilRecords.values());
     const byRisk: Record<string, number> = {};
     let confirmed = 0;
@@ -782,7 +906,11 @@ export const profileNFTEngine = {
   },
 
   getEquipped(userId: number): ProfileNFT | null {
-    return Array.from(_profileNFTs.values()).find(n => n.userId === userId && n.isEquipped) ?? null;
+    return (
+      Array.from(_profileNFTs.values()).find(
+        n => n.userId === userId && n.isEquipped
+      ) ?? null
+    );
   },
 
   updateValue(nftId: string, newValue: number): ProfileNFT | null {
@@ -839,7 +967,11 @@ export const creatorBadgeEngine = {
     return badge;
   },
 
-  getBadgeStats(): { total: number; byCategory: Record<string, number>; rare: number } {
+  getBadgeStats(): {
+    total: number;
+    byCategory: Record<string, number>;
+    rare: number;
+  } {
     const badges = Array.from(_creatorBadges.values());
     const byCategory: Record<string, number> = {};
     let rare = 0;
@@ -869,8 +1001,12 @@ export const proofOfHistoryEngine = {
       title: params.title,
       description: params.description,
       timestamp: new Date(),
-      blockHash: _generateSignature(`${params.userId}:${params.eventType}:${Date.now()}`).slice(0, 66),
-      merkleProof: _generateSignature(`merkle:${params.userId}:${Date.now()}`).slice(0, 66),
+      blockHash: _generateSignature(
+        `${params.userId}:${params.eventType}:${Date.now()}`
+      ).slice(0, 66),
+      merkleProof: _generateSignature(
+        `merkle:${params.userId}:${Date.now()}`
+      ).slice(0, 66),
       isPublic: params.isPublic ?? true,
       isImmutable: true,
       metadata: params.metadata ?? {},
@@ -885,7 +1021,10 @@ export const proofOfHistoryEngine = {
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   },
 
-  verifyAsset(assetId: string): { isValid: boolean; asset: ProofOfHistoryAsset | null } {
+  verifyAsset(assetId: string): {
+    isValid: boolean;
+    asset: ProofOfHistoryAsset | null;
+  } {
     const asset = _proofAssets.get(assetId);
     if (!asset) return { isValid: false, asset: null };
     // Verify immutability flag and block hash presence
@@ -939,7 +1078,11 @@ export const socialAchievementEngine = {
     );
   },
 
-  getAchievementStats(): { total: number; byCategory: Record<string, number>; rare: number } {
+  getAchievementStats(): {
+    total: number;
+    byCategory: Record<string, number>;
+    rare: number;
+  } {
     const achievements = Array.from(_achievements.values());
     const byCategory: Record<string, number> = {};
     let rare = 0;
@@ -992,7 +1135,10 @@ export const trustCredentialEngine = {
     return cred;
   },
 
-  getUserCredentials(userId: number, includeRevoked = false): TrustCredential[] {
+  getUserCredentials(
+    userId: number,
+    includeRevoked = false
+  ): TrustCredential[] {
     return Array.from(_trustCredentials.values())
       .filter(c => c.subjectId === userId && (includeRevoked || !c.isRevoked))
       .sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime());
@@ -1004,14 +1150,21 @@ export const trustCredentialEngine = {
       .sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime());
   },
 
-  verifyCredential(credentialId: string): { isValid: boolean; credential: TrustCredential | null } {
+  verifyCredential(credentialId: string): {
+    isValid: boolean;
+    credential: TrustCredential | null;
+  } {
     const cred = _trustCredentials.get(credentialId);
     if (!cred) return { isValid: false, credential: null };
     const isExpired = cred.expiresAt ? cred.expiresAt < new Date() : false;
     return { isValid: !cred.isRevoked && !isExpired, credential: cred };
   },
 
-  getCredentialStats(): { total: number; byType: Record<string, number>; revoked: number } {
+  getCredentialStats(): {
+    total: number;
+    byType: Record<string, number>;
+    revoked: number;
+  } {
     const creds = Array.from(_trustCredentials.values());
     const byType: Record<string, number> = {};
     let revoked = 0;
@@ -1067,7 +1220,9 @@ export const identityDashboard = {
   } {
     return {
       totalPassports: _passports.size,
-      totalVerified: Array.from(_passports.values()).filter(p => p.verificationMethods.length > 0).length,
+      totalVerified: Array.from(_passports.values()).filter(
+        p => p.verificationMethods.length > 0
+      ).length,
       totalWallets: _walletFusions.size,
       totalSocials: _socialFusions.size,
       totalNFTs: _profileNFTs.size,

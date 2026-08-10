@@ -8,7 +8,8 @@
 // TYPES
 // ═══════════════════════════════════════════════════════════════
 
-export type JobStatus = "pending" | "processing" | "completed" | "failed" | "dead";
+export type JobStatus =
+  "pending" | "processing" | "completed" | "failed" | "dead";
 export type JobPriority = "low" | "normal" | "high" | "critical";
 
 export interface Job<T = unknown> {
@@ -89,13 +90,17 @@ export class JobQueue {
   /**
    * Add a job to a queue
    */
-  addJob<T>(queueName: string, payload: T, options?: {
-    priority?: JobPriority;
-    scheduledFor?: Date;
-    timeout?: number;
-    maxAttempts?: number;
-    tags?: string[];
-  }): Job<T> {
+  addJob<T>(
+    queueName: string,
+    payload: T,
+    options?: {
+      priority?: JobPriority;
+      scheduledFor?: Date;
+      timeout?: number;
+      maxAttempts?: number;
+      tags?: string[];
+    }
+  ): Job<T> {
     const config = this.queues.get(queueName);
     if (!config) throw new Error(`Queue "${queueName}" not registered`);
 
@@ -121,10 +126,14 @@ export class JobQueue {
   /**
    * Add multiple jobs at once (batch)
    */
-  addBatch<T>(queueName: string, payloads: T[], options?: {
-    priority?: JobPriority;
-    tags?: string[];
-  }): Job<T>[] {
+  addBatch<T>(
+    queueName: string,
+    payloads: T[],
+    options?: {
+      priority?: JobPriority;
+      tags?: string[];
+    }
+  ): Job<T>[] {
     return payloads.map(payload => this.addJob(queueName, payload, options));
   }
 
@@ -150,7 +159,8 @@ export class JobQueue {
    */
   retryJob(id: string): boolean {
     const job = this.jobs.get(id);
-    if (!job || (job.status !== "failed" && job.status !== "dead")) return false;
+    if (!job || (job.status !== "failed" && job.status !== "dead"))
+      return false;
     job.status = "pending";
     job.attempts = 0;
     job.error = undefined;
@@ -161,17 +171,26 @@ export class JobQueue {
    * Get queue statistics
    */
   getQueueStats(queueName: string): QueueStats {
-    const jobs = Array.from(this.jobs.values()).filter(j => j.queue === queueName);
+    const jobs = Array.from(this.jobs.values()).filter(
+      j => j.queue === queueName
+    );
     const processing = this.processing.get(queueName)?.size || 0;
 
     const recentCompletions = this.completionTimes.filter(
       t => t > Date.now() - 60000
     ).length;
 
-    const completedJobs = jobs.filter(j => j.status === "completed" && j.startedAt && j.completedAt);
-    const avgTime = completedJobs.length > 0
-      ? completedJobs.reduce((sum, j) => sum + (j.completedAt!.getTime() - j.startedAt!.getTime()), 0) / completedJobs.length
-      : 0;
+    const completedJobs = jobs.filter(
+      j => j.status === "completed" && j.startedAt && j.completedAt
+    );
+    const avgTime =
+      completedJobs.length > 0
+        ? completedJobs.reduce(
+            (sum, j) =>
+              sum + (j.completedAt!.getTime() - j.startedAt!.getTime()),
+            0
+          ) / completedJobs.length
+        : 0;
 
     return {
       name: queueName,
@@ -196,8 +215,9 @@ export class JobQueue {
    * Get dead letter queue jobs
    */
   getDeadLetterJobs(queueName?: string): Job[] {
-    return Array.from(this.jobs.values())
-      .filter(j => j.status === "dead" && (!queueName || j.queue === queueName));
+    return Array.from(this.jobs.values()).filter(
+      j => j.status === "dead" && (!queueName || j.queue === queueName)
+    );
   }
 
   /**
@@ -208,7 +228,11 @@ export class JobQueue {
     let purged = 0;
 
     for (const [id, job] of Array.from(this.jobs.entries())) {
-      if (job.status === "completed" && job.completedAt && job.completedAt.getTime() < cutoff) {
+      if (
+        job.status === "completed" &&
+        job.completedAt &&
+        job.completedAt.getTime() < cutoff
+      ) {
         this.jobs.delete(id);
         purged++;
       }
@@ -242,9 +266,12 @@ export class JobQueue {
 
       // Check rate limit
       if (config.rateLimitPerMinute) {
-        const recentCount = Array.from(this.jobs.values())
-          .filter(j => j.queue === queueName && j.startedAt && j.startedAt.getTime() > Date.now() - 60000)
-          .length;
+        const recentCount = Array.from(this.jobs.values()).filter(
+          j =>
+            j.queue === queueName &&
+            j.startedAt &&
+            j.startedAt.getTime() > Date.now() - 60000
+        ).length;
         if (recentCount >= config.rateLimitPerMinute) continue;
       }
 
@@ -278,7 +305,8 @@ export class JobQueue {
       job.result = result;
       this.completionTimes.push(Date.now());
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       job.error = errorMessage;
 
       if (job.attempts >= job.maxAttempts) {
@@ -302,11 +330,12 @@ export class JobQueue {
     const now = new Date();
 
     for (const priority of priorityOrder) {
-      const job = Array.from(this.jobs.values()).find(j =>
-        j.queue === queueName &&
-        j.status === "pending" &&
-        j.priority === priority &&
-        (!j.scheduledFor || j.scheduledFor <= now)
+      const job = Array.from(this.jobs.values()).find(
+        j =>
+          j.queue === queueName &&
+          j.status === "pending" &&
+          j.priority === priority &&
+          (!j.scheduledFor || j.scheduledFor <= now)
       );
       if (job) return job;
     }
@@ -357,7 +386,11 @@ export class CronScheduler {
   /**
    * Register a scheduled task
    */
-  register(name: string, cronExpression: string, handler: () => Promise<void>): string {
+  register(
+    name: string,
+    cronExpression: string,
+    handler: () => Promise<void>
+  ): string {
     this.taskIdCounter++;
     const id = `CRON-${this.taskIdCounter.toString().padStart(4, "0")}`;
     const task: ScheduledTask = {
@@ -460,7 +493,12 @@ export class CronScheduler {
     if (match) {
       const value = parseInt(match[1]);
       const unit = match[2];
-      const ms = unit === "m" ? value * 60000 : unit === "h" ? value * 3600000 : value * 86400000;
+      const ms =
+        unit === "m"
+          ? value * 60000
+          : unit === "h"
+            ? value * 3600000
+            : value * 86400000;
       return new Date(Date.now() + ms);
     }
     // Default: every hour

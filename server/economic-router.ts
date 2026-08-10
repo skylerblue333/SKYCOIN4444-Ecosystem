@@ -174,7 +174,7 @@ export const economicRouter = router({
     await ensureEconomicTables();
     await ensureBalance(ctx.user.id);
     const db = await getDb();
-  if (!db) throw new Error("DB unavailable");
+    if (!db) throw new Error("DB unavailable");
     const rows = await db.execute(
       sql`SELECT * FROM sky_balances WHERE user_id = ${ctx.user.id}`
     );
@@ -204,7 +204,7 @@ export const economicRouter = router({
     .query(async ({ ctx, input }) => {
       await ensureEconomicTables();
       const db = await getDb();
-  if (!db) throw new Error("DB unavailable");
+      if (!db) throw new Error("DB unavailable");
       const rows = await db.execute(sql`
         SELECT * FROM sky_wallet_ledger
         WHERE user_id = ${ctx.user.id}
@@ -249,7 +249,11 @@ export const economicRouter = router({
       const fee = flatFee + (input.amount ?? 0) * pctFee;
 
       if (fee === 0) {
-        return { success: true, fee: 0, newBalance: await getUserBalance(ctx.user.id) };
+        return {
+          success: true,
+          fee: 0,
+          newBalance: await getUserBalance(ctx.user.id),
+        };
       }
 
       const result = await recordTransaction({
@@ -295,7 +299,8 @@ export const economicRouter = router({
     return {
       flatFees: ACTION_FEES,
       percentageFees: PERCENTAGE_FEES,
-      description: "SKY444 fee schedule. Flat fees in SKY444 tokens. Percentage fees applied to transaction value.",
+      description:
+        "SKY444 fee schedule. Flat fees in SKY444 tokens. Percentage fees applied to transaction value.",
     };
   }),
 
@@ -303,7 +308,7 @@ export const economicRouter = router({
   getTreasuryStats: publicProcedure.query(async () => {
     await ensureEconomicTables();
     const db = await getDb();
-  if (!db) throw new Error("DB unavailable");
+    if (!db) throw new Error("DB unavailable");
     const rows = await db.execute(sql`
       SELECT
         SUM(amount) as total_collected,
@@ -335,7 +340,7 @@ export const economicRouter = router({
   getEconomicStats: publicProcedure.query(async () => {
     await ensureEconomicTables();
     const db = await getDb();
-  if (!db) throw new Error("DB unavailable");
+    if (!db) throw new Error("DB unavailable");
 
     const balanceRows = await db.execute(sql`
       SELECT
@@ -372,7 +377,7 @@ export const economicRouter = router({
   claimWelcomeBonus: protectedProcedure.mutation(async ({ ctx }) => {
     await ensureEconomicTables();
     const db = await getDb();
-  if (!db) throw new Error("DB unavailable");
+    if (!db) throw new Error("DB unavailable");
 
     // Check if already claimed
     const existing = await db.execute(sql`
@@ -391,7 +396,8 @@ export const economicRouter = router({
       amount: 100,
       fee: 0,
       direction: "credit",
-      description: "Welcome to SKYCOIN4444! Here are 100 SKY444 tokens to get started.",
+      description:
+        "Welcome to SKYCOIN4444! Here are 100 SKY444 tokens to get started.",
     });
 
     return { ...result, message: "Welcome bonus of 100 SKY444 claimed!" };
@@ -403,7 +409,7 @@ export const economicRouter = router({
     .query(async ({ input }) => {
       await ensureEconomicTables();
       const db = await getDb();
-  if (!db) throw new Error("DB unavailable");
+      if (!db) throw new Error("DB unavailable");
       const rows = await db.execute(sql`
         SELECT sb.user_id, sb.balance, sb.total_earned, u.name, u.username
         FROM sky_balances sb

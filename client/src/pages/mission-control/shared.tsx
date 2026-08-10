@@ -26,7 +26,9 @@ export function ErrorState({ message }: { message?: string }) {
   return (
     <div className="rounded-xl border border-red-500/30 bg-red-500/5 px-6 py-8 text-center">
       <p className="text-red-300 font-medium">Something went wrong</p>
-      <p className="mt-1 text-sm text-red-300/60">{message ?? "Please try again in a moment."}</p>
+      <p className="mt-1 text-sm text-red-300/60">
+        {message ?? "Please try again in a moment."}
+      </p>
     </div>
   );
 }
@@ -34,10 +36,14 @@ export function ErrorState({ message }: { message?: string }) {
 // Format a SKY444 coin amount (listings store integer "cents"; 100 == 1 SKY444).
 export function formatCoin(cents: number): string {
   const coin = cents / 100;
-  return coin === 0 ? "Free" : `${coin.toLocaleString(undefined, { maximumFractionDigits: 2 })} SKY444`;
+  return coin === 0
+    ? "Free"
+    : `${coin.toLocaleString(undefined, { maximumFractionDigits: 2 })} SKY444`;
 }
 
 export function avg(sum: number, count: number): string {
   if (!count) return "—";
   return (sum / count).toFixed(1);
 }
+
+export default GOLD;

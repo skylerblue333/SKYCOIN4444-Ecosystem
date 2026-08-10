@@ -5,18 +5,70 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { creatorPassportEngine, reputationPassportEngine, walletIdentityEngine, socialIdentityEngine, trustIdentityEngine, antiSybilEngine, profileNFTEngine, creatorBadgeEngine, socialAchievementEngine, trustCredentialEngine, proofOfHistoryEngine } from "./phase31-digital-identity";
-import { storefrontEngine, membershipEngine, tokenEconomyEngine, revenueShareEngine, payrollEngine, creatorTreasuryEngine, affiliateNetworkEngine, rewardSystemEngine } from "./phase32-creator-sovereignty";
-import { storageNodeManager, contentReplicationEngine, distributedIndexEngine, crossRegionEngine, decentralizedArchiveEngine, immutableProofLogEngine, immutableModerationEngine, immutablePayoutEngine, immutableDonationEngine, immutableGovernanceEngine } from "./phase33-decentralized-infra";
-import { jobMarketEngine, bountyBoardEngine, grantSystemEngine, daoFundingEngine, economicReputationEngine, skillEndorsementEngine, economicHealthMonitor } from "./phase34-economic-civilization";
-import { legacyVaultEngine, digitalWillEngine, successionPlanEngine, memorialProfileEngine, legacyContentScheduler, immortalityTokenEngine, culturalPreservationEngine, platformMemoryEngine } from "./phase35-legacy-immortality";
+import {
+  creatorPassportEngine,
+  reputationPassportEngine,
+  walletIdentityEngine,
+  socialIdentityEngine,
+  trustIdentityEngine,
+  antiSybilEngine,
+  profileNFTEngine,
+  creatorBadgeEngine,
+  socialAchievementEngine,
+  trustCredentialEngine,
+  proofOfHistoryEngine,
+} from "./phase31-digital-identity";
+import {
+  storefrontEngine,
+  membershipEngine,
+  tokenEconomyEngine,
+  revenueShareEngine,
+  payrollEngine,
+  creatorTreasuryEngine,
+  affiliateNetworkEngine,
+  rewardSystemEngine,
+} from "./phase32-creator-sovereignty";
+import {
+  storageNodeManager,
+  contentReplicationEngine,
+  distributedIndexEngine,
+  crossRegionEngine,
+  decentralizedArchiveEngine,
+  immutableProofLogEngine,
+  immutableModerationEngine,
+  immutablePayoutEngine,
+  immutableDonationEngine,
+  immutableGovernanceEngine,
+} from "./phase33-decentralized-infra";
+import {
+  jobMarketEngine,
+  bountyBoardEngine,
+  grantSystemEngine,
+  daoFundingEngine,
+  economicReputationEngine,
+  skillEndorsementEngine,
+  economicHealthMonitor,
+} from "./phase34-economic-civilization";
+import {
+  legacyVaultEngine,
+  digitalWillEngine,
+  successionPlanEngine,
+  memorialProfileEngine,
+  legacyContentScheduler,
+  immortalityTokenEngine,
+  culturalPreservationEngine,
+  platformMemoryEngine,
+} from "./phase35-legacy-immortality";
 
 // ─── PHASE 31: DIGITAL IDENTITY ───────────────────────────────────────────────
 
 describe("Phase 31A: Creator Passport Engine", () => {
-
   it("creates a passport with basic tier", () => {
-    const p = creatorPassportEngine.createPassport({ userId: 3101, displayName: "Alice", bio: "Creator" });
+    const p = creatorPassportEngine.createPassport({
+      userId: 3101,
+      displayName: "Alice",
+      bio: "Creator",
+    });
     expect(p.userId).toBe(3101);
     expect(p.tier).toBe("basic");
     expect(p.passportNumber).toMatch(/^SKY-/);
@@ -24,7 +76,11 @@ describe("Phase 31A: Creator Passport Engine", () => {
   });
 
   it("adds verification methods and upgrades tier", () => {
-    creatorPassportEngine.createPassport({ userId: 3102, displayName: "Bob", bio: "Dev" });
+    creatorPassportEngine.createPassport({
+      userId: 3102,
+      displayName: "Bob",
+      bio: "Dev",
+    });
     creatorPassportEngine.addVerificationMethod(3102, "email");
     creatorPassportEngine.addVerificationMethod(3102, "phone");
     const p = creatorPassportEngine.addVerificationMethod(3102, "kyc");
@@ -33,7 +89,11 @@ describe("Phase 31A: Creator Passport Engine", () => {
   });
 
   it("upgrades to legendary with 5 verification methods", () => {
-    creatorPassportEngine.createPassport({ userId: 3103, displayName: "Legend", bio: "Legend" });
+    creatorPassportEngine.createPassport({
+      userId: 3103,
+      displayName: "Legend",
+      bio: "Legend",
+    });
     ["email", "phone", "kyc", "social_oauth", "wallet_sign"].forEach((m: any) =>
       creatorPassportEngine.addVerificationMethod(3103, m)
     );
@@ -42,7 +102,11 @@ describe("Phase 31A: Creator Passport Engine", () => {
   });
 
   it("updates stats and links wallet", () => {
-    creatorPassportEngine.createPassport({ userId: 3104, displayName: "Wallet", bio: "Holder" });
+    creatorPassportEngine.createPassport({
+      userId: 3104,
+      displayName: "Wallet",
+      bio: "Holder",
+    });
     creatorPassportEngine.updateStats(3104, { creatorScore: 6000 });
     creatorPassportEngine.linkWallet(3104, "0xABC123");
     const p = creatorPassportEngine.getPassport(3104);
@@ -51,7 +115,11 @@ describe("Phase 31A: Creator Passport Engine", () => {
   });
 
   it("suspends and reinstates passport", () => {
-    creatorPassportEngine.createPassport({ userId: 3105, displayName: "Suspended", bio: "Test" });
+    creatorPassportEngine.createPassport({
+      userId: 3105,
+      displayName: "Suspended",
+      bio: "Test",
+    });
     creatorPassportEngine.suspendPassport(3105, "spam");
     let p = creatorPassportEngine.getPassport(3105);
     expect(p!.isSuspended).toBe(true);
@@ -69,9 +137,11 @@ describe("Phase 31A: Creator Passport Engine", () => {
 });
 
 describe("Phase 31B: Reputation Passport Engine", () => {
-
   it("creates reputation passport with initial score", () => {
-    const rep = reputationPassportEngine.createOrUpdate(3110, { contentQuality: 10, communityStanding: 5 });
+    const rep = reputationPassportEngine.createOrUpdate(3110, {
+      contentQuality: 10,
+      communityStanding: 5,
+    });
     expect(rep.userId).toBe(3110);
     expect(rep.overallScore).toBeGreaterThan(0);
     expect(rep.positiveEvents).toBeGreaterThan(0);
@@ -109,7 +179,6 @@ describe("Phase 31B: Reputation Passport Engine", () => {
 });
 
 describe("Phase 31C: Wallet & Social Identity Fusion", () => {
-
   it("links wallet and verifies it", () => {
     const fusion = walletIdentityEngine.linkWallet({
       userId: 3120,
@@ -123,15 +192,33 @@ describe("Phase 31C: Wallet & Social Identity Fusion", () => {
   });
 
   it("updates wallet stats", () => {
-    walletIdentityEngine.linkWallet({ userId: 3121, walletAddress: "0xABCD", chain: "solana", signatureHash: "0xSIG" });
-    const fusion = walletIdentityEngine.updateWalletStats(3121, "0xABCD", { totalVolume: 500, nftCount: 10 });
+    walletIdentityEngine.linkWallet({
+      userId: 3121,
+      walletAddress: "0xABCD",
+      chain: "solana",
+      signatureHash: "0xSIG",
+    });
+    const fusion = walletIdentityEngine.updateWalletStats(3121, "0xABCD", {
+      totalVolume: 500,
+      nftCount: 10,
+    });
     expect(fusion!.totalVolume).toBe(500);
     expect(fusion!.nftCount).toBe(10);
   });
 
   it("sets primary wallet", () => {
-    walletIdentityEngine.linkWallet({ userId: 3122, walletAddress: "0xW1", chain: "eth", signatureHash: "0xS1" });
-    walletIdentityEngine.linkWallet({ userId: 3122, walletAddress: "0xW2", chain: "eth", signatureHash: "0xS2" });
+    walletIdentityEngine.linkWallet({
+      userId: 3122,
+      walletAddress: "0xW1",
+      chain: "eth",
+      signatureHash: "0xS1",
+    });
+    walletIdentityEngine.linkWallet({
+      userId: 3122,
+      walletAddress: "0xW2",
+      chain: "eth",
+      signatureHash: "0xS2",
+    });
     const primary = walletIdentityEngine.setPrimary(3122, "0xW2");
     expect(primary!.isPrimary).toBe(true);
   });
@@ -149,19 +236,39 @@ describe("Phase 31C: Wallet & Social Identity Fusion", () => {
   });
 
   it("calculates total reach", () => {
-    socialIdentityEngine.linkSocial({ userId: 3124, platform: "instagram", platformUserId: "ig1", platformUsername: "ig_alice", followerCount: 10000 });
-    socialIdentityEngine.linkSocial({ userId: 3124, platform: "tiktok", platformUserId: "tt1", platformUsername: "tt_alice", followerCount: 20000 });
+    socialIdentityEngine.linkSocial({
+      userId: 3124,
+      platform: "instagram",
+      platformUserId: "ig1",
+      platformUsername: "ig_alice",
+      followerCount: 10000,
+    });
+    socialIdentityEngine.linkSocial({
+      userId: 3124,
+      platform: "tiktok",
+      platformUserId: "tt1",
+      platformUsername: "tt_alice",
+      followerCount: 20000,
+    });
     const reach = socialIdentityEngine.getTotalReach(3124);
     expect(reach).toBe(30000);
   });
 });
 
 describe("Phase 31D: Trust Identity & Anti-Sybil", () => {
-
   it("calculates trust score", () => {
-    creatorPassportEngine.createPassport({ userId: 3130, displayName: "Trust", bio: "Test" });
+    creatorPassportEngine.createPassport({
+      userId: 3130,
+      displayName: "Trust",
+      bio: "Test",
+    });
     creatorPassportEngine.addVerificationMethod(3130, "email");
-    walletIdentityEngine.linkWallet({ userId: 3130, walletAddress: "0xTRUST", chain: "eth", signatureHash: "0xS" });
+    walletIdentityEngine.linkWallet({
+      userId: 3130,
+      walletAddress: "0xTRUST",
+      chain: "eth",
+      signatureHash: "0xS",
+    });
     const score = trustIdentityEngine.calculateScore(3130);
     expect(score.overallTrust).toBeGreaterThan(0);
     expect(score.version).toBeGreaterThan(0);
@@ -175,7 +282,9 @@ describe("Phase 31D: Trust Identity & Anti-Sybil", () => {
       relatedUserIds: [9001, 9002, 9003],
     });
     expect(record.riskScore).toBeGreaterThan(0);
-    expect(["none", "low", "medium", "high", "critical"]).toContain(record.riskLevel);
+    expect(["none", "low", "medium", "high", "critical"]).toContain(
+      record.riskLevel
+    );
   });
 
   it("reviews anti-sybil record", () => {
@@ -198,9 +307,14 @@ describe("Phase 31D: Trust Identity & Anti-Sybil", () => {
 });
 
 describe("Phase 31E: Profile NFTs, Badges, Achievements, Credentials", () => {
-
   it("mints and equips profile NFT", () => {
-    const nft = profileNFTEngine.mint({ userId: 3140, name: "Genesis NFT", description: "First NFT", imageUrl: "https://img.sky/1.png", rarity: "legendary" });
+    const nft = profileNFTEngine.mint({
+      userId: 3140,
+      name: "Genesis NFT",
+      description: "First NFT",
+      imageUrl: "https://img.sky/1.png",
+      rarity: "legendary",
+    });
     expect(nft.rarity).toBe("legendary");
     const equipped = profileNFTEngine.equip(nft.id, 3140);
     expect(equipped!.isEquipped).toBe(true);
@@ -236,7 +350,9 @@ describe("Phase 31E: Profile NFTs, Badges, Achievements, Credentials", () => {
       percentileRank: 20,
     });
     expect(ach.xpReward).toBe(500);
-    expect(socialAchievementEngine.hasAchievement(3142, "first_1000_followers")).toBe(true);
+    expect(
+      socialAchievementEngine.hasAchievement(3142, "first_1000_followers")
+    ).toBe(true);
   });
 
   it("issues and verifies trust credential", () => {
@@ -286,7 +402,6 @@ describe("Phase 31E: Profile NFTs, Badges, Achievements, Credentials", () => {
 // ─── PHASE 32: CREATOR SOVEREIGNTY ───────────────────────────────────────────
 
 describe("Phase 32A: Storefront Engine", () => {
-
   it("creates and publishes storefront", () => {
     const store = storefrontEngine.create({
       creatorId: 3201,
@@ -301,7 +416,12 @@ describe("Phase 32A: Storefront Engine", () => {
   });
 
   it("records sale and updates revenue", () => {
-    const store = storefrontEngine.create({ creatorId: 3202, slug: "bob-shop", name: "Bob's Shop", description: "Bob merch" });
+    const store = storefrontEngine.create({
+      creatorId: 3202,
+      slug: "bob-shop",
+      name: "Bob's Shop",
+      description: "Bob merch",
+    });
     storefrontEngine.publish(store.id);
     storefrontEngine.recordSale(store.id, 99.99);
     const updated = storefrontEngine.getBySlug("bob-shop");
@@ -310,7 +430,12 @@ describe("Phase 32A: Storefront Engine", () => {
   });
 
   it("sets custom domain", () => {
-    const store = storefrontEngine.create({ creatorId: 3203, slug: "carol-shop", name: "Carol", description: "Carol" });
+    const store = storefrontEngine.create({
+      creatorId: 3203,
+      slug: "carol-shop",
+      name: "Carol",
+      description: "Carol",
+    });
     storefrontEngine.setCustomDomain(store.id, "shop.carol.com");
     const s = storefrontEngine.getBySlug("carol-shop");
     expect(s!.customDomain).toBe("shop.carol.com");
@@ -318,7 +443,6 @@ describe("Phase 32A: Storefront Engine", () => {
 });
 
 describe("Phase 32B: Membership Engine", () => {
-
   it("creates membership tier and subscribes user", () => {
     const mem = membershipEngine.createTier({
       creatorId: 3210,
@@ -332,7 +456,11 @@ describe("Phase 32B: Membership Engine", () => {
     });
     expect(mem.tier).toBe("vip");
 
-    const sub = membershipEngine.subscribe({ userId: 3211, membershipId: mem.id, paymentMethod: "card" });
+    const sub = membershipEngine.subscribe({
+      userId: 3211,
+      membershipId: mem.id,
+      paymentMethod: "card",
+    });
     expect(sub!.status).toBe("active");
     expect(sub!.tier).toBe("vip");
   });
@@ -348,7 +476,11 @@ describe("Phase 32B: Membership Engine", () => {
       billingCycle: "monthly",
       perks: ["badge"],
     });
-    const sub = membershipEngine.subscribe({ userId: 3213, membershipId: mem.id, paymentMethod: "crypto" });
+    const sub = membershipEngine.subscribe({
+      userId: 3213,
+      membershipId: mem.id,
+      paymentMethod: "crypto",
+    });
     membershipEngine.cancelSubscription(sub!.id);
     const stats = membershipEngine.getMembershipStats(3212);
     expect(stats.totalMembers).toBe(0);
@@ -366,14 +498,21 @@ describe("Phase 32B: Membership Engine", () => {
       perks: ["everything"],
       maxMembers: 1,
     });
-    membershipEngine.subscribe({ userId: 3215, membershipId: mem.id, paymentMethod: "card" });
-    const blocked = membershipEngine.subscribe({ userId: 3216, membershipId: mem.id, paymentMethod: "card" });
+    membershipEngine.subscribe({
+      userId: 3215,
+      membershipId: mem.id,
+      paymentMethod: "card",
+    });
+    const blocked = membershipEngine.subscribe({
+      userId: 3216,
+      membershipId: mem.id,
+      paymentMethod: "card",
+    });
     expect(blocked).toBeNull();
   });
 });
 
 describe("Phase 32C: Token Economy & Revenue Share", () => {
-
   it("creates token economy and distributes tokens", () => {
     const economy = tokenEconomyEngine.createEconomy({
       creatorId: 3220,
@@ -405,7 +544,6 @@ describe("Phase 32C: Token Economy & Revenue Share", () => {
 });
 
 describe("Phase 32D: Payroll & Treasury", () => {
-
   it("adds payroll entry and processes payment", () => {
     const entry = payrollEngine.addEntry({
       creatorId: 3230,
@@ -424,14 +562,33 @@ describe("Phase 32D: Payroll & Treasury", () => {
   });
 
   it("calculates monthly payroll cost", () => {
-    payrollEngine.addEntry({ creatorId: 3232, recipientId: 3233, role: "moderator", amount: 1000, currency: "USD", frequency: "monthly" });
-    payrollEngine.addEntry({ creatorId: 3232, recipientId: 3234, role: "designer", amount: 500, currency: "USD", frequency: "weekly" });
+    payrollEngine.addEntry({
+      creatorId: 3232,
+      recipientId: 3233,
+      role: "moderator",
+      amount: 1000,
+      currency: "USD",
+      frequency: "monthly",
+    });
+    payrollEngine.addEntry({
+      creatorId: 3232,
+      recipientId: 3234,
+      role: "designer",
+      amount: 500,
+      currency: "USD",
+      frequency: "weekly",
+    });
     const cost = payrollEngine.getMonthlyPayrollCost(3232);
     expect(cost).toBeGreaterThan(1000); // 1000 + 500*4.33
   });
 
   it("creates treasury and deposits funds", () => {
-    const tx = creatorTreasuryEngine.deposit(3235, 5000, "revenue", "Subscription revenue");
+    const tx = creatorTreasuryEngine.deposit(
+      3235,
+      5000,
+      "revenue",
+      "Subscription revenue"
+    );
     expect(tx.type).toBe("inflow");
     expect(tx.amount).toBe(5000);
     const treasury = creatorTreasuryEngine.getTreasury(3235);
@@ -447,7 +604,6 @@ describe("Phase 32D: Payroll & Treasury", () => {
 });
 
 describe("Phase 32E: Affiliate Network & Reward System", () => {
-
   it("creates affiliate program and joins", () => {
     const program = affiliateNetworkEngine.createProgram({
       creatorId: 3240,
@@ -495,7 +651,6 @@ describe("Phase 32E: Affiliate Network & Reward System", () => {
 // ─── PHASE 33: DECENTRALIZED INFRA ───────────────────────────────────────────
 
 describe("Phase 33A: Storage Nodes & Replication", () => {
-
   it("registers storage node", () => {
     const node = storageNodeManager.registerNode({
       nodeId: "node-us-east-1",
@@ -509,8 +664,18 @@ describe("Phase 33A: Storage Nodes & Replication", () => {
   });
 
   it("updates node status", () => {
-    storageNodeManager.registerNode({ nodeId: "node-eu-1", region: "eu-west", provider: "s3", endpoint: "https://s3.eu1.sky", capacityGB: 500 });
-    const updated = storageNodeManager.updateStatus("node-eu-1", "degraded", 150);
+    storageNodeManager.registerNode({
+      nodeId: "node-eu-1",
+      region: "eu-west",
+      provider: "s3",
+      endpoint: "https://s3.eu1.sky",
+      capacityGB: 500,
+    });
+    const updated = storageNodeManager.updateStatus(
+      "node-eu-1",
+      "degraded",
+      150
+    );
     expect(updated!.status).toBe("degraded");
     expect(updated!.latencyMs).toBe(150);
   });
@@ -537,7 +702,6 @@ describe("Phase 33A: Storage Nodes & Replication", () => {
 });
 
 describe("Phase 33B: Distributed Indexes & Cross-Region", () => {
-
   it("creates and syncs distributed index shard", () => {
     const idx = distributedIndexEngine.createShard({
       indexType: "content",
@@ -559,14 +723,18 @@ describe("Phase 33B: Distributed Indexes & Cross-Region", () => {
       sourceRegion: "us-east",
       targetRegion: "eu-west",
     });
-    const state = crossRegionEngine.markSynced("user_3301", "us-east", "eu-west", 45);
+    const state = crossRegionEngine.markSynced(
+      "user_3301",
+      "us-east",
+      "eu-west",
+      45
+    );
     expect(state!.status).toBe("complete");
     expect(state!.lagMs).toBe(45);
   });
 });
 
 describe("Phase 33C: Decentralized Archives & Proof Logs", () => {
-
   it("creates and pins archive", () => {
     const archive = decentralizedArchiveEngine.createArchive({
       creatorId: 3310,
@@ -605,7 +773,6 @@ describe("Phase 33C: Decentralized Archives & Proof Logs", () => {
 });
 
 describe("Phase 33D: Immutable Records (Moderation, Payouts, Donations, Governance)", () => {
-
   it("records and reverses moderation action", () => {
     const record = immutableModerationEngine.record({
       moderatorId: 1,
@@ -649,9 +816,26 @@ describe("Phase 33D: Immutable Records (Moderation, Payouts, Donations, Governan
   });
 
   it("records governance vote and tallies", () => {
-    immutableGovernanceEngine.record({ proposalId: "prop_001", actorId: 3324, action: "propose", isBinding: true });
-    immutableGovernanceEngine.record({ proposalId: "prop_001", actorId: 3325, action: "vote", voteChoice: "yes", votingPower: 100 });
-    immutableGovernanceEngine.record({ proposalId: "prop_001", actorId: 3326, action: "vote", voteChoice: "no", votingPower: 50 });
+    immutableGovernanceEngine.record({
+      proposalId: "prop_001",
+      actorId: 3324,
+      action: "propose",
+      isBinding: true,
+    });
+    immutableGovernanceEngine.record({
+      proposalId: "prop_001",
+      actorId: 3325,
+      action: "vote",
+      voteChoice: "yes",
+      votingPower: 100,
+    });
+    immutableGovernanceEngine.record({
+      proposalId: "prop_001",
+      actorId: 3326,
+      action: "vote",
+      voteChoice: "no",
+      votingPower: 50,
+    });
     const tally = immutableGovernanceEngine.getVoteCount("prop_001");
     expect(tally.yes).toBe(100);
     expect(tally.no).toBe(50);
@@ -662,7 +846,6 @@ describe("Phase 33D: Immutable Records (Moderation, Payouts, Donations, Governan
 // ─── PHASE 34: ECONOMIC CIVILIZATION ─────────────────────────────────────────
 
 describe("Phase 34A: Job Market Engine", () => {
-
   it("posts job and accepts application", () => {
     const job = jobMarketEngine.postJob({
       posterId: 3401,
@@ -703,25 +886,49 @@ describe("Phase 34A: Job Market Engine", () => {
       requiredSkills: ["Figma"],
       experienceLevel: "mid",
     });
-    const app = jobMarketEngine.applyToJob({ jobId: job.id, applicantId: 3404, coverLetter: "I design", proposedBudget: 500, proposedDuration: "3 days" });
+    const app = jobMarketEngine.applyToJob({
+      jobId: job.id,
+      applicantId: 3404,
+      coverLetter: "I design",
+      proposedBudget: 500,
+      proposedDuration: "3 days",
+    });
     jobMarketEngine.selectWorker(job.id, app!.id);
 
-    const ms = jobMarketEngine.addMilestone({ jobId: job.id, title: "Draft", description: "Initial draft", amount: 250, dueDate: new Date(Date.now() + 86400000) });
+    const ms = jobMarketEngine.addMilestone({
+      jobId: job.id,
+      title: "Draft",
+      description: "Initial draft",
+      amount: 250,
+      dueDate: new Date(Date.now() + 86400000),
+    });
     jobMarketEngine.submitMilestone(ms!.id, "https://figma.com/draft");
     const approved = jobMarketEngine.approveMilestone(ms!.id);
     expect(approved!.status).toBe("paid");
   });
 
   it("searches jobs by category and budget", () => {
-    jobMarketEngine.postJob({ posterId: 3405, title: "Content Writer", description: "Write articles", category: "content", contractType: "hourly", budget: 200, currency: "USD", requiredSkills: ["writing"], experienceLevel: "entry" });
-    const results = jobMarketEngine.searchJobs({ category: "content", maxBudget: 500 });
+    jobMarketEngine.postJob({
+      posterId: 3405,
+      title: "Content Writer",
+      description: "Write articles",
+      category: "content",
+      contractType: "hourly",
+      budget: 200,
+      currency: "USD",
+      requiredSkills: ["writing"],
+      experienceLevel: "entry",
+    });
+    const results = jobMarketEngine.searchJobs({
+      category: "content",
+      maxBudget: 500,
+    });
     expect(results.length).toBeGreaterThan(0);
     expect(results.every(j => j.category === "content")).toBe(true);
   });
 });
 
 describe("Phase 34B: Bounty Board Engine", () => {
-
   it("posts bounty, claims, submits, and approves", () => {
     const bounty = bountyBoardEngine.postBounty({
       posterId: 3410,
@@ -758,7 +965,6 @@ describe("Phase 34B: Bounty Board Engine", () => {
 });
 
 describe("Phase 34C: Grant System Engine", () => {
-
   it("creates grant program and processes application", () => {
     const program = grantSystemEngine.createProgram({
       organizationId: 3420,
@@ -785,7 +991,13 @@ describe("Phase 34C: Grant System Engine", () => {
     });
     expect(app!.status).toBe("applied");
 
-    const reviewed = grantSystemEngine.reviewApplication(app!.id, 85, "Excellent project", true, 5000);
+    const reviewed = grantSystemEngine.reviewApplication(
+      app!.id,
+      85,
+      "Excellent project",
+      true,
+      5000
+    );
     expect(reviewed!.status).toBe("approved");
 
     const disbursed = grantSystemEngine.disburseGrant(app!.id);
@@ -795,7 +1007,6 @@ describe("Phase 34C: Grant System Engine", () => {
 });
 
 describe("Phase 34D: DAO Funding Engine", () => {
-
   it("creates pool, contributes, proposes, votes, and executes", () => {
     const pool = daoFundingEngine.createPool({
       daoId: "dao_001",
@@ -833,7 +1044,6 @@ describe("Phase 34D: DAO Funding Engine", () => {
 });
 
 describe("Phase 34E: Economic Reputation & Health Monitor", () => {
-
   it("creates economic reputation and records job completion", () => {
     const score = economicReputationEngine.getOrCreate(3440);
     expect(score.level).toBe("newcomer");
@@ -860,7 +1070,10 @@ describe("Phase 34E: Economic Reputation & Health Monitor", () => {
       comment: "Excellent TypeScript skills",
     });
     expect(endorsement.rating).toBe(5);
-    const { avgRating, count } = skillEndorsementEngine.getSkillRating(3443, "TypeScript");
+    const { avgRating, count } = skillEndorsementEngine.getSkillRating(
+      3443,
+      "TypeScript"
+    );
     expect(avgRating).toBe(5);
     expect(count).toBe(1);
   });
@@ -876,7 +1089,6 @@ describe("Phase 34E: Economic Reputation & Health Monitor", () => {
 // ─── PHASE 35: LEGACY & IMMORTALITY ──────────────────────────────────────────
 
 describe("Phase 35A: Legacy Vault Engine", () => {
-
   it("creates vault and adds content", () => {
     const vault = legacyVaultEngine.createVault({
       creatorId: 3501,
@@ -920,7 +1132,6 @@ describe("Phase 35A: Legacy Vault Engine", () => {
 });
 
 describe("Phase 35B: Digital Will Engine", () => {
-
   it("creates will, adds asset, activates, triggers, and executes", () => {
     const will = digitalWillEngine.createWill({
       creatorId: 3510,
@@ -968,14 +1179,17 @@ describe("Phase 35B: Digital Will Engine", () => {
     });
     digitalWillEngine.activateWill(will.id);
     digitalWillEngine.triggerWill(will.id);
-    const contested = digitalWillEngine.contestWill(will.id, 3516, "Undue influence");
+    const contested = digitalWillEngine.contestWill(
+      will.id,
+      3516,
+      "Undue influence"
+    );
     expect(contested!.status).toBe("contested");
     expect(contested!.contestReason).toBe("Undue influence");
   });
 });
 
 describe("Phase 35C: Succession Planning & Memorial Profiles", () => {
-
   it("creates and activates succession plan", () => {
     const plan = successionPlanEngine.createPlan({
       creatorId: 3520,
@@ -1015,7 +1229,6 @@ describe("Phase 35C: Succession Planning & Memorial Profiles", () => {
 });
 
 describe("Phase 35D: Legacy Content & Immortality Tokens", () => {
-
   it("schedules and publishes legacy content", () => {
     const schedule = legacyContentScheduler.schedule({
       creatorId: 3530,
@@ -1041,7 +1254,11 @@ describe("Phase 35D: Legacy Content & Immortality Tokens", () => {
       imageUrl: "https://img.sky/eternal.png",
       totalSupply: 100,
       priceUSD: 999,
-      holderBenefits: ["lifetime access", "exclusive content", "governance rights"],
+      holderBenefits: [
+        "lifetime access",
+        "exclusive content",
+        "governance rights",
+      ],
       royaltyPercent: 10,
     });
     expect(token.tier).toBe("eternal");
@@ -1071,7 +1288,6 @@ describe("Phase 35D: Legacy Content & Immortality Tokens", () => {
 });
 
 describe("Phase 35E: Cultural Preservation & Platform Memory", () => {
-
   it("preserves cultural record", () => {
     const record = culturalPreservationEngine.preserve({
       creatorId: 3540,

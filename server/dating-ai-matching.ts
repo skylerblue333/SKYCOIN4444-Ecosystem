@@ -1,7 +1,21 @@
-import { db } from './db';
-import { datingProfiles, datingMatches, datingLikes, users } from '../drizzle/schema';
-import { eq, and, ne, not, inArray, or as drizzleOr, gte, lte } from 'drizzle-orm';
-import { invokeLLM } from './_core/llm';
+import { db } from "./db";
+import {
+  datingProfiles,
+  datingMatches,
+  datingLikes,
+  users,
+} from "../drizzle/schema";
+import {
+  eq,
+  and,
+  ne,
+  not,
+  inArray,
+  or as drizzleOr,
+  gte,
+  lte,
+} from "drizzle-orm";
+import { invokeLLM } from "./_core/llm";
 
 export interface MatchingProfile {
   id: number;
@@ -24,7 +38,7 @@ export interface CompatibilityScore {
   userId: number;
   score: number;
   reasons: string[];
-  matchType: 'perfect' | 'great' | 'good' | 'fair';
+  matchType: "perfect" | "great" | "good" | "fair";
 }
 
 /**
@@ -42,29 +56,29 @@ Profile 1:
 - Age: ${profile1.age}
 - Gender: ${profile1.gender}
 - Looking for: ${profile1.lookingFor}
-- Bio: ${profile1.bio || 'Not provided'}
-- Interests: ${profile1.interests?.join(', ') || 'Not specified'}
-- Height: ${profile1.height || 'Not specified'}
-- Body Type: ${profile1.bodyType || 'Not specified'}
-- Ethnicity: ${profile1.ethnicity || 'Not specified'}
-- Religion: ${profile1.religion || 'Not specified'}
-- Education: ${profile1.education || 'Not specified'}
-- Occupation: ${profile1.occupation || 'Not specified'}
-- Relationship Goal: ${profile1.relationshipGoal || 'Not specified'}
+- Bio: ${profile1.bio || "Not provided"}
+- Interests: ${profile1.interests?.join(", ") || "Not specified"}
+- Height: ${profile1.height || "Not specified"}
+- Body Type: ${profile1.bodyType || "Not specified"}
+- Ethnicity: ${profile1.ethnicity || "Not specified"}
+- Religion: ${profile1.religion || "Not specified"}
+- Education: ${profile1.education || "Not specified"}
+- Occupation: ${profile1.occupation || "Not specified"}
+- Relationship Goal: ${profile1.relationshipGoal || "Not specified"}
 
 Profile 2:
 - Age: ${profile2.age}
 - Gender: ${profile2.gender}
 - Looking for: ${profile2.lookingFor}
-- Bio: ${profile2.bio || 'Not provided'}
-- Interests: ${profile2.interests?.join(', ') || 'Not specified'}
-- Height: ${profile2.height || 'Not specified'}
-- Body Type: ${profile2.bodyType || 'Not specified'}
-- Ethnicity: ${profile2.ethnicity || 'Not specified'}
-- Religion: ${profile2.religion || 'Not specified'}
-- Education: ${profile2.education || 'Not specified'}
-- Occupation: ${profile2.occupation || 'Not specified'}
-- Relationship Goal: ${profile2.relationshipGoal || 'Not specified'}
+- Bio: ${profile2.bio || "Not provided"}
+- Interests: ${profile2.interests?.join(", ") || "Not specified"}
+- Height: ${profile2.height || "Not specified"}
+- Body Type: ${profile2.bodyType || "Not specified"}
+- Ethnicity: ${profile2.ethnicity || "Not specified"}
+- Religion: ${profile2.religion || "Not specified"}
+- Education: ${profile2.education || "Not specified"}
+- Occupation: ${profile2.occupation || "Not specified"}
+- Relationship Goal: ${profile2.relationshipGoal || "Not specified"}
 
 Provide a JSON response with:
 {
@@ -91,23 +105,24 @@ Consider:
     const response = await invokeLLM({
       messages: [
         {
-          role: 'system',
-          content: 'You are a dating compatibility expert. Respond only with valid JSON.',
+          role: "system",
+          content:
+            "You are a dating compatibility expert. Respond only with valid JSON.",
         },
         {
-          role: 'user',
+          role: "user",
           content: prompt,
         },
       ],
     });
 
     const content = response.choices?.[0]?.message?.content;
-    if (typeof content !== 'string') {
+    if (typeof content !== "string") {
       return {
         userId: profile2.userId,
         score: 50,
-        reasons: ['Invalid response format'],
-        matchType: 'fair',
+        reasons: ["Invalid response format"],
+        matchType: "fair",
       };
     }
     const result = JSON.parse(content);
@@ -116,15 +131,15 @@ Consider:
       userId: profile2.userId,
       score: Math.min(100, Math.max(0, result.score || 0)),
       reasons: result.reasons || [],
-      matchType: result.matchType || 'fair',
+      matchType: result.matchType || "fair",
     };
   } catch (error) {
-    console.error('Error calculating compatibility:', error);
+    console.error("Error calculating compatibility:", error);
     return {
       userId: profile2.userId,
       score: 50,
-      reasons: ['Error calculating compatibility'],
-      matchType: 'fair',
+      reasons: ["Error calculating compatibility"],
+      matchType: "fair",
     };
   }
 }
@@ -185,7 +200,7 @@ export async function getRecommendedMatches(
       .from(datingLikes)
       .where(eq(datingLikes.userId, userId));
 
-    const likedUserIds = new Set(likedUsers.map((l) => l.likedUserId));
+    const likedUserIds = new Set(likedUsers.map(l => l.likedUserId));
 
     // Get existing matches
     const matches = await db
@@ -199,17 +214,17 @@ export async function getRecommendedMatches(
       );
 
     const matchedUserIds = new Set(
-      matches.flatMap((m) => [m.user1Id, m.user2Id]).filter((id) => id !== userId)
+      matches.flatMap(m => [m.user1Id, m.user2Id]).filter(id => id !== userId)
     );
 
     // Filter out already liked/matched users
     const candidates = potentialMatches.filter(
-      (p) => !likedUserIds.has(p.userId) && !matchedUserIds.has(p.userId)
+      p => !likedUserIds.has(p.userId) && !matchedUserIds.has(p.userId)
     );
 
     // Calculate compatibility for each candidate
     const compatibilityScores = await Promise.all(
-      candidates.slice(0, limit).map((candidate) =>
+      candidates.slice(0, limit).map(candidate =>
         calculateCompatibility(
           {
             id: userProfile.id,
@@ -250,7 +265,7 @@ export async function getRecommendedMatches(
     // Sort by compatibility score (descending)
     return compatibilityScores.sort((a, b) => b.score - a.score);
   } catch (error) {
-    console.error('Error getting recommended matches:', error);
+    console.error("Error getting recommended matches:", error);
     return [];
   }
 }
@@ -258,7 +273,9 @@ export async function getRecommendedMatches(
 /**
  * Analyze user profile for improvement suggestions
  */
-export async function analyzeProfileForImprovements(userId: number): Promise<string[]> {
+export async function analyzeProfileForImprovements(
+  userId: number
+): Promise<string[]> {
   try {
     const [profile] = await db
       .select()
@@ -272,13 +289,13 @@ export async function analyzeProfileForImprovements(userId: number): Promise<str
     const prompt = `
 Analyze this dating profile and suggest improvements:
 
-Bio: ${profile.bio || 'Empty'}
-Interests: ${(profile.interests as string[])?.join(', ') || 'Not specified'}
-Photos: ${profile.photos ? 'Has photos' : 'No photos'}
-Height: ${profile.height || 'Not specified'}
-Body Type: ${profile.bodyType || 'Not specified'}
-Education: ${profile.education || 'Not specified'}
-Occupation: ${profile.occupation || 'Not specified'}
+Bio: ${profile.bio || "Empty"}
+Interests: ${(profile.interests as string[])?.join(", ") || "Not specified"}
+Photos: ${profile.photos ? "Has photos" : "No photos"}
+Height: ${profile.height || "Not specified"}
+Body Type: ${profile.bodyType || "Not specified"}
+Education: ${profile.education || "Not specified"}
+Occupation: ${profile.occupation || "Not specified"}
 
 Provide 3-5 specific, actionable suggestions to improve the profile and increase match rate.
 Respond with a JSON array of strings.
@@ -287,22 +304,23 @@ Respond with a JSON array of strings.
     const response = await invokeLLM({
       messages: [
         {
-          role: 'system',
-          content: 'You are a dating profile expert. Respond only with a valid JSON array of strings.',
+          role: "system",
+          content:
+            "You are a dating profile expert. Respond only with a valid JSON array of strings.",
         },
         {
-          role: 'user',
+          role: "user",
           content: prompt,
         },
       ],
     });
 
-    const content = response.choices?.[0]?.message?.content || '[]';
+    const content = response.choices?.[0]?.message?.content || "[]";
     const suggestions = JSON.parse(content);
 
     return Array.isArray(suggestions) ? suggestions : [];
   } catch (error) {
-    console.error('Error analyzing profile:', error);
+    console.error("Error analyzing profile:", error);
     return [];
   }
 }
@@ -333,14 +351,14 @@ export async function generateConversationStarters(
 Generate 5 creative and engaging conversation starters for a dating match based on these profiles:
 
 Your Profile:
-- Bio: ${userProfile.bio || 'Not provided'}
-- Interests: ${(userProfile.interests as string[])?.join(', ') || 'Not specified'}
-- Occupation: ${userProfile.occupation || 'Not specified'}
+- Bio: ${userProfile.bio || "Not provided"}
+- Interests: ${(userProfile.interests as string[])?.join(", ") || "Not specified"}
+- Occupation: ${userProfile.occupation || "Not specified"}
 
 Match Profile:
-- Bio: ${matchProfile.bio || 'Not provided'}
-- Interests: ${(matchProfile.interests as string[])?.join(', ') || 'Not specified'}
-- Occupation: ${matchProfile.occupation || 'Not specified'}
+- Bio: ${matchProfile.bio || "Not provided"}
+- Interests: ${(matchProfile.interests as string[])?.join(", ") || "Not specified"}
+- Occupation: ${matchProfile.occupation || "Not specified"}
 
 Create conversation starters that:
 1. Reference shared interests
@@ -355,27 +373,26 @@ Respond with a JSON array of 5 strings.
     const response = await invokeLLM({
       messages: [
         {
-          role: 'system',
-          content: 'You are a dating conversation expert. Respond only with a valid JSON array of strings.',
+          role: "system",
+          content:
+            "You are a dating conversation expert. Respond only with a valid JSON array of strings.",
         },
         {
-          role: 'user',
+          role: "user",
           content: prompt,
         },
       ],
     });
 
-    const content = response.choices?.[0]?.message?.content || '[]';
+    const content = response.choices?.[0]?.message?.content || "[]";
     const starters = JSON.parse(content);
 
     return Array.isArray(starters) ? starters : [];
   } catch (error) {
-    console.error('Error generating conversation starters:', error);
+    console.error("Error generating conversation starters:", error);
     return [];
   }
 }
-
-
 
 export default {
   calculateCompatibility,

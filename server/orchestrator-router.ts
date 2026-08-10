@@ -37,7 +37,12 @@ export const orchestratorRouter = router({
     .query(async ({ input }) => {
       const state = maniusOrchestrator.getPlatformState();
       if (!state) {
-        return { platformScore: 0, recommendations: [], limit: input.limit, timestamp: Date.now() };
+        return {
+          platformScore: 0,
+          recommendations: [],
+          limit: input.limit,
+          timestamp: Date.now(),
+        };
       }
       return {
         platformScore: state.platformScore,

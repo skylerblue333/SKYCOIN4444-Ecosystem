@@ -67,7 +67,12 @@ export interface CreatorAnalytics {
   weeklyEarnings: number;
   subscriberCount: number;
   subscriberGrowth: number;
-  topContent: { postId: number; title: string; earnings: number; views: number }[];
+  topContent: {
+    postId: number;
+    title: string;
+    earnings: number;
+    views: number;
+  }[];
   earningsBySource: { source: string; amount: number; percent: number }[];
   engagementRate: number;
   avgTipAmount: number;
@@ -90,7 +95,10 @@ export interface CreatorMilestone {
   name: string;
   description: string;
   requirement: { metric: string; target: number };
-  reward: { type: "badge" | "tokens" | "feature_unlock"; value: string | number };
+  reward: {
+    type: "badge" | "tokens" | "feature_unlock";
+    value: string | number;
+  };
   progress: number;
   isCompleted: boolean;
   completedAt?: Date;
@@ -108,15 +116,61 @@ export interface RevenueForcast {
 // ═══════════════════════════════════════════════════════════════
 
 export class SubscriptionTierService {
-  private readonly DEFAULT_TIERS: Omit<SubscriptionTier, "creatorId" | "subscriberCount">[] = [
-    { id: "free", name: "Free", price: 0, currency: "SKY444", benefits: ["Access to public posts", "Community chat"], isActive: true },
-    { id: "basic", name: "Basic", price: 5, currency: "SKY444", benefits: ["All free benefits", "Exclusive posts", "Early access"], isActive: true },
-    { id: "premium", name: "Premium", price: 15, currency: "SKY444", benefits: ["All basic benefits", "1-on-1 messages", "Custom badge", "Behind the scenes"], isActive: true },
-    { id: "vip", name: "VIP", price: 50, currency: "SKY444", benefits: ["All premium benefits", "Monthly call", "Custom content", "Revenue share"], maxSubscribers: 50, isActive: true },
+  private readonly DEFAULT_TIERS: Omit<
+    SubscriptionTier,
+    "creatorId" | "subscriberCount"
+  >[] = [
+    {
+      id: "free",
+      name: "Free",
+      price: 0,
+      currency: "SKY444",
+      benefits: ["Access to public posts", "Community chat"],
+      isActive: true,
+    },
+    {
+      id: "basic",
+      name: "Basic",
+      price: 5,
+      currency: "SKY444",
+      benefits: ["All free benefits", "Exclusive posts", "Early access"],
+      isActive: true,
+    },
+    {
+      id: "premium",
+      name: "Premium",
+      price: 15,
+      currency: "SKY444",
+      benefits: [
+        "All basic benefits",
+        "1-on-1 messages",
+        "Custom badge",
+        "Behind the scenes",
+      ],
+      isActive: true,
+    },
+    {
+      id: "vip",
+      name: "VIP",
+      price: 50,
+      currency: "SKY444",
+      benefits: [
+        "All premium benefits",
+        "Monthly call",
+        "Custom content",
+        "Revenue share",
+      ],
+      maxSubscribers: 50,
+      isActive: true,
+    },
   ];
 
   getDefaultTiers(creatorId: number): SubscriptionTier[] {
-    return this.DEFAULT_TIERS.map(t => ({ ...t, creatorId, subscriberCount: 0 }));
+    return this.DEFAULT_TIERS.map(t => ({
+      ...t,
+      creatorId,
+      subscriberCount: 0,
+    }));
   }
 
   async getCreatorTiers(creatorId: number): Promise<SubscriptionTier[]> {
@@ -144,7 +198,11 @@ export class SubscriptionTierService {
     }));
   }
 
-  async subscribe(subscriberId: number, creatorId: number, tierId: string): Promise<{ success: boolean; message: string }> {
+  async subscribe(
+    subscriberId: number,
+    creatorId: number,
+    tierId: string
+  ): Promise<{ success: boolean; message: string }> {
     const db = await getDb();
     if (!db) return { success: false, message: "Database unavailable" };
 
@@ -160,7 +218,8 @@ export class SubscriptionTierService {
         )
       );
 
-    if (existing) return { success: false, message: "Already subscribed to this creator" };
+    if (existing)
+      return { success: false, message: "Already subscribed to this creator" };
 
     const tier = this.DEFAULT_TIERS.find(t => t.id === tierId);
     if (!tier) return { success: false, message: "Invalid tier" };
@@ -173,7 +232,10 @@ export class SubscriptionTierService {
         .where(
           and(
             eq(schema.creatorSubscriptions.creatorId, creatorId),
-            eq(schema.creatorSubscriptions.tier, tierId as "supporter" | "premium" | "vip"),
+            eq(
+              schema.creatorSubscriptions.tier,
+              tierId as "supporter" | "premium" | "vip"
+            ),
             eq(schema.creatorSubscriptions.status, "active")
           )
         );
@@ -226,15 +288,18 @@ export class SubscriptionTierService {
 // ═══════════════════════════════════════════════════════════════
 
 export class RevenueSplitCalculator {
-  private readonly PLATFORM_FEE_RATE = 0.10; // 10% platform fee
+  private readonly PLATFORM_FEE_RATE = 0.1; // 10% platform fee
   private readonly REFERRAL_BONUS_RATE = 0.05; // 5% referral bonus
   private readonly TAX_WITHHOLDING_RATE = 0.0; // 0% default (creator handles own taxes)
 
   calculate(grossAmount: number, hasReferrer = false): RevenueSplit {
     const platformFee = grossAmount * this.PLATFORM_FEE_RATE;
-    const referralBonus = hasReferrer ? grossAmount * this.REFERRAL_BONUS_RATE : 0;
+    const referralBonus = hasReferrer
+      ? grossAmount * this.REFERRAL_BONUS_RATE
+      : 0;
     const taxWithholding = grossAmount * this.TAX_WITHHOLDING_RATE;
-    const netCreatorEarnings = grossAmount - platformFee - referralBonus - taxWithholding;
+    const netCreatorEarnings =
+      grossAmount - platformFee - referralBonus - taxWithholding;
 
     return {
       creatorShare: netCreatorEarnings / grossAmount,
@@ -272,19 +337,27 @@ export class PayoutSchedulingService {
     };
   }
 
-  async getPendingPayout(creatorId: number): Promise<{ amount: number; period: string; breakdown: { source: string; amount: number }[] }> {
+  async getPendingPayout(creatorId: number): Promise<{
+    amount: number;
+    period: string;
+    breakdown: { source: string; amount: number }[];
+  }> {
     const db = await getDb();
     if (!db) return { amount: 0, period: "current", breakdown: [] };
 
     // Calculate pending from tips
     const [tipTotal] = await db
-      .select({ total: sql<string>`COALESCE(SUM(CAST(${schema.tips.amount} AS DECIMAL(20,2))), 0)` })
+      .select({
+        total: sql<string>`COALESCE(SUM(CAST(${schema.tips.amount} AS DECIMAL(20,2))), 0)`,
+      })
       .from(schema.tips)
       .where(eq(schema.tips.receiverId, creatorId));
 
     // Calculate pending from subscriptions
     const [subTotal] = await db
-      .select({ total: sql<string>`COALESCE(SUM(CAST(${schema.creatorSubscriptions.price} AS DECIMAL(20,2))), 0)` })
+      .select({
+        total: sql<string>`COALESCE(SUM(CAST(${schema.creatorSubscriptions.price} AS DECIMAL(20,2))), 0)`,
+      })
       .from(schema.creatorSubscriptions)
       .where(
         and(
@@ -331,7 +404,19 @@ export class PayoutSchedulingService {
 export class CreatorAnalyticsService {
   async getAnalytics(creatorId: number): Promise<CreatorAnalytics> {
     const db = await getDb();
-    if (!db) return { totalEarnings: 0, monthlyEarnings: 0, weeklyEarnings: 0, subscriberCount: 0, subscriberGrowth: 0, topContent: [], earningsBySource: [], engagementRate: 0, avgTipAmount: 0, conversionRate: 0 };
+    if (!db)
+      return {
+        totalEarnings: 0,
+        monthlyEarnings: 0,
+        weeklyEarnings: 0,
+        subscriberCount: 0,
+        subscriberGrowth: 0,
+        topContent: [],
+        earningsBySource: [],
+        engagementRate: 0,
+        avgTipAmount: 0,
+        conversionRate: 0,
+      };
 
     // Total tips received
     const [tipStats] = await db
@@ -355,7 +440,9 @@ export class CreatorAnalyticsService {
 
     // Subscription revenue
     const [subRevenue] = await db
-      .select({ total: sql<string>`COALESCE(SUM(CAST(${schema.creatorSubscriptions.price} AS DECIMAL(20,2))), 0)` })
+      .select({
+        total: sql<string>`COALESCE(SUM(CAST(${schema.creatorSubscriptions.price} AS DECIMAL(20,2))), 0)`,
+      })
       .from(schema.creatorSubscriptions)
       .where(
         and(
@@ -388,8 +475,16 @@ export class CreatorAnalyticsService {
       subscriberGrowth: 0,
       topContent: [],
       earningsBySource: [
-        { source: "Tips", amount: totalTips, percent: totalEarnings > 0 ? (totalTips / totalEarnings) * 100 : 50 },
-        { source: "Subscriptions", amount: totalSubs, percent: totalEarnings > 0 ? (totalSubs / totalEarnings) * 100 : 50 },
+        {
+          source: "Tips",
+          amount: totalTips,
+          percent: totalEarnings > 0 ? (totalTips / totalEarnings) * 100 : 50,
+        },
+        {
+          source: "Subscriptions",
+          amount: totalSubs,
+          percent: totalEarnings > 0 ? (totalSubs / totalEarnings) * 100 : 50,
+        },
       ],
       engagementRate: postCount > 0 ? (totalLikes / postCount) * 100 : 0,
       avgTipAmount: tipCount > 0 ? totalTips / tipCount : 0,
@@ -444,7 +539,13 @@ export class FanEngagementService {
       // Calculate score (0-100)
       const score = Math.min(100, totalSpent * 2 + tipsGiven * 5);
       const tier: FanScore["tier"] =
-        score >= 80 ? "superfan" : score >= 50 ? "loyal" : score >= 20 ? "casual" : "dormant";
+        score >= 80
+          ? "superfan"
+          : score >= 50
+            ? "loyal"
+            : score >= 20
+              ? "casual"
+              : "dormant";
 
       fanScores.push({
         userId: fan.userId,
@@ -467,24 +568,104 @@ export class FanEngagementService {
 // ═══════════════════════════════════════════════════════════════
 
 export class CreatorMilestoneService {
-  private readonly MILESTONES: Omit<CreatorMilestone, "progress" | "isCompleted" | "completedAt">[] = [
-    { id: "first_post", name: "First Steps", description: "Create your first post", requirement: { metric: "posts", target: 1 }, reward: { type: "badge", value: "Creator" } },
-    { id: "10_followers", name: "Growing Audience", description: "Reach 10 followers", requirement: { metric: "followers", target: 10 }, reward: { type: "tokens", value: 100 } },
-    { id: "50_followers", name: "Rising Star", description: "Reach 50 followers", requirement: { metric: "followers", target: 50 }, reward: { type: "tokens", value: 500 } },
-    { id: "100_followers", name: "Influencer", description: "Reach 100 followers", requirement: { metric: "followers", target: 100 }, reward: { type: "badge", value: "Influencer" } },
-    { id: "first_tip", name: "First Tip", description: "Receive your first tip", requirement: { metric: "tips_received", target: 1 }, reward: { type: "tokens", value: 50 } },
-    { id: "first_sub", name: "Subscriber Magnet", description: "Get your first subscriber", requirement: { metric: "subscribers", target: 1 }, reward: { type: "badge", value: "Monetized" } },
-    { id: "100_posts", name: "Content Machine", description: "Create 100 posts", requirement: { metric: "posts", target: 100 }, reward: { type: "tokens", value: 1000 } },
-    { id: "1000_likes", name: "Crowd Favorite", description: "Receive 1000 total likes", requirement: { metric: "total_likes", target: 1000 }, reward: { type: "badge", value: "Fan Favorite" } },
-    { id: "first_stream", name: "Live!", description: "Start your first stream", requirement: { metric: "streams", target: 1 }, reward: { type: "feature_unlock", value: "stream_overlay" } },
-    { id: "10_subs", name: "Community Builder", description: "Reach 10 subscribers", requirement: { metric: "subscribers", target: 10 }, reward: { type: "tokens", value: 2000 } },
-    { id: "1000_earnings", name: "Professional Creator", description: "Earn 1000 SKY444 total", requirement: { metric: "total_earnings", target: 1000 }, reward: { type: "badge", value: "Pro Creator" } },
-    { id: "10000_earnings", name: "Top Earner", description: "Earn 10,000 SKY444 total", requirement: { metric: "total_earnings", target: 10000 }, reward: { type: "badge", value: "Top Earner" } },
+  private readonly MILESTONES: Omit<
+    CreatorMilestone,
+    "progress" | "isCompleted" | "completedAt"
+  >[] = [
+    {
+      id: "first_post",
+      name: "First Steps",
+      description: "Create your first post",
+      requirement: { metric: "posts", target: 1 },
+      reward: { type: "badge", value: "Creator" },
+    },
+    {
+      id: "10_followers",
+      name: "Growing Audience",
+      description: "Reach 10 followers",
+      requirement: { metric: "followers", target: 10 },
+      reward: { type: "tokens", value: 100 },
+    },
+    {
+      id: "50_followers",
+      name: "Rising Star",
+      description: "Reach 50 followers",
+      requirement: { metric: "followers", target: 50 },
+      reward: { type: "tokens", value: 500 },
+    },
+    {
+      id: "100_followers",
+      name: "Influencer",
+      description: "Reach 100 followers",
+      requirement: { metric: "followers", target: 100 },
+      reward: { type: "badge", value: "Influencer" },
+    },
+    {
+      id: "first_tip",
+      name: "First Tip",
+      description: "Receive your first tip",
+      requirement: { metric: "tips_received", target: 1 },
+      reward: { type: "tokens", value: 50 },
+    },
+    {
+      id: "first_sub",
+      name: "Subscriber Magnet",
+      description: "Get your first subscriber",
+      requirement: { metric: "subscribers", target: 1 },
+      reward: { type: "badge", value: "Monetized" },
+    },
+    {
+      id: "100_posts",
+      name: "Content Machine",
+      description: "Create 100 posts",
+      requirement: { metric: "posts", target: 100 },
+      reward: { type: "tokens", value: 1000 },
+    },
+    {
+      id: "1000_likes",
+      name: "Crowd Favorite",
+      description: "Receive 1000 total likes",
+      requirement: { metric: "total_likes", target: 1000 },
+      reward: { type: "badge", value: "Fan Favorite" },
+    },
+    {
+      id: "first_stream",
+      name: "Live!",
+      description: "Start your first stream",
+      requirement: { metric: "streams", target: 1 },
+      reward: { type: "feature_unlock", value: "stream_overlay" },
+    },
+    {
+      id: "10_subs",
+      name: "Community Builder",
+      description: "Reach 10 subscribers",
+      requirement: { metric: "subscribers", target: 10 },
+      reward: { type: "tokens", value: 2000 },
+    },
+    {
+      id: "1000_earnings",
+      name: "Professional Creator",
+      description: "Earn 1000 SKY444 total",
+      requirement: { metric: "total_earnings", target: 1000 },
+      reward: { type: "badge", value: "Pro Creator" },
+    },
+    {
+      id: "10000_earnings",
+      name: "Top Earner",
+      description: "Earn 10,000 SKY444 total",
+      requirement: { metric: "total_earnings", target: 10000 },
+      reward: { type: "badge", value: "Top Earner" },
+    },
   ];
 
   async getMilestones(creatorId: number): Promise<CreatorMilestone[]> {
     const db = await getDb();
-    if (!db) return this.MILESTONES.map(m => ({ ...m, progress: 0, isCompleted: false }));
+    if (!db)
+      return this.MILESTONES.map(m => ({
+        ...m,
+        progress: 0,
+        isCompleted: false,
+      }));
 
     // Get creator stats
     const [postCount] = await db
@@ -554,17 +735,20 @@ export class RevenueForecastingService {
 
     // Get current monthly revenue
     const [currentRevenue] = await db
-      .select({ total: sql<string>`COALESCE(SUM(CAST(${schema.tips.amount} AS DECIMAL(20,2))), 0)` })
+      .select({
+        total: sql<string>`COALESCE(SUM(CAST(${schema.tips.amount} AS DECIMAL(20,2))), 0)`,
+      })
       .from(schema.tips)
       .where(eq(schema.tips.receiverId, creatorId));
 
-    const baseRevenue = parseFloat(String(currentRevenue?.total || "0")) / Math.max(1, 3); // Avg over 3 months
+    const baseRevenue =
+      parseFloat(String(currentRevenue?.total || "0")) / Math.max(1, 3); // Avg over 3 months
 
     const forecasts: RevenueForcast[] = [];
     for (let m = 1; m <= months; m++) {
       const date = new Date();
       date.setMonth(date.getMonth() + m);
-      const growthFactor = 1 + (0.05 * m); // 5% monthly growth assumption
+      const growthFactor = 1 + 0.05 * m; // 5% monthly growth assumption
       const projected = baseRevenue * growthFactor;
       const confidence = Math.max(30, 90 - m * 10); // Confidence decreases with distance
 

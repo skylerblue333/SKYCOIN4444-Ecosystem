@@ -13,7 +13,18 @@
 
 import { getDb } from "./db";
 import * as schema from "../drizzle";
-import { eq, and, desc, sql, gte, lte, isNull, or, like, inArray } from "drizzle-orm";
+import {
+  eq,
+  and,
+  desc,
+  sql,
+  gte,
+  lte,
+  isNull,
+  or,
+  like,
+  inArray,
+} from "drizzle-orm";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -72,7 +83,11 @@ export interface ThreadedComment {
 // ═══════════════════════════════════════════════════════════════
 
 export class DirectMessageService {
-  async getConversations(userId: number, limit = 20, offset = 0): Promise<DMConversation[]> {
+  async getConversations(
+    userId: number,
+    limit = 20,
+    offset = 0
+  ): Promise<DMConversation[]> {
     const db = await getDb();
     if (!db) return [];
 
@@ -84,7 +99,10 @@ export class DirectMessageService {
         createdAt: schema.channels.createdAt,
       })
       .from(schema.channels)
-      .innerJoin(schema.communityMembers, eq(schema.communityMembers.communityId, schema.channels.communityId))
+      .innerJoin(
+        schema.communityMembers,
+        eq(schema.communityMembers.communityId, schema.channels.communityId)
+      )
       .where(
         and(
           eq(schema.communityMembers.userId, userId),
@@ -95,18 +113,30 @@ export class DirectMessageService {
       .limit(limit)
       .offset(offset);
 
-    return conversations.map((conv: { id: number; name: string; communityId: number; createdAt: Date }) => ({
-      id: conv.id,
-      participantIds: [userId],
-      lastMessageAt: conv.createdAt,
-      lastMessagePreview: "",
-      unreadCount: 0,
-      isGroup: false,
-      groupName: conv.name,
-    }));
+    return conversations.map(
+      (conv: {
+        id: number;
+        name: string;
+        communityId: number;
+        createdAt: Date;
+      }) => ({
+        id: conv.id,
+        participantIds: [userId],
+        lastMessageAt: conv.createdAt,
+        lastMessagePreview: "",
+        unreadCount: 0,
+        isGroup: false,
+        groupName: conv.name,
+      })
+    );
   }
 
-  async getMessages(channelId: number, userId: number, limit = 50, before?: number): Promise<DirectMessage[]> {
+  async getMessages(
+    channelId: number,
+    userId: number,
+    limit = 50,
+    before?: number
+  ): Promise<DirectMessage[]> {
     const db = await getDb();
     if (!db) return [];
 
@@ -137,7 +167,13 @@ export class DirectMessageService {
     }));
   }
 
-  async sendMessage(channelId: number, senderId: number, content: string, mediaUrl?: string, replyToId?: number): Promise<DirectMessage | null> {
+  async sendMessage(
+    channelId: number,
+    senderId: number,
+    content: string,
+    mediaUrl?: string,
+    replyToId?: number
+  ): Promise<DirectMessage | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -197,7 +233,11 @@ export class DirectMessageService {
     return true;
   }
 
-  async searchMessages(userId: number, query: string, limit = 20): Promise<DirectMessage[]> {
+  async searchMessages(
+    userId: number,
+    query: string,
+    limit = 20
+  ): Promise<DirectMessage[]> {
     const db = await getDb();
     if (!db) return [];
 
@@ -237,7 +277,11 @@ export class DirectMessageService {
 // ═══════════════════════════════════════════════════════════════
 
 export class BookmarkService {
-  async bookmarkPost(userId: number, postId: number, note?: string): Promise<Bookmark | null> {
+  async bookmarkPost(
+    userId: number,
+    postId: number,
+    note?: string
+  ): Promise<Bookmark | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -276,7 +320,11 @@ export class BookmarkService {
     return true;
   }
 
-  async getBookmarks(userId: number, limit = 20, offset = 0): Promise<Bookmark[]> {
+  async getBookmarks(
+    userId: number,
+    limit = 20,
+    offset = 0
+  ): Promise<Bookmark[]> {
     const db = await getDb();
     if (!db) return [];
 
@@ -294,7 +342,8 @@ export class BookmarkService {
       .offset(offset);
 
     return bookmarks.map((b: any) => {
-      const data = typeof b.data === "string" ? JSON.parse(b.data) : (b.data || {});
+      const data =
+        typeof b.data === "string" ? JSON.parse(b.data) : b.data || {};
       return {
         id: b.id,
         userId: b.userId,
@@ -328,9 +377,26 @@ export class BookmarkService {
 // ═══════════════════════════════════════════════════════════════
 
 export class ReactionService {
-  private readonly VALID_EMOJIS = ["❤️", "🔥", "😂", "😮", "😢", "🚀", "💎", "👀", "🎯", "⚡", "🙏", "💯"];
+  private readonly VALID_EMOJIS = [
+    "❤️",
+    "🔥",
+    "😂",
+    "😮",
+    "😢",
+    "🚀",
+    "💎",
+    "👀",
+    "🎯",
+    "⚡",
+    "🙏",
+    "💯",
+  ];
 
-  async addReaction(userId: number, postId: number, emoji: string): Promise<boolean> {
+  async addReaction(
+    userId: number,
+    postId: number,
+    emoji: string
+  ): Promise<boolean> {
     if (!this.VALID_EMOJIS.includes(emoji)) return false;
 
     const db = await getDb();
@@ -339,13 +405,18 @@ export class ReactionService {
     const existing = await db
       .select({ id: schema.likes.id })
       .from(schema.likes)
-      .where(and(eq(schema.likes.userId, userId), eq(schema.likes.postId, postId)))
+      .where(
+        and(eq(schema.likes.userId, userId), eq(schema.likes.postId, postId))
+      )
       .limit(1);
 
     if (existing.length > 0) return true;
 
     await db.insert(schema.likes).values({ userId, postId });
-    await db.update(schema.posts).set({ likeCount: sql`${schema.posts.likeCount} + 1` }).where(eq(schema.posts.id, postId));
+    await db
+      .update(schema.posts)
+      .set({ likeCount: sql`${schema.posts.likeCount} + 1` })
+      .where(eq(schema.posts.id, postId));
 
     return true;
   }
@@ -354,13 +425,22 @@ export class ReactionService {
     const db = await getDb();
     if (!db) return false;
 
-    await db.delete(schema.likes).where(and(eq(schema.likes.userId, userId), eq(schema.likes.postId, postId)));
-    await db.update(schema.posts).set({ likeCount: sql`GREATEST(${schema.posts.likeCount} - 1, 0)` }).where(eq(schema.posts.id, postId));
+    await db
+      .delete(schema.likes)
+      .where(
+        and(eq(schema.likes.userId, userId), eq(schema.likes.postId, postId))
+      );
+    await db
+      .update(schema.posts)
+      .set({ likeCount: sql`GREATEST(${schema.posts.likeCount} - 1, 0)` })
+      .where(eq(schema.posts.id, postId));
 
     return true;
   }
 
-  async getReactions(postId: number): Promise<Record<string, { count: number; userIds: number[] }>> {
+  async getReactions(
+    postId: number
+  ): Promise<Record<string, { count: number; userIds: number[] }>> {
     const db = await getDb();
     if (!db) return {};
 
@@ -371,7 +451,10 @@ export class ReactionService {
 
     const result: Record<string, { count: number; userIds: number[] }> = {};
     if (reactions.length > 0) {
-      result["❤️"] = { count: reactions.length, userIds: reactions.map((r: { userId: number }) => r.userId) };
+      result["❤️"] = {
+        count: reactions.length,
+        userIds: reactions.map((r: { userId: number }) => r.userId),
+      };
     }
     return result;
   }
@@ -382,7 +465,12 @@ export class ReactionService {
 // ═══════════════════════════════════════════════════════════════
 
 export class ThreadedCommentService {
-  async createComment(postId: number, authorId: number, content: string, parentId?: number): Promise<ThreadedComment | null> {
+  async createComment(
+    postId: number,
+    authorId: number,
+    content: string,
+    parentId?: number
+  ): Promise<ThreadedComment | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -402,7 +490,10 @@ export class ThreadedCommentService {
       content,
     });
 
-    await db.update(schema.posts).set({ commentCount: sql`${schema.posts.commentCount} + 1` }).where(eq(schema.posts.id, postId));
+    await db
+      .update(schema.posts)
+      .set({ commentCount: sql`${schema.posts.commentCount} + 1` })
+      .where(eq(schema.posts.id, postId));
 
     const insertId = (result as any).insertId;
     return {
@@ -420,15 +511,20 @@ export class ThreadedCommentService {
     };
   }
 
-  async getCommentTree(postId: number, limit = 50, sortBy: "newest" | "oldest" | "popular" = "newest"): Promise<ThreadedComment[]> {
+  async getCommentTree(
+    postId: number,
+    limit = 50,
+    sortBy: "newest" | "oldest" | "popular" = "newest"
+  ): Promise<ThreadedComment[]> {
     const db = await getDb();
     if (!db) return [];
 
-    const orderClause = sortBy === "popular"
-      ? desc(schema.comments.likeCount)
-      : sortBy === "oldest"
-        ? schema.comments.createdAt
-        : desc(schema.comments.createdAt);
+    const orderClause =
+      sortBy === "popular"
+        ? desc(schema.comments.likeCount)
+        : sortBy === "oldest"
+          ? schema.comments.createdAt
+          : desc(schema.comments.createdAt);
 
     const allComments = await db
       .select({
@@ -490,21 +586,36 @@ export class ThreadedCommentService {
     const existing = await db
       .select({ id: schema.likes.id })
       .from(schema.likes)
-      .where(and(eq(schema.likes.userId, userId), eq(schema.likes.commentId, commentId)))
+      .where(
+        and(
+          eq(schema.likes.userId, userId),
+          eq(schema.likes.commentId, commentId)
+        )
+      )
       .limit(1);
 
     if (existing.length > 0) {
       await db.delete(schema.likes).where(eq(schema.likes.id, existing[0].id));
-      await db.update(schema.comments).set({ likeCount: sql`GREATEST(${schema.comments.likeCount} - 1, 0)` }).where(eq(schema.comments.id, commentId));
+      await db
+        .update(schema.comments)
+        .set({ likeCount: sql`GREATEST(${schema.comments.likeCount} - 1, 0)` })
+        .where(eq(schema.comments.id, commentId));
       return false;
     }
 
     await db.insert(schema.likes).values({ userId, commentId });
-    await db.update(schema.comments).set({ likeCount: sql`${schema.comments.likeCount} + 1` }).where(eq(schema.comments.id, commentId));
+    await db
+      .update(schema.comments)
+      .set({ likeCount: sql`${schema.comments.likeCount} + 1` })
+      .where(eq(schema.comments.id, commentId));
     return true;
   }
 
-  async editComment(commentId: number, userId: number, newContent: string): Promise<boolean> {
+  async editComment(
+    commentId: number,
+    userId: number,
+    newContent: string
+  ): Promise<boolean> {
     const db = await getDb();
     if (!db) return false;
 
@@ -515,16 +626,26 @@ export class ThreadedCommentService {
 
     if (!comment || comment.authorId !== userId) return false;
 
-    await db.update(schema.comments).set({ content: newContent, updatedAt: new Date() }).where(eq(schema.comments.id, commentId));
+    await db
+      .update(schema.comments)
+      .set({ content: newContent, updatedAt: new Date() })
+      .where(eq(schema.comments.id, commentId));
     return true;
   }
 
-  async deleteComment(commentId: number, userId: number, isAdmin = false): Promise<boolean> {
+  async deleteComment(
+    commentId: number,
+    userId: number,
+    isAdmin = false
+  ): Promise<boolean> {
     const db = await getDb();
     if (!db) return false;
 
     const [comment] = await db
-      .select({ authorId: schema.comments.authorId, postId: schema.comments.postId })
+      .select({
+        authorId: schema.comments.authorId,
+        postId: schema.comments.postId,
+      })
       .from(schema.comments)
       .where(eq(schema.comments.id, commentId));
 
@@ -532,8 +653,13 @@ export class ThreadedCommentService {
     if (!isAdmin && comment.authorId !== userId) return false;
 
     await db.delete(schema.comments).where(eq(schema.comments.id, commentId));
-    await db.delete(schema.comments).where(eq(schema.comments.parentId, commentId));
-    await db.update(schema.posts).set({ commentCount: sql`GREATEST(${schema.posts.commentCount} - 1, 0)` }).where(eq(schema.posts.id, comment.postId));
+    await db
+      .delete(schema.comments)
+      .where(eq(schema.comments.parentId, commentId));
+    await db
+      .update(schema.posts)
+      .set({ commentCount: sql`GREATEST(${schema.posts.commentCount} - 1, 0)` })
+      .where(eq(schema.posts.id, comment.postId));
 
     return true;
   }
@@ -544,7 +670,11 @@ export class ThreadedCommentService {
 // ═══════════════════════════════════════════════════════════════
 
 export class RepostService {
-  async repost(userId: number, originalPostId: number, quoteText?: string): Promise<number | null> {
+  async repost(
+    userId: number,
+    originalPostId: number,
+    quoteText?: string
+  ): Promise<number | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -560,8 +690,14 @@ export class RepostService {
       visibility: "public",
     });
 
-    await db.update(schema.posts).set({ repostCount: sql`${schema.posts.repostCount} + 1` }).where(eq(schema.posts.id, originalPostId));
-    await db.update(schema.users).set({ postCount: sql`${schema.users.postCount} + 1` }).where(eq(schema.users.id, userId));
+    await db
+      .update(schema.posts)
+      .set({ repostCount: sql`${schema.posts.repostCount} + 1` })
+      .where(eq(schema.posts.id, originalPostId));
+    await db
+      .update(schema.users)
+      .set({ postCount: sql`${schema.users.postCount} + 1` })
+      .where(eq(schema.users.id, userId));
 
     return (result as any).insertId;
   }
@@ -585,12 +721,20 @@ export class RepostService {
     if (!repost) return false;
 
     await db.delete(schema.posts).where(eq(schema.posts.id, repost.id));
-    await db.update(schema.posts).set({ repostCount: sql`GREATEST(${schema.posts.repostCount} - 1, 0)` }).where(eq(schema.posts.id, originalPostId));
+    await db
+      .update(schema.posts)
+      .set({ repostCount: sql`GREATEST(${schema.posts.repostCount} - 1, 0)` })
+      .where(eq(schema.posts.id, originalPostId));
 
     return true;
   }
 
-  async getReposts(postId: number, limit = 20): Promise<{ userId: number; isQuote: boolean; quoteText?: string; createdAt: Date }[]> {
+  async getReposts(
+    postId: number,
+    limit = 20
+  ): Promise<
+    { userId: number; isQuote: boolean; quoteText?: string; createdAt: Date }[]
+  > {
     const db = await getDb();
     if (!db) return [];
 
@@ -643,7 +787,11 @@ export class RepostService {
 // ═══════════════════════════════════════════════════════════════
 
 export class StoryService {
-  async createStory(userId: number, content: string, mediaUrl: string): Promise<number | null> {
+  async createStory(
+    userId: number,
+    content: string,
+    mediaUrl: string
+  ): Promise<number | null> {
     const db = await getDb();
     if (!db) return null;
 
@@ -661,7 +809,11 @@ export class StoryService {
     return (result as any).insertId;
   }
 
-  async getFollowingStories(userId: number): Promise<{ userId: number; userName: string; avatar?: string; stories: any[] }[]> {
+  async getFollowingStories(
+    userId: number
+  ): Promise<
+    { userId: number; userName: string; avatar?: string; stories: any[] }[]
+  > {
     const db = await getDb();
     if (!db) return [];
 
@@ -672,7 +824,9 @@ export class StoryService {
       .from(schema.follows)
       .where(eq(schema.follows.followerId, userId));
 
-    const followingIds = following.map((f: { followingId: number }) => f.followingId);
+    const followingIds = following.map(
+      (f: { followingId: number }) => f.followingId
+    );
     if (followingIds.length === 0) return [];
 
     const stories = await db
@@ -697,7 +851,8 @@ export class StoryService {
 
     const userStoryMap = new Map<number, any[]>();
     for (const story of stories) {
-      if (!userStoryMap.has(story.authorId)) userStoryMap.set(story.authorId, []);
+      if (!userStoryMap.has(story.authorId))
+        userStoryMap.set(story.authorId, []);
       userStoryMap.get(story.authorId)!.push(story);
     }
 
@@ -705,11 +860,22 @@ export class StoryService {
     if (userIds.length === 0) return [];
 
     const users = await db
-      .select({ id: schema.users.id, name: schema.users.name, avatar: schema.users.avatar })
+      .select({
+        id: schema.users.id,
+        name: schema.users.name,
+        avatar: schema.users.avatar,
+      })
       .from(schema.users)
       .where(inArray(schema.users.id, userIds));
 
-    const userMap = new Map(users.map((u: { id: number; name: string | null; avatar: string | null }) => [u.id, u]));
+    const userMap = new Map(
+      users.map(
+        (u: { id: number; name: string | null; avatar: string | null }) => [
+          u.id,
+          u,
+        ]
+      )
+    );
 
     return userIds.map((uid: number) => ({
       userId: uid,
@@ -722,14 +888,21 @@ export class StoryService {
   async viewStory(storyId: number, viewerId: number): Promise<void> {
     const db = await getDb();
     if (!db) return;
-    await db.update(schema.posts).set({ viewCount: sql`${schema.posts.viewCount} + 1` }).where(eq(schema.posts.id, storyId));
+    await db
+      .update(schema.posts)
+      .set({ viewCount: sql`${schema.posts.viewCount} + 1` })
+      .where(eq(schema.posts.id, storyId));
   }
 
   async cleanupExpiredStories(): Promise<number> {
     const db = await getDb();
     if (!db) return 0;
     const now = new Date();
-    const [result] = await db.delete(schema.posts).where(and(eq(schema.posts.type, "story"), lte(schema.posts.expiresAt, now)));
+    const [result] = await db
+      .delete(schema.posts)
+      .where(
+        and(eq(schema.posts.type, "story"), lte(schema.posts.expiresAt, now))
+      );
     return (result as any)?.affectedRows || 0;
   }
 }
@@ -739,7 +912,11 @@ export class StoryService {
 // ═══════════════════════════════════════════════════════════════
 
 export class FeedAlgorithmService {
-  async getPersonalizedFeed(userId: number, limit = 20, offset = 0): Promise<any[]> {
+  async getPersonalizedFeed(
+    userId: number,
+    limit = 20,
+    offset = 0
+  ): Promise<any[]> {
     const db = await getDb();
     if (!db) return [];
 
@@ -748,7 +925,9 @@ export class FeedAlgorithmService {
       .from(schema.follows)
       .where(eq(schema.follows.followerId, userId));
 
-    const followingIds = following.map((f: { followingId: number }) => f.followingId);
+    const followingIds = following.map(
+      (f: { followingId: number }) => f.followingId
+    );
 
     const posts = await db
       .select({
@@ -778,7 +957,8 @@ export class FeedAlgorithmService {
 
     const scoredPosts = posts.map((post: any) => {
       let score = 0;
-      const ageHours = (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60);
+      const ageHours =
+        (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60);
       score += Math.max(0, 100 - ageHours * 4);
       if (followingIds.includes(post.authorId)) score += 50;
       score += Math.min(post.likeCount * 2, 40);
@@ -809,7 +989,9 @@ export class FeedAlgorithmService {
           isNull(schema.posts.expiresAt)
         )
       )
-      .orderBy(sql`(${schema.posts.likeCount} * 2 + ${schema.posts.commentCount} * 3 + ${schema.posts.repostCount} * 5) DESC`)
+      .orderBy(
+        sql`(${schema.posts.likeCount} * 2 + ${schema.posts.commentCount} * 3 + ${schema.posts.repostCount} * 5) DESC`
+      )
       .limit(limit);
   }
 
@@ -822,7 +1004,10 @@ export class FeedAlgorithmService {
       .from(schema.follows)
       .where(eq(schema.follows.followerId, userId));
 
-    const excludeIds = [...following.map((f: { followingId: number }) => f.followingId), userId];
+    const excludeIds = [
+      ...following.map((f: { followingId: number }) => f.followingId),
+      userId,
+    ];
 
     return db
       .select()
@@ -834,7 +1019,9 @@ export class FeedAlgorithmService {
           isNull(schema.posts.expiresAt)
         )
       )
-      .orderBy(sql`(${schema.posts.likeCount} + ${schema.posts.commentCount} * 2) DESC`)
+      .orderBy(
+        sql`(${schema.posts.likeCount} + ${schema.posts.commentCount} * 2) DESC`
+      )
       .limit(limit);
   }
 
@@ -847,7 +1034,10 @@ export class FeedAlgorithmService {
       .from(schema.follows)
       .where(eq(schema.follows.followerId, userId));
 
-    const excludeIds = [...following.map((f: { followingId: number }) => f.followingId), userId];
+    const excludeIds = [
+      ...following.map((f: { followingId: number }) => f.followingId),
+      userId,
+    ];
 
     return db
       .select({
@@ -871,7 +1061,12 @@ export class FeedAlgorithmService {
 // ═══════════════════════════════════════════════════════════════
 
 export class MentionService {
-  async processMentions(content: string, authorId: number, postId?: number, commentId?: number): Promise<number[]> {
+  async processMentions(
+    content: string,
+    authorId: number,
+    postId?: number,
+    commentId?: number
+  ): Promise<number[]> {
     const db = await getDb();
     if (!db) return [];
 
@@ -905,7 +1100,11 @@ export class MentionService {
     return mentionedUsers.map((u: { id: number }) => u.id);
   }
 
-  async getMentionSuggestions(query: string, currentUserId: number, limit = 5): Promise<any[]> {
+  async getMentionSuggestions(
+    query: string,
+    currentUserId: number,
+    limit = 5
+  ): Promise<any[]> {
     const db = await getDb();
     if (!db) return [];
 

@@ -22,11 +22,31 @@ import { invokeLLM } from "./_core/llm";
 // TYPES & INTERFACES
 // ═══════════════════════════════════════════════════════════════
 
-export type TrendCategory = "global" | "crypto" | "gaming" | "creator" | "community" | "charity" | "defi" | "nft";
-export type BadgeType = "verified" | "creator" | "whale" | "og" | "donor" | "champion" | "moderator" | "partner" | "developer";
-export type VerificationLevel = "none" | "email" | "phone" | "id" | "creator" | "enterprise";
-export type ReputationTier = "new" | "member" | "trusted" | "veteran" | "legend" | "icon";
-export type FeedAlgorithm = "chronological" | "ranked" | "discovery" | "following" | "trending";
+export type TrendCategory =
+  | "global"
+  | "crypto"
+  | "gaming"
+  | "creator"
+  | "community"
+  | "charity"
+  | "defi"
+  | "nft";
+export type BadgeType =
+  | "verified"
+  | "creator"
+  | "whale"
+  | "og"
+  | "donor"
+  | "champion"
+  | "moderator"
+  | "partner"
+  | "developer";
+export type VerificationLevel =
+  "none" | "email" | "phone" | "id" | "creator" | "enterprise";
+export type ReputationTier =
+  "new" | "member" | "trusted" | "veteran" | "legend" | "icon";
+export type FeedAlgorithm =
+  "chronological" | "ranked" | "discovery" | "following" | "trending";
 
 export interface TrendingTopic {
   id: string;
@@ -150,7 +170,12 @@ export interface SocialConnection {
 export interface FriendSuggestion {
   userId: number;
   suggestedUserId: number;
-  reason: "mutual_follows" | "similar_interests" | "same_community" | "trending_creator" | "contact_import";
+  reason:
+    | "mutual_follows"
+    | "similar_interests"
+    | "same_community"
+    | "trending_creator"
+    | "contact_import";
   mutualCount: number;
   sharedInterests: string[];
   confidenceScore: number;
@@ -198,12 +223,23 @@ export interface SearchResult {
 
 export class TrendEngineService {
   private trends: Map<string, TrendingTopic> = new Map();
-  private hashtagCounts: Map<string, { count: number; lastHour: number; posts: string[] }> = new Map();
+  private hashtagCounts: Map<
+    string,
+    { count: number; lastHour: number; posts: string[] }
+  > = new Map();
   private trendCounter = 0;
 
-  async recordHashtag(hashtag: string, postId: string, category: TrendCategory = "global"): Promise<void> {
+  async recordHashtag(
+    hashtag: string,
+    postId: string,
+    category: TrendCategory = "global"
+  ): Promise<void> {
     const tag = hashtag.toLowerCase().replace(/^#/, "");
-    const existing = this.hashtagCounts.get(tag) || { count: 0, lastHour: 0, posts: [] };
+    const existing = this.hashtagCounts.get(tag) || {
+      count: 0,
+      lastHour: 0,
+      posts: [],
+    };
     existing.count++;
     existing.lastHour++;
     existing.posts = [postId, ...existing.posts.slice(0, 99)]; // Keep last 100 posts
@@ -213,7 +249,11 @@ export class TrendEngineService {
     await this.updateTrend(tag, category, postId);
   }
 
-  private async updateTrend(hashtag: string, category: TrendCategory, postId: string): Promise<void> {
+  private async updateTrend(
+    hashtag: string,
+    category: TrendCategory,
+    postId: string
+  ): Promise<void> {
     const counts = this.hashtagCounts.get(hashtag)!;
     const existing = this.trends.get(hashtag);
 
@@ -251,15 +291,19 @@ export class TrendEngineService {
     }
   }
 
-  async getTrending(params: {
-    category?: TrendCategory;
-    limit?: number;
-    includeBreaking?: boolean;
-  } = {}): Promise<TrendingTopic[]> {
+  async getTrending(
+    params: {
+      category?: TrendCategory;
+      limit?: number;
+      includeBreaking?: boolean;
+    } = {}
+  ): Promise<TrendingTopic[]> {
     let trends = Array.from(this.trends.values());
 
     if (params.category) {
-      trends = trends.filter(t => t.category === params.category || t.category === "global");
+      trends = trends.filter(
+        t => t.category === params.category || t.category === "global"
+      );
     }
     if (params.includeBreaking) {
       trends = trends.filter(t => t.isBreaking);
@@ -297,17 +341,29 @@ export class TrendEngineService {
   }> {
     const trends = Array.from(this.trends.values());
     const breaking = trends.filter(t => t.isBreaking).length;
-    const avgVelocity = trends.reduce((sum, t) => sum + t.velocityScore, 0) / Math.max(1, trends.length);
+    const avgVelocity =
+      trends.reduce((sum, t) => sum + t.velocityScore, 0) /
+      Math.max(1, trends.length);
 
-    const categoryCounts = trends.reduce((acc, t) => {
-      acc[t.category] = (acc[t.category] || 0) + 1;
-      return acc;
-    }, {} as Record<TrendCategory, number>);
+    const categoryCounts = trends.reduce(
+      (acc, t) => {
+        acc[t.category] = (acc[t.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<TrendCategory, number>
+    );
 
-    const topCategory = Object.entries(categoryCounts)
-      .sort((a, b) => b[1] - a[1])[0]?.[0] as TrendCategory || "global";
+    const topCategory =
+      (Object.entries(categoryCounts).sort(
+        (a, b) => b[1] - a[1]
+      )[0]?.[0] as TrendCategory) || "global";
 
-    return { totalTrends: trends.length, breakingTopics: breaking, topCategory, avgVelocity };
+    return {
+      totalTrends: trends.length,
+      breakingTopics: breaking,
+      topCategory,
+      avgVelocity,
+    };
   }
 }
 
@@ -320,9 +376,19 @@ export class AIFeedRankingService {
   private userAffinities: Map<string, number> = new Map(); // `${userId}_${authorId}` -> score
   private postScoreCache: Map<string, FeedScore> = new Map();
 
-  async recordInteraction(userId: number, postId: string, action: "view" | "like" | "comment" | "share" | "bookmark" | "skip", topics: string[]): Promise<void> {
+  async recordInteraction(
+    userId: number,
+    postId: string,
+    action: "view" | "like" | "comment" | "share" | "bookmark" | "skip",
+    topics: string[]
+  ): Promise<void> {
     const weights: Record<typeof action, number> = {
-      view: 0.1, like: 1.0, comment: 2.0, share: 3.0, bookmark: 1.5, skip: -0.5,
+      view: 0.1,
+      like: 1.0,
+      comment: 2.0,
+      share: 3.0,
+      bookmark: 1.5,
+      skip: -0.5,
     };
     const weight = weights[action];
 
@@ -333,17 +399,31 @@ export class AIFeedRankingService {
     this.userInterests.set(userId, interests);
   }
 
-  async recordAuthorInteraction(userId: number, authorId: number, action: "follow" | "like" | "comment" | "block"): Promise<void> {
+  async recordAuthorInteraction(
+    userId: number,
+    authorId: number,
+    action: "follow" | "like" | "comment" | "block"
+  ): Promise<void> {
     const key = `${userId}_${authorId}`;
-    const weights: Record<typeof action, number> = { follow: 5.0, like: 0.5, comment: 1.0, block: -100 };
+    const weights: Record<typeof action, number> = {
+      follow: 5.0,
+      like: 0.5,
+      comment: 1.0,
+      block: -100,
+    };
     const current = this.userAffinities.get(key) || 0;
     this.userAffinities.set(key, Math.max(-100, current + weights[action]));
   }
 
-  async scorePost(post: FeedPost, userId: number, algorithm: FeedAlgorithm = "ranked"): Promise<FeedScore> {
+  async scorePost(
+    post: FeedPost,
+    userId: number,
+    algorithm: FeedAlgorithm = "ranked"
+  ): Promise<FeedScore> {
     const cacheKey = `${post.id}_${userId}_${algorithm}`;
     const cached = this.postScoreCache.get(cacheKey);
-    if (cached && Date.now() - cached.computedAt.getTime() < 60000) return cached;
+    if (cached && Date.now() - cached.computedAt.getTime() < 60000)
+      return cached;
 
     const now = Date.now();
     const ageHours = (now - post.createdAt.getTime()) / 3600000;
@@ -352,24 +432,32 @@ export class AIFeedRankingService {
     const recency = Math.exp(-ageHours / 24) * 100;
 
     // Engagement score: weighted combination
-    const engagement = Math.log1p(
-      post.likeCount * 1 +
-      post.commentCount * 3 +
-      post.repostCount * 5 +
-      post.bookmarkCount * 2 +
-      post.shareCount * 4
-    ) * 10;
+    const engagement =
+      Math.log1p(
+        post.likeCount * 1 +
+          post.commentCount * 3 +
+          post.repostCount * 5 +
+          post.bookmarkCount * 2 +
+          post.shareCount * 4
+      ) * 10;
 
     // Author affinity
     const affinityKey = `${userId}_${post.authorId}`;
-    const authorAffinity = Math.max(0, this.userAffinities.get(affinityKey) || 0);
+    const authorAffinity = Math.max(
+      0,
+      this.userAffinities.get(affinityKey) || 0
+    );
 
     // Topic affinity
     const interests = this.userInterests.get(userId) || {};
-    const topicAffinity = post.hashtags.reduce((sum, tag) => sum + (interests[tag] || 0), 0);
+    const topicAffinity = post.hashtags.reduce(
+      (sum, tag) => sum + (interests[tag] || 0),
+      0
+    );
 
     // Virality boost for trending content
-    const viralityBoost = post.viewCount > 10000 ? 20 : post.viewCount > 1000 ? 10 : 0;
+    const viralityBoost =
+      post.viewCount > 10000 ? 20 : post.viewCount > 1000 ? 10 : 0;
 
     // Premium content boost (creator monetization)
     const premiumBoost = post.isPremium ? 5 : 0;
@@ -378,14 +466,27 @@ export class AIFeedRankingService {
     const diversityPenalty = 0; // Calculated at feed assembly level
 
     const baseScore = recency + engagement + viralityBoost;
-    const personalizedScore = baseScore + authorAffinity * 0.5 + topicAffinity * 0.3 + premiumBoost - diversityPenalty;
+    const personalizedScore =
+      baseScore +
+      authorAffinity * 0.5 +
+      topicAffinity * 0.3 +
+      premiumBoost -
+      diversityPenalty;
 
     const score: FeedScore = {
       postId: post.id,
       userId,
       baseScore,
       personalizedScore,
-      factors: { recency, engagement, authorAffinity, topicAffinity, viralityBoost, premiumBoost, diversityPenalty },
+      factors: {
+        recency,
+        engagement,
+        authorAffinity,
+        topicAffinity,
+        viralityBoost,
+        premiumBoost,
+        diversityPenalty,
+      },
       algorithm,
       computedAt: new Date(),
     };
@@ -394,9 +495,15 @@ export class AIFeedRankingService {
     return score;
   }
 
-  async rankFeed(posts: FeedPost[], userId: number, algorithm: FeedAlgorithm = "ranked"): Promise<FeedPost[]> {
+  async rankFeed(
+    posts: FeedPost[],
+    userId: number,
+    algorithm: FeedAlgorithm = "ranked"
+  ): Promise<FeedPost[]> {
     if (algorithm === "chronological") {
-      return posts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return posts.sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
     }
 
     const scored = await Promise.all(
@@ -420,7 +527,9 @@ export class AIFeedRankingService {
     return diversified.map(d => d.post);
   }
 
-  async getUserInterestProfile(userId: number): Promise<{ topic: string; weight: number }[]> {
+  async getUserInterestProfile(
+    userId: number
+  ): Promise<{ topic: string; weight: number }[]> {
     const interests = this.userInterests.get(userId) || {};
     return Object.entries(interests)
       .map(([topic, weight]) => ({ topic, weight }))
@@ -428,7 +537,10 @@ export class AIFeedRankingService {
       .slice(0, 20);
   }
 
-  async getTopicAffinityScore(userId: number, topics: string[]): Promise<number> {
+  async getTopicAffinityScore(
+    userId: number,
+    topics: string[]
+  ): Promise<number> {
     const interests = this.userInterests.get(userId) || {};
     return topics.reduce((sum, topic) => sum + (interests[topic] || 0), 0);
   }
@@ -490,21 +602,29 @@ export class ReelsEngineService {
       .filter(r => !seen.has(r.id))
       .sort((a, b) => {
         // Blend of recency, engagement, and completion rate
-        const scoreA = b.viewCount * 0.3 + b.completionRate * 50 + b.likeCount * 0.5;
-        const scoreB = a.viewCount * 0.3 + a.completionRate * 50 + a.likeCount * 0.5;
+        const scoreA =
+          b.viewCount * 0.3 + b.completionRate * 50 + b.likeCount * 0.5;
+        const scoreB =
+          a.viewCount * 0.3 + a.completionRate * 50 + a.likeCount * 0.5;
         return scoreA - scoreB;
       });
 
     return available.slice(0, limit);
   }
 
-  async recordView(reelId: string, userId: number, watchedSeconds: number): Promise<void> {
+  async recordView(
+    reelId: string,
+    userId: number,
+    watchedSeconds: number
+  ): Promise<void> {
     const reel = this.reels.get(reelId);
     if (!reel) return;
 
     reel.viewCount++;
     const completionFraction = Math.min(1, watchedSeconds / reel.duration);
-    reel.completionRate = (reel.completionRate * (reel.viewCount - 1) + completionFraction) / reel.viewCount;
+    reel.completionRate =
+      (reel.completionRate * (reel.viewCount - 1) + completionFraction) /
+      reel.viewCount;
 
     // Track seen reels per user
     if (!this.userReelHistory.has(userId)) {
@@ -537,14 +657,19 @@ export class ReelsEngineService {
 
   async getTrendingReels(limit = 20): Promise<Reel[]> {
     return Array.from(this.reels.values())
-      .sort((a, b) => (b.viewCount * b.completionRate) - (a.viewCount * a.completionRate))
+      .sort(
+        (a, b) =>
+          b.viewCount * b.completionRate - a.viewCount * a.completionRate
+      )
       .slice(0, limit);
   }
 
   async getReelsByHashtag(hashtag: string, limit = 20): Promise<Reel[]> {
     const tag = hashtag.toLowerCase().replace(/^#/, "");
     return Array.from(this.reels.values())
-      .filter(r => r.hashtags.some(h => h.toLowerCase().replace(/^#/, "") === tag))
+      .filter(r =>
+        r.hashtags.some(h => h.toLowerCase().replace(/^#/, "") === tag)
+      )
       .sort((a, b) => b.viewCount - a.viewCount)
       .slice(0, limit);
   }
@@ -590,7 +715,13 @@ export class QuotePostService {
     this.quotePosts.set(quoteId, quote);
 
     // Update repost tree
-    await this.updateRepostTree(params.originalPostId, quoteId, params.authorId, "quote", params.commentary);
+    await this.updateRepostTree(
+      params.originalPostId,
+      quoteId,
+      params.authorId,
+      "quote",
+      params.commentary
+    );
 
     return quote;
   }
@@ -607,7 +738,9 @@ export class QuotePostService {
   }
 
   async buildRepostTree(originalPostId: string): Promise<RepostTree> {
-    const quotes = Array.from(this.quotePosts.values()).filter(q => q.originalPostId === originalPostId);
+    const quotes = Array.from(this.quotePosts.values()).filter(
+      q => q.originalPostId === originalPostId
+    );
     const totalQuotes = quotes.length;
     const viralScore = Math.log1p(totalQuotes) * 10;
 
@@ -631,7 +764,13 @@ export class QuotePostService {
     return tree;
   }
 
-  private async updateRepostTree(originalPostId: string, newPostId: string, authorId: number, type: "repost" | "quote", commentary?: string): Promise<void> {
+  private async updateRepostTree(
+    originalPostId: string,
+    newPostId: string,
+    authorId: number,
+    type: "repost" | "quote",
+    commentary?: string
+  ): Promise<void> {
     const existing = this.repostTrees.get(originalPostId);
     if (existing) {
       existing.totalQuotes++;
@@ -656,7 +795,11 @@ export class FriendGraphService {
   private connections: Map<string, SocialConnection> = new Map();
   private adjacencyList: Map<number, Set<number>> = new Map(); // userId -> Set of following IDs
 
-  async addConnection(userId: number, targetId: number, type: SocialConnection["type"]): Promise<SocialConnection> {
+  async addConnection(
+    userId: number,
+    targetId: number,
+    type: SocialConnection["type"]
+  ): Promise<SocialConnection> {
     const key = `${userId}_${targetId}`;
     const connection: SocialConnection = {
       userId,
@@ -670,7 +813,8 @@ export class FriendGraphService {
     this.connections.set(key, connection);
 
     if (type === "follow" || type === "friend") {
-      if (!this.adjacencyList.has(userId)) this.adjacencyList.set(userId, new Set());
+      if (!this.adjacencyList.has(userId))
+        this.adjacencyList.set(userId, new Set());
       this.adjacencyList.get(userId)!.add(targetId);
     }
 
@@ -697,7 +841,10 @@ export class FriendGraphService {
     return followers;
   }
 
-  async getMutualFollowers(userId1: number, userId2: number): Promise<number[]> {
+  async getMutualFollowers(
+    userId1: number,
+    userId2: number
+  ): Promise<number[]> {
     const following1 = this.adjacencyList.get(userId1) || new Set();
     const following2 = this.adjacencyList.get(userId2) || new Set();
     return Array.from(following1).filter(id => following2.has(id));
@@ -708,7 +855,10 @@ export class FriendGraphService {
     return mutuals.length;
   }
 
-  async getSuggestions(userId: number, limit = 10): Promise<FriendSuggestion[]> {
+  async getSuggestions(
+    userId: number,
+    limit = 10
+  ): Promise<FriendSuggestion[]> {
     const following = this.adjacencyList.get(userId) || new Set();
     const suggestions: Map<number, FriendSuggestion> = new Map();
 
@@ -740,11 +890,18 @@ export class FriendGraphService {
       .slice(0, limit);
   }
 
-  async updateInteractionScore(userId: number, targetId: number, delta: number): Promise<void> {
+  async updateInteractionScore(
+    userId: number,
+    targetId: number,
+    delta: number
+  ): Promise<void> {
     const key = `${userId}_${targetId}`;
     const connection = this.connections.get(key);
     if (connection) {
-      connection.interactionScore = Math.max(0, connection.interactionScore + delta);
+      connection.interactionScore = Math.max(
+        0,
+        connection.interactionScore + delta
+      );
     }
   }
 
@@ -760,7 +917,10 @@ export class FriendGraphService {
     return connection?.type === "block";
   }
 
-  async getConnectionType(userId: number, targetId: number): Promise<SocialConnection["type"] | null> {
+  async getConnectionType(
+    userId: number,
+    targetId: number
+  ): Promise<SocialConnection["type"] | null> {
     const key = `${userId}_${targetId}`;
     return this.connections.get(key)?.type || null;
   }
@@ -780,7 +940,11 @@ export class ReputationEngineService {
     return this.reputations.get(userId)!;
   }
 
-  async updateScore(userId: number, delta: number, reason: string): Promise<UserReputation> {
+  async updateScore(
+    userId: number,
+    delta: number,
+    reason: string
+  ): Promise<UserReputation> {
     const rep = await this.getReputation(userId);
     const oldScore = rep.score;
     rep.score = Math.max(0, Math.min(10000, rep.score + delta));
@@ -793,7 +957,8 @@ export class ReputationEngineService {
       reason,
     });
     // Keep last 100 history entries
-    if (rep.history.length > 100) rep.history.splice(0, rep.history.length - 100);
+    if (rep.history.length > 100)
+      rep.history.splice(0, rep.history.length - 100);
     return rep;
   }
 
@@ -813,41 +978,69 @@ export class ReputationEngineService {
     return true;
   }
 
-  async setVerificationLevel(userId: number, level: VerificationLevel): Promise<void> {
+  async setVerificationLevel(
+    userId: number,
+    level: VerificationLevel
+  ): Promise<void> {
     const rep = await this.getReputation(userId);
     rep.verificationLevel = level;
     const bonuses: Record<VerificationLevel, number> = {
-      none: 0, email: 50, phone: 100, id: 200, creator: 500, enterprise: 1000,
+      none: 0,
+      email: 50,
+      phone: 100,
+      id: 200,
+      creator: 500,
+      enterprise: 1000,
     };
     await this.updateScore(userId, bonuses[level], `Verification: ${level}`);
   }
 
-  async applyPenalty(userId: number, points: number, reason: string): Promise<void> {
+  async applyPenalty(
+    userId: number,
+    points: number,
+    reason: string
+  ): Promise<void> {
     const rep = await this.getReputation(userId);
     rep.penaltyPoints += points;
     await this.updateScore(userId, -points * 2, `Penalty: ${reason}`);
   }
 
-  async recalculateTrustScore(userId: number, factors: {
-    accountAgeDays: number;
-    verificationLevel: VerificationLevel;
-    reportCount: number;
-    contentQuality: number;
-    activityLevel: number;
-  }): Promise<number> {
+  async recalculateTrustScore(
+    userId: number,
+    factors: {
+      accountAgeDays: number;
+      verificationLevel: VerificationLevel;
+      reportCount: number;
+      contentQuality: number;
+      activityLevel: number;
+    }
+  ): Promise<number> {
     const rep = await this.getReputation(userId);
 
     const ageFactor = Math.min(30, factors.accountAgeDays / 10);
     const verificationBonus: Record<VerificationLevel, number> = {
-      none: 0, email: 10, phone: 20, id: 30, creator: 40, enterprise: 50,
+      none: 0,
+      email: 10,
+      phone: 20,
+      id: 30,
+      creator: 40,
+      enterprise: 50,
     };
     const reportPenalty = Math.min(40, factors.reportCount * 5);
     const qualityBonus = factors.contentQuality * 10;
     const activityBonus = Math.min(10, factors.activityLevel * 2);
 
-    rep.trustScore = Math.max(0, Math.min(100,
-      ageFactor + verificationBonus[factors.verificationLevel] + qualityBonus + activityBonus - reportPenalty
-    ));
+    rep.trustScore = Math.max(
+      0,
+      Math.min(
+        100,
+        ageFactor +
+          verificationBonus[factors.verificationLevel] +
+          qualityBonus +
+          activityBonus -
+          reportPenalty
+      )
+    );
 
     return rep.trustScore;
   }
@@ -901,7 +1094,8 @@ export class VoiceNoteService {
     duration: number;
     waveformData?: number[];
   }): Promise<VoiceNote> {
-    if (params.duration > 300) throw new Error("Voice notes cannot exceed 5 minutes");
+    if (params.duration > 300)
+      throw new Error("Voice notes cannot exceed 5 minutes");
 
     const noteId = `voice_${Date.now()}_${++this.noteCounter}`;
     const note: VoiceNote = {
@@ -911,7 +1105,8 @@ export class VoiceNoteService {
       postId: params.postId,
       audioUrl: params.audioUrl,
       duration: params.duration,
-      waveformData: params.waveformData || this.generateWaveform(params.duration),
+      waveformData:
+        params.waveformData || this.generateWaveform(params.duration),
       isListened: false,
       createdAt: new Date(),
     };
@@ -930,10 +1125,12 @@ export class VoiceNoteService {
     try {
       const response = await invokeLLM({
         model: "gpt-4o-mini",
-        messages: [{
-          role: "user",
-          content: `Generate a realistic short voice note transcription for a ${note.duration}-second audio message in a social media context. Keep it natural and conversational. Just return the transcription text, nothing else.`,
-        }],
+        messages: [
+          {
+            role: "user",
+            content: `Generate a realistic short voice note transcription for a ${note.duration}-second audio message in a social media context. Keep it natural and conversational. Just return the transcription text, nothing else.`,
+          },
+        ],
         maxTokens: 200,
       });
       note.transcription = response.choices[0]?.message?.content as string;
@@ -975,17 +1172,26 @@ export class VoiceNoteService {
 // ═══════════════════════════════════════════════════════════════
 
 export class SocialSearchService {
-  async search(query: string, params: {
-    types?: SearchResult["type"][];
-    limit?: number;
-    userId?: number;
-  } = {}): Promise<SearchResult[]> {
+  async search(
+    query: string,
+    params: {
+      types?: SearchResult["type"][];
+      limit?: number;
+      userId?: number;
+    } = {}
+  ): Promise<SearchResult[]> {
     const q = query.toLowerCase().trim();
     if (!q) return [];
 
     const results: SearchResult[] = [];
     const limit = params.limit || 20;
-    const types = params.types || ["post", "user", "community", "hashtag", "reel"];
+    const types = params.types || [
+      "post",
+      "user",
+      "community",
+      "hashtag",
+      "reel",
+    ];
 
     // Hashtag search
     if (types.includes("hashtag") && q.startsWith("#")) {
@@ -1003,9 +1209,13 @@ export class SocialSearchService {
     return results.slice(0, limit);
   }
 
-  async autocomplete(query: string, limit = 5): Promise<{ type: string; value: string; displayText: string }[]> {
+  async autocomplete(
+    query: string,
+    limit = 5
+  ): Promise<{ type: string; value: string; displayText: string }[]> {
     const q = query.toLowerCase();
-    const suggestions: { type: string; value: string; displayText: string }[] = [];
+    const suggestions: { type: string; value: string; displayText: string }[] =
+      [];
 
     if (q.startsWith("#")) {
       suggestions.push({ type: "hashtag", value: q, displayText: q });
@@ -1022,17 +1232,23 @@ export class SocialSearchService {
 // ═══════════════════════════════════════════════════════════════
 
 export class ContentRecommendationService {
-  async getRecommendations(userId: number, params: {
-    type: "posts" | "creators" | "communities" | "reels";
-    limit?: number;
-    excludeIds?: string[];
-  }): Promise<{ id: string; score: number; reason: string }[]> {
+  async getRecommendations(
+    userId: number,
+    params: {
+      type: "posts" | "creators" | "communities" | "reels";
+      limit?: number;
+      excludeIds?: string[];
+    }
+  ): Promise<{ id: string; score: number; reason: string }[]> {
     // In production: ML model trained on user behavior
     // Collaborative filtering + content-based filtering hybrid
     return [];
   }
 
-  async getSimilarContent(contentId: string, contentType: "post" | "reel" | "community"): Promise<{ id: string; similarity: number }[]> {
+  async getSimilarContent(
+    contentId: string,
+    contentType: "post" | "reel" | "community"
+  ): Promise<{ id: string; similarity: number }[]> {
     // In production: embedding-based similarity search
     return [];
   }
@@ -1057,7 +1273,6 @@ export const voiceNoteService = new VoiceNoteService();
 export const socialSearch = new SocialSearchService();
 export const contentRecommendation = new ContentRecommendationService();
 
-
 // ─── ROUTER COMPATIBILITY FACADE ─────────────────────────────────────────────
 export const socialCore = {
   getTrendingTopics(limit = 20, category?: string) {
@@ -1072,8 +1287,27 @@ export const socialCore = {
   updateReputation(userId: number, _action: string, value: number) {
     return reputationEngine.updateScore(userId, value, _action);
   },
-  createReel(params: { creatorId: number; videoUrl: string; thumbnailUrl?: string; caption?: string; audioTrack?: string; duration: number; hashtags?: string[] }) {
-    return reelsEngine.createReel({ creatorId: params.creatorId, videoUrl: params.videoUrl, hlsUrl: params.videoUrl, thumbnailUrl: params.thumbnailUrl || "", duration: params.duration, caption: params.caption || "", hashtags: params.hashtags, audioTrack: params.audioTrack ? { name: params.audioTrack, artist: "unknown", url: params.audioTrack } : undefined });
+  createReel(params: {
+    creatorId: number;
+    videoUrl: string;
+    thumbnailUrl?: string;
+    caption?: string;
+    audioTrack?: string;
+    duration: number;
+    hashtags?: string[];
+  }) {
+    return reelsEngine.createReel({
+      creatorId: params.creatorId,
+      videoUrl: params.videoUrl,
+      hlsUrl: params.videoUrl,
+      thumbnailUrl: params.thumbnailUrl || "",
+      duration: params.duration,
+      caption: params.caption || "",
+      hashtags: params.hashtags,
+      audioTrack: params.audioTrack
+        ? { name: params.audioTrack, artist: "unknown", url: params.audioTrack }
+        : undefined,
+    });
   },
   getReelsFeed(limit = 20, _cursor?: number) {
     return reelsEngine.getTrendingReels(limit);
@@ -1081,24 +1315,107 @@ export const socialCore = {
   getFriendSuggestions(userId: number, limit = 10) {
     return friendGraph.getSuggestions(userId, limit);
   },
-  sendVoiceNote(senderId: number, recipientId: number, audioUrl: string, duration: number) {
-    return voiceNoteService.createVoiceNote({ senderId, recipientId, audioUrl, duration, waveformData: [] });
+  sendVoiceNote(
+    senderId: number,
+    recipientId: number,
+    audioUrl: string,
+    duration: number
+  ) {
+    return voiceNoteService.createVoiceNote({
+      senderId,
+      recipientId,
+      audioUrl,
+      duration,
+      waveformData: [],
+    });
   },
-  recordEngagement(userId: number, contentId: string, contentType: string, action: string, _durationSeconds?: number) {
-    return aiFeedRanking.recordInteraction(userId, contentId, action as any, [contentType]);
+  recordEngagement(
+    userId: number,
+    contentId: string,
+    contentType: string,
+    action: string,
+    _durationSeconds?: number
+  ) {
+    return aiFeedRanking.recordInteraction(userId, contentId, action as any, [
+      contentType,
+    ]);
   },
 };
 
 // ─── Seed demo reels on startup ──────────────────────────────────────────────
 const DEMO_REELS = [
-  { creatorId: 1, caption: "🚀 SKY444 just hit a new ATH! The future of Web3 social is HERE. #SKY444 #Crypto #Web3", hashtags: ["SKY444","Crypto","Web3"], duration: 30, viewCount: 48200, likeCount: 3100 },
-  { creatorId: 1, caption: "How I made 10x on my crypto portfolio using on-chain signals 📈 #DeFi #Trading", hashtags: ["DeFi","Trading","Crypto"], duration: 45, viewCount: 32100, likeCount: 2400 },
-  { creatorId: 1, caption: "Building the future of AI + Web3 in real time. Watch this space 👀 #AI #Web3 #Build", hashtags: ["AI","Web3","Build"], duration: 28, viewCount: 27800, likeCount: 1900 },
-  { creatorId: 1, caption: "The SKYCOIN4444 staking rewards are insane right now. Here's how to get in 💎 #Staking #Passive", hashtags: ["Staking","Passive","SKY444"], duration: 60, viewCount: 21400, likeCount: 1600 },
-  { creatorId: 1, caption: "ShadowChat just dropped the most fire update. DMs, Stories, Reels — all in one 🔥 #ShadowChat", hashtags: ["ShadowChat","Social","Web3"], duration: 35, viewCount: 18900, likeCount: 1200 },
-  { creatorId: 1, caption: "Plinko + crypto = the most addictive thing I've ever played 🎰 #Gaming #Arcade #SKY444", hashtags: ["Gaming","Arcade","SKY444"], duration: 22, viewCount: 15600, likeCount: 980 },
-  { creatorId: 1, caption: "My Hope AI just predicted my emotional state PERFECTLY. This is wild 🤯 #HopeAI #AI #Mental", hashtags: ["HopeAI","AI","Mental"], duration: 40, viewCount: 12300, likeCount: 870 },
-  { creatorId: 1, caption: "Charity on-chain: we raised $50K for clean water in 48 hours 💚 #Charity #Web3 #Impact", hashtags: ["Charity","Web3","Impact"], duration: 55, viewCount: 9800, likeCount: 720 },
+  {
+    creatorId: 1,
+    caption:
+      "🚀 SKY444 just hit a new ATH! The future of Web3 social is HERE. #SKY444 #Crypto #Web3",
+    hashtags: ["SKY444", "Crypto", "Web3"],
+    duration: 30,
+    viewCount: 48200,
+    likeCount: 3100,
+  },
+  {
+    creatorId: 1,
+    caption:
+      "How I made 10x on my crypto portfolio using on-chain signals 📈 #DeFi #Trading",
+    hashtags: ["DeFi", "Trading", "Crypto"],
+    duration: 45,
+    viewCount: 32100,
+    likeCount: 2400,
+  },
+  {
+    creatorId: 1,
+    caption:
+      "Building the future of AI + Web3 in real time. Watch this space 👀 #AI #Web3 #Build",
+    hashtags: ["AI", "Web3", "Build"],
+    duration: 28,
+    viewCount: 27800,
+    likeCount: 1900,
+  },
+  {
+    creatorId: 1,
+    caption:
+      "The SKYCOIN4444 staking rewards are insane right now. Here's how to get in 💎 #Staking #Passive",
+    hashtags: ["Staking", "Passive", "SKY444"],
+    duration: 60,
+    viewCount: 21400,
+    likeCount: 1600,
+  },
+  {
+    creatorId: 1,
+    caption:
+      "ShadowChat just dropped the most fire update. DMs, Stories, Reels — all in one 🔥 #ShadowChat",
+    hashtags: ["ShadowChat", "Social", "Web3"],
+    duration: 35,
+    viewCount: 18900,
+    likeCount: 1200,
+  },
+  {
+    creatorId: 1,
+    caption:
+      "Plinko + crypto = the most addictive thing I've ever played 🎰 #Gaming #Arcade #SKY444",
+    hashtags: ["Gaming", "Arcade", "SKY444"],
+    duration: 22,
+    viewCount: 15600,
+    likeCount: 980,
+  },
+  {
+    creatorId: 1,
+    caption:
+      "My Hope AI just predicted my emotional state PERFECTLY. This is wild 🤯 #HopeAI #AI #Mental",
+    hashtags: ["HopeAI", "AI", "Mental"],
+    duration: 40,
+    viewCount: 12300,
+    likeCount: 870,
+  },
+  {
+    creatorId: 1,
+    caption:
+      "Charity on-chain: we raised $50K for clean water in 48 hours 💚 #Charity #Web3 #Impact",
+    hashtags: ["Charity", "Web3", "Impact"],
+    duration: 55,
+    viewCount: 9800,
+    likeCount: 720,
+  },
 ];
 
 const GRADIENT_THUMBS = [
@@ -1125,7 +1442,9 @@ const GRADIENT_THUMBS = [
       hashtags: d.hashtags,
     });
     // Manually inflate engagement for demo
-    for (let v = 0; v < Math.min(d.viewCount, 100); v++) (reel as any).viewCount = d.viewCount;
-    for (let l = 0; l < Math.min(d.likeCount, 100); l++) (reel as any).likeCount = d.likeCount;
+    for (let v = 0; v < Math.min(d.viewCount, 100); v++)
+      (reel as any).viewCount = d.viewCount;
+    for (let l = 0; l < Math.min(d.likeCount, 100); l++)
+      (reel as any).likeCount = d.likeCount;
   }
 })().catch(() => {});

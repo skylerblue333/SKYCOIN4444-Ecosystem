@@ -1,11 +1,11 @@
 // @ts-nocheck
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/_core/hooks/useAuth';
-import { trpc } from '@/lib/trpc';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 const NotificationsPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -17,9 +17,12 @@ const NotificationsPage: React.FC = () => {
     { enabled: isAuthenticated }
   );
 
-  const unreadCountQuery = trpc.wave2Notifications.getUnreadCount.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
+  const unreadCountQuery = trpc.wave2Notifications.getUnreadCount.useQuery(
+    undefined,
+    {
+      enabled: isAuthenticated,
+    }
+  );
 
   const statsQuery = trpc.wave2Notifications.getStats.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -30,7 +33,7 @@ const NotificationsPage: React.FC = () => {
     onSuccess: () => {
       notificationsQuery.refetch();
       unreadCountQuery.refetch();
-      toast.success('Marked as read');
+      toast.success("Marked as read");
     },
   });
 
@@ -38,21 +41,22 @@ const NotificationsPage: React.FC = () => {
     onSuccess: () => {
       notificationsQuery.refetch();
       unreadCountQuery.refetch();
-      toast.success('All marked as read');
+      toast.success("All marked as read");
     },
   });
 
-  const deleteNotificationMutation = trpc.wave2Notifications.deleteNotification.useMutation({
-    onSuccess: () => {
-      notificationsQuery.refetch();
-      toast.success('Notification deleted');
-    },
-  });
+  const deleteNotificationMutation =
+    trpc.wave2Notifications.deleteNotification.useMutation({
+      onSuccess: () => {
+        notificationsQuery.refetch();
+        toast.success("Notification deleted");
+      },
+    });
 
   const deleteAllMutation = trpc.wave2Notifications.deleteAll.useMutation({
     onSuccess: () => {
       notificationsQuery.refetch();
-      toast.success('All notifications cleared');
+      toast.success("All notifications cleared");
     },
   });
 
@@ -64,7 +68,9 @@ const NotificationsPage: React.FC = () => {
             <CardTitle>Authentication Required</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">Please log in to view notifications.</p>
+            <p className="text-sm text-muted-foreground">
+              Please log in to view notifications.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -118,7 +124,9 @@ const NotificationsPage: React.FC = () => {
           <Card>
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">Types</p>
-              <p className="text-2xl font-bold">{Object.keys(statsQuery.data.byType).length}</p>
+              <p className="text-2xl font-bold">
+                {Object.keys(statsQuery.data.byType).length}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -130,10 +138,13 @@ const NotificationsPage: React.FC = () => {
           type="checkbox"
           id="unreadOnly"
           checked={unreadOnly}
-          onChange={(e) => setUnreadOnly(e.target.checked)}
+          onChange={e => setUnreadOnly(e.target.checked)}
           className="rounded"
         />
-        <label htmlFor="unreadOnly" className="text-sm font-medium cursor-pointer">
+        <label
+          htmlFor="unreadOnly"
+          className="text-sm font-medium cursor-pointer"
+        >
           Unread only
         </label>
       </div>
@@ -152,55 +163,67 @@ const NotificationsPage: React.FC = () => {
             </div>
           ) : (notificationsQuery.data?.notifications || []).length > 0 ? (
             <div className="space-y-2">
-              {(notificationsQuery.data?.notifications || []).map((notif: any) => (
-                <div
-                  key={notif.id}
-                  className={`p-4 rounded-lg border transition-colors ${
-                    notif.read
-                      ? 'border-border bg-background'
-                      : 'border-primary/50 bg-primary/5'
-                  }`}
-                >
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{notif.title}</p>
-                        {!notif.read && (
-                          <span className="w-2 h-2 rounded-full bg-primary"></span>
-                        )}
+              {(notificationsQuery.data?.notifications || []).map(
+                (notif: any) => (
+                  <div
+                    key={notif.id}
+                    className={`p-4 rounded-lg border transition-colors ${
+                      notif.read
+                        ? "border-border bg-background"
+                        : "border-primary/50 bg-primary/5"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{notif.title}</p>
+                          {!notif.read && (
+                            <span className="w-2 h-2 rounded-full bg-primary"></span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {notif.message}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {new Date(notif.createdAt).toLocaleDateString()} at{" "}
+                          {new Date(notif.createdAt).toLocaleTimeString()}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">{notif.message}</p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(notif.createdAt).toLocaleDateString()} at{' '}
-                        {new Date(notif.createdAt).toLocaleTimeString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      {!notif.read && (
+                      <div className="flex gap-2">
+                        {!notif.read && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              markReadMutation.mutateAsync({ id: notif.id })
+                            }
+                            disabled={markReadMutation.isPending}
+                          >
+                            Read
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => markReadMutation.mutateAsync({ id: notif.id })}
-                          disabled={markReadMutation.isPending}
+                          onClick={() =>
+                            deleteNotificationMutation.mutateAsync({
+                              id: notif.id,
+                            })
+                          }
+                          disabled={deleteNotificationMutation.isPending}
                         >
-                          Read
+                          Delete
                         </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => deleteNotificationMutation.mutateAsync({ id: notif.id })}
-                        disabled={deleteNotificationMutation.isPending}
-                      >
-                        Delete
-                      </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">No notifications</p>
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No notifications
+            </p>
           )}
         </CardContent>
       </Card>

@@ -9,11 +9,43 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
-  Send, Sparkles, Code, Brain, Image, Video, FileText, Globe, Zap,
-  Copy, Download, Share2, Settings, RotateCcw, Maximize2, Minimize2,
-  MessageSquare, Lightbulb, BookOpen, Cpu, Wand2, Play, Square,
-  ChevronDown, ChevronUp, Clock, AlertCircle, Plus, Trash2, Search,
-  Upload, Mic, Phone, Eye, FileCode, Database, GitBranch
+  Send,
+  Sparkles,
+  Code,
+  Brain,
+  Image,
+  Video,
+  FileText,
+  Globe,
+  Zap,
+  Copy,
+  Download,
+  Share2,
+  Settings,
+  RotateCcw,
+  Maximize2,
+  Minimize2,
+  MessageSquare,
+  Lightbulb,
+  BookOpen,
+  Cpu,
+  Wand2,
+  Play,
+  Square,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  AlertCircle,
+  Plus,
+  Trash2,
+  Search,
+  Upload,
+  Mic,
+  Phone,
+  Eye,
+  FileCode,
+  Database,
+  GitBranch,
 } from "lucide-react";
 
 interface Message {
@@ -23,7 +55,11 @@ interface Message {
   timestamp: number;
   capability?: string;
   attachments?: { type: string; url: string; name: string }[];
-  metadata?: { tokensUsed?: number; thinkingTime?: number; confidence?: number };
+  metadata?: {
+    tokensUsed?: number;
+    thinkingTime?: number;
+    confidence?: number;
+  };
 }
 
 interface Conversation {
@@ -36,18 +72,78 @@ interface Conversation {
 }
 
 const CAPABILITIES = [
-  { id: "chat", name: "Chat", icon: <MessageSquare className="w-5 h-5" />, description: "Conversational AI" },
-  { id: "code", name: "Code", icon: <Code className="w-5 h-5" />, description: "Code generation & debugging" },
-  { id: "image", name: "Image", icon: <Image className="w-5 h-5" />, description: "Image generation & analysis" },
-  { id: "video", name: "Video", icon: <Video className="w-5 h-5" />, description: "Video understanding" },
-  { id: "document", name: "Document", icon: <FileText className="w-5 h-5" />, description: "Document analysis" },
-  { id: "web", name: "Web Search", icon: <Globe className="w-5 h-5" />, description: "Real-time web search" },
-  { id: "reasoning", name: "Reasoning", icon: <Brain className="w-5 h-5" />, description: "Advanced reasoning" },
-  { id: "execution", name: "Execution", icon: <Play className="w-5 h-5" />, description: "Code execution" },
-  { id: "data", name: "Data Analysis", icon: <Cpu className="w-5 h-5" />, description: "Data analysis & visualization" },
-  { id: "creative", name: "Creative", icon: <Wand2 className="w-5 h-5" />, description: "Creative writing" },
-  { id: "voice", name: "Voice", icon: <Mic className="w-5 h-5" />, description: "Voice interaction" },
-  { id: "vision", name: "Vision", icon: <Eye className="w-5 h-5" />, description: "Visual understanding" },
+  {
+    id: "chat",
+    name: "Chat",
+    icon: <MessageSquare className="w-5 h-5" />,
+    description: "Conversational AI",
+  },
+  {
+    id: "code",
+    name: "Code",
+    icon: <Code className="w-5 h-5" />,
+    description: "Code generation & debugging",
+  },
+  {
+    id: "image",
+    name: "Image",
+    icon: <Image className="w-5 h-5" />,
+    description: "Image generation & analysis",
+  },
+  {
+    id: "video",
+    name: "Video",
+    icon: <Video className="w-5 h-5" />,
+    description: "Video understanding",
+  },
+  {
+    id: "document",
+    name: "Document",
+    icon: <FileText className="w-5 h-5" />,
+    description: "Document analysis",
+  },
+  {
+    id: "web",
+    name: "Web Search",
+    icon: <Globe className="w-5 h-5" />,
+    description: "Real-time web search",
+  },
+  {
+    id: "reasoning",
+    name: "Reasoning",
+    icon: <Brain className="w-5 h-5" />,
+    description: "Advanced reasoning",
+  },
+  {
+    id: "execution",
+    name: "Execution",
+    icon: <Play className="w-5 h-5" />,
+    description: "Code execution",
+  },
+  {
+    id: "data",
+    name: "Data Analysis",
+    icon: <Cpu className="w-5 h-5" />,
+    description: "Data analysis & visualization",
+  },
+  {
+    id: "creative",
+    name: "Creative",
+    icon: <Wand2 className="w-5 h-5" />,
+    description: "Creative writing",
+  },
+  {
+    id: "voice",
+    name: "Voice",
+    icon: <Mic className="w-5 h-5" />,
+    description: "Voice interaction",
+  },
+  {
+    id: "vision",
+    name: "Vision",
+    icon: <Eye className="w-5 h-5" />,
+    description: "Visual understanding",
+  },
 ];
 
 export default function HopeAIMeta() {
@@ -59,7 +155,9 @@ export default function HopeAIMeta() {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConversation, setCurrentConversation] = useState<string | null>(null);
+  const [currentConversation, setCurrentConversation] = useState<string | null>(
+    null
+  );
   const [showSettings, setShowSettings] = useState(false);
   const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(2048);
@@ -81,7 +179,7 @@ export default function HopeAIMeta() {
       role: "user",
       content: input,
       timestamp: Date.now(),
-      capability: selectedCapability
+      capability: selectedCapability,
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -283,7 +381,7 @@ Analyzing visual content for: ${input}
 - GIF, TIFF
 - Video frames
 
-Upload an image to analyze!`
+Upload an image to analyze!`,
       };
 
       responseContent = responses[selectedCapability] || responses.chat;
@@ -297,8 +395,8 @@ Upload an image to analyze!`
         metadata: {
           tokensUsed: Math.floor(Math.random() * 1000) + 100,
           thinkingTime: Math.floor(thinkingTime),
-          confidence: Math.random() * 0.3 + 0.85
-        }
+          confidence: Math.random() * 0.3 + 0.85,
+        },
       };
 
       setMessages(prev => [...prev, assistantMessage]);
@@ -311,7 +409,7 @@ Upload an image to analyze!`
           capability: selectedCapability,
           lastMessage: responseContent.substring(0, 100),
           timestamp: Date.now(),
-          messageCount: 2
+          messageCount: 2,
         };
         setConversations(prev => [newConv, ...prev]);
         setCurrentConversation(newConv.id);
@@ -426,10 +524,15 @@ Upload an image to analyze!`
               onClick={() => setShowSidebar(!showSidebar)}
               className="text-slate-400"
             >
-              {showSidebar ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {showSidebar ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
             </Button>
             <h2 className="text-lg font-semibold text-white">
-              {CAPABILITIES.find(c => c.id === selectedCapability)?.name || "Hope AI"}
+              {CAPABILITIES.find(c => c.id === selectedCapability)?.name ||
+                "Hope AI"}
             </h2>
           </div>
           <Button
@@ -448,7 +551,9 @@ Upload an image to analyze!`
             <div className="max-w-6xl mx-auto">
               <div className="mb-8">
                 <h1 className="text-4xl font-bold text-white mb-2">Hope AI</h1>
-                <p className="text-slate-400">Powered by advanced AI - Better than Meta AI</p>
+                <p className="text-slate-400">
+                  Powered by advanced AI - Better than Meta AI
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -467,7 +572,9 @@ Upload an image to analyze!`
                         <div className="text-blue-400">{cap.icon}</div>
                         <h3 className="font-semibold text-white">{cap.name}</h3>
                       </div>
-                      <p className="text-sm text-slate-400">{cap.description}</p>
+                      <p className="text-sm text-slate-400">
+                        {cap.description}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}
@@ -481,7 +588,10 @@ Upload an image to analyze!`
           <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-4xl mx-auto space-y-4">
               {messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
                   <div
                     className={`max-w-2xl px-4 py-3 rounded-lg ${
                       msg.role === "user"
@@ -504,8 +614,14 @@ Upload an image to analyze!`
                   <div className="bg-slate-800 text-slate-300 px-4 py-3 rounded-lg border border-slate-700">
                     <div className="flex gap-2">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                      <div
+                        className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      />
+                      <div
+                        className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -545,7 +661,7 @@ Upload an image to analyze!`
                 { icon: <Upload className="w-4 h-4" />, label: "Upload" },
                 { icon: <Mic className="w-4 h-4" />, label: "Voice" },
                 { icon: <Image className="w-4 h-4" />, label: "Image" },
-                { icon: <FileCode className="w-4 h-4" />, label: "Code" }
+                { icon: <FileCode className="w-4 h-4" />, label: "Code" },
               ].map((btn, idx) => (
                 <Button
                   key={idx}

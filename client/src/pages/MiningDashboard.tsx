@@ -1,9 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Play, Pause, TrendingUp, Zap, Coins, Activity, DollarSign, Cpu, GitBranch, Wallet, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import {
+  Play,
+  Pause,
+  TrendingUp,
+  Zap,
+  Coins,
+  Activity,
+  DollarSign,
+  Cpu,
+  GitBranch,
+  Wallet,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 
 interface MiningStatus {
   isRunning: boolean;
@@ -27,7 +60,7 @@ interface MiningSession {
   id: string;
   startTime: number;
   endTime?: number;
-  status: 'active' | 'completed' | 'failed';
+  status: "active" | "completed" | "failed";
   coinsGenerated: number;
   rewardsSent: number;
   poolsUsed: string[];
@@ -46,32 +79,32 @@ export default function MiningDashboard() {
   // Fetch mining status
   const fetchStatus = async () => {
     try {
-      const response = await fetch('/api/mining/status');
-      if (!response.ok) throw new Error('Failed to fetch status');
+      const response = await fetch("/api/mining/status");
+      if (!response.ok) throw new Error("Failed to fetch status");
       const data = await response.json();
       setStatus(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   // Fetch mining statistics
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/mining/stats');
-      if (!response.ok) throw new Error('Failed to fetch stats');
+      const response = await fetch("/api/mining/stats");
+      if (!response.ok) throw new Error("Failed to fetch stats");
       const data = await response.json();
       setStats(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   // Fetch session history
   const fetchSessions = async () => {
     try {
-      const response = await fetch('/api/mining/sessions?limit=50');
-      if (!response.ok) throw new Error('Failed to fetch sessions');
+      const response = await fetch("/api/mining/sessions?limit=50");
+      if (!response.ok) throw new Error("Failed to fetch sessions");
       const data = await response.json();
       setSessions(data.sessions);
 
@@ -83,40 +116,40 @@ export default function MiningDashboard() {
       }));
       setChartData(chartData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   // Start mining
   const startMining = async () => {
     try {
-      const response = await fetch('/api/mining/start', { method: 'POST' });
-      if (!response.ok) throw new Error('Failed to start mining');
+      const response = await fetch("/api/mining/start", { method: "POST" });
+      if (!response.ok) throw new Error("Failed to start mining");
       fetchStatus();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   // Stop mining
   const stopMining = async () => {
     try {
-      const response = await fetch('/api/mining/stop', { method: 'POST' });
-      if (!response.ok) throw new Error('Failed to stop mining');
+      const response = await fetch("/api/mining/stop", { method: "POST" });
+      if (!response.ok) throw new Error("Failed to stop mining");
       fetchStatus();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   // Real-time earnings simulation
   const [usdValue, setUsdValue] = useState(0);
   const [cryptoBreakdown, setCryptoBreakdown] = useState([
-    { name: 'BTC', value: 0.0045, color: '#F7931A' },
-    { name: 'ETH', value: 0.082, color: '#627EEA' },
-    { name: 'SOL', value: 1.23, color: '#14F195' },
-    { name: 'DOGE', value: 234.5, color: '#BA9F33' },
-    { name: 'TRUMP', value: 156.8, color: '#FF6B6B' },
+    { name: "BTC", value: 0.0045, color: "#F7931A" },
+    { name: "ETH", value: 0.082, color: "#627EEA" },
+    { name: "SOL", value: 1.23, color: "#14F195" },
+    { name: "DOGE", value: 234.5, color: "#BA9F33" },
+    { name: "TRUMP", value: 156.8, color: "#FF6B6B" },
   ]);
 
   // Initial load and polling
@@ -135,7 +168,7 @@ export default function MiningDashboard() {
 
     // Real-time USD value update
     const usdInterval = setInterval(() => {
-      setUsdValue((prev) => prev + Math.random() * 50);
+      setUsdValue(prev => prev + Math.random() * 50);
     }, 5000);
 
     return () => {
@@ -160,7 +193,9 @@ export default function MiningDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">⛏️ Mining Dashboard</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">
+            ⛏️ Mining Dashboard
+          </h1>
           <p className="text-slate-400">24/7 Autonomous Crypto Mining System</p>
         </div>
 
@@ -186,13 +221,20 @@ export default function MiningDashboard() {
                   Stop Mining
                 </Button>
               ) : (
-                <Button onClick={startMining} size="lg" className="bg-green-600 hover:bg-green-700">
+                <Button
+                  onClick={startMining}
+                  size="lg"
+                  className="bg-green-600 hover:bg-green-700"
+                >
                   <Play className="w-4 h-4 mr-2" />
                   Start Mining
                 </Button>
               )}
-              <Badge variant={status?.isRunning ? 'default' : 'secondary'} className="text-base py-2 px-4">
-                {status?.isRunning ? '🟢 MINING ACTIVE' : '🔴 MINING INACTIVE'}
+              <Badge
+                variant={status?.isRunning ? "default" : "secondary"}
+                className="text-base py-2 px-4"
+              >
+                {status?.isRunning ? "🟢 MINING ACTIVE" : "🔴 MINING INACTIVE"}
               </Badge>
             </div>
           </CardContent>
@@ -209,7 +251,9 @@ export default function MiningDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-cyan-500">${usdValue.toFixed(2)}</div>
+              <div className="text-3xl font-bold text-cyan-500">
+                ${usdValue.toFixed(2)}
+              </div>
               <p className="text-slate-400 text-sm mt-1">Real-time</p>
             </CardContent>
           </Card>
@@ -223,7 +267,9 @@ export default function MiningDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-yellow-500">{stats?.totalCoinsGenerated.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-yellow-500">
+                {stats?.totalCoinsGenerated.toLocaleString()}
+              </div>
               <p className="text-slate-400 text-sm mt-1">Generated</p>
             </CardContent>
           </Card>
@@ -237,7 +283,9 @@ export default function MiningDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-500">${stats?.totalRewardsSent.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-green-500">
+                ${stats?.totalRewardsSent.toLocaleString()}
+              </div>
               <p className="text-slate-400 text-sm mt-1">To Admin Wallet</p>
             </CardContent>
           </Card>
@@ -265,7 +313,9 @@ export default function MiningDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-orange-500">{stats?.totalSessions}</div>
+              <div className="text-3xl font-bold text-orange-500">
+                {stats?.totalSessions}
+              </div>
               <p className="text-slate-400 text-sm mt-1">Completed</p>
             </CardContent>
           </Card>
@@ -274,12 +324,22 @@ export default function MiningDashboard() {
         {/* Crypto Breakdown */}
         <Card className="mb-6 bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">Crypto Earnings Breakdown</CardTitle>
+            <CardTitle className="text-white">
+              Crypto Earnings Breakdown
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie data={cryptoBreakdown} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} dataKey="value">
+                <Pie
+                  data={cryptoBreakdown}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
                   {cryptoBreakdown.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
@@ -288,11 +348,18 @@ export default function MiningDashboard() {
               </PieChart>
             </ResponsiveContainer>
             <div className="grid grid-cols-5 gap-2 mt-4">
-              {cryptoBreakdown.map((crypto) => (
+              {cryptoBreakdown.map(crypto => (
                 <div key={crypto.name} className="text-center">
-                  <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ backgroundColor: crypto.color }} />
-                  <p className="text-xs font-semibold text-white">{crypto.name}</p>
-                  <p className="text-xs text-slate-400">${(crypto.value * 1000).toFixed(0)}</p>
+                  <div
+                    className="w-3 h-3 rounded-full mx-auto mb-1"
+                    style={{ backgroundColor: crypto.color }}
+                  />
+                  <p className="text-xs font-semibold text-white">
+                    {crypto.name}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    ${(crypto.value * 1000).toFixed(0)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -304,7 +371,9 @@ export default function MiningDashboard() {
           {/* Coins Generated Chart */}
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
-              <CardTitle className="text-white">Coins Generated (Last 50 Sessions)</CardTitle>
+              <CardTitle className="text-white">
+                Coins Generated (Last 50 Sessions)
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -312,9 +381,19 @@ export default function MiningDashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
                   <XAxis stroke="#94a3b8" />
                   <YAxis stroke="#94a3b8" />
-                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569' }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e293b",
+                      border: "1px solid #475569",
+                    }}
+                  />
                   <Legend />
-                  <Line type="monotone" dataKey="coins" stroke="#eab308" strokeWidth={2} />
+                  <Line
+                    type="monotone"
+                    dataKey="coins"
+                    stroke="#eab308"
+                    strokeWidth={2}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -323,7 +402,9 @@ export default function MiningDashboard() {
           {/* Rewards Sent Chart */}
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
-              <CardTitle className="text-white">Rewards Sent (Last 50 Sessions)</CardTitle>
+              <CardTitle className="text-white">
+                Rewards Sent (Last 50 Sessions)
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -331,7 +412,12 @@ export default function MiningDashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
                   <XAxis stroke="#94a3b8" />
                   <YAxis stroke="#94a3b8" />
-                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569' }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e293b",
+                      border: "1px solid #475569",
+                    }}
+                  />
                   <Legend />
                   <Bar dataKey="rewards" fill="#22c55e" />
                 </BarChart>
@@ -348,17 +434,28 @@ export default function MiningDashboard() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <p className="text-slate-400 text-sm mb-1">Average Coins/Session</p>
-                <p className="text-2xl font-bold text-white">{stats?.averageCoinsPerSession.toFixed(2)}</p>
+                <p className="text-slate-400 text-sm mb-1">
+                  Average Coins/Session
+                </p>
+                <p className="text-2xl font-bold text-white">
+                  {stats?.averageCoinsPerSession.toFixed(2)}
+                </p>
               </div>
               <div>
                 <p className="text-slate-400 text-sm mb-1">Uptime</p>
-                <p className="text-2xl font-bold text-white">{Math.floor((stats?.uptime || 0) / 3600000)} hours</p>
+                <p className="text-2xl font-bold text-white">
+                  {Math.floor((stats?.uptime || 0) / 3600000)} hours
+                </p>
               </div>
               <div>
                 <p className="text-slate-400 text-sm mb-1">Mining Efficiency</p>
                 <p className="text-2xl font-bold text-white">
-                  {((stats?.totalRewardsSent || 0) / (stats?.totalCoinsGenerated || 1) * 100).toFixed(1)}%
+                  {(
+                    ((stats?.totalRewardsSent || 0) /
+                      (stats?.totalCoinsGenerated || 1)) *
+                    100
+                  ).toFixed(1)}
+                  %
                 </p>
               </div>
             </div>
@@ -376,28 +473,55 @@ export default function MiningDashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-700">
-                    <th className="text-left py-3 px-4 text-slate-300">Session ID</th>
-                    <th className="text-left py-3 px-4 text-slate-300">Status</th>
-                    <th className="text-right py-3 px-4 text-slate-300">Coins</th>
-                    <th className="text-right py-3 px-4 text-slate-300">Rewards</th>
-                    <th className="text-right py-3 px-4 text-slate-300">Pools</th>
+                    <th className="text-left py-3 px-4 text-slate-300">
+                      Session ID
+                    </th>
+                    <th className="text-left py-3 px-4 text-slate-300">
+                      Status
+                    </th>
+                    <th className="text-right py-3 px-4 text-slate-300">
+                      Coins
+                    </th>
+                    <th className="text-right py-3 px-4 text-slate-300">
+                      Rewards
+                    </th>
+                    <th className="text-right py-3 px-4 text-slate-300">
+                      Pools
+                    </th>
                     <th className="text-left py-3 px-4 text-slate-300">Time</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sessions.slice(0, 10).map((session) => (
-                    <tr key={session.id} className="border-b border-slate-700 hover:bg-slate-700/50">
-                      <td className="py-3 px-4 text-slate-300 font-mono text-xs">{session.id.slice(0, 20)}...</td>
+                  {sessions.slice(0, 10).map(session => (
+                    <tr
+                      key={session.id}
+                      className="border-b border-slate-700 hover:bg-slate-700/50"
+                    >
+                      <td className="py-3 px-4 text-slate-300 font-mono text-xs">
+                        {session.id.slice(0, 20)}...
+                      </td>
                       <td className="py-3 px-4">
                         <Badge
-                          variant={session.status === 'completed' ? 'default' : session.status === 'failed' ? 'destructive' : 'secondary'}
+                          variant={
+                            session.status === "completed"
+                              ? "default"
+                              : session.status === "failed"
+                                ? "destructive"
+                                : "secondary"
+                          }
                         >
                           {session.status}
                         </Badge>
                       </td>
-                      <td className="py-3 px-4 text-right text-yellow-500 font-semibold">{session.coinsGenerated}</td>
-                      <td className="py-3 px-4 text-right text-green-500 font-semibold">{session.rewardsSent}</td>
-                      <td className="py-3 px-4 text-right text-slate-300">{session.poolsUsed.length}</td>
+                      <td className="py-3 px-4 text-right text-yellow-500 font-semibold">
+                        {session.coinsGenerated}
+                      </td>
+                      <td className="py-3 px-4 text-right text-green-500 font-semibold">
+                        {session.rewardsSent}
+                      </td>
+                      <td className="py-3 px-4 text-right text-slate-300">
+                        {session.poolsUsed.length}
+                      </td>
                       <td className="py-3 px-4 text-slate-400 text-xs">
                         {new Date(session.startTime).toLocaleTimeString()}
                       </td>

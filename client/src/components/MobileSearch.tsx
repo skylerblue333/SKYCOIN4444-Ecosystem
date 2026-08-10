@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, X, Zap, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/useMobile';
+import React, { useState, useRef, useEffect } from "react";
+import { Search, X, Zap, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/useMobile";
 
 interface SearchResult {
   id: string;
@@ -15,51 +15,51 @@ interface SearchResult {
 export function MobileSearch() {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const mockResults: SearchResult[] = [
     {
-      id: '1',
-      title: 'Mining Dashboard',
-      description: 'View real-time mining stats',
-      category: 'Mining',
-      url: '/miner-dashboard',
-      icon: '⛏️',
+      id: "1",
+      title: "Mining Dashboard",
+      description: "View real-time mining stats",
+      category: "Mining",
+      url: "/miner-dashboard",
+      icon: "⛏️",
     },
     {
-      id: '2',
-      title: 'Trading Terminal',
-      description: 'Trade cryptocurrencies',
-      category: 'Trading',
-      url: '/trading',
-      icon: '📈',
+      id: "2",
+      title: "Trading Terminal",
+      description: "Trade cryptocurrencies",
+      category: "Trading",
+      url: "/trading",
+      icon: "📈",
     },
     {
-      id: '3',
-      title: 'Social Feed',
-      description: 'Connect with community',
-      category: 'Social',
-      url: '/social',
-      icon: '💬',
+      id: "3",
+      title: "Social Feed",
+      description: "Connect with community",
+      category: "Social",
+      url: "/social",
+      icon: "💬",
     },
     {
-      id: '4',
-      title: 'Marketplace',
-      description: 'Buy and sell items',
-      category: 'Marketplace',
-      url: '/marketplace',
-      icon: '🛍️',
+      id: "4",
+      title: "Marketplace",
+      description: "Buy and sell items",
+      category: "Marketplace",
+      url: "/marketplace",
+      icon: "🛍️",
     },
     {
-      id: '5',
-      title: 'Gaming Hub',
-      description: 'Play and earn rewards',
-      category: 'Gaming',
-      url: '/gaming',
-      icon: '🎮',
+      id: "5",
+      title: "Gaming Hub",
+      description: "Play and earn rewards",
+      category: "Gaming",
+      url: "/gaming",
+      icon: "🎮",
     },
   ];
 
@@ -70,9 +70,10 @@ export function MobileSearch() {
       return;
     }
 
-    const filtered = mockResults.filter(r =>
-      r.title.toLowerCase().includes(query.toLowerCase()) ||
-      r.description.toLowerCase().includes(query.toLowerCase())
+    const filtered = mockResults.filter(
+      r =>
+        r.title.toLowerCase().includes(query.toLowerCase()) ||
+        r.description.toLowerCase().includes(query.toLowerCase())
     );
 
     setResults(filtered);
@@ -81,19 +82,19 @@ export function MobileSearch() {
 
   // Handle keyboard navigation (mobile)
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex(Math.min(selectedIndex + 1, results.length - 1));
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex(Math.max(selectedIndex - 1, 0));
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       e.preventDefault();
       if (results[selectedIndex]) {
         window.location.href = results[selectedIndex].url;
         setIsOpen(false);
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsOpen(false);
     }
   };
@@ -147,7 +148,7 @@ export function MobileSearch() {
                 type="text"
                 placeholder="Search features..."
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={e => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="flex-1 bg-transparent outline-none text-base"
               />
@@ -156,7 +157,7 @@ export function MobileSearch() {
                 size="sm"
                 onClick={() => {
                   setIsOpen(false);
-                  setQuery('');
+                  setQuery("");
                 }}
               >
                 <X className="w-5 h-5" />
@@ -172,7 +173,9 @@ export function MobileSearch() {
               </div>
             ) : results.length === 0 ? (
               <div className="p-4">
-                <p className="text-xs text-muted-foreground mb-4">Popular features</p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Popular features
+                </p>
                 <div className="space-y-2">
                   {mockResults.slice(0, 5).map((result, idx) => (
                     <button
@@ -186,8 +189,12 @@ export function MobileSearch() {
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{result.icon}</span>
                         <div className="flex-1">
-                          <div className="font-medium text-sm">{result.title}</div>
-                          <div className="text-xs text-muted-foreground">{result.description}</div>
+                          <div className="font-medium text-sm">
+                            {result.title}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {result.description}
+                          </div>
                         </div>
                         <ArrowRight className="w-4 h-4 text-muted-foreground" />
                       </div>
@@ -204,25 +211,27 @@ export function MobileSearch() {
                       window.location.href = result.url;
                       setIsOpen(false);
                     }}
-                    onTouchStart={(e) => {
+                    onTouchStart={e => {
                       handleTouchStart.current = e.touches[0].clientX;
                     }}
                     onTouchEnd={handleTouchEnd}
                     className={`w-full p-4 rounded-lg transition-colors text-left ${
                       selectedIndex === idx
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted/50 hover:bg-muted'
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/50 hover:bg-muted"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{result.icon}</span>
                       <div className="flex-1">
-                        <div className="font-medium text-sm">{result.title}</div>
-                        <div className="text-xs opacity-75">{result.description}</div>
+                        <div className="font-medium text-sm">
+                          {result.title}
+                        </div>
+                        <div className="text-xs opacity-75">
+                          {result.description}
+                        </div>
                       </div>
-                      {selectedIndex === idx && (
-                        <Zap className="w-4 h-4" />
-                      )}
+                      {selectedIndex === idx && <Zap className="w-4 h-4" />}
                     </div>
                   </button>
                 ))}
@@ -278,12 +287,36 @@ export function MobileCommandPalette() {
 
             <div className="grid grid-cols-2 gap-2">
               {[
-                { title: 'Start Mining', icon: '⛏️', action: () => window.location.href = '/miner-dashboard' },
-                { title: 'Trade', icon: '📈', action: () => window.location.href = '/trading' },
-                { title: 'Social', icon: '💬', action: () => window.location.href = '/social' },
-                { title: 'Gaming', icon: '🎮', action: () => window.location.href = '/gaming' },
-                { title: 'Marketplace', icon: '🛍️', action: () => window.location.href = '/marketplace' },
-                { title: 'Governance', icon: '🗳️', action: () => window.location.href = '/governance' },
+                {
+                  title: "Start Mining",
+                  icon: "⛏️",
+                  action: () => (window.location.href = "/miner-dashboard"),
+                },
+                {
+                  title: "Trade",
+                  icon: "📈",
+                  action: () => (window.location.href = "/trading"),
+                },
+                {
+                  title: "Social",
+                  icon: "💬",
+                  action: () => (window.location.href = "/social"),
+                },
+                {
+                  title: "Gaming",
+                  icon: "🎮",
+                  action: () => (window.location.href = "/gaming"),
+                },
+                {
+                  title: "Marketplace",
+                  icon: "🛍️",
+                  action: () => (window.location.href = "/marketplace"),
+                },
+                {
+                  title: "Governance",
+                  icon: "🗳️",
+                  action: () => (window.location.href = "/governance"),
+                },
               ].map((action, idx) => (
                 <button
                   key={idx}

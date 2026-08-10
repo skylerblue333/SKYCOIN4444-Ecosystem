@@ -1,17 +1,23 @@
 // @ts-nocheck
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/_core/hooks/useAuth';
-import { trpc } from '@/lib/trpc';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 
 const AnalyticsPage: React.FC = () => {
-  
-  const [activeTab, setActiveTab] = useState<'user' | 'platform' | 'trading' | 'social' | 'marketplace' | 'learning'>('user');
+  const [activeTab, setActiveTab] = useState<
+    "user" | "platform" | "trading" | "social" | "marketplace" | "learning"
+  >("user");
 
   // Queries
-  const userAnalyticsQuery = trpc.analytics.dashboard.useQuery(undefined, { enabled: isAuthenticated });
-  const platformAnalyticsQuery = trpc.analytics.platformStats.useQuery(undefined, { enabled: true });
+  const userAnalyticsQuery = trpc.analytics.dashboard.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const platformAnalyticsQuery = trpc.analytics.platformStats.useQuery(
+    undefined,
+    { enabled: true }
+  );
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
@@ -21,14 +27,23 @@ const AnalyticsPage: React.FC = () => {
 
       {/* Tabs */}
       <div className="flex gap-2 border-b overflow-x-auto">
-        {(['user', 'platform', 'trading', 'social', 'marketplace', 'learning'] as const).map((tab) => (
+        {(
+          [
+            "user",
+            "platform",
+            "trading",
+            "social",
+            "marketplace",
+            "learning",
+          ] as const
+        ).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 font-medium capitalize whitespace-nowrap ${
               activeTab === tab
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab}
@@ -37,7 +52,7 @@ const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* User Analytics */}
-      {activeTab === 'user' && isAuthenticated && (
+      {activeTab === "user" && isAuthenticated && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {userAnalyticsQuery.isLoading ? (
             <>
@@ -52,47 +67,69 @@ const AnalyticsPage: React.FC = () => {
                   <CardTitle className="text-sm font-medium">Posts</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{userAnalyticsQuery.data.summary?.posts || 0}</p>
+                  <p className="text-2xl font-bold">
+                    {userAnalyticsQuery.data.summary?.posts || 0}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Followers</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Followers
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{userAnalyticsQuery.data.summary?.followers || 0}</p>
+                  <p className="text-2xl font-bold">
+                    {userAnalyticsQuery.data.summary?.followers || 0}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Engagement</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Engagement
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{userAnalyticsQuery.data.summary?.engagement || 0}%</p>
+                  <p className="text-2xl font-bold">
+                    {userAnalyticsQuery.data.summary?.engagement || 0}%
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Wallet Balance
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">${userAnalyticsQuery.data.summary?.walletBalance || 0}</p>
+                  <p className="text-2xl font-bold">
+                    ${userAnalyticsQuery.data.summary?.walletBalance || 0}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Games Played</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Games Played
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{userAnalyticsQuery.data.summary?.gamesPlayed || 0}</p>
+                  <p className="text-2xl font-bold">
+                    {userAnalyticsQuery.data.summary?.gamesPlayed || 0}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Courses Enrolled</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Courses Enrolled
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{userAnalyticsQuery.data.summary?.coursesEnrolled || 0}</p>
+                  <p className="text-2xl font-bold">
+                    {userAnalyticsQuery.data.summary?.coursesEnrolled || 0}
+                  </p>
                 </CardContent>
               </Card>
             </>
@@ -101,7 +138,7 @@ const AnalyticsPage: React.FC = () => {
       )}
 
       {/* Platform Analytics */}
-      {activeTab === 'platform' && (
+      {activeTab === "platform" && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {platformAnalyticsQuery.isLoading ? (
             <>
@@ -113,42 +150,62 @@ const AnalyticsPage: React.FC = () => {
             <>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Users
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{platformAnalyticsQuery.data.users || 0}</p>
+                  <p className="text-2xl font-bold">
+                    {platformAnalyticsQuery.data.users || 0}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Posts
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{platformAnalyticsQuery.data.features || 0}</p>
+                  <p className="text-2xl font-bold">
+                    {platformAnalyticsQuery.data.features || 0}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Marketplace Volume</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Marketplace Volume
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">${platformAnalyticsQuery.data.marketplaceVolume || 0}</p>
+                  <p className="text-2xl font-bold">
+                    ${platformAnalyticsQuery.data.marketplaceVolume || 0}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Donated</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Donated
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">${platformAnalyticsQuery.data.totalDonated || 0}</p>
+                  <p className="text-2xl font-bold">
+                    ${platformAnalyticsQuery.data.totalDonated || 0}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Software Value</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Software Value
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">${platformAnalyticsQuery.data.softwareValue || 0}</p>
+                  <p className="text-2xl font-bold">
+                    ${platformAnalyticsQuery.data.softwareValue || 0}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
@@ -156,7 +213,9 @@ const AnalyticsPage: React.FC = () => {
                   <CardTitle className="text-sm font-medium">Rarity</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{platformAnalyticsQuery.data.rarity}</p>
+                  <p className="text-2xl font-bold">
+                    {platformAnalyticsQuery.data.rarity}
+                  </p>
                 </CardContent>
               </Card>
             </>
@@ -165,7 +224,7 @@ const AnalyticsPage: React.FC = () => {
       )}
 
       {/* Trading Analytics */}
-      {activeTab === 'trading' && isAuthenticated && (
+      {activeTab === "trading" && isAuthenticated && (
         <Card>
           <CardHeader>
             <CardTitle>Trading Performance</CardTitle>
@@ -194,7 +253,7 @@ const AnalyticsPage: React.FC = () => {
       )}
 
       {/* Social Analytics */}
-      {activeTab === 'social' && isAuthenticated && (
+      {activeTab === "social" && isAuthenticated && (
         <Card>
           <CardHeader>
             <CardTitle>Social Performance</CardTitle>
@@ -223,7 +282,7 @@ const AnalyticsPage: React.FC = () => {
       )}
 
       {/* Marketplace Analytics */}
-      {activeTab === 'marketplace' && isAuthenticated && (
+      {activeTab === "marketplace" && isAuthenticated && (
         <Card>
           <CardHeader>
             <CardTitle>Marketplace Performance</CardTitle>
@@ -252,7 +311,7 @@ const AnalyticsPage: React.FC = () => {
       )}
 
       {/* Learning Analytics */}
-      {activeTab === 'learning' && isAuthenticated && (
+      {activeTab === "learning" && isAuthenticated && (
         <Card>
           <CardHeader>
             <CardTitle>Learning Progress</CardTitle>

@@ -4,7 +4,10 @@ import { TRPCError } from "@trpc/server";
 import { invokeLLM } from "./_core/llm";
 
 // Translation cache to reduce API calls
-const translationCache = new Map<string, { result: string; timestamp: number }>();
+const translationCache = new Map<
+  string,
+  { result: string; timestamp: number }
+>();
 const CACHE_TTL = 3600000; // 1 hour
 
 export const translationRouter = router({
@@ -53,7 +56,8 @@ export const translationRouter = router({
         });
 
         const messageContent = response.choices[0]?.message?.content;
-        const translatedText = typeof messageContent === "string" ? messageContent : input.text;
+        const translatedText =
+          typeof messageContent === "string" ? messageContent : input.text;
 
         // Cache the result
         translationCache.set(cacheKey, {
@@ -103,7 +107,8 @@ export const translationRouter = router({
         });
 
         const messageContent = response.choices[0]?.message?.content;
-        const result = typeof messageContent === "string" ? messageContent : "Unknown";
+        const result =
+          typeof messageContent === "string" ? messageContent : "Unknown";
 
         // Parse the response
         const match = result.match(/(\w+)\s*\((\w{2})\)/);
@@ -141,7 +146,7 @@ export const translationRouter = router({
     .mutation(async ({ input }) => {
       try {
         const translations = await Promise.all(
-          input.texts.map(async (text) => {
+          input.texts.map(async text => {
             const response = await invokeLLM({
               messages: [
                 {
@@ -156,7 +161,8 @@ export const translationRouter = router({
             });
 
             const messageContent = response.choices[0]?.message?.content;
-            const translated = typeof messageContent === "string" ? messageContent : text;
+            const translated =
+              typeof messageContent === "string" ? messageContent : text;
 
             return {
               original: text,
@@ -234,7 +240,8 @@ export const translationRouter = router({
         });
 
         const messageContent = response.choices[0]?.message?.content;
-        const resultStr = typeof messageContent === "string" ? messageContent : "";
+        const resultStr =
+          typeof messageContent === "string" ? messageContent : "";
         const parts = resultStr.split("|||");
 
         const translation = parts[0]?.trim() || "";
@@ -299,7 +306,7 @@ export const translationRouter = router({
     let totalSize = 0;
     let expiredEntries = 0;
 
-    translationCache.forEach((value) => {
+    translationCache.forEach(value => {
       totalSize += JSON.stringify(value).length;
       if (Date.now() - value.timestamp > CACHE_TTL) {
         expiredEntries++;

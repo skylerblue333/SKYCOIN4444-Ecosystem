@@ -99,11 +99,24 @@ export function generatePrintCatalog(): ArtPrint[] {
         currency: "USD",
         imageUrl: `https://placehold.co/800x800/1a0533/bf00ff?text=${encodeURIComponent(series)}+${edition}`,
         thumbnailUrl: `https://placehold.co/400x400/1a0533/bf00ff?text=${encodeURIComponent(series)}+${edition}`,
-        dimensions: ["8x10 in", "11x14 in", "16x20 in", "24x36 in"][Math.floor(Math.random() * 4)],
-        medium: ["Digital Print on Archival Paper", "Giclée on Canvas", "Metallic Print", "Fine Art Paper"][Math.floor(Math.random() * 4)],
+        dimensions: ["8x10 in", "11x14 in", "16x20 in", "24x36 in"][
+          Math.floor(Math.random() * 4)
+        ],
+        medium: [
+          "Digital Print on Archival Paper",
+          "Giclée on Canvas",
+          "Metallic Print",
+          "Fine Art Paper",
+        ][Math.floor(Math.random() * 4)],
         year: 2024 + Math.floor(Math.random() * 2),
         description: `Original signed limited edition print from the "${series}" series by Skyler Blue Spillers. Each print is hand-signed and comes with a Certificate of Authenticity (COA) with blockchain verification.`,
-        tags: [series.toLowerCase().replace(/\s+/g, "-"), "signed", "limited-edition", "digital-art", "skyler-blue-spillers"],
+        tags: [
+          series.toLowerCase().replace(/\s+/g, "-"),
+          "signed",
+          "limited-edition",
+          "digital-art",
+          "skyler-blue-spillers",
+        ],
         isSold: Math.random() < 0.15,
         coaHash,
       });
@@ -121,7 +134,8 @@ export const CODED_TOOLS: CodedTool[] = [
     id: "tool-001",
     name: "ShadowBot Trading Engine",
     category: "bot",
-    description: "Automated crypto trading bot with SKY444, BTC, ETH support. Includes backtesting, risk management, and Telegram alerts.",
+    description:
+      "Automated crypto trading bot with SKY444, BTC, ETH support. Includes backtesting, risk management, and Telegram alerts.",
     price: 299,
     currency: "USD",
     language: "Python",
@@ -141,7 +155,8 @@ export const CODED_TOOLS: CodedTool[] = [
     id: "tool-002",
     name: "Social Media Automation Suite",
     category: "bot",
-    description: "Post scheduler, auto-reply, hashtag optimizer, and analytics aggregator for Twitter/X, Instagram, TikTok.",
+    description:
+      "Post scheduler, auto-reply, hashtag optimizer, and analytics aggregator for Twitter/X, Instagram, TikTok.",
     price: 149,
     currency: "USD",
     language: "TypeScript",
@@ -161,7 +176,8 @@ export const CODED_TOOLS: CodedTool[] = [
     id: "tool-003",
     name: "Web3 Wallet Scanner",
     category: "script",
-    description: "On-chain wallet analyzer. Track whale movements, token flows, and suspicious activity across 8 chains.",
+    description:
+      "On-chain wallet analyzer. Track whale movements, token flows, and suspicious activity across 8 chains.",
     price: 99,
     currency: "USD",
     language: "JavaScript",
@@ -181,7 +197,8 @@ export const CODED_TOOLS: CodedTool[] = [
     id: "tool-004",
     name: "ShadowChat React Component Library",
     category: "library",
-    description: "50+ production-ready React components from the ShadowChat platform. Dark theme, TypeScript, Tailwind CSS.",
+    description:
+      "50+ production-ready React components from the ShadowChat platform. Dark theme, TypeScript, Tailwind CSS.",
     price: 79,
     currency: "USD",
     language: "TypeScript/React",
@@ -201,7 +218,8 @@ export const CODED_TOOLS: CodedTool[] = [
     id: "tool-005",
     name: "AI Content Moderation API",
     category: "plugin",
-    description: "Drop-in content moderation API using LLMs. Detect hate speech, spam, NSFW, and misinformation at scale.",
+    description:
+      "Drop-in content moderation API using LLMs. Detect hate speech, spam, NSFW, and misinformation at scale.",
     price: 199,
     currency: "USD",
     language: "Node.js",
@@ -221,7 +239,8 @@ export const CODED_TOOLS: CodedTool[] = [
     id: "tool-006",
     name: "Crypto Portfolio Tracker Template",
     category: "template",
-    description: "Full-stack Next.js portfolio tracker with real-time prices, P&L charts, and tax reporting.",
+    description:
+      "Full-stack Next.js portfolio tracker with real-time prices, P&L charts, and tax reporting.",
     price: 129,
     currency: "USD",
     language: "TypeScript/Next.js",

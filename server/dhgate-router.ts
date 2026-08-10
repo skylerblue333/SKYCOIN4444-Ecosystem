@@ -9,31 +9,39 @@ const ADMIN_FEE_PERCENT = 44;
 
 const parseProduct = (p: typeof dhgateProducts.$inferSelect) => ({
   ...p,
-  price: parseFloat(p.price as unknown as string || "0"),
-  originalPrice: p.originalPrice ? parseFloat(p.originalPrice as unknown as string) : null,
-  rating: parseFloat(p.rating as unknown as string || "0"),
-  adminFeePercent: parseFloat(p.adminFeePercent as unknown as string || "44"),
-  shippingCost: parseFloat(p.shippingCost as unknown as string || "0"),
-  supplierRating: parseFloat(p.supplierRating as unknown as string || "0"),
+  price: parseFloat((p.price as unknown as string) || "0"),
+  originalPrice: p.originalPrice
+    ? parseFloat(p.originalPrice as unknown as string)
+    : null,
+  rating: parseFloat((p.rating as unknown as string) || "0"),
+  adminFeePercent: parseFloat((p.adminFeePercent as unknown as string) || "44"),
+  shippingCost: parseFloat((p.shippingCost as unknown as string) || "0"),
+  supplierRating: parseFloat((p.supplierRating as unknown as string) || "0"),
   tags: Array.isArray(p.tags) ? p.tags : [],
-  images: Array.isArray(p.images) ? p.images : (p.imageUrl ? [p.imageUrl] : []),
+  images: Array.isArray(p.images) ? p.images : p.imageUrl ? [p.imageUrl] : [],
 });
 
 // ─── DHgate Marketplace Router ────────────────────────────────────────────────
 export const dhgateRouter = router({
   // List products with optional category/search filter
   getProducts: publicProcedure
-    .input(z.object({
-      category: z.string().default("all"),
-      search: z.string().optional(),
-      sort: z.enum(["featured", "price_asc", "price_desc", "rating", "sold"]).default("featured"),
-      limit: z.number().min(1).max(100).default(20),
-      offset: z.number().min(0).default(0),
-    }))
+    .input(
+      z.object({
+        category: z.string().default("all"),
+        search: z.string().optional(),
+        sort: z
+          .enum(["featured", "price_asc", "price_desc", "rating", "sold"])
+          .default("featured"),
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
+      })
+    )
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) return [];
-      const conditions: ReturnType<typeof eq>[] = [eq(dhgateProducts.isActive, true)];
+      const conditions: ReturnType<typeof eq>[] = [
+        eq(dhgateProducts.isActive, true),
+      ];
       if (input.category && input.category !== "all") {
         conditions.push(eq(dhgateProducts.category, input.category));
       }
@@ -48,11 +56,20 @@ export const dhgateRouter = router({
       }
       let orderBy;
       switch (input.sort) {
-        case "price_asc": orderBy = asc(dhgateProducts.price); break;
-        case "price_desc": orderBy = desc(dhgateProducts.price); break;
-        case "rating": orderBy = desc(dhgateProducts.rating); break;
-        case "sold": orderBy = desc(dhgateProducts.soldCount); break;
-        default: orderBy = desc(dhgateProducts.soldCount);
+        case "price_asc":
+          orderBy = asc(dhgateProducts.price);
+          break;
+        case "price_desc":
+          orderBy = desc(dhgateProducts.price);
+          break;
+        case "rating":
+          orderBy = desc(dhgateProducts.rating);
+          break;
+        case "sold":
+          orderBy = desc(dhgateProducts.soldCount);
+          break;
+        default:
+          orderBy = desc(dhgateProducts.soldCount);
       }
       const products = await db
         .select()
@@ -73,7 +90,12 @@ export const dhgateRouter = router({
       const [product] = await db
         .select()
         .from(dhgateProducts)
-        .where(and(eq(dhgateProducts.id, input.id), eq(dhgateProducts.isActive, true)));
+        .where(
+          and(
+            eq(dhgateProducts.id, input.id),
+            eq(dhgateProducts.isActive, true)
+          )
+        );
       if (!product) throw new Error("Product not found");
       const reviews = await db
         .select()
@@ -146,25 +168,36 @@ export const dhgateRouter = router({
 
   // Place an order — auto-routes 44% to admin treasury
   placeOrder: publicProcedure
-    .input(z.object({
-      productId: z.string(),
-      quantity: z.number().min(1).max(99).default(1),
-      selectedColor: z.string().optional(),
-      selectedSize: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        productId: z.string(),
+        quantity: z.number().min(1).max(99).default(1),
+        selectedColor: z.string().optional(),
+        selectedSize: z.string().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("DB unavailable");
       const [product] = await db
         .select()
         .from(dhgateProducts)
-        .where(and(eq(dhgateProducts.id, input.productId), eq(dhgateProducts.isActive, true)));
+        .where(
+          and(
+            eq(dhgateProducts.id, input.productId),
+            eq(dhgateProducts.isActive, true)
+          )
+        );
       if (!product) throw new Error("Product not found");
 
-      const unitPrice = parseFloat(product.price as unknown as string || "0");
+      const unitPrice = parseFloat((product.price as unknown as string) || "0");
       const totalAmount = unitPrice * input.quantity;
-      const adminEarnings = parseFloat((totalAmount * ADMIN_FEE_PERCENT / 100).toFixed(2));
-      const supplierPayout = parseFloat((totalAmount - adminEarnings).toFixed(2));
+      const adminEarnings = parseFloat(
+        ((totalAmount * ADMIN_FEE_PERCENT) / 100).toFixed(2)
+      );
+      const supplierPayout = parseFloat(
+        (totalAmount - adminEarnings).toFixed(2)
+      );
       const orderId = `DHG-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
       await db.insert(dhgateOrders).values({
@@ -219,24 +252,33 @@ export const dhgateRouter = router({
   // Admin: get all orders with earnings summary
   getAdminOrders: protectedProcedure.query(async () => {
     const db = await getDb();
-    if (!db) return { orders: [], summary: { totalEarnings: 0, totalOrders: 0, pendingOrders: 0 } };
+    if (!db)
+      return {
+        orders: [],
+        summary: { totalEarnings: 0, totalOrders: 0, pendingOrders: 0 },
+      };
     const orders = await db
       .select()
       .from(dhgateOrders)
       .orderBy(desc(dhgateOrders.createdAt))
       .limit(200);
 
-    const totalEarnings = orders.reduce((sum, o) => sum + parseFloat(o.adminFee as unknown as string || "0"), 0);
+    const totalEarnings = orders.reduce(
+      (sum, o) => sum + parseFloat((o.adminFee as unknown as string) || "0"),
+      0
+    );
     const totalOrders = orders.length;
     const pendingOrders = orders.filter(o => o.status === "pending").length;
 
     return {
       orders: orders.map(o => ({
         ...o,
-        unitPrice: parseFloat(o.unitPrice as unknown as string || "0"),
-        totalPrice: parseFloat(o.totalPrice as unknown as string || "0"),
-        adminFee: parseFloat(o.adminFee as unknown as string || "0"),
-        supplierPayout: parseFloat(o.supplierPayout as unknown as string || "0"),
+        unitPrice: parseFloat((o.unitPrice as unknown as string) || "0"),
+        totalPrice: parseFloat((o.totalPrice as unknown as string) || "0"),
+        adminFee: parseFloat((o.adminFee as unknown as string) || "0"),
+        supplierPayout: parseFloat(
+          (o.supplierPayout as unknown as string) || "0"
+        ),
       })),
       summary: { totalEarnings, totalOrders, pendingOrders },
     };

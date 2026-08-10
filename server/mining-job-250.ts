@@ -1,27 +1,29 @@
-import { walletManager } from './secure-wallet';
-import { notifyOwner } from './_core/notification';
+import { walletManager } from "./secure-wallet";
+import { notifyOwner } from "./_core/notification";
 
 /**
  * Mining Job: Generate 250 coins
  * Simulates mining activity and credits admin wallet
  */
-export async function mineCoinsBatch(targetAmount: number = 250): Promise<void> {
+export async function mineCoinsBatch(
+  targetAmount: number = 250
+): Promise<void> {
   console.log(`[Mining Job] Starting mining job for ${targetAmount} coins...`);
 
   const adminWallet = process.env.ADMIN_WALLET_ADDRESS;
   if (!adminWallet) {
-    throw new Error('ADMIN_WALLET_ADDRESS not configured');
+    throw new Error("ADMIN_WALLET_ADDRESS not configured");
   }
 
   try {
     // Simulate mining multiple blocks
     // In production: actual mining pool integration
     const blockRewards = [
-      { coin: 'BTC', amount: 0.025, usdValue: 1544 },
-      { coin: 'ETH', amount: 0.5, usdValue: 858.5 },
-      { coin: 'SOL', amount: 15, usdValue: 1217.7 },
-      { coin: 'DOGE', amount: 500, usdValue: 37.6 },
-      { coin: 'TRUMP', amount: 100, usdValue: 842 },
+      { coin: "BTC", amount: 0.025, usdValue: 1544 },
+      { coin: "ETH", amount: 0.5, usdValue: 858.5 },
+      { coin: "SOL", amount: 15, usdValue: 1217.7 },
+      { coin: "DOGE", amount: 500, usdValue: 37.6 },
+      { coin: "TRUMP", amount: 100, usdValue: 842 },
     ];
 
     let totalMined = 0;
@@ -49,7 +51,9 @@ export async function mineCoinsBatch(targetAmount: number = 250): Promise<void> 
           timestamp: new Date().toISOString(),
         });
 
-        console.log(`[Mining] Block mined: ${blockAmount} ${block.coin} (${tx.id})`);
+        console.log(
+          `[Mining] Block mined: ${blockAmount} ${block.coin} (${tx.id})`
+        );
 
         // Stop if we've reached target
         if (totalMined >= targetAmount) {
@@ -62,23 +66,25 @@ export async function mineCoinsBatch(targetAmount: number = 250): Promise<void> 
       }
     }
 
-    console.log(`[Mining Job] Mining complete! Total mined: $${totalMined.toFixed(2)}`);
+    console.log(
+      `[Mining Job] Mining complete! Total mined: $${totalMined.toFixed(2)}`
+    );
 
     // Notify owner
     await notifyOwner({
-      title: '⛏️ Mining Job Complete - 250 Coins Mined',
+      title: "⛏️ Mining Job Complete - 250 Coins Mined",
       content: `Successfully mined $${totalMined.toFixed(2)} worth of coins and routed to admin wallet.
       
 Transactions:
-${transactions.map((tx) => `- ${tx.coin}: $${tx.amount.toFixed(2)} (${tx.txId})`).join('\n')}
+${transactions.map(tx => `- ${tx.coin}: $${tx.amount.toFixed(2)} (${tx.txId})`).join("\n")}
 
 Admin Wallet: ${adminWallet}`,
     });
   } catch (error) {
-    console.error('[Mining Job] Error:', error);
+    console.error("[Mining Job] Error:", error);
     await notifyOwner({
-      title: '❌ Mining Job Failed',
-      content: `Failed to mine 250 coins: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      title: "❌ Mining Job Failed",
+      content: `Failed to mine 250 coins: ${error instanceof Error ? error.message : "Unknown error"}`,
     });
     throw error;
   }

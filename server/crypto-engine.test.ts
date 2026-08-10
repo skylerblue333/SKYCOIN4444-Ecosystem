@@ -6,8 +6,17 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const TOKENS = ["BTC", "SKY444", "TRUMP", "DOGE", "USDT", "XMR", "ETH", "SOL"] as const;
-type Token = typeof TOKENS[number];
+const TOKENS = [
+  "BTC",
+  "SKY444",
+  "TRUMP",
+  "DOGE",
+  "USDT",
+  "XMR",
+  "ETH",
+  "SOL",
+] as const;
+type Token = (typeof TOKENS)[number];
 
 interface TokenBalance {
   token: Token;
@@ -19,13 +28,20 @@ interface TokenBalance {
 // Simulated in-memory state for tests
 function createWallet(): Record<Token, TokenBalance> {
   return Object.fromEntries(
-    TOKENS.map((t) => [t, { token: t, balance: 100, stakedBalance: 0, minedBalance: 0 }])
+    TOKENS.map(t => [
+      t,
+      { token: t, balance: 100, stakedBalance: 0, minedBalance: 0 },
+    ])
   ) as Record<Token, TokenBalance>;
 }
 
 // ─── Mine Engine ─────────────────────────────────────────────────────────────
 
-function simulateMine(wallet: Record<Token, TokenBalance>, token: Token, durationMs: number): number {
+function simulateMine(
+  wallet: Record<Token, TokenBalance>,
+  token: Token,
+  durationMs: number
+): number {
   const ratePerMs: Record<Token, number> = {
     BTC: 0.000001,
     SKY444: 0.01,
@@ -62,7 +78,8 @@ function simulateSwap(
   amount: number,
   slippagePct = 0.5
 ): { received: number; fee: number; rate: number } {
-  if (wallet[fromToken].balance < amount) throw new Error("Insufficient balance");
+  if (wallet[fromToken].balance < amount)
+    throw new Error("Insufficient balance");
   const fromUsd = PRICES_USD[fromToken] * amount;
   const slippageFactor = 1 - slippagePct / 100;
   const feeRate = 0.003; // 0.3%
@@ -105,19 +122,26 @@ function simulateUnstake(
   token: Token,
   amount: number
 ): { unstakedAmount: number } {
-  if (wallet[token].stakedBalance < amount) throw new Error("Insufficient staked balance");
+  if (wallet[token].stakedBalance < amount)
+    throw new Error("Insufficient staked balance");
   wallet[token].stakedBalance -= amount;
   wallet[token].balance += amount;
   return { unstakedAmount: amount };
 }
 
-function calculateRewards(stakedAmount: number, token: Token, daysStaked: number): number {
+function calculateRewards(
+  stakedAmount: number,
+  token: Token,
+  daysStaked: number
+): number {
   return (stakedAmount * APY_RATES[token] * daysStaked) / 365;
 }
 
 // ─── Burn Engine ─────────────────────────────────────────────────────────────
 
-let totalBurned: Record<Token, number> = Object.fromEntries(TOKENS.map((t) => [t, 0])) as Record<Token, number>;
+let totalBurned: Record<Token, number> = Object.fromEntries(
+  TOKENS.map(t => [t, 0])
+) as Record<Token, number>;
 
 function simulateBurn(
   wallet: Record<Token, TokenBalance>,
@@ -127,7 +151,10 @@ function simulateBurn(
   if (wallet[token].balance < amount) throw new Error("Insufficient balance");
   wallet[token].balance -= amount;
   totalBurned[token] += amount;
-  return { burned: amount, newSupplyEffect: `${amount} ${token} permanently removed from circulation` };
+  return {
+    burned: amount,
+    newSupplyEffect: `${amount} ${token} permanently removed from circulation`,
+  };
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -197,7 +224,9 @@ describe("Crypto Engine — Swap", () => {
   });
 
   it("throws on insufficient balance", () => {
-    expect(() => simulateSwap(wallet, "BTC", "ETH", 1000)).toThrow("Insufficient balance");
+    expect(() => simulateSwap(wallet, "BTC", "ETH", 1000)).toThrow(
+      "Insufficient balance"
+    );
   });
 
   it("applies slippage correctly", () => {
@@ -245,7 +274,9 @@ describe("Crypto Engine — Stake", () => {
   });
 
   it("throws on insufficient balance for staking", () => {
-    expect(() => simulateStake(wallet, "BTC", 1000)).toThrow("Insufficient balance");
+    expect(() => simulateStake(wallet, "BTC", 1000)).toThrow(
+      "Insufficient balance"
+    );
   });
 
   it("unstakes and returns balance correctly", () => {
@@ -258,7 +289,9 @@ describe("Crypto Engine — Stake", () => {
 
   it("throws on insufficient staked balance for unstaking", () => {
     simulateStake(wallet, "DOGE", 10);
-    expect(() => simulateUnstake(wallet, "DOGE", 50)).toThrow("Insufficient staked balance");
+    expect(() => simulateUnstake(wallet, "DOGE", 50)).toThrow(
+      "Insufficient staked balance"
+    );
   });
 
   it("calculates 30-day rewards correctly", () => {
@@ -282,7 +315,10 @@ describe("Crypto Engine — Burn", () => {
 
   beforeEach(() => {
     wallet = createWallet();
-    totalBurned = Object.fromEntries(TOKENS.map((t) => [t, 0])) as Record<Token, number>;
+    totalBurned = Object.fromEntries(TOKENS.map(t => [t, 0])) as Record<
+      Token,
+      number
+    >;
   });
 
   it("burns tokens and removes from balance", () => {
@@ -298,7 +334,9 @@ describe("Crypto Engine — Burn", () => {
   });
 
   it("throws on insufficient balance for burn", () => {
-    expect(() => simulateBurn(wallet, "BTC", 1000)).toThrow("Insufficient balance");
+    expect(() => simulateBurn(wallet, "BTC", 1000)).toThrow(
+      "Insufficient balance"
+    );
   });
 
   it("burn message contains token name and amount", () => {

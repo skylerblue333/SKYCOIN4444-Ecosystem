@@ -1,6 +1,6 @@
 /**
  * Push Notification System for SKYCOIN4444
- * 
+ *
  * Real-time notifications for all 10 strategic engines
  * - Feedback alerts
  * - Roadmap updates
@@ -14,24 +14,29 @@
  * - Simulation progress
  */
 
-import { z } from 'zod';
-import { router, protectedProcedure } from './_core/trpc';
+import { z } from "zod";
+import { router, protectedProcedure } from "./_core/trpc";
 
 // Notification types
 export const NotificationType = z.enum([
-  'feedback_alert',
-  'roadmap_update',
-  'agent_consensus',
-  'competitor_alert',
-  'behavioral_insight',
-  'experiment_result',
-  'narrative_ready',
-  'connector_status',
-  'playbook_update',
-  'simulation_complete',
+  "feedback_alert",
+  "roadmap_update",
+  "agent_consensus",
+  "competitor_alert",
+  "behavioral_insight",
+  "experiment_result",
+  "narrative_ready",
+  "connector_status",
+  "playbook_update",
+  "simulation_complete",
 ]);
 
-export const NotificationPriority = z.enum(['low', 'medium', 'high', 'critical']);
+export const NotificationPriority = z.enum([
+  "low",
+  "medium",
+  "high",
+  "critical",
+]);
 
 export const NotificationSchema = z.object({
   id: z.string(),
@@ -50,24 +55,28 @@ export const NotificationSchema = z.object({
 export type Notification = z.infer<typeof NotificationSchema>;
 
 // Notification preferences
-export const NotificationPreferencesSchema = z.object({
-  userId: z.string(),
-  feedbackAlerts: z.boolean().default(true),
-  roadmapUpdates: z.boolean().default(true),
-  agentConsensus: z.boolean().default(true),
-  competitorAlerts: z.boolean().default(true),
-  behavioralInsights: z.boolean().default(true),
-  experimentResults: z.boolean().default(true),
-  narrativeReady: z.boolean().default(true),
-  connectorStatus: z.boolean().default(true),
-  playbookUpdates: z.boolean().default(true),
-  simulationComplete: z.boolean().default(true),
-  pushEnabled: z.boolean().default(true),
-  emailEnabled: z.boolean().default(true),
-  inAppEnabled: z.boolean().default(true),
-}).strict()
+export const NotificationPreferencesSchema = z
+  .object({
+    userId: z.string(),
+    feedbackAlerts: z.boolean().default(true),
+    roadmapUpdates: z.boolean().default(true),
+    agentConsensus: z.boolean().default(true),
+    competitorAlerts: z.boolean().default(true),
+    behavioralInsights: z.boolean().default(true),
+    experimentResults: z.boolean().default(true),
+    narrativeReady: z.boolean().default(true),
+    connectorStatus: z.boolean().default(true),
+    playbookUpdates: z.boolean().default(true),
+    simulationComplete: z.boolean().default(true),
+    pushEnabled: z.boolean().default(true),
+    emailEnabled: z.boolean().default(true),
+    inAppEnabled: z.boolean().default(true),
+  })
+  .strict();
 
-export type NotificationPreferences = z.infer<typeof NotificationPreferencesSchema>;
+export type NotificationPreferences = z.infer<
+  typeof NotificationPreferencesSchema
+>;
 
 // In-memory notification store (would be database in production)
 const notifications: Map<string, Notification[]> = new Map();
@@ -78,24 +87,26 @@ export const notificationRouter = router({
    * Get user notifications
    */
   getNotifications: protectedProcedure
-    .input(z.object({
-      limit: z.number().default(20),
-      offset: z.number().default(0),
-      unreadOnly: z.boolean().default(false),
-    }))
+    .input(
+      z.object({
+        limit: z.number().default(20),
+        offset: z.number().default(0),
+        unreadOnly: z.boolean().default(false),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const userId = String(ctx.user.id);
       const userNotifications = notifications.get(userId) || [];
-      
+
       let filtered = userNotifications;
       if (input.unreadOnly) {
         filtered = filtered.filter(n => !n.read);
       }
-      
+
       const paginated = filtered
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(input.offset, input.offset + input.limit);
-      
+
       return {
         notifications: paginated,
         total: filtered.length,
@@ -107,62 +118,69 @@ export const notificationRouter = router({
    * Mark notification as read
    */
   markAsRead: protectedProcedure
-    .input(z.object({
-      notificationId: z.string(),
-    }))
+    .input(
+      z.object({
+        notificationId: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const userId = String(ctx.user.id);
       const userNotifications = notifications.get(userId) || [];
-      
-      const notification = userNotifications.find(n => n.id === input.notificationId);
+
+      const notification = userNotifications.find(
+        n => n.id === input.notificationId
+      );
       if (notification) {
         notification.read = true;
       }
-      
+
       return { success: true };
     }),
 
   /**
    * Mark all notifications as read
    */
-  markAllAsRead: protectedProcedure
-    .mutation(async ({ ctx }) => {
-      const userId = String(ctx.user.id);
-      const userNotifications = notifications.get(userId) || [];
-      
-      userNotifications.forEach(n => {
-        n.read = true;
-      });
-      
-      return { success: true };
-    }),
+  markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+    const userId = String(ctx.user.id);
+    const userNotifications = notifications.get(userId) || [];
+
+    userNotifications.forEach(n => {
+      n.read = true;
+    });
+
+    return { success: true };
+  }),
 
   /**
    * Delete notification
    */
   deleteNotification: protectedProcedure
-    .input(z.object({
-      notificationId: z.string(),
-    }))
+    .input(
+      z.object({
+        notificationId: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const userId = String(ctx.user.id);
       const userNotifications = notifications.get(userId) || [];
-      
-      const index = userNotifications.findIndex(n => n.id === input.notificationId);
+
+      const index = userNotifications.findIndex(
+        n => n.id === input.notificationId
+      );
       if (index !== -1) {
         userNotifications.splice(index, 1);
       }
-      
+
       return { success: true };
     }),
 
   /**
    * Get notification preferences
    */
-  getPreferences: protectedProcedure
-    .query(async ({ ctx }) => {
-      const userId = String(ctx.user.id);
-      return preferences.get(userId) || {
+  getPreferences: protectedProcedure.query(async ({ ctx }) => {
+    const userId = String(ctx.user.id);
+    return (
+      preferences.get(userId) || {
         userId,
         feedbackAlerts: true,
         roadmapUpdates: true,
@@ -177,8 +195,9 @@ export const notificationRouter = router({
         pushEnabled: true,
         emailEnabled: true,
         inAppEnabled: true,
-      };
-    }),
+      }
+    );
+  }),
 
   /**
    * Update notification preferences
@@ -203,39 +222,44 @@ export const notificationRouter = router({
         emailEnabled: true,
         inAppEnabled: true,
       };
-      
+
       const updated = { ...currentPrefs, ...input, userId };
       preferences.set(userId, updated);
-      
+
       return updated;
     }),
 
   /**
    * Get notification statistics
    */
-  getStats: protectedProcedure
-    .query(async ({ ctx }) => {
-      const userId = String(ctx.user.id);
-      const userNotifications = notifications.get(userId) || [];
-      
-      const byType = userNotifications.reduce((acc, n) => {
+  getStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = String(ctx.user.id);
+    const userNotifications = notifications.get(userId) || [];
+
+    const byType = userNotifications.reduce(
+      (acc, n) => {
         acc[n.type] = (acc[n.type] || 0) + 1;
         return acc;
-      }, {} as Record<string, number>);
-      
-      const byPriority = userNotifications.reduce((acc, n) => {
+      },
+      {} as Record<string, number>
+    );
+
+    const byPriority = userNotifications.reduce(
+      (acc, n) => {
         acc[n.priority] = (acc[n.priority] || 0) + 1;
         return acc;
-      }, {} as Record<string, number>);
-      
-      return {
-        total: userNotifications.length,
-        unread: userNotifications.filter(n => !n.read).length,
-        byType,
-        byPriority,
-        lastNotification: userNotifications[0]?.createdAt || null,
-      };
-    }),
+      },
+      {} as Record<string, number>
+    );
+
+    return {
+      total: userNotifications.length,
+      unread: userNotifications.filter(n => !n.read).length,
+      byType,
+      byPriority,
+      lastNotification: userNotifications[0]?.createdAt || null,
+    };
+  }),
 });
 
 /**
@@ -247,8 +271,8 @@ export async function sendNotification(
   type: z.infer<typeof NotificationType>,
   title: string,
   message: string,
-  priority: z.infer<typeof NotificationPriority> = 'medium',
-  engine: string = 'system',
+  priority: z.infer<typeof NotificationPriority> = "medium",
+  engine: string = "system",
   data?: Record<string, any>,
   actionUrl?: string
 ) {
@@ -265,19 +289,19 @@ export async function sendNotification(
     createdAt: new Date(),
     actionUrl,
   };
-  
+
   if (!notifications.has(userId)) {
     notifications.set(userId, []);
   }
-  
+
   notifications.get(userId)!.push(notification);
-  
+
   // Keep only last 100 notifications per user
   const userNotifications = notifications.get(userId)!;
   if (userNotifications.length > 100) {
     userNotifications.shift();
   }
-  
+
   return notification;
 }
 
@@ -286,16 +310,20 @@ export async function sendNotification(
  */
 export const notificationTriggers = {
   // Feedback Engine
-  async feedbackAlert(userId: string, feedbackCount: number, actionableCount: number) {
+  async feedbackAlert(
+    userId: string,
+    feedbackCount: number,
+    actionableCount: number
+  ) {
     return sendNotification(
       userId,
-      'feedback_alert',
-      'New Feedback Received',
+      "feedback_alert",
+      "New Feedback Received",
       `${feedbackCount} new feedback items, ${actionableCount} are actionable`,
-      'high',
-      'feedback',
+      "high",
+      "feedback",
       { feedbackCount, actionableCount },
-      '/feedback-hub'
+      "/feedback-hub"
     );
   },
 
@@ -303,69 +331,86 @@ export const notificationTriggers = {
   async roadmapUpdate(userId: string, itemTitle: string, newPriority: number) {
     return sendNotification(
       userId,
-      'roadmap_update',
-      'Roadmap Updated',
+      "roadmap_update",
+      "Roadmap Updated",
       `"${itemTitle}" priority changed to ${newPriority}`,
-      'medium',
-      'roadmap',
+      "medium",
+      "roadmap",
       { itemTitle, newPriority },
-      '/adaptive-roadmap'
+      "/adaptive-roadmap"
     );
   },
 
   // Agent Engine
-  async agentConsensus(userId: string, consensusScore: number, decision: string) {
+  async agentConsensus(
+    userId: string,
+    consensusScore: number,
+    decision: string
+  ) {
     return sendNotification(
       userId,
-      'agent_consensus',
-      'Agent Consensus Reached',
+      "agent_consensus",
+      "Agent Consensus Reached",
       `Agents agreed (${(consensusScore * 100).toFixed(0)}%): ${decision}`,
-      consensusScore > 0.9 ? 'high' : 'medium',
-      'agents',
+      consensusScore > 0.9 ? "high" : "medium",
+      "agents",
       { consensusScore, decision },
-      '/agent-debate'
+      "/agent-debate"
     );
   },
 
   // Competitive Engine
-  async competitorAlert(userId: string, competitorName: string, change: string) {
+  async competitorAlert(
+    userId: string,
+    competitorName: string,
+    change: string
+  ) {
     return sendNotification(
       userId,
-      'competitor_alert',
-      'Competitive Alert',
+      "competitor_alert",
+      "Competitive Alert",
       `${competitorName} ${change}`,
-      'high',
-      'competitors',
+      "high",
+      "competitors",
       { competitorName, change },
-      '/competitive-radar'
+      "/competitive-radar"
     );
   },
 
   // Behavioral Engine
-  async behavioralInsight(userId: string, insight: string, affectedUsers: number) {
+  async behavioralInsight(
+    userId: string,
+    insight: string,
+    affectedUsers: number
+  ) {
     return sendNotification(
       userId,
-      'behavioral_insight',
-      'Behavioral Insight',
+      "behavioral_insight",
+      "Behavioral Insight",
       `${insight} (affects ${affectedUsers} users)`,
-      'medium',
-      'behavioral',
+      "medium",
+      "behavioral",
       { insight, affectedUsers },
-      '/behavioral-intelligence'
+      "/behavioral-intelligence"
     );
   },
 
   // Experiment Engine
-  async experimentResult(userId: string, experimentName: string, lift: number, significant: boolean) {
+  async experimentResult(
+    userId: string,
+    experimentName: string,
+    lift: number,
+    significant: boolean
+  ) {
     return sendNotification(
       userId,
-      'experiment_result',
-      'Experiment Complete',
-      `${experimentName}: ${(lift * 100).toFixed(1)}% lift ${significant ? '(significant)' : '(not significant)'}`,
-      significant ? 'high' : 'medium',
-      'experiments',
+      "experiment_result",
+      "Experiment Complete",
+      `${experimentName}: ${(lift * 100).toFixed(1)}% lift ${significant ? "(significant)" : "(not significant)"}`,
+      significant ? "high" : "medium",
+      "experiments",
       { experimentName, lift, significant },
-      '/experiment-factory'
+      "/experiment-factory"
     );
   },
 
@@ -373,55 +418,69 @@ export const notificationTriggers = {
   async narrativeReady(userId: string, audience: string, variantCount: number) {
     return sendNotification(
       userId,
-      'narrative_ready',
-      'Narrative Generated',
+      "narrative_ready",
+      "Narrative Generated",
       `${variantCount} narrative variants ready for ${audience}`,
-      'medium',
-      'narratives',
+      "medium",
+      "narratives",
       { audience, variantCount },
-      '/narrative-engine'
+      "/narrative-engine"
     );
   },
 
   // Connector Engine
-  async connectorStatus(userId: string, connectorName: string, status: string, uptime: number) {
+  async connectorStatus(
+    userId: string,
+    connectorName: string,
+    status: string,
+    uptime: number
+  ) {
     return sendNotification(
       userId,
-      'connector_status',
+      "connector_status",
       `${connectorName} Status`,
       `${status} (${(uptime * 100).toFixed(2)}% uptime)`,
-      status === 'error' ? 'critical' : 'low',
-      'connectors',
+      status === "error" ? "critical" : "low",
+      "connectors",
       { connectorName, status, uptime },
-      '/connector-intelligence'
+      "/connector-intelligence"
     );
   },
 
   // Product Brain Engine
-  async playbookUpdate(userId: string, playbookName: string, version: number, effectiveness: number) {
+  async playbookUpdate(
+    userId: string,
+    playbookName: string,
+    version: number,
+    effectiveness: number
+  ) {
     return sendNotification(
       userId,
-      'playbook_update',
-      'Playbook Updated',
+      "playbook_update",
+      "Playbook Updated",
       `${playbookName} v${version} now ${(effectiveness * 100).toFixed(0)}% effective`,
-      'medium',
-      'productbrain',
+      "medium",
+      "productbrain",
       { playbookName, version, effectiveness },
-      '/product-brain'
+      "/product-brain"
     );
   },
 
   // Simulator Engine
-  async simulationComplete(userId: string, scenario: string, projectedGrowth: number) {
+  async simulationComplete(
+    userId: string,
+    scenario: string,
+    projectedGrowth: number
+  ) {
     return sendNotification(
       userId,
-      'simulation_complete',
-      'Simulation Complete',
+      "simulation_complete",
+      "Simulation Complete",
       `${scenario} scenario: ${(projectedGrowth * 100).toFixed(0)}% projected growth`,
-      'high',
-      'simulator',
+      "high",
+      "simulator",
       { scenario, projectedGrowth },
-      '/company-simulator'
+      "/company-simulator"
     );
   },
 };

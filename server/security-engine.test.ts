@@ -19,16 +19,27 @@ class RateLimiter {
     private readonly windowMs: number
   ) {}
 
-  check(key: string, nowMs = Date.now()): { allowed: boolean; remaining: number; resetAt: number } {
+  check(
+    key: string,
+    nowMs = Date.now()
+  ): { allowed: boolean; remaining: number; resetAt: number } {
     const entry = this.store.get(key);
 
     if (!entry || nowMs - entry.windowStart >= this.windowMs) {
       this.store.set(key, { count: 1, windowStart: nowMs });
-      return { allowed: true, remaining: this.maxRequests - 1, resetAt: nowMs + this.windowMs };
+      return {
+        allowed: true,
+        remaining: this.maxRequests - 1,
+        resetAt: nowMs + this.windowMs,
+      };
     }
 
     if (entry.count >= this.maxRequests) {
-      return { allowed: false, remaining: 0, resetAt: entry.windowStart + this.windowMs };
+      return {
+        allowed: false,
+        remaining: 0,
+        resetAt: entry.windowStart + this.windowMs,
+      };
     }
 
     entry.count++;
@@ -50,7 +61,10 @@ class RateLimiter {
 
 // ─── CSRF Token Engine ────────────────────────────────────────────────────────
 
-const csrfTokens = new Map<string, { token: string; createdAt: number; used: boolean }>();
+const csrfTokens = new Map<
+  string,
+  { token: string; createdAt: number; used: boolean }
+>();
 
 function generateCsrfToken(sessionId: string, nowMs = Date.now()): string {
   const token = `csrf_${sessionId}_${Math.random().toString(36).slice(2)}_${nowMs}`;
@@ -68,7 +82,8 @@ function validateCsrfToken(
   if (!entry) return { valid: false, reason: "No token found for session" };
   if (entry.used) return { valid: false, reason: "Token already used" };
   if (entry.token !== token) return { valid: false, reason: "Token mismatch" };
-  if (nowMs - entry.createdAt > maxAgeMs) return { valid: false, reason: "Token expired" };
+  if (nowMs - entry.createdAt > maxAgeMs)
+    return { valid: false, reason: "Token expired" };
   entry.used = true;
   return { valid: true };
 }
@@ -87,10 +102,15 @@ interface FraudSignal {
   description: string;
 }
 
-function detectFraud(activity: UserActivity, nowMs = Date.now()): FraudSignal[] {
+function detectFraud(
+  activity: UserActivity,
+  nowMs = Date.now()
+): FraudSignal[] {
   const signals: FraudSignal[] = [];
   const oneHour = 60 * 60 * 1000;
-  const recentActions = activity.actions.filter((a) => nowMs - a.timestamp < oneHour);
+  const recentActions = activity.actions.filter(
+    a => nowMs - a.timestamp < oneHour
+  );
 
   // Velocity check: too many actions in short time
   if (recentActions.length > 100) {
@@ -103,7 +123,9 @@ function detectFraud(activity: UserActivity, nowMs = Date.now()): FraudSignal[] 
   }
 
   // Large transaction check
-  const largeTxs = recentActions.filter((a) => a.type === "transfer" && (a.amount ?? 0) > 10000);
+  const largeTxs = recentActions.filter(
+    a => a.type === "transfer" && (a.amount ?? 0) > 10000
+  );
   if (largeTxs.length > 0) {
     signals.push({
       type: "large_transaction",
@@ -114,7 +136,7 @@ function detectFraud(activity: UserActivity, nowMs = Date.now()): FraudSignal[] 
   }
 
   // Rapid withdrawal pattern
-  const withdrawals = recentActions.filter((a) => a.type === "withdrawal");
+  const withdrawals = recentActions.filter(a => a.type === "withdrawal");
   if (withdrawals.length > 5) {
     signals.push({
       type: "rapid_withdrawals",
@@ -125,7 +147,9 @@ function detectFraud(activity: UserActivity, nowMs = Date.now()): FraudSignal[] 
   }
 
   // Tip farming: sending many small tips
-  const tips = recentActions.filter((a) => a.type === "tip" && (a.amount ?? 0) < 1);
+  const tips = recentActions.filter(
+    a => a.type === "tip" && (a.amount ?? 0) < 1
+  );
   if (tips.length > 20) {
     signals.push({
       type: "tip_farming",
@@ -160,7 +184,10 @@ function validateEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function validatePassword(password: string): { valid: boolean; issues: string[] } {
+function validatePassword(password: string): {
+  valid: boolean;
+  issues: string[];
+} {
   const issues: string[] = [];
   if (password.length < 8) issues.push("Too short (min 8 chars)");
   if (!/[A-Z]/.test(password)) issues.push("Missing uppercase letter");
@@ -169,12 +196,18 @@ function validatePassword(password: string): { valid: boolean; issues: string[] 
   return { valid: issues.length === 0, issues };
 }
 
-function validateAmount(amount: unknown): { valid: boolean; value?: number; error?: string } {
-  if (typeof amount !== "number") return { valid: false, error: "Amount must be a number" };
+function validateAmount(amount: unknown): {
+  valid: boolean;
+  value?: number;
+  error?: string;
+} {
+  if (typeof amount !== "number")
+    return { valid: false, error: "Amount must be a number" };
   if (isNaN(amount)) return { valid: false, error: "Amount is NaN" };
   if (!isFinite(amount)) return { valid: false, error: "Amount is not finite" };
   if (amount <= 0) return { valid: false, error: "Amount must be positive" };
-  if (amount > 1_000_000) return { valid: false, error: "Amount exceeds maximum" };
+  if (amount > 1_000_000)
+    return { valid: false, error: "Amount exceeds maximum" };
   return { valid: true, value: amount };
 }
 
@@ -261,7 +294,11 @@ describe("Security Engine — CSRF Protection", () => {
   it("rejects expired token", () => {
     const NOW = Date.now();
     const token = generateCsrfToken("session-1", NOW);
-    const result = validateCsrfToken("session-1", token, NOW + 2 * 60 * 60 * 1000); // 2h later
+    const result = validateCsrfToken(
+      "session-1",
+      token,
+      NOW + 2 * 60 * 60 * 1000
+    ); // 2h later
     expect(result.valid).toBe(false);
     expect(result.reason).toBe("Token expired");
   });
@@ -294,7 +331,7 @@ describe("Security Engine — Fraud Detection", () => {
       })),
     };
     const signals = detectFraud(activity, NOW);
-    expect(signals.some((s) => s.type === "high_velocity")).toBe(true);
+    expect(signals.some(s => s.type === "high_velocity")).toBe(true);
   });
 
   it("detects large transactions", () => {
@@ -306,7 +343,7 @@ describe("Security Engine — Fraud Detection", () => {
       ],
     };
     const signals = detectFraud(activity, NOW);
-    expect(signals.some((s) => s.type === "large_transaction")).toBe(true);
+    expect(signals.some(s => s.type === "large_transaction")).toBe(true);
   });
 
   it("marks multiple large transactions as critical", () => {
@@ -319,7 +356,7 @@ describe("Security Engine — Fraud Detection", () => {
       })),
     };
     const signals = detectFraud(activity, NOW);
-    const largeTxSignal = signals.find((s) => s.type === "large_transaction");
+    const largeTxSignal = signals.find(s => s.type === "large_transaction");
     expect(largeTxSignal?.severity).toBe("critical");
   });
 
@@ -333,7 +370,7 @@ describe("Security Engine — Fraud Detection", () => {
       })),
     };
     const signals = detectFraud(activity, NOW);
-    expect(signals.some((s) => s.type === "rapid_withdrawals")).toBe(true);
+    expect(signals.some(s => s.type === "rapid_withdrawals")).toBe(true);
   });
 
   it("detects tip farming", () => {
@@ -346,7 +383,7 @@ describe("Security Engine — Fraud Detection", () => {
       })),
     };
     const signals = detectFraud(activity, NOW);
-    expect(signals.some((s) => s.type === "tip_farming")).toBe(true);
+    expect(signals.some(s => s.type === "tip_farming")).toBe(true);
   });
 
   it("returns no signals for clean activity", () => {
@@ -365,7 +402,12 @@ describe("Security Engine — Fraud Detection", () => {
   it("calculates fraud score from signals", () => {
     const signals: FraudSignal[] = [
       { type: "high_velocity", severity: "high", score: 50, description: "" },
-      { type: "large_transaction", severity: "critical", score: 25, description: "" },
+      {
+        type: "large_transaction",
+        severity: "critical",
+        score: 25,
+        description: "",
+      },
     ];
     const score = calculateFraudScore(signals);
     expect(score).toBeGreaterThan(0);

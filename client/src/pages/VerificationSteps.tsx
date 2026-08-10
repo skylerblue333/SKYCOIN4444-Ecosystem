@@ -8,9 +8,11 @@ export default function VerificationSteps() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-black p-4">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-8">VerificationSteps</h1>
+        <h1 className="text-3xl font-bold text-white mb-8">
+          VerificationSteps
+        </h1>
         <p className="text-slate-400 mb-8">verification steps</p>
-        
+
         <Card className="bg-slate-900 border-slate-800 p-8">
           <div className="space-y-6">
             <p className="text-slate-300">Content for VerificationSteps page</p>

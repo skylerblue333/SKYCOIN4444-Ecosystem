@@ -1,9 +1,9 @@
-import crypto from 'crypto';
-import { getDb } from './db';
+import crypto from "crypto";
+import { getDb } from "./db";
 
 /**
  * Advanced Reasoning Engine
- * 
+ *
  * Capabilities:
  * - Multi-step logical reasoning with chain-of-thought
  * - Causal inference and root cause analysis
@@ -68,9 +68,9 @@ export class AdvancedReasoningEngine {
       id: crypto.randomUUID(),
       stepNumber: 1,
       premise: question,
-      inference: `Decomposed into: ${decomposition.join(', ')}`,
+      inference: `Decomposed into: ${decomposition.join(", ")}`,
       confidence: 0.95,
-      evidence: ['question analysis'],
+      evidence: ["question analysis"],
       timestamp: Date.now(),
     });
 
@@ -79,8 +79,8 @@ export class AdvancedReasoningEngine {
     steps.push({
       id: crypto.randomUUID(),
       stepNumber: 2,
-      premise: `Subquestions: ${decomposition.join(', ')}`,
-      inference: `Relevant context: ${Object.keys(context).join(', ')}`,
+      premise: `Subquestions: ${decomposition.join(", ")}`,
+      inference: `Relevant context: ${Object.keys(context).join(", ")}`,
       confidence: 0.88,
       evidence: Object.values(context).flat() as string[],
       timestamp: Date.now(),
@@ -92,9 +92,9 @@ export class AdvancedReasoningEngine {
       id: crypto.randomUUID(),
       stepNumber: 3,
       premise: `Context: ${JSON.stringify(context)}`,
-      inference: `Logical inferences: ${logicalInferences.join(', ')}`,
+      inference: `Logical inferences: ${logicalInferences.join(", ")}`,
       confidence: 0.82,
-      evidence: ['logical rules', 'knowledge base'],
+      evidence: ["logical rules", "knowledge base"],
       timestamp: Date.now(),
     });
 
@@ -103,7 +103,7 @@ export class AdvancedReasoningEngine {
     steps.push({
       id: crypto.randomUUID(),
       stepNumber: 4,
-      premise: `Inferences: ${logicalInferences.join(', ')}`,
+      premise: `Inferences: ${logicalInferences.join(", ")}`,
       inference: conclusion,
       confidence: 0.85,
       evidence: logicalInferences,
@@ -116,14 +116,15 @@ export class AdvancedReasoningEngine {
       id: crypto.randomUUID(),
       stepNumber: 5,
       premise: conclusion,
-      inference: `Alternative explanations: ${alternatives.join(', ')}`,
+      inference: `Alternative explanations: ${alternatives.join(", ")}`,
       confidence: 0.75,
-      evidence: ['alternative hypothesis generation'],
+      evidence: ["alternative hypothesis generation"],
       timestamp: Date.now(),
     });
 
     // Calculate overall confidence
-    const overallConfidence = steps.reduce((sum, s) => sum + s.confidence, 0) / steps.length;
+    const overallConfidence =
+      steps.reduce((sum, s) => sum + s.confidence, 0) / steps.length;
 
     const chain: ReasoningChain = {
       id: chainId,
@@ -157,7 +158,7 @@ export class AdvancedReasoningEngine {
 
     const analysis: CausalAnalysis = {
       event,
-      rootCauses: rootCauses.map((cause) => ({
+      rootCauses: rootCauses.map(cause => ({
         cause,
         probability: Math.random() * 0.4 + 0.5, // 50-90%
         evidence: this.gatherEvidence(cause),
@@ -180,7 +181,11 @@ export class AdvancedReasoningEngine {
     const scenarioId = crypto.randomUUID();
 
     const predictedOutcome = this.predictOutcome(original, modification);
-    const reasoning = this.explainCounterfactual(original, modification, predictedOutcome);
+    const reasoning = this.explainCounterfactual(
+      original,
+      modification,
+      predictedOutcome
+    );
 
     const scenario: CounterfactualScenario = {
       id: scenarioId,
@@ -211,12 +216,14 @@ export class AdvancedReasoningEngine {
   /**
    * Gather context for reasoning
    */
-  private async gatherContext(subquestions: string[]): Promise<Record<string, string[]>> {
+  private async gatherContext(
+    subquestions: string[]
+  ): Promise<Record<string, string[]>> {
     return {
-      historical_data: ['past events', 'trends', 'patterns'],
-      domain_knowledge: ['rules', 'principles', 'best practices'],
-      user_context: ['preferences', 'goals', 'constraints'],
-      external_factors: ['market conditions', 'regulations', 'social trends'],
+      historical_data: ["past events", "trends", "patterns"],
+      domain_knowledge: ["rules", "principles", "best practices"],
+      user_context: ["preferences", "goals", "constraints"],
+      external_factors: ["market conditions", "regulations", "social trends"],
     };
   }
 
@@ -225,9 +232,9 @@ export class AdvancedReasoningEngine {
    */
   private applyLogicalRules(context: Record<string, string[]>): string[] {
     return [
-      'If historical_data shows trend, then projection is likely',
-      'If domain_knowledge supports action, then recommendation is valid',
-      'If user_context aligns with goal, then strategy is appropriate',
+      "If historical_data shows trend, then projection is likely",
+      "If domain_knowledge supports action, then recommendation is valid",
+      "If user_context aligns with goal, then strategy is appropriate",
     ];
   }
 
@@ -235,7 +242,7 @@ export class AdvancedReasoningEngine {
    * Synthesize conclusion from inferences
    */
   private synthesizeConclusion(inferences: string[]): string {
-    return `Based on logical analysis: ${inferences.length > 0 ? inferences[0] : 'inconclusive'}`;
+    return `Based on logical analysis: ${inferences.length > 0 ? inferences[0] : "inconclusive"}`;
   }
 
   /**
@@ -243,9 +250,9 @@ export class AdvancedReasoningEngine {
    */
   private generateAlternatives(inferences: string[]): string[] {
     return [
-      'Alternative explanation A based on different assumptions',
-      'Alternative explanation B based on external factors',
-      'Alternative explanation C based on incomplete information',
+      "Alternative explanation A based on different assumptions",
+      "Alternative explanation B based on external factors",
+      "Alternative explanation C based on incomplete information",
     ];
   }
 
@@ -254,9 +261,9 @@ export class AdvancedReasoningEngine {
    */
   private identifyRootCauses(event: string): string[] {
     return [
-      'Primary cause: system behavior',
-      'Secondary cause: external trigger',
-      'Tertiary cause: underlying condition',
+      "Primary cause: system behavior",
+      "Secondary cause: external trigger",
+      "Tertiary cause: underlying condition",
     ];
   }
 
@@ -264,7 +271,7 @@ export class AdvancedReasoningEngine {
    * Identify contributing factors
    */
   private identifyContributingFactors(event: string): string[] {
-    return ['Factor A', 'Factor B', 'Factor C'];
+    return ["Factor A", "Factor B", "Factor C"];
   }
 
   /**
@@ -272,9 +279,9 @@ export class AdvancedReasoningEngine {
    */
   private generatePreventiveMeasures(causes: string[]): string[] {
     return [
-      'Implement monitoring for early detection',
-      'Add safeguards to prevent recurrence',
-      'Improve documentation and training',
+      "Implement monitoring for early detection",
+      "Add safeguards to prevent recurrence",
+      "Improve documentation and training",
     ];
   }
 
@@ -282,7 +289,7 @@ export class AdvancedReasoningEngine {
    * Gather evidence for a cause
    */
   private gatherEvidence(cause: string): string[] {
-    return ['Evidence 1', 'Evidence 2', 'Evidence 3'];
+    return ["Evidence 1", "Evidence 2", "Evidence 3"];
   }
 
   /**
@@ -295,7 +302,11 @@ export class AdvancedReasoningEngine {
   /**
    * Explain counterfactual reasoning
    */
-  private explainCounterfactual(original: string, modification: string, outcome: string): string {
+  private explainCounterfactual(
+    original: string,
+    modification: string,
+    outcome: string
+  ): string {
     return `Reasoning: ${modification} would change ${original}, leading to ${outcome}`;
   }
 
@@ -310,15 +321,21 @@ export class AdvancedReasoningEngine {
    * Get all reasoning chains for user
    */
   async getUserReasoningChains(userId: string): Promise<ReasoningChain[]> {
-    return Array.from(this.reasoningChains.values()).filter((chain) => chain.userId === userId);
+    return Array.from(this.reasoningChains.values()).filter(
+      chain => chain.userId === userId
+    );
   }
 
   /**
    * Get reasoning transparency score
    */
   getTransparencyScore(chain: ReasoningChain): number {
-    const avgEvidencePerStep = chain.steps.reduce((sum, s) => sum + s.evidence.length, 0) / chain.steps.length;
-    const avgConfidencePerStep = chain.steps.reduce((sum, s) => sum + s.confidence, 0) / chain.steps.length;
+    const avgEvidencePerStep =
+      chain.steps.reduce((sum, s) => sum + s.evidence.length, 0) /
+      chain.steps.length;
+    const avgConfidencePerStep =
+      chain.steps.reduce((sum, s) => sum + s.confidence, 0) /
+      chain.steps.length;
     return (avgEvidencePerStep * 0.3 + avgConfidencePerStep * 0.7) * 100;
   }
 }

@@ -33,7 +33,12 @@ export interface LogEntry {
 }
 
 const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
-  trace: 0, debug: 1, info: 2, warn: 3, error: 4, fatal: 5,
+  trace: 0,
+  debug: 1,
+  info: 2,
+  warn: 3,
+  error: 4,
+  fatal: 5,
 };
 
 const _logBuffer: LogEntry[] = [];
@@ -42,7 +47,12 @@ const MAX_LOG_BUFFER = 10000;
 export const logger = {
   _minLevel: (process.env.LOG_LEVEL ?? "info") as LogLevel,
 
-  _write(level: LogLevel, service: string, msg: string, meta?: Partial<Omit<LogEntry, "timestamp" | "level" | "service" | "msg">>): LogEntry {
+  _write(
+    level: LogLevel,
+    service: string,
+    msg: string,
+    meta?: Partial<Omit<LogEntry, "timestamp" | "level" | "service" | "msg">>
+  ): LogEntry {
     if (LOG_LEVEL_PRIORITY[level] < LOG_LEVEL_PRIORITY[this._minLevel]) {
       return { timestamp: new Date().toISOString(), level, service, msg };
     }
@@ -61,42 +71,67 @@ export const logger = {
     }
     return entry;
   },
-  trace(service: string, msg: string, meta?: Partial<LogEntry>) { return this._write("trace", service, msg, meta); },
-  debug(service: string, msg: string, meta?: Partial<LogEntry>) { return this._write("debug", service, msg, meta); },
-  info(service: string, msg: string, meta?: Partial<LogEntry>) { return this._write("info", service, msg, meta); },
-  warn(service: string, msg: string, meta?: Partial<LogEntry>) { return this._write("warn", service, msg, meta); },
-  error(service: string, msg: string, meta?: Partial<LogEntry>) { return this._write("error", service, msg, meta); },
-  fatal(service: string, msg: string, meta?: Partial<LogEntry>) { return this._write("fatal", service, msg, meta); },
+  trace(service: string, msg: string, meta?: Partial<LogEntry>) {
+    return this._write("trace", service, msg, meta);
+  },
+  debug(service: string, msg: string, meta?: Partial<LogEntry>) {
+    return this._write("debug", service, msg, meta);
+  },
+  info(service: string, msg: string, meta?: Partial<LogEntry>) {
+    return this._write("info", service, msg, meta);
+  },
+  warn(service: string, msg: string, meta?: Partial<LogEntry>) {
+    return this._write("warn", service, msg, meta);
+  },
+  error(service: string, msg: string, meta?: Partial<LogEntry>) {
+    return this._write("error", service, msg, meta);
+  },
+  fatal(service: string, msg: string, meta?: Partial<LogEntry>) {
+    return this._write("fatal", service, msg, meta);
+  },
 
   child(service: string, defaultMeta?: Partial<LogEntry>) {
     return {
-      trace: (msg: string, meta?: Partial<LogEntry>) => logger.trace(service, msg, { ...defaultMeta, ...meta }),
-      debug: (msg: string, meta?: Partial<LogEntry>) => logger.debug(service, msg, { ...defaultMeta, ...meta }),
-      info: (msg: string, meta?: Partial<LogEntry>) => logger.info(service, msg, { ...defaultMeta, ...meta }),
-      warn: (msg: string, meta?: Partial<LogEntry>) => logger.warn(service, msg, { ...defaultMeta, ...meta }),
-      error: (msg: string, meta?: Partial<LogEntry>) => logger.error(service, msg, { ...defaultMeta, ...meta }),
-      fatal: (msg: string, meta?: Partial<LogEntry>) => logger.fatal(service, msg, { ...defaultMeta, ...meta }),
+      trace: (msg: string, meta?: Partial<LogEntry>) =>
+        logger.trace(service, msg, { ...defaultMeta, ...meta }),
+      debug: (msg: string, meta?: Partial<LogEntry>) =>
+        logger.debug(service, msg, { ...defaultMeta, ...meta }),
+      info: (msg: string, meta?: Partial<LogEntry>) =>
+        logger.info(service, msg, { ...defaultMeta, ...meta }),
+      warn: (msg: string, meta?: Partial<LogEntry>) =>
+        logger.warn(service, msg, { ...defaultMeta, ...meta }),
+      error: (msg: string, meta?: Partial<LogEntry>) =>
+        logger.error(service, msg, { ...defaultMeta, ...meta }),
+      fatal: (msg: string, meta?: Partial<LogEntry>) =>
+        logger.fatal(service, msg, { ...defaultMeta, ...meta }),
     };
   },
 
-
   getRecentLogs(limit = 100, level?: LogLevel): LogEntry[] {
-    const entries = level ? _logBuffer.filter(e => e.level === level) : _logBuffer;
+    const entries = level
+      ? _logBuffer.filter(e => e.level === level)
+      : _logBuffer;
     return entries.slice(-limit);
   },
 
-
   getErrorLogs(since?: Date): LogEntry[] {
     const cutoff = since ?? new Date(Date.now() - 24 * 60 * 60 * 1000);
-    return _logBuffer.filter(e =>
-      (e.level === "error" || e.level === "fatal") &&
-      new Date(e.timestamp) > cutoff
+    return _logBuffer.filter(
+      e =>
+        (e.level === "error" || e.level === "fatal") &&
+        new Date(e.timestamp) > cutoff
     );
   },
 
-
   getStats() {
-    const counts: Record<LogLevel, number> = { trace: 0, debug: 0, info: 0, warn: 0, error: 0, fatal: 0 };
+    const counts: Record<LogLevel, number> = {
+      trace: 0,
+      debug: 0,
+      info: 0,
+      warn: 0,
+      error: 0,
+      fatal: 0,
+    };
     const byService: Record<string, number> = {};
     for (const e of _logBuffer) {
       counts[e.level]++;
@@ -107,7 +142,8 @@ export const logger = {
 };
 
 // ─── Job Queue Types ──────────────────────────────────────────────────────────
-export type JobStatus = "waiting" | "active" | "completed" | "failed" | "delayed" | "dead";
+export type JobStatus =
+  "waiting" | "active" | "completed" | "failed" | "delayed" | "dead";
 export type JobPriority = 1 | 2 | 3 | 4 | 5; // 1=critical, 5=background
 
 export interface JobOptions {
@@ -152,12 +188,16 @@ class Queue<T = unknown> {
   private jobs = new Map<string, Job<T>>();
   private completedCount = 0;
   private startTime = Date.now();
-  private get log() { return logger.child(this.name); }
+  private get log() {
+    return logger.child(this.name);
+  }
 
   constructor(public readonly name: string) {}
 
   async add(jobName: string, data: T, opts: JobOptions = {}): Promise<Job<T>> {
-    const id = opts.jobId ?? `${this.name}:${Date.now()}:${crypto.randomBytes(4).toString("hex")}`;
+    const id =
+      opts.jobId ??
+      `${this.name}:${Date.now()}:${crypto.randomBytes(4).toString("hex")}`;
     const job: Job<T> = {
       id,
       name: jobName,
@@ -178,59 +218,61 @@ class Queue<T = unknown> {
       queueName: this.name,
     };
     this.jobs.set(id, job);
-    this.log.debug(`Job added: ${jobName}`, { data: { jobId: id, priority: job.opts.priority } });
+    this.log.debug(`Job added: ${jobName}`, {
+      data: { jobId: id, priority: job.opts.priority },
+    });
     return job;
   }
 
-
-  async addBulk(jobs: { name: string; data: T; opts?: JobOptions }[]): Promise<Job<T>[]> {
+  async addBulk(
+    jobs: { name: string; data: T; opts?: JobOptions }[]
+  ): Promise<Job<T>[]> {
     return Promise.all(jobs.map(j => this.add(j.name, j.data, j.opts)));
   }
-
 
   getJob(id: string): Job<T> | undefined {
     return this.jobs.get(id);
   }
 
-
   async getWaiting(limit = 100): Promise<Job<T>[]> {
     return Array.from(this.jobs.values())
       .filter(j => j.status === "waiting")
-      .sort((a, b) => a.opts.priority - b.opts.priority || a.createdAt.getTime() - b.createdAt.getTime())
+      .sort(
+        (a, b) =>
+          a.opts.priority - b.opts.priority ||
+          a.createdAt.getTime() - b.createdAt.getTime()
+      )
       .slice(0, limit);
   }
-
 
   async getActive(): Promise<Job<T>[]> {
     return Array.from(this.jobs.values()).filter(j => j.status === "active");
   }
 
-
   async getFailed(limit = 100): Promise<Job<T>[]> {
-    return Array.from(this.jobs.values()).filter(j => j.status === "failed").slice(-limit);
+    return Array.from(this.jobs.values())
+      .filter(j => j.status === "failed")
+      .slice(-limit);
   }
-
 
   async getCompleted(limit = 100): Promise<Job<T>[]> {
-    return Array.from(this.jobs.values()).filter(j => j.status === "completed").slice(-limit);
+    return Array.from(this.jobs.values())
+      .filter(j => j.status === "completed")
+      .slice(-limit);
   }
-
 
   async obliterate(): Promise<void> {
     this.jobs.clear();
     this.completedCount = 0;
   }
 
-
   async pause(): Promise<void> {
     this.log.info("Queue paused");
   }
 
-
   async resume(): Promise<void> {
     this.log.info("Queue resumed");
   }
-
 
   getStats(): QueueStats {
     const all = Array.from(this.jobs.values());
@@ -246,12 +288,14 @@ class Queue<T = unknown> {
     };
   }
 
-
   _markActive(id: string): void {
     const job = this.jobs.get(id);
-    if (job) { job.status = "active"; job.processedAt = new Date(); job.attempts++; }
+    if (job) {
+      job.status = "active";
+      job.processedAt = new Date();
+      job.attempts++;
+    }
   }
-
 
   _markCompleted(id: string, returnValue?: unknown): void {
     const job = this.jobs.get(id);
@@ -262,15 +306,18 @@ class Queue<T = unknown> {
       job.progress = 100;
       this.completedCount++;
       if (typeof job.opts.removeOnComplete === "number") {
-        const completed = Array.from(this.jobs.values()).filter(j => j.status === "completed");
+        const completed = Array.from(this.jobs.values()).filter(
+          j => j.status === "completed"
+        );
         if (completed.length > job.opts.removeOnComplete) {
-          const oldest = completed.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
+          const oldest = completed.sort(
+            (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+          )[0];
           this.jobs.delete(oldest.id);
         }
       }
     }
   }
-
 
   _markFailed(id: string, reason: string, stack?: string): void {
     const job = this.jobs.get(id);
@@ -282,9 +329,10 @@ class Queue<T = unknown> {
       });
     } else {
       job.status = "waiting"; // retry
-      const backoffDelay = job.opts.backoff.type === "exponential"
-        ? job.opts.backoff.delay * Math.pow(2, job.attempts - 1)
-        : job.opts.backoff.delay;
+      const backoffDelay =
+        job.opts.backoff.type === "exponential"
+          ? job.opts.backoff.delay * Math.pow(2, job.attempts - 1)
+          : job.opts.backoff.delay;
       job.opts.delay = backoffDelay;
       this.log.warn(`Job failed, retrying in ${backoffDelay}ms: ${job.name}`, {
         data: { jobId: id, attempt: job.attempts, reason },
@@ -302,7 +350,9 @@ type Processor<T, R = unknown> = (job: Job<T>) => Promise<R>;
 class Worker<T = unknown, R = unknown> {
   private running = false;
   private activeJobs = new Set<string>();
-  private get log() { return logger.child(`worker:${this.queueName}`); }
+  private get log() {
+    return logger.child(`worker:${this.queueName}`);
+  }
 
   constructor(
     private readonly queueName: string,
@@ -326,7 +376,9 @@ class Worker<T = unknown, R = unknown> {
   private async _poll(): Promise<void> {
     while (this.running) {
       if (this.activeJobs.size < this.concurrency) {
-        const waiting = await this.queue.getWaiting(this.concurrency - this.activeJobs.size);
+        const waiting = await this.queue.getWaiting(
+          this.concurrency - this.activeJobs.size
+        );
         for (const job of waiting) {
           if (this.activeJobs.size >= this.concurrency) break;
           this._processJob(job);
@@ -353,7 +405,9 @@ class Worker<T = unknown, R = unknown> {
     }
   }
 
-  getActiveCount(): number { return this.activeJobs.size; }
+  getActiveCount(): number {
+    return this.activeJobs.size;
+  }
 }
 
 // ─── Named Queues ─────────────────────────────────────────────────────────────
@@ -379,7 +433,12 @@ export interface NotificationJobData {
 
 // Payout processing jobs
 export interface PayoutJobData {
-  type: "creator_payout" | "affiliate_commission" | "referral_bonus" | "staking_reward" | "tournament_prize";
+  type:
+    | "creator_payout"
+    | "affiliate_commission"
+    | "referral_bonus"
+    | "staking_reward"
+    | "tournament_prize";
   recipientId: number;
   amountCents: number;
   currency: string;
@@ -403,7 +462,13 @@ export interface ModerationJobData {
 // Analytics aggregation jobs
 export interface AnalyticsJobData {
   [key: string]: unknown;
-  type: "aggregate_daily" | "aggregate_weekly" | "compute_trending" | "update_leaderboard" | "cohort_analysis" | "funnel_update";
+  type:
+    | "aggregate_daily"
+    | "aggregate_weekly"
+    | "compute_trending"
+    | "update_leaderboard"
+    | "cohort_analysis"
+    | "funnel_update";
   entityType?: string;
   entityId?: string;
   dateRange?: { start: string; end: string };
@@ -411,7 +476,13 @@ export interface AnalyticsJobData {
 
 // Email campaign jobs
 export interface EmailJobData {
-  type: "welcome" | "subscription_renewal" | "payout_sent" | "security_alert" | "creator_milestone" | "campaign";
+  type:
+    | "welcome"
+    | "subscription_renewal"
+    | "payout_sent"
+    | "security_alert"
+    | "creator_milestone"
+    | "campaign";
   recipientId: number;
   recipientEmail: string;
   templateId: string;
@@ -429,20 +500,30 @@ export const queues = {
 };
 
 // ─── Worker Processors ────────────────────────────────────────────────────────
-async function processMediaJob(job: Job<MediaJobData>): Promise<{ processed: boolean; outputUrl?: string }> {
+async function processMediaJob(
+  job: Job<MediaJobData>
+): Promise<{ processed: boolean; outputUrl?: string }> {
   const { type, assetId, inputUrl } = job.data;
-  logger.info("queue:media", `Processing ${type} for asset ${assetId}`, { data: { assetId, inputUrl } });
+  logger.info("queue:media", `Processing ${type} for asset ${assetId}`, {
+    data: { assetId, inputUrl },
+  });
 
   switch (type) {
     case "transcode":
       // Production: spawn ffmpeg process or call AWS MediaConvert
       // await ffmpeg(inputUrl).output(`${assetId}/hls/master.m3u8`).run();
-      return { processed: true, outputUrl: `https://cdn.shadowchat.app/media/${assetId}/hls/master.m3u8` };
+      return {
+        processed: true,
+        outputUrl: `https://cdn.shadowchat.app/media/${assetId}/hls/master.m3u8`,
+      };
 
     case "thumbnail":
       // Production: extract frame at 0s and resize to 1280x720
       // await ffmpeg(inputUrl).screenshots({ timestamps: [0], filename: `${assetId}_thumb.jpg`, size: '1280x720' });
-      return { processed: true, outputUrl: `https://cdn.shadowchat.app/media/${assetId}/thumbnail.jpg` };
+      return {
+        processed: true,
+        outputUrl: `https://cdn.shadowchat.app/media/${assetId}/thumbnail.jpg`,
+      };
 
     case "moderate":
       // Production: call OpenAI Vision API or AWS Rekognition
@@ -450,7 +531,10 @@ async function processMediaJob(job: Job<MediaJobData>): Promise<{ processed: boo
 
     case "compress":
       // Production: re-encode at lower bitrate
-      return { processed: true, outputUrl: `https://cdn.shadowchat.app/media/${assetId}/compressed.mp4` };
+      return {
+        processed: true,
+        outputUrl: `https://cdn.shadowchat.app/media/${assetId}/compressed.mp4`,
+      };
 
     case "delete":
       // Production: delete from S3
@@ -461,11 +545,17 @@ async function processMediaJob(job: Job<MediaJobData>): Promise<{ processed: boo
   }
 }
 
-async function processNotificationJob(job: Job<NotificationJobData>): Promise<{ delivered: boolean }> {
+async function processNotificationJob(
+  job: Job<NotificationJobData>
+): Promise<{ delivered: boolean }> {
   const { type, userId, title, body } = job.data;
-  logger.info("queue:notifications", `Delivering ${type} notification to user ${userId}`, {
-    data: { userId, title },
-  });
+  logger.info(
+    "queue:notifications",
+    `Delivering ${type} notification to user ${userId}`,
+    {
+      data: { userId, title },
+    }
+  );
 
   switch (type) {
     case "push":
@@ -493,11 +583,17 @@ async function processNotificationJob(job: Job<NotificationJobData>): Promise<{ 
   }
 }
 
-async function processPayoutJob(job: Job<PayoutJobData>): Promise<{ payoutId: string; status: string }> {
+async function processPayoutJob(
+  job: Job<PayoutJobData>
+): Promise<{ payoutId: string; status: string }> {
   const { type, recipientId, amountCents, currency, idempotencyKey } = job.data;
-  logger.info("queue:payouts", `Processing ${type} payout for user ${recipientId}`, {
-    data: { recipientId, amountCents, currency },
-  });
+  logger.info(
+    "queue:payouts",
+    `Processing ${type} payout for user ${recipientId}`,
+    {
+      data: { recipientId, amountCents, currency },
+    }
+  );
 
   if (amountCents < 100) throw new Error("Minimum payout is $1.00");
 
@@ -509,7 +605,11 @@ async function processPayoutJob(job: Job<PayoutJobData>): Promise<{ payoutId: st
   return { payoutId, status: "pending" };
 }
 
-async function processModerationJob(job: Job<ModerationJobData>): Promise<{ decision: "approve" | "reject" | "review"; score: number; flags: string[] }> {
+async function processModerationJob(job: Job<ModerationJobData>): Promise<{
+  decision: "approve" | "reject" | "review";
+  score: number;
+  flags: string[];
+}> {
   const { type, contentId, content, priority } = job.data;
   logger.info("queue:moderation", `Moderating ${type} content ${contentId}`, {
     data: { contentId, priority },
@@ -521,21 +621,31 @@ async function processModerationJob(job: Job<ModerationJobData>): Promise<{ deci
   const lowerContent = content.toLowerCase();
 
   // Basic keyword detection (production: replace with ML model)
-  if (lowerContent.includes("spam") || lowerContent.includes("scam")) flags.push("spam");
-  if (lowerContent.includes("hate") || lowerContent.includes("slur")) flags.push("hate_speech");
+  if (lowerContent.includes("spam") || lowerContent.includes("scam"))
+    flags.push("spam");
+  if (lowerContent.includes("hate") || lowerContent.includes("slur"))
+    flags.push("hate_speech");
 
   const score = flags.length === 0 ? 0.02 : flags.length * 0.4;
   const decision = score > 0.7 ? "reject" : score > 0.3 ? "review" : "approve";
 
-  logger.info("queue:moderation", `Moderation decision: ${decision} (score=${score})`, {
-    data: { contentId, decision, score, flags },
-  });
+  logger.info(
+    "queue:moderation",
+    `Moderation decision: ${decision} (score=${score})`,
+    {
+      data: { contentId, decision, score, flags },
+    }
+  );
   return { decision, score, flags };
 }
 
-async function processAnalyticsJob(job: Job<AnalyticsJobData>): Promise<{ processed: boolean; recordsUpdated: number }> {
+async function processAnalyticsJob(
+  job: Job<AnalyticsJobData>
+): Promise<{ processed: boolean; recordsUpdated: number }> {
   const { type } = job.data;
-  logger.info("queue:analytics", `Running analytics job: ${type}`, { data: job.data });
+  logger.info("queue:analytics", `Running analytics job: ${type}`, {
+    data: job.data,
+  });
 
   // Production: run SQL aggregation queries against the database
   switch (type) {
@@ -552,7 +662,9 @@ async function processAnalyticsJob(job: Job<AnalyticsJobData>): Promise<{ proces
   }
 }
 
-async function processEmailJob(job: Job<EmailJobData>): Promise<{ messageId: string }> {
+async function processEmailJob(
+  job: Job<EmailJobData>
+): Promise<{ messageId: string }> {
   const { type, recipientEmail, templateId, variables } = job.data;
   logger.info("queue:email", `Sending ${type} email to ${recipientEmail}`, {
     data: { templateId, type },
@@ -565,9 +677,19 @@ async function processEmailJob(job: Job<EmailJobData>): Promise<{ messageId: str
 // ─── Workers ──────────────────────────────────────────────────────────────────
 export const workers = {
   media: new Worker("media", queues.media, processMediaJob, 3),
-  notifications: new Worker("notifications", queues.notifications, processNotificationJob, 10),
+  notifications: new Worker(
+    "notifications",
+    queues.notifications,
+    processNotificationJob,
+    10
+  ),
   payouts: new Worker("payouts", queues.payouts, processPayoutJob, 2),
-  moderation: new Worker("moderation", queues.moderation, processModerationJob, 5),
+  moderation: new Worker(
+    "moderation",
+    queues.moderation,
+    processModerationJob,
+    5
+  ),
   analytics: new Worker("analytics", queues.analytics, processAnalyticsJob, 2),
   email: new Worker("email", queues.email, processEmailJob, 5),
 };
@@ -581,14 +703,12 @@ export const queueManager = {
     }
   },
 
-
   stopAll(): void {
     for (const [name, worker] of Object.entries(workers)) {
       worker.stop();
       logger.info("queue-manager", `Worker stopped: ${name}`);
     }
   },
-
 
   getAllStats(): Record<string, QueueStats> {
     const stats: Record<string, QueueStats> = {};
@@ -598,35 +718,41 @@ export const queueManager = {
     return stats;
   },
 
-
   async enqueueMediaJob(data: MediaJobData, opts?: JobOptions) {
-    return queues.media.add(data.type, data, { priority: data.priority === "urgent" ? 1 : data.priority === "background" ? 5 : 3, ...opts });
+    return queues.media.add(data.type, data, {
+      priority:
+        data.priority === "urgent" ? 1 : data.priority === "background" ? 5 : 3,
+      ...opts,
+    });
   },
-
 
   async enqueueNotification(data: NotificationJobData, opts?: JobOptions) {
     return queues.notifications.add(data.type, data, { priority: 2, ...opts });
   },
 
-
   async enqueuePayout(data: PayoutJobData, opts?: JobOptions) {
-    return queues.payouts.add(data.type, data, { priority: 1, attempts: 5, backoff: { type: "exponential", delay: 5000 }, ...opts });
+    return queues.payouts.add(data.type, data, {
+      priority: 1,
+      attempts: 5,
+      backoff: { type: "exponential", delay: 5000 },
+      ...opts,
+    });
   },
-
 
   async enqueueModeration(data: ModerationJobData, opts?: JobOptions) {
-    const priority: JobPriority = data.priority === "urgent" ? 1 : data.priority === "background" ? 5 : 3;
+    const priority: JobPriority =
+      data.priority === "urgent" ? 1 : data.priority === "background" ? 5 : 3;
     return queues.moderation.add(data.type, data, { priority, ...opts });
   },
-
 
   async enqueueAnalytics(data: AnalyticsJobData, opts?: JobOptions) {
     return queues.analytics.add(data.type, data, { priority: 5, ...opts });
   },
 
-
   async enqueueEmail(data: EmailJobData, opts?: JobOptions) {
-    const delay = data.scheduledAt ? Math.max(0, data.scheduledAt.getTime() - Date.now()) : 0;
+    const delay = data.scheduledAt
+      ? Math.max(0, data.scheduledAt.getTime() - Date.now())
+      : 0;
     return queues.email.add(data.type, data, { priority: 3, delay, ...opts });
   },
 
@@ -636,20 +762,35 @@ export const queueManager = {
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(2, 0, 0, 0); // 2 AM
     const delay = tomorrow.getTime() - Date.now();
-    await queues.analytics.add("aggregate_daily", { type: "aggregate_daily" }, { delay, priority: 5 });
-    logger.info("queue-manager", "Scheduled daily aggregation", { data: { scheduledAt: tomorrow.toISOString() } });
+    await queues.analytics.add(
+      "aggregate_daily",
+      { type: "aggregate_daily" },
+      { delay, priority: 5 }
+    );
+    logger.info("queue-manager", "Scheduled daily aggregation", {
+      data: { scheduledAt: tomorrow.toISOString() },
+    });
   },
 
   // Convenience: schedule trending computation every 15 minutes
   async scheduleTrendingUpdate(): Promise<void> {
-    await queues.analytics.add("compute_trending", { type: "compute_trending" }, { delay: 15 * 60 * 1000, priority: 4 });
+    await queues.analytics.add(
+      "compute_trending",
+      { type: "compute_trending" },
+      { delay: 15 * 60 * 1000, priority: 4 }
+    );
   },
 
-
-  getHealthStatus(): { healthy: boolean; queues: Record<string, { waiting: number; failed: number; dead: number }> } {
+  getHealthStatus(): {
+    healthy: boolean;
+    queues: Record<string, { waiting: number; failed: number; dead: number }>;
+  } {
     const stats = this.getAllStats();
     const healthy = Object.values(stats).every(s => s.dead < 100);
-    const summary: Record<string, { waiting: number; failed: number; dead: number }> = {};
+    const summary: Record<
+      string,
+      { waiting: number; failed: number; dead: number }
+    > = {};
     for (const [name, s] of Object.entries(stats)) {
       summary[name] = { waiting: s.waiting, failed: s.failed, dead: s.dead };
     }
@@ -669,10 +810,17 @@ export interface TraceContext {
 }
 
 const _activeTraces = new Map<string, TraceContext>();
-const _completedTraces: (TraceContext & { duration: number; error?: string })[] = [];
+const _completedTraces: (TraceContext & {
+  duration: number;
+  error?: string;
+})[] = [];
 
 export const tracer = {
-  startSpan(service: string, operation: string, parentTraceId?: string): TraceContext {
+  startSpan(
+    service: string,
+    operation: string,
+    parentTraceId?: string
+  ): TraceContext {
     const ctx: TraceContext = {
       traceId: parentTraceId ?? crypto.randomBytes(8).toString("hex"),
       spanId: crypto.randomBytes(4).toString("hex"),
@@ -686,7 +834,6 @@ export const tracer = {
     return ctx;
   },
 
-
   finishSpan(spanId: string, error?: string): number {
     const ctx = _activeTraces.get(spanId);
     if (!ctx) return 0;
@@ -695,27 +842,31 @@ export const tracer = {
     if (_completedTraces.length >= 1000) _completedTraces.shift();
     _completedTraces.push({ ...ctx, duration, error });
     if (duration > 1000) {
-      logger.warn(ctx.service, `Slow operation: ${ctx.operation} took ${duration}ms`, {
-        traceId: ctx.traceId, spanId, duration,
-      });
+      logger.warn(
+        ctx.service,
+        `Slow operation: ${ctx.operation} took ${duration}ms`,
+        {
+          traceId: ctx.traceId,
+          spanId,
+          duration,
+        }
+      );
     }
     return duration;
   },
-
 
   getSlowSpans(thresholdMs = 500): typeof _completedTraces {
     return _completedTraces.filter(s => s.duration > thresholdMs).slice(-100);
   },
 
-
   getErrorSpans(): typeof _completedTraces {
     return _completedTraces.filter(s => s.error).slice(-100);
   },
 
-
   getStats() {
     const durations = _completedTraces.map(s => s.duration);
-    if (durations.length === 0) return { p50: 0, p95: 0, p99: 0, avg: 0, total: 0 };
+    if (durations.length === 0)
+      return { p50: 0, p95: 0, p99: 0, avg: 0, total: 0 };
     durations.sort((a, b) => a - b);
     return {
       p50: durations[Math.floor(durations.length * 0.5)],
@@ -741,7 +892,10 @@ class RedisCache {
 
   async get<T>(key: string): Promise<T | null> {
     const entry = this.store.get(key);
-    if (!entry) { this.missCount++; return null; }
+    if (!entry) {
+      this.missCount++;
+      return null;
+    }
     if (Date.now() > entry.expiresAt) {
       this.store.delete(key);
       this.missCount++;
@@ -753,7 +907,11 @@ class RedisCache {
   }
 
   async set<T>(key: string, value: T, ttlSeconds = 300): Promise<void> {
-    this.store.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000, hits: 0 });
+    this.store.set(key, {
+      value,
+      expiresAt: Date.now() + ttlSeconds * 1000,
+      hits: 0,
+    });
   }
 
   async del(key: string): Promise<boolean> {
@@ -764,12 +922,19 @@ class RedisCache {
     const regex = new RegExp("^" + pattern.replace(/\*/g, ".*") + "$");
     let count = 0;
     for (const key of this.store.keys()) {
-      if (regex.test(key)) { this.store.delete(key); count++; }
+      if (regex.test(key)) {
+        this.store.delete(key);
+        count++;
+      }
     }
     return count;
   }
 
-  async getOrSet<T>(key: string, fetcher: () => Promise<T>, ttlSeconds = 300): Promise<T> {
+  async getOrSet<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+    ttlSeconds = 300
+  ): Promise<T> {
     const cached = await this.get<T>(key);
     if (cached !== null) return cached;
     const value = await fetcher();
@@ -781,7 +946,9 @@ class RedisCache {
     return Promise.all(keys.map(k => this.get<T>(k)));
   }
 
-  async mset<T>(entries: { key: string; value: T; ttl?: number }[]): Promise<void> {
+  async mset<T>(
+    entries: { key: string; value: T; ttl?: number }[]
+  ): Promise<void> {
     await Promise.all(entries.map(e => this.set(e.key, e.value, e.ttl)));
   }
 
@@ -812,13 +979,17 @@ class RedisCache {
     const now = Date.now();
     let expired = 0;
     for (const [key, entry] of this.store.entries()) {
-      if (now > entry.expiresAt) { this.store.delete(key); expired++; }
+      if (now > entry.expiresAt) {
+        this.store.delete(key);
+        expired++;
+      }
     }
     return {
       keys: this.store.size,
       hits: this.hitCount,
       misses: this.missCount,
-      hitRate: total > 0 ? ((this.hitCount / total) * 100).toFixed(1) + "%" : "0%",
+      hitRate:
+        total > 0 ? ((this.hitCount / total) * 100).toFixed(1) + "%" : "0%",
       expiredCleaned: expired,
     };
   }
@@ -837,7 +1008,8 @@ export const cacheKeys = {
   tokenPrice: (symbol: string) => `price:${symbol}`,
   streamStatus: (streamId: number) => `stream:status:${streamId}`,
   userWallet: (userId: number) => `wallet:${userId}`,
-  rateLimitKey: (identifier: string, window: string) => `ratelimit:${identifier}:${window}`,
+  rateLimitKey: (identifier: string, window: string) =>
+    `ratelimit:${identifier}:${window}`,
   sessionKey: (sessionId: string) => `session:${sessionId}`,
   csrfKey: (sessionId: string) => `csrf:${sessionId}`,
   notificationCount: (userId: number) => `notif:count:${userId}`,
@@ -851,7 +1023,10 @@ export const cacheLayer = cache;
 // ─── COMMANDMENT ENQUEUE / LOGGER FIXES ─────────────────────────────────────
 // queueManager.enqueue - synchronous job submission
 const _enqueueOriginal = queueManager;
-(queueManager as any).enqueue = function(queueName: string, payload: Record<string, unknown>): { jobId: string; queueName: string; status: string } {
+(queueManager as any).enqueue = function (
+  queueName: string,
+  payload: Record<string, unknown>
+): { jobId: string; queueName: string; status: string } {
   const jobId = `job_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   return { jobId, queueName, status: "queued" };
 };
@@ -859,20 +1034,40 @@ const _enqueueOriginal = queueManager;
 // Override structuredLogger to return structured objects
 export const structuredLoggerWithReturn = {
   info(message: string, meta?: Record<string, unknown>) {
-    const entry = { level: "info", message, timestamp: new Date().toISOString(), ...meta };
+    const entry = {
+      level: "info",
+      message,
+      timestamp: new Date().toISOString(),
+      ...meta,
+    };
     logger.info(message, meta as any);
     return entry;
   },
   warn(message: string, meta?: Record<string, unknown>) {
-    const entry = { level: "warn", message, timestamp: new Date().toISOString(), ...meta };
+    const entry = {
+      level: "warn",
+      message,
+      timestamp: new Date().toISOString(),
+      ...meta,
+    };
     return entry;
   },
   error(message: string, meta?: Record<string, unknown>) {
-    const entry = { level: "error", message, timestamp: new Date().toISOString(), ...meta };
+    const entry = {
+      level: "error",
+      message,
+      timestamp: new Date().toISOString(),
+      ...meta,
+    };
     return entry;
   },
   debug(message: string, meta?: Record<string, unknown>) {
-    const entry = { level: "debug", message, timestamp: new Date().toISOString(), ...meta };
+    const entry = {
+      level: "debug",
+      message,
+      timestamp: new Date().toISOString(),
+      ...meta,
+    };
     return entry;
   },
 };

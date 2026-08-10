@@ -29,9 +29,22 @@ export interface WarehouseEvent {
 
 export interface UserBehaviorSignal {
   userId: number;
-  signalType: "view" | "like" | "share" | "comment" | "follow" | "subscribe" | "purchase" | "search" | "skip" | "replay" | "save" | "report";
+  signalType:
+    | "view"
+    | "like"
+    | "share"
+    | "comment"
+    | "follow"
+    | "subscribe"
+    | "purchase"
+    | "search"
+    | "skip"
+    | "replay"
+    | "save"
+    | "report";
   targetId: string;
-  targetType: "post" | "reel" | "stream" | "creator" | "community" | "nft" | "product";
+  targetType:
+    "post" | "reel" | "stream" | "creator" | "community" | "nft" | "product";
   duration?: number;
   completionRate?: number;
   referrer?: string;
@@ -77,7 +90,15 @@ export interface CohortData {
 
 export interface FraudSignal {
   userId: number;
-  signalType: "fake_engagement" | "bot_behavior" | "payment_fraud" | "identity_theft" | "spam" | "wash_trading" | "sybil_attack" | "account_takeover";
+  signalType:
+    | "fake_engagement"
+    | "bot_behavior"
+    | "payment_fraud"
+    | "identity_theft"
+    | "spam"
+    | "wash_trading"
+    | "sybil_attack"
+    | "account_takeover";
   severity: "low" | "medium" | "high" | "critical";
   evidence: Record<string, unknown>;
   detectedAt: Date;
@@ -120,7 +141,11 @@ export interface RetentionMetrics {
 export interface DataExportRequest {
   id: string;
   userId: number;
-  requestType: "gdpr_export" | "creator_analytics" | "transaction_history" | "full_account";
+  requestType:
+    | "gdpr_export"
+    | "creator_analytics"
+    | "transaction_history"
+    | "full_account";
   status: "pending" | "processing" | "ready" | "expired";
   downloadUrl?: string;
   requestedAt: Date;
@@ -167,10 +192,14 @@ class EventStore {
     limit?: number;
   }): WarehouseEvent[] {
     let result = this.events;
-    if (filters.eventType) result = result.filter(e => e.eventType === filters.eventType);
-    if (filters.userId !== undefined) result = result.filter(e => e.userId === filters.userId);
-    if (filters.since) result = result.filter(e => e.timestamp >= filters.since!);
-    if (filters.until) result = result.filter(e => e.timestamp <= filters.until!);
+    if (filters.eventType)
+      result = result.filter(e => e.eventType === filters.eventType);
+    if (filters.userId !== undefined)
+      result = result.filter(e => e.userId === filters.userId);
+    if (filters.since)
+      result = result.filter(e => e.timestamp >= filters.since!);
+    if (filters.until)
+      result = result.filter(e => e.timestamp <= filters.until!);
     return result.slice(-(filters.limit || 1000));
   }
 
@@ -220,16 +249,22 @@ class EventStore {
 
 class RecommendationDataLake {
   private signals: UserBehaviorSignal[] = [];
-  private userProfiles = new Map<number, {
-    topCategories: string[];
-    topCreators: number[];
-    avgSessionDuration: number;
-    preferredContentTypes: string[];
-    activeHours: number[];
-    engagementScore: number;
-  }>();
+  private userProfiles = new Map<
+    number,
+    {
+      topCategories: string[];
+      topCreators: number[];
+      avgSessionDuration: number;
+      preferredContentTypes: string[];
+      activeHours: number[];
+      engagementScore: number;
+    }
+  >();
 
-  private readonly SIGNAL_WEIGHTS: Record<UserBehaviorSignal["signalType"], number> = {
+  private readonly SIGNAL_WEIGHTS: Record<
+    UserBehaviorSignal["signalType"],
+    number
+  > = {
     view: 1,
     like: 3,
     share: 5,
@@ -283,7 +318,10 @@ class RecommendationDataLake {
     profile.engagementScore += signal.weight;
     const hour = new Date().getHours();
     if (!profile.activeHours.includes(hour)) profile.activeHours.push(hour);
-    if (signal.targetType === "creator" && !profile.topCreators.includes(parseInt(signal.targetId))) {
+    if (
+      signal.targetType === "creator" &&
+      !profile.topCreators.includes(parseInt(signal.targetId))
+    ) {
       profile.topCreators.push(parseInt(signal.targetId));
       if (profile.topCreators.length > 20) profile.topCreators.shift();
     }
@@ -292,7 +330,11 @@ class RecommendationDataLake {
     }
   }
 
-  getUserSignals(userId: number, since?: Date, limit = 500): UserBehaviorSignal[] {
+  getUserSignals(
+    userId: number,
+    since?: Date,
+    limit = 500
+  ): UserBehaviorSignal[] {
     return this.signals
       .filter(s => s.userId === userId && (!since || s.timestamp >= since))
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
@@ -303,7 +345,10 @@ class RecommendationDataLake {
     return this.userProfiles.get(userId) || null;
   }
 
-  getTopContent(targetType: UserBehaviorSignal["targetType"], limit = 20): { targetId: string; score: number; signals: number }[] {
+  getTopContent(
+    targetType: UserBehaviorSignal["targetType"],
+    limit = 20
+  ): { targetId: string; score: number; signals: number }[] {
     const scores = new Map<string, { score: number; signals: number }>();
     for (const signal of this.signals) {
       if (signal.targetType !== targetType) continue;
@@ -348,7 +393,11 @@ class RecommendationDataLake {
       totalSignals: this.signals.length,
       uniqueUsers: new Set(this.signals.map(s => s.userId)).size,
       byType,
-      avgEngagementScore: Array.from(this.userProfiles.values()).reduce((sum, p) => sum + p.engagementScore, 0) / (this.userProfiles.size || 1),
+      avgEngagementScore:
+        Array.from(this.userProfiles.values()).reduce(
+          (sum, p) => sum + p.engagementScore,
+          0
+        ) / (this.userProfiles.size || 1),
     };
   }
 }
@@ -361,7 +410,12 @@ class CreatorPerformanceWarehouse {
   updateMetrics(
     creatorId: number,
     period: CreatorMetrics["period"],
-    updates: Partial<Omit<CreatorMetrics, "creatorId" | "period" | "periodStart" | "periodEnd" | "updatedAt">>
+    updates: Partial<
+      Omit<
+        CreatorMetrics,
+        "creatorId" | "period" | "periodStart" | "periodEnd" | "updatedAt"
+      >
+    >
   ): CreatorMetrics {
     const now = new Date();
     const periodStart = this.getPeriodStart(period, now);
@@ -393,7 +447,9 @@ class CreatorPerformanceWarehouse {
     };
     const updated: CreatorMetrics = { ...existing, ...updates, updatedAt: now };
     if (updated.views > 0) {
-      updated.avgEngagementRate = ((updated.likes + updated.comments + updated.shares) / updated.views) * 100;
+      updated.avgEngagementRate =
+        ((updated.likes + updated.comments + updated.shares) / updated.views) *
+        100;
     }
     this.metrics.set(key, updated);
     return updated;
@@ -401,38 +457,74 @@ class CreatorPerformanceWarehouse {
 
   private getPeriodStart(period: CreatorMetrics["period"], now: Date): Date {
     const d = new Date(now);
-    if (period === "daily") { d.setHours(0, 0, 0, 0); return d; }
-    if (period === "weekly") { d.setDate(d.getDate() - d.getDay()); d.setHours(0, 0, 0, 0); return d; }
-    if (period === "monthly") { d.setDate(1); d.setHours(0, 0, 0, 0); return d; }
+    if (period === "daily") {
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+    if (period === "weekly") {
+      d.setDate(d.getDate() - d.getDay());
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+    if (period === "monthly") {
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
     return new Date(0); // all_time
   }
 
   private getPeriodEnd(period: CreatorMetrics["period"], now: Date): Date {
     const d = new Date(now);
-    if (period === "daily") { d.setHours(23, 59, 59, 999); return d; }
-    if (period === "weekly") { d.setDate(d.getDate() + (6 - d.getDay())); d.setHours(23, 59, 59, 999); return d; }
-    if (period === "monthly") { d.setMonth(d.getMonth() + 1, 0); d.setHours(23, 59, 59, 999); return d; }
+    if (period === "daily") {
+      d.setHours(23, 59, 59, 999);
+      return d;
+    }
+    if (period === "weekly") {
+      d.setDate(d.getDate() + (6 - d.getDay()));
+      d.setHours(23, 59, 59, 999);
+      return d;
+    }
+    if (period === "monthly") {
+      d.setMonth(d.getMonth() + 1, 0);
+      d.setHours(23, 59, 59, 999);
+      return d;
+    }
     return new Date(9999, 11, 31);
   }
 
-  getCreatorMetrics(creatorId: number, period: CreatorMetrics["period"]): CreatorMetrics | null {
+  getCreatorMetrics(
+    creatorId: number,
+    period: CreatorMetrics["period"]
+  ): CreatorMetrics | null {
     const now = new Date();
     const periodStart = this.getPeriodStart(period, now);
     const key = `${creatorId}_${period}_${periodStart.toISOString().slice(0, 10)}`;
     return this.metrics.get(key) || null;
   }
 
-  getTopCreators(period: CreatorMetrics["period"], by: "revenue" | "views" | "followers" = "revenue", limit = 50): CreatorMetrics[] {
+  getTopCreators(
+    period: CreatorMetrics["period"],
+    by: "revenue" | "views" | "followers" = "revenue",
+    limit = 50
+  ): CreatorMetrics[] {
     const now = new Date();
     const periodStart = this.getPeriodStart(period, now);
     const periodKey = periodStart.toISOString().slice(0, 10);
     return Array.from(this.metrics.values())
-      .filter(m => m.period === period && m.periodStart.toISOString().slice(0, 10) === periodKey)
+      .filter(
+        m =>
+          m.period === period &&
+          m.periodStart.toISOString().slice(0, 10) === periodKey
+      )
       .sort((a, b) => b[by] - a[by])
       .slice(0, limit);
   }
 
-  getCreatorGrowthTrend(creatorId: number, days = 30): { date: string; followers: number; revenue: number; views: number }[] {
+  getCreatorGrowthTrend(
+    creatorId: number,
+    days = 30
+  ): { date: string; followers: number; revenue: number; views: number }[] {
     const trend = [];
     for (let i = days; i >= 0; i--) {
       const d = new Date(Date.now() - i * 86400000);
@@ -461,7 +553,9 @@ class FraudWarehouse {
     severity: FraudSignal["severity"],
     evidence: Record<string, unknown>
   ): FraudSignal {
-    const severityScore = { low: 10, medium: 25, high: 50, critical: 100 }[severity];
+    const severityScore = { low: 10, medium: 25, high: 50, critical: 100 }[
+      severity
+    ];
     const signal: FraudSignal = {
       userId,
       signalType,
@@ -498,8 +592,14 @@ class FraudWarehouse {
     this.riskScores.set(userId, activeScore);
   }
 
-  getHighRiskUsers(minScore = 100): { userId: number; score: number; signals: FraudSignal[] }[] {
-    const highRisk: { userId: number; score: number; signals: FraudSignal[] }[] = [];
+  getHighRiskUsers(
+    minScore = 100
+  ): { userId: number; score: number; signals: FraudSignal[] }[] {
+    const highRisk: {
+      userId: number;
+      score: number;
+      signals: FraudSignal[];
+    }[] = [];
     for (const [userId, score] of this.riskScores) {
       if (score >= minScore) {
         highRisk.push({
@@ -513,7 +613,9 @@ class FraudWarehouse {
   }
 
   getUnresolvedSignals(severity?: FraudSignal["severity"]): FraudSignal[] {
-    return this.signals.filter(s => !s.resolved && (!severity || s.severity === severity));
+    return this.signals.filter(
+      s => !s.resolved && (!severity || s.severity === severity)
+    );
   }
 
   getFraudStats() {
@@ -525,7 +627,8 @@ class FraudWarehouse {
     return {
       totalSignals: this.signals.length,
       unresolvedSignals: unresolved.length,
-      highRiskUsers: Array.from(this.riskScores.values()).filter(s => s >= 100).length,
+      highRiskUsers: Array.from(this.riskScores.values()).filter(s => s >= 100)
+        .length,
       criticalSignals: unresolved.filter(s => s.severity === "critical").length,
       byType,
     };
@@ -536,20 +639,34 @@ class FraudWarehouse {
 
 class TreasuryWarehouse {
   private snapshots: TreasurySnapshot[] = [];
-  private tokenFlows: { type: string; amount: bigint; timestamp: Date; userId?: number }[] = [];
+  private tokenFlows: {
+    type: string;
+    amount: bigint;
+    timestamp: Date;
+    userId?: number;
+  }[] = [];
 
-  recordSnapshot(snapshot: Omit<TreasurySnapshot, "timestamp">): TreasurySnapshot {
+  recordSnapshot(
+    snapshot: Omit<TreasurySnapshot, "timestamp">
+  ): TreasurySnapshot {
     const full: TreasurySnapshot = { ...snapshot, timestamp: new Date() };
     this.snapshots.push(full);
     return full;
   }
 
-  recordFlow(type: "mint" | "burn" | "stake" | "unstake" | "reward" | "transfer" | "swap", amount: bigint, userId?: number): void {
+  recordFlow(
+    type:
+      "mint" | "burn" | "stake" | "unstake" | "reward" | "transfer" | "swap",
+    amount: bigint,
+    userId?: number
+  ): void {
     this.tokenFlows.push({ type, amount, timestamp: new Date(), userId });
   }
 
   getLatestSnapshot(): TreasurySnapshot | null {
-    return this.snapshots.length > 0 ? this.snapshots[this.snapshots.length - 1] : null;
+    return this.snapshots.length > 0
+      ? this.snapshots[this.snapshots.length - 1]
+      : null;
   }
 
   getSnapshotHistory(days = 30): TreasurySnapshot[] {
@@ -568,7 +685,9 @@ class TreasuryWarehouse {
     return stats;
   }
 
-  getPriceHistory(days = 30): { date: string; price: number; marketCap: number; volume: number }[] {
+  getPriceHistory(
+    days = 30
+  ): { date: string; price: number; marketCap: number; volume: number }[] {
     const since = new Date(Date.now() - days * 86400000);
     return this.snapshots
       .filter(s => s.timestamp >= since)
@@ -597,7 +716,9 @@ class RetentionWarehouse {
     this.userLastSeen.set(userId, now);
   }
 
-  recordDailySnapshot(snapshot: Omit<RetentionMetrics, "date">): RetentionMetrics {
+  recordDailySnapshot(
+    snapshot: Omit<RetentionMetrics, "date">
+  ): RetentionMetrics {
     const metrics: RetentionMetrics = { ...snapshot, date: new Date() };
     this.dailyMetrics.push(metrics);
     return metrics;
@@ -619,22 +740,31 @@ class RetentionWarehouse {
     return cohort;
   }
 
-  updateCohortRetention(cohortId: string, week: number, retainedPercent: number): void {
+  updateCohortRetention(
+    cohortId: string,
+    week: number,
+    retainedPercent: number
+  ): void {
     const cohort = this.cohorts.get(cohortId);
     if (!cohort) return;
     cohort.retentionByWeek[week] = retainedPercent;
     if (cohort.retentionByWeek.length > 1) {
-      cohort.churnRate = 100 - (cohort.retentionByWeek[cohort.retentionByWeek.length - 1] || 0);
+      cohort.churnRate =
+        100 - (cohort.retentionByWeek[cohort.retentionByWeek.length - 1] || 0);
     }
   }
 
   getRetentionTrend(days = 30): RetentionMetrics[] {
     const since = new Date(Date.now() - days * 86400000);
-    return this.dailyMetrics.filter(m => m.date >= since).sort((a, b) => a.date.getTime() - b.date.getTime());
+    return this.dailyMetrics
+      .filter(m => m.date >= since)
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
   }
 
   getCohortAnalysis(): CohortData[] {
-    return Array.from(this.cohorts.values()).sort((a, b) => b.cohortDate.getTime() - a.cohortDate.getTime());
+    return Array.from(this.cohorts.values()).sort(
+      (a, b) => b.cohortDate.getTime() - a.cohortDate.getTime()
+    );
   }
 
   getChurnRisk(): number[] {
@@ -665,7 +795,7 @@ class RetentionWarehouse {
       stickinessRatio: latest.dauMauRatio,
       avgSessionDuration: latest.avgSessionDuration,
       newUserGrowth: latest.newUsers,
-      churnRate: latest.churnedUsers / (latest.dau || 1) * 100,
+      churnRate: (latest.churnedUsers / (latest.dau || 1)) * 100,
     };
   }
 }
@@ -675,7 +805,10 @@ class RetentionWarehouse {
 class DataExportPipeline {
   private requests: DataExportRequest[] = [];
 
-  requestExport(userId: number, requestType: DataExportRequest["requestType"]): DataExportRequest {
+  requestExport(
+    userId: number,
+    requestType: DataExportRequest["requestType"]
+  ): DataExportRequest {
     const request: DataExportRequest = {
       id: `export_${Date.now()}_${userId}`,
       userId,
@@ -714,7 +847,8 @@ class DataExportPipeline {
         behaviorSignals: "anonymized",
         fraudSignals: "excluded",
       },
-      retentionPolicy: "Data retained for 3 years after account deletion per GDPR Article 17",
+      retentionPolicy:
+        "Data retained for 3 years after account deletion per GDPR Article 17",
     };
   }
 }
@@ -740,9 +874,18 @@ class AnalyticsAggregator {
         active: Math.floor(eventStats.uniqueUsers * 0.3),
       },
       content: {
-        posts: eventStore.query({ eventType: "post_created", since: new Date(Date.now() - days * 86400000) }).length,
-        reels: eventStore.query({ eventType: "reel_created", since: new Date(Date.now() - days * 86400000) }).length,
-        streams: eventStore.query({ eventType: "stream_started", since: new Date(Date.now() - days * 86400000) }).length,
+        posts: eventStore.query({
+          eventType: "post_created",
+          since: new Date(Date.now() - days * 86400000),
+        }).length,
+        reels: eventStore.query({
+          eventType: "reel_created",
+          since: new Date(Date.now() - days * 86400000),
+        }).length,
+        streams: eventStore.query({
+          eventType: "stream_started",
+          since: new Date(Date.now() - days * 86400000),
+        }).length,
       },
       revenue: { total: 0, bySource: {} },
       engagement: {
