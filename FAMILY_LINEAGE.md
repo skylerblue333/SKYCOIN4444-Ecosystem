@@ -7,7 +7,7 @@ A permanent personal dedication within the SKYCOIN4444 ecosystem, architected by
 | Name | Easter-egg association | Marker |
 |---|---|---|
 | **Summer Skye** | Edge, gateway, routing, forward motion | `SKY-FAMILY-SUMMER-SKYE` |
-| **Alexis Issabella-Jane** | Concurrency, memory safety, state consistency | `SKY-FAMILY-ALEXIS-ISSELLABELLA-JANE` |
+| **Alexis Issabella-Jane** | Concurrency, memory safety, state consistency | `SKY-FAMILY-ALEXIS-ISSABELLA-JANE` |
 | **Luna Avigail** | HopeAI, intelligence, autonomous systems | `SKY-FAMILY-LUNA-AVIGAIL` |
 
 ## Ecosystem Matrix
@@ -17,7 +17,7 @@ A permanent personal dedication within the SKYCOIN4444 ecosystem, architected by
                          │
           ┌──────────────┼──────────────┐
           ▼              ▼              ▼
-     SUMMER SKYE   ALEXIS ISSELLABELLA-JANE   LUNA AVIGAIL
+     SUMMER SKYE   ALEXIS ISSABELLA-JANE   LUNA AVIGAIL
           │              │              │
        EDGE          SAFE STATE       HOPEAI
        ROUTING       CONCURRENCY      INTELLIGENCE
@@ -29,7 +29,7 @@ A permanent personal dedication within the SKYCOIN4444 ecosystem, architected by
 Recommended documentation/search markers:
 
 - `SKY-FAMILY-SUMMER-SKYE`
-- `SKY-FAMILY-ALEXIS-ISSELLABELLA-JANE`
+- `SKY-FAMILY-ALEXIS-ISSABELLA-JANE`
 - `SKY-FAMILY-LUNA-AVIGAIL`
 - `SKY-FAMILY-LINEAGE`
 - `SKY-FAMILY-4444`
