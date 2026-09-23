@@ -23,15 +23,17 @@
 ![GitHub license](https://img.shields.io/github/license/skylerblue333/SKYCOIN4444-Ecosystem?style=flat-square)
 ![GitHub last commit](https://img.shields.io/github/last-commit/skylerblue333/SKYCOIN4444-Ecosystem?style=flat-square)
 
-## 🚀 Overview
+## Overview
 
-Welcome to **SKYCOIN4444-Ecosystem**, a high-performance, production-ready repository crafted with modern software engineering standards. This project showcases advanced architectural design, clean code practices, and robust scalability.
+**SKYCOIN4444-Ecosystem** is an engineering workspace and portfolio hub for application, AI, Web3, and platform experiments. It should be evaluated by the code, tests, documentation, and reproducible commands in this repository—not by promotional labels or implied production guarantees.
+
+This repository is currently an **engineering beta**. It is not a financial product prospectus, an investment recommendation, a guarantee of token value, or evidence of audited production deployment.
 
 ## 🛠️ Tech Stack & Architecture
 
-- **Language/Framework**: Modern Full-Stack / TypeScript / Web Standard
-- **Architecture**: Modular, scalable, and optimized for cloud-native deployment
-- **CI/CD & DevOps**: Automated pipelines ensuring high availability and rigorous code quality
+- **Language/Framework**: TypeScript, React, Node.js, and web standards
+- **Architecture**: A modular application workspace with domain packages, services, and integration contracts
+- **Validation**: Use the repository’s package scripts and CI workflows as the source of truth for supported behavior
 
 ## 📂 Project Structure
 
@@ -42,19 +44,35 @@ Welcome to **SKYCOIN4444-Ecosystem**, a high-performance, production-ready repos
 └── README.md       # Project documentation
 ```
 
-## 💡 Key Features
+## Key features and boundaries
 
-- **Enterprise Grade**: Built following industry best practices for security and maintainability.
-- **High Performance**: Optimized algorithms and efficient data handling.
-- **Seamless Integration**: Ready for modern cloud environments and CI/CD automation.
+- **Application foundations:** shared UI, server, database, and domain packages for local beta development.
+- **Integration contracts:** explicit boundaries for identity, payments planning, events, notifications, and other services.
+- **Operational controls:** CI, readiness, lifecycle, logging, and security checks documented in the repository.
+- **Transparent maturity:** a test, workflow, or feature folder is not by itself proof of production readiness, external settlement, custody, regulatory approval, or uptime.
+
+## Ecosystem navigation
+
+| Component | Purpose | Status |
+| --- | --- | --- |
+| [`skycoin4444`](https://github.com/skylerblue333/skycoin4444) | Main engineering-beta application and platform runtime | Engineering beta |
+| [`skycoin-ai`](https://github.com/skylerblue333/skycoin-ai) | Provider-neutral AI routing policy primitive | Engineering beta |
+| [`skycoin-web3`](https://github.com/skylerblue333/skycoin-web3) | Web3 integration and credential-related components | Experimental; verify current tests |
+| [`ShadowChat-Core`](https://github.com/skylerblue333/ShadowChat-Core) | Reusable communication functionality | Review repository status |
+
+The repositories above are separate projects. Do not assume that a component is integrated, deployed, audited, or economically connected unless its documentation and CI evidence say so.
+
+## Responsible economics
+
+The project welcomes useful software, transparent documentation, and legitimate contributors. It does not promise returns, encourage coordinated price activity, or treat repository activity as evidence of token value. Any future economic feature should document its authority model, supply and accounting rules, risks, test coverage, monitoring, recovery procedures, and applicable legal review before public use.
 
 ## 👨‍💻 Author
 
 **Skyler Blue Spillers**
 
 - GitHub: [@skylerblue333](https://github.com/skylerblue333)
-- Professional Chess Player (FIDE 2100+ / Chess.com 2200+) & Software Engineer
+- Software engineer and project author
 
 ---
 
-_Powered by professional software craftsmanship._
+_Build useful systems. Label maturity honestly. Publish the evidence._
