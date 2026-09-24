@@ -167,7 +167,9 @@ jobs:
       PORT: "3000"
       JWT_SECRET: ci-runtime-smoke-secret-not-for-production
       VITE_APP_ID: ci-runtime-smoke
-      OAUTH_SERVER_URL: https://example.invalid
+      VITE_BETA_AUTH_MODE: access_key
+      BETA_ACCESS_KEY: ci-runtime-smoke-beta-access-key-00000000000000000000000000000000
+      BETA_ALLOWED_EMAILS: ci-session@example.invalid
       SKYCOIN_RELEASE_SHA: ${{ github.sha }}
     services:
       mysql:
@@ -241,7 +243,46 @@ jobs:
           if (body.services?.authentication?.ready !== true) {
             throw new Error("Authentication configuration readiness was not proven");
           }
+          if (body.services?.authentication?.providers?.betaAccess !== true) {
+            throw new Error("Beta access provider readiness was not proven");
+          }
+          if (body.services?.authentication?.providers?.oauth !== false) {
+            throw new Error("Runtime smoke unexpectedly depends on OAuth");
+          }
           NODE
+
+      - name: Seed and verify persistent auth session
+        shell: bash
+        run: |
+          node scripts/runtime-session-persistence.mjs seed
+          node scripts/runtime-session-persistence.mjs verify
+
+      - name: Restart production server
+        shell: bash
+        run: |
+          if [ -f runtime-smoke.pid ]; then
+            kill "$(cat runtime-smoke.pid)" 2>/dev/null || true
+            for attempt in {1..20}; do
+              if ! kill -0 "$(cat runtime-smoke.pid)" 2>/dev/null; then
+                break
+              fi
+              sleep 0.25
+            done
+          fi
+          node dist/index.js >> runtime-smoke.log 2>&1 &
+          echo $! > runtime-smoke.pid
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:3000/healthz > /tmp/healthz-after-restart.json; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat runtime-smoke.log
+          exit 1
+
+      - name: Verify session survives process restart
+        shell: bash
+        run: node scripts/runtime-session-persistence.mjs verify
 
       - name: Concurrent liveness smoke
         shell: bash
