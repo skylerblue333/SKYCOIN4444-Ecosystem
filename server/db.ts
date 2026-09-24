@@ -1,7 +1,8 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "../drizzle/index";
-import { eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 
 const poolConnection = mysql.createPool(process.env.DATABASE_URL as string);
 
@@ -272,6 +273,65 @@ export async function createMessage(
   content: string
 ) {
   return { id: "1", senderId, recipientId, content };
+}
+
+
+export type HopeAIChatMessageInput = {
+  userId: string;
+  role: "user" | "assistant";
+  content: string;
+  tone?: string;
+  emotionalState?: string;
+  sessionId?: string;
+};
+
+export async function getHopeAIChatHistory(
+  userId: string,
+  limit = 50,
+  sessionId?: string
+) {
+  const conditions = [eq(schema.hopeAIChatMessages.userId, String(userId))];
+  if (sessionId) {
+    conditions.push(eq(schema.hopeAIChatMessages.sessionId, sessionId));
+  }
+
+  return db
+    .select()
+    .from(schema.hopeAIChatMessages)
+    .where(and(...conditions))
+    .orderBy(desc(schema.hopeAIChatMessages.createdAt))
+    .limit(Math.min(Math.max(limit, 1), 200));
+}
+
+export async function saveHopeAIMessage(input: HopeAIChatMessageInput) {
+  const row = {
+    id: randomUUID(),
+    userId: String(input.userId),
+    role: input.role,
+    content: input.content,
+    tone: input.tone ?? null,
+    emotionalState: input.emotionalState ?? null,
+    sessionId: input.sessionId ?? null,
+    createdAt: new Date(),
+  };
+
+  await db.insert(schema.hopeAIChatMessages).values(row);
+  return row;
+}
+
+export async function clearHopeAIChatHistory(
+  userId: string,
+  sessionId?: string
+) {
+  const conditions = [eq(schema.hopeAIChatMessages.userId, String(userId))];
+  if (sessionId) {
+    conditions.push(eq(schema.hopeAIChatMessages.sessionId, sessionId));
+  }
+
+  const [result] = await db
+    .delete(schema.hopeAIChatMessages)
+    .where(and(...conditions));
+  return { deleted: Number((result as any)?.affectedRows || 0) };
 }
 
 // ============ REVIEW HELPERS ============
