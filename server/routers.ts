@@ -414,8 +414,22 @@ const tokenRouter = router({
   }),
 });
 
+type StakingPoolSummary = {
+  id: string;
+  name: string;
+  apy: number;
+  lockDays: number;
+  totalStaked: number;
+  participants: number;
+  minStake: number;
+};
+
 const stakingRouter = router({
-  pools: publicProcedure.query(async () => []),
+  // Staking mutations are intentionally not exposed until accounting,
+  // idempotency, reward accrual, and withdrawal rules are implemented.
+  pools: publicProcedure.query(
+    async (): Promise<StakingPoolSummary[]> => []
+  ),
   userPositions: protectedProcedure.query(async ({ ctx }) => {
     const database = await db.getDb();
     return database
