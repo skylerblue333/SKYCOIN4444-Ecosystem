@@ -71,8 +71,9 @@ if (process.env.ALLOW_DB_RESTORE !== "YES") {
   throw new Error("Refusing restore: set ALLOW_DB_RESTORE=YES explicitly");
 }
 
-const filePath = path.resolve(process.argv[2] || "");
-if (!process.argv[2]) throw new Error("Usage: pnpm db:restore -- <backup.sql>");
+const backupArg = process.argv.slice(2).find(arg => arg !== "--" && !arg.startsWith("--"));
+if (!backupArg) throw new Error("Usage: pnpm db:restore -- <backup.sql>");
+const filePath = path.resolve(backupArg);
 await access(filePath);
 await verifyChecksum(filePath);
 await restore(databaseConfig(), filePath);
