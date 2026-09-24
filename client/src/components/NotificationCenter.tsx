@@ -40,18 +40,30 @@ export function NotificationCenter() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: notifs, refetch } = trpc.notification.list.useQuery(undefined, {
+  const notifications = trpc.notification.list.useQuery(
+    { limit: 20 },
+    {
+      enabled: !!user,
+      refetchInterval: 30000,
+    }
+  );
+  const unreadCount = trpc.notification.getUnread.useQuery(undefined, {
     enabled: !!user,
     refetchInterval: 30000,
   });
+  const refetch = () => {
+    void notifications.refetch();
+    void unreadCount.refetch();
+  };
   const markRead = trpc.notification.markAsRead.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: refetch,
   });
   const markAllRead = trpc.notification.markAllAsRead.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: refetch,
   });
 
-  const unread = notifs?.filter((n: any) => !n.read).length || 0;
+  const notifs = notifications.data;
+  const unread = unreadCount.data?.count ?? 0;
 
   // Close on outside click
   useEffect(() => {

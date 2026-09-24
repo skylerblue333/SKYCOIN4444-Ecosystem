@@ -20,6 +20,7 @@ import {
   getConversation,
   getFollowers,
   getLikes,
+  getNotifications,
   getPosts,
   getUnreadNotificationCount,
   getUserById,
@@ -169,6 +170,20 @@ describe("beta core persistence", () => {
 
     expect(await getUnreadNotificationCount(user2)).toBe(0);
     expect(await getUnreadNotificationCount(user1)).toBe(1);
+  });
+
+  it("bounds notification reads and keeps them user scoped", async () => {
+    await createNotification(user2, "message", "First message");
+    await createNotification(user2, "follow", "New follower");
+    await createNotification(user2, "system", "System notice");
+    await createNotification(user1, "system", "Other user's notice");
+
+    const result = await getNotifications(user2, 2);
+
+    expect(result).toHaveLength(2);
+    expect(result.every(notification => notification.userId === user2)).toBe(
+      true
+    );
   });
 
   it("persists direct-message history and recipient-scoped read state", async () => {
