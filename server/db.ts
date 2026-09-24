@@ -17,6 +17,8 @@ const {
   follows,
   notifications,
   messages,
+  transactions,
+  wallets,
 } = schema;
 
 function stableId(prefix: string, ...parts: string[]) {
@@ -130,6 +132,7 @@ export async function ensureAllTokenBalances(userId: string) {
       id: `tb_${userId}_${token}`,
       userId,
       tokenSymbol: token,
+      token,
       balance: STARTER[token] ?? 0,
     }))
   );
@@ -142,6 +145,7 @@ export async function upsertTokenBalance(userId: string, token: string, amount: 
       id,
       userId,
       tokenSymbol: token,
+      token,
       balance: amount,
     })
     .onDuplicateKeyUpdate({
@@ -288,19 +292,114 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
 // ============ TRANSACTION HELPERS ============
 export async function getTransactions(userId: string) {
-  return [];
+  return db
+    .select()
+    .from(transactions)
+    .where(
+      or(
+        eq(transactions.userId, userId),
+        eq(transactions.toUserId, userId)
+      )
+    )
+    .orderBy(desc(transactions.createdAt));
 }
 
-export async function createTransaction(data: any) {
-  return { id: "1", ...data };
+export async function createTransaction(data: {
+  userId: string;
+  type: string;
+  amount: number;
+  toUserId?: string;
+}) {
+  const id = `transaction_${nanoid(20)}`;
+  await db.insert(transactions).values({
+    id,
+    userId: data.userId,
+    type: data.type,
+    amount: data.amount,
+    toUserId: data.toUserId ?? null,
+    status: "pending",
+    txHash: null,
+  });
+  const [transaction] = await db
+    .select()
+    .from(transactions)
+    .where(eq(transactions.id, id))
+    .limit(1);
+  return transaction ?? {
+    id,
+    userId: data.userId,
+    type: data.type,
+    amount: data.amount,
+    toUserId: data.toUserId ?? null,
+    status: "pending",
+    txHash: null,
+  };
 }
 
 // ============ WALLET HELPERS ============
+export async function getWallets(userId: string) {
+  return db
+    .select()
+    .from(wallets)
+    .where(eq(wallets.userId, userId))
+    .orderBy(wallets.createdAt);
+}
+
+export async function getWalletByCurrency(userId: string, currency: string) {
+  const normalized = currency.trim().toUpperCase();
+  const [wallet] = await db
+    .select()
+    .from(wallets)
+    .where(
+      and(
+        eq(wallets.userId, userId),
+        eq(wallets.currency, normalized)
+      )
+    )
+    .limit(1);
+  return wallet ?? null;
+}
+
+export async function createWallet(
+  userId: string,
+  currency: string,
+  address: string
+) {
+  const normalized = currency.trim().toUpperCase();
+  const id = stableId("wallet", userId, normalized);
+
+  await db
+    .insert(wallets)
+    .values({
+      id,
+      userId,
+      currency: normalized,
+      address,
+      balance: 0,
+    })
+    .onDuplicateKeyUpdate({
+      set: {
+        address,
+        currency: normalized,
+      },
+    });
+
+  return getWalletByCurrency(userId, normalized);
+}
+
 export async function getWallet(userId: string) {
-  return { userId, balance: 0, address: "" };
+  const [wallet] = await getWallets(userId);
+  return wallet ?? null;
 }
 
 export async function updateWallet(userId: string, balance: number) {
+  const wallet = await getWallet(userId);
+  if (!wallet) return { success: false, reason: "wallet_not_found" as const };
+
+  await db
+    .update(wallets)
+    .set({ balance })
+    .where(eq(wallets.id, wallet.id));
   return { success: true };
 }
 
