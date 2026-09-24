@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { and, eq, inArray, or } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { db } from "./db";
 import {
   users,
@@ -45,20 +45,16 @@ describe("Dating System", () => {
 
   beforeEach(async () => {
     await cleanupTestRows();
-    await db.insert(users).values([
-      {
-        id: testUserId1,
-        email: "dating-user-1@example.test",
-        username: "dating-test-user-1",
-        name: "Dating Test User 1",
-      },
-      {
-        id: testUserId2,
-        email: "dating-user-2@example.test",
-        username: "dating-test-user-2",
-        name: "Dating Test User 2",
-      },
-    ]);
+    // The users schema exposes legacy aliases that map to the same physical
+    // columns (name/displayName and xp/level). A generic ORM insert therefore
+    // emits duplicate MySQL column names. Seed only the physical columns needed
+    // by these foreign-key integration tests.
+    await db.execute(sql`
+      INSERT INTO users (id, email, username, name)
+      VALUES
+        (${testUserId1}, 'dating-user-1@example.test', 'dating-test-user-1', 'Dating Test User 1'),
+        (${testUserId2}, 'dating-user-2@example.test', 'dating-test-user-2', 'Dating Test User 2')
+    `);
   });
 
   afterEach(async () => {
