@@ -243,6 +243,39 @@ jobs:
           }
           NODE
 
+      - name: Seed and verify persistent auth session
+        shell: bash
+        run: |
+          node scripts/runtime-session-persistence.mjs seed
+          node scripts/runtime-session-persistence.mjs verify
+
+      - name: Restart production server
+        shell: bash
+        run: |
+          if [ -f runtime-smoke.pid ]; then
+            kill "$(cat runtime-smoke.pid)" 2>/dev/null || true
+            for attempt in {1..20}; do
+              if ! kill -0 "$(cat runtime-smoke.pid)" 2>/dev/null; then
+                break
+              fi
+              sleep 0.25
+            done
+          fi
+          node dist/index.js >> runtime-smoke.log 2>&1 &
+          echo $! > runtime-smoke.pid
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:3000/healthz > /tmp/healthz-after-restart.json; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat runtime-smoke.log
+          exit 1
+
+      - name: Verify session survives process restart
+        shell: bash
+        run: node scripts/runtime-session-persistence.mjs verify
+
       - name: Concurrent liveness smoke
         shell: bash
         run: |
