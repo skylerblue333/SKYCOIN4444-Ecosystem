@@ -101,11 +101,11 @@ export const streams = mysqlTable("streams", {
   description: varchar("description", { length: 255 }),
   status: varchar("status", { length: 255 }), // live | ended | scheduled
   viewers: int("viewers").default(0),
-  viewerCount: int("viewers").default(0), // Legacy alias
+  viewerCount: int("viewer_count").default(0),
   hlsUrl: varchar("hls_url", { length: 255 }),
   archiveUrl: varchar("archive_url", { length: 255 }),
-  category: varchar("description", { length: 255 }), // Legacy alias
-  startedAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`), // Legacy alias
+  category: varchar("category", { length: 255 }),
+  startedAt: timestamp("started_at"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -287,7 +287,7 @@ export const userBehaviorSignals = mysqlTable("user_behavior_signals", {
   signalType: varchar("signal_type", { length: 255 }).notNull(), // login | purchase | post | comment | follow | etc
   value: float("value").default(0),
   metadata: varchar("metadata", { length: 255 }),
-  recordedAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`), // Legacy alias
+  recordedAt: timestamp("recorded_at").default(sql`CURRENT_TIMESTAMP`),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -487,7 +487,7 @@ export const tokenMarketState = mysqlTable("token_market_state", {
 export const tokenEmissionCaps = mysqlTable("token_emission_caps", {
   id: varchar("id", { length: 255 }).primaryKey(),
   tokenSymbol: varchar("token_symbol", { length: 255 }).notNull(),
-  token: varchar("token_symbol", { length: 255 }), // Legacy alias
+  token: varchar("token", { length: 255 }), // Transitional compatibility field
   maxEmission: float("max_emission"),
   currentEmission: float("current_emission"),
   emissionRate: float("emission_rate"),
