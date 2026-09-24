@@ -3,6 +3,7 @@ import { createReadStream } from "node:fs";
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { pipeline } from "node:stream/promises";
 
 function databaseConfig() {
   const raw = process.env.DATABASE_URL;
@@ -42,27 +43,28 @@ async function verifyChecksum(filePath) {
   if (actual !== expected) throw new Error("Backup checksum verification failed");
 }
 
-function restore(config, filePath) {
-  return new Promise((resolve, reject) => {
-    const args = [
-      "--host", config.host,
-      "--port", config.port,
-      "--user", config.user,
-      "--default-character-set=utf8mb4",
-      config.database,
-    ];
-    const child = spawn("mysql", args, {
-      env: { ...process.env, MYSQL_PWD: config.password },
-      stdio: ["pipe", "inherit", "inherit"],
-    });
+async function restore(config, filePath) {
+  const args = [
+    "--host", config.host,
+    "--port", config.port,
+    "--user", config.user,
+    "--default-character-set=utf8mb4",
+    config.database,
+  ];
+  const child = spawn("mysql", args, {
+    env: { ...process.env, MYSQL_PWD: config.password },
+    stdio: ["pipe", "inherit", "inherit"],
+  });
 
-    createReadStream(filePath).pipe(child.stdin);
+  const exit = new Promise((resolve, reject) => {
     child.on("error", reject);
     child.on("close", code => {
-      if (code !== 0) return reject(new Error(`mysql restore exited with code ${code}`));
-      resolve();
+      if (code === 0) resolve();
+      else reject(new Error(`mysql restore exited with code ${code}`));
     });
   });
+
+  await Promise.all([pipeline(createReadStream(filePath), child.stdin), exit]);
 }
 
 if (process.env.ALLOW_DB_RESTORE !== "YES") {
