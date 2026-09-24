@@ -1,8 +1,6 @@
 import { AXIOS_TIMEOUT_MS, COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { ForbiddenError } from "@shared/_core/errors";
 import axios, { type AxiosInstance } from "axios";
-import * as cookieModule from "cookie";
-const parseCookieHeader = (cookieModule as any).parse;
 import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
 import type { User } from "../../drizzle/schema";
@@ -147,12 +145,27 @@ class SDKServer {
   }
 
   private parseCookies(cookieHeader: string | undefined) {
-    if (!cookieHeader) {
-      return new Map<string, string>();
+    const parsed = new Map<string, string>();
+    if (!cookieHeader) return parsed;
+
+    for (const part of cookieHeader.split(";")) {
+      const separator = part.indexOf("=");
+      if (separator <= 0) continue;
+
+      const key = part.slice(0, separator).trim();
+      if (!key) continue;
+
+      const rawValue = part.slice(separator + 1).trim();
+      try {
+        parsed.set(key, decodeURIComponent(rawValue));
+      } catch {
+        // Preserve a syntactically valid cookie value even if percent-decoding
+        // fails; JWT session values do not require decoding.
+        parsed.set(key, rawValue);
+      }
     }
 
-    const parsed = parseCookieHeader(cookieHeader);
-    return new Map(Object.entries(parsed));
+    return parsed;
   }
 
   private getSessionSecret() {

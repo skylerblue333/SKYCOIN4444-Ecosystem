@@ -1,5 +1,6 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
+import { COOKIE_NAME } from "@shared/const";
 import { sdk } from "./sdk";
 
 export type TrpcContext = {
@@ -16,7 +17,15 @@ export async function createContext(
   try {
     user = await sdk.authenticateRequest(opts.req);
   } catch (error) {
-    // Authentication is optional for public procedures.
+    // Authentication is optional for public procedures, but a supplied session
+    // that fails authentication is operationally meaningful. Never log the
+    // cookie value itself.
+    if (opts.req.headers.cookie?.includes(`${COOKIE_NAME}=`)) {
+      console.warn(
+        "[Auth] Supplied session authentication failed:",
+        error instanceof Error ? error.message : String(error)
+      );
+    }
     user = null;
   }
 
