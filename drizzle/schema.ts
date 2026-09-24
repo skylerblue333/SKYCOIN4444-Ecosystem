@@ -103,11 +103,16 @@ export const streams = mysqlTable("streams", {
   description: varchar("description", { length: 255 }),
   status: varchar("status", { length: 255 }), // live | ended | scheduled
   viewers: int("viewers").default(0),
-  viewerCount: int("viewers").default(0), // Legacy alias
+  viewerCount: int("viewer_count").default(0),
+  peakViewers: int("peak_viewers").default(0),
+  totalViews: int("total_views").default(0),
   hlsUrl: varchar("hls_url", { length: 255 }),
   archiveUrl: varchar("archive_url", { length: 255 }),
-  category: varchar("description", { length: 255 }), // Legacy alias
-  startedAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`), // Legacy alias
+  thumbnailUrl: varchar("thumbnail_url", { length: 255 }),
+  category: varchar("category", { length: 255 }),
+  scheduledAt: timestamp("scheduled_at"),
+  startedAt: timestamp("started_at"),
+  endedAt: timestamp("ended_at"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -208,7 +213,7 @@ export const notifications = mysqlTable("notifications", {
   id: varchar("id", { length: 255 }).primaryKey(),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
   type: varchar("type", { length: 255 }), // like | comment | follow | message | order
-  title: varchar("content", { length: 255 }), // Legacy alias
+  title: varchar("title", { length: 255 }),
   content: varchar("content", { length: 255 }),
   read: boolean("read").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
