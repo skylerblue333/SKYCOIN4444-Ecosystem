@@ -487,13 +487,16 @@ async function startServer() {
       } catch (e) {
         console.warn("[EmergentEconomy] Engine load failed:", e);
       }
-      try {
-        // Start autonomous mining system
-        const { autonomousMining } = await import("../autonomous-mining");
-        await autonomousMining.startMining();
-        console.log("[Mining] Autonomous mining started");
-      } catch (e) {
-        console.warn("[Mining] Autonomous mining start failed:", e);
+      if (process.env.AUTONOMOUS_MINING_ENABLED === "true") {
+        try {
+          const { autonomousMining } = await import("../autonomous-mining");
+          await autonomousMining.startMining();
+          console.log("[Mining] Autonomous mining started");
+        } catch (e) {
+          console.warn("[Mining] Autonomous mining start failed:", e);
+        }
+      } else {
+        console.log("[Mining] Autonomous mining disabled for this deployment");
       }
     })();
   });
