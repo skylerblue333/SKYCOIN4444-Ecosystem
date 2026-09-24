@@ -5,7 +5,20 @@
  */
 
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure, publicProcedure } from "./_core/trpc";
+
+function legacyNumericUserId(userId: string): number {
+  const numericId = Number(userId);
+  if (!Number.isSafeInteger(numericId) || numericId < 0) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message:
+        "This legacy subsystem is not yet migrated to canonical string user IDs.",
+    });
+  }
+  return numericId;
+}
 
 // ─── Phase 31: Digital Identity ───────────────────────────────────────────────
 import {
@@ -88,11 +101,11 @@ export const phase31Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      creatorPassportEngine.createPassport({ userId: ctx.user.id, ...input })
+      creatorPassportEngine.createPassport({ userId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   getMyPassport: protectedProcedure.query(({ ctx }) =>
-    creatorPassportEngine.getPassport(ctx.user.id)
+    creatorPassportEngine.getPassport(legacyNumericUserId(ctx.user.id))
   ),
 
   addVerificationMethod: protectedProcedure
@@ -110,13 +123,13 @@ export const phase31Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      creatorPassportEngine.addVerificationMethod(ctx.user.id, input.method)
+      creatorPassportEngine.addVerificationMethod(legacyNumericUserId(ctx.user.id), input.method)
     ),
 
   linkWalletToPassport: protectedProcedure
     .input(z.object({ walletAddress: z.string() }))
     .mutation(({ ctx, input }) =>
-      creatorPassportEngine.linkWallet(ctx.user.id, input.walletAddress)
+      creatorPassportEngine.linkWallet(legacyNumericUserId(ctx.user.id), input.walletAddress)
     ),
 
   getPassportStats: publicProcedure.query(() =>
@@ -157,17 +170,17 @@ export const phase31Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      walletIdentityEngine.linkWallet({ userId: ctx.user.id, ...input })
+      walletIdentityEngine.linkWallet({ userId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   getMyWallets: protectedProcedure.query(({ ctx }) =>
-    walletIdentityEngine.getWallets(ctx.user.id)
+    walletIdentityEngine.getWallets(legacyNumericUserId(ctx.user.id))
   ),
 
   setPrimaryWallet: protectedProcedure
     .input(z.object({ walletAddress: z.string() }))
     .mutation(({ ctx, input }) =>
-      walletIdentityEngine.setPrimary(ctx.user.id, input.walletAddress)
+      walletIdentityEngine.setPrimary(legacyNumericUserId(ctx.user.id), input.walletAddress)
     ),
 
   // ── Social Identity ───────────────────────────────────────────────────────
@@ -181,20 +194,20 @@ export const phase31Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      socialIdentityEngine.linkSocial({ userId: ctx.user.id, ...input })
+      socialIdentityEngine.linkSocial({ userId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   getMySocialLinks: protectedProcedure.query(({ ctx }) =>
-    socialIdentityEngine.getSocialLinks(ctx.user.id)
+    socialIdentityEngine.getSocialLinks(legacyNumericUserId(ctx.user.id))
   ),
 
   getTotalReach: protectedProcedure.query(({ ctx }) =>
-    socialIdentityEngine.getTotalReach(ctx.user.id)
+    socialIdentityEngine.getTotalReach(legacyNumericUserId(ctx.user.id))
   ),
 
   // ── Trust & Anti-Sybil ────────────────────────────────────────────────────
   getMyTrustScore: protectedProcedure.query(({ ctx }) =>
-    trustIdentityEngine.calculateScore(ctx.user.id)
+    trustIdentityEngine.calculateScore(legacyNumericUserId(ctx.user.id))
   ),
 
   runSybilCheck: protectedProcedure
@@ -222,31 +235,31 @@ export const phase31Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      profileNFTEngine.mint({ userId: ctx.user.id, ...input })
+      profileNFTEngine.mint({ userId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   getMyProfileNFTs: protectedProcedure.query(({ ctx }) =>
-    profileNFTEngine.getUserNFTs(ctx.user.id)
+    profileNFTEngine.getUserNFTs(legacyNumericUserId(ctx.user.id))
   ),
 
   equipProfileNFT: protectedProcedure
     .input(z.object({ nftId: z.string() }))
     .mutation(({ ctx, input }) =>
-      profileNFTEngine.equip(input.nftId, ctx.user.id)
+      profileNFTEngine.equip(input.nftId, legacyNumericUserId(ctx.user.id))
     ),
 
   // ── Badges & Achievements ─────────────────────────────────────────────────
   getMyBadges: protectedProcedure.query(({ ctx }) =>
-    creatorBadgeEngine.getUserBadges(ctx.user.id)
+    creatorBadgeEngine.getUserBadges(legacyNumericUserId(ctx.user.id))
   ),
 
   getMyAchievements: protectedProcedure.query(({ ctx }) =>
-    socialAchievementEngine.getUserAchievements(ctx.user.id)
+    socialAchievementEngine.getUserAchievements(legacyNumericUserId(ctx.user.id))
   ),
 
   // ── Trust Credentials ─────────────────────────────────────────────────────
   getMyCredentials: protectedProcedure.query(({ ctx }) =>
-    trustCredentialEngine.getUserCredentials(ctx.user.id)
+    trustCredentialEngine.getUserCredentials(legacyNumericUserId(ctx.user.id))
   ),
 
   verifyCredential: publicProcedure
@@ -257,12 +270,12 @@ export const phase31Router = router({
 
   // ── Proof of History ──────────────────────────────────────────────────────
   getMyProofHistory: protectedProcedure.query(({ ctx }) =>
-    proofOfHistoryEngine.getUserHistory(ctx.user.id)
+    proofOfHistoryEngine.getUserHistory(legacyNumericUserId(ctx.user.id))
   ),
 
   // ── Identity Dashboard ────────────────────────────────────────────────────
   getIdentityDashboard: protectedProcedure.query(({ ctx }) =>
-    identityDashboard.getFullIdentityProfile(ctx.user.id)
+    identityDashboard.getFullIdentityProfile(legacyNumericUserId(ctx.user.id))
   ),
 });
 
@@ -284,7 +297,7 @@ export const phase32Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      storefrontEngine.create({ creatorId: ctx.user.id, ...input })
+      storefrontEngine.create({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   publishStorefront: protectedProcedure
@@ -322,7 +335,7 @@ export const phase32Router = router({
   subscribeMembership: protectedProcedure
     .input(z.object({ membershipId: z.string(), paymentMethod: z.string() }))
     .mutation(({ ctx, input }) =>
-      membershipEngine.subscribe({ userId: ctx.user.id, ...input })
+      membershipEngine.subscribe({ userId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   cancelMembership: protectedProcedure
@@ -332,7 +345,7 @@ export const phase32Router = router({
     ),
 
   getMembershipStats: protectedProcedure.query(({ ctx }) =>
-    membershipEngine.getMembershipStats(ctx.user.id)
+    membershipEngine.getMembershipStats(legacyNumericUserId(ctx.user.id))
   ),
 
   // ── Token Economy ─────────────────────────────────────────────────────────
@@ -347,7 +360,7 @@ export const phase32Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      tokenEconomyEngine.createEconomy({ creatorId: ctx.user.id, ...input })
+      tokenEconomyEngine.createEconomy({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   distributeTokens: protectedProcedure
@@ -377,13 +390,13 @@ export const phase32Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      revenueShareEngine.createShare({ creatorId: ctx.user.id, ...input })
+      revenueShareEngine.createShare({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   distributeRevenue: protectedProcedure
     .input(z.object({ totalRevenue: z.number() }))
     .mutation(({ ctx, input }) =>
-      revenueShareEngine.distributeRevenue(ctx.user.id, input.totalRevenue)
+      revenueShareEngine.distributeRevenue(legacyNumericUserId(ctx.user.id), input.totalRevenue)
     ),
 
   // ── Payroll ───────────────────────────────────────────────────────────────
@@ -406,7 +419,7 @@ export const phase32Router = router({
     .mutation(({ input }) => payrollEngine.processPayment(input.entryId)),
 
   getMonthlyPayrollCost: protectedProcedure.query(({ ctx }) =>
-    payrollEngine.getMonthlyPayrollCost(ctx.user.id)
+    payrollEngine.getMonthlyPayrollCost(legacyNumericUserId(ctx.user.id))
   ),
 
   // ── Treasury ──────────────────────────────────────────────────────────────
@@ -420,7 +433,7 @@ export const phase32Router = router({
     )
     .mutation(({ ctx, input }) =>
       creatorTreasuryEngine.deposit(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.amount,
         input.source as any,
         input.description
@@ -443,7 +456,7 @@ export const phase32Router = router({
     )
     .mutation(({ ctx, input }) =>
       creatorTreasuryEngine.withdraw(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.amount,
         input.category as any,
         input.description
@@ -451,7 +464,7 @@ export const phase32Router = router({
     ),
 
   getTreasury: protectedProcedure.query(({ ctx }) =>
-    creatorTreasuryEngine.getTreasury(ctx.user.id)
+    creatorTreasuryEngine.getTreasury(legacyNumericUserId(ctx.user.id))
   ),
 
   // ── Affiliate Network ─────────────────────────────────────────────────────
@@ -465,17 +478,17 @@ export const phase32Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      affiliateNetworkEngine.createProgram({ creatorId: ctx.user.id, ...input })
+      affiliateNetworkEngine.createProgram({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   joinAffiliateProgram: protectedProcedure
     .input(z.object({ programId: z.string() }))
     .mutation(({ ctx, input }) =>
-      affiliateNetworkEngine.joinProgram(input.programId, ctx.user.id)
+      affiliateNetworkEngine.joinProgram(input.programId, legacyNumericUserId(ctx.user.id))
     ),
 
   getAffiliateStats: protectedProcedure.query(({ ctx }) =>
-    affiliateNetworkEngine.getAffiliateStats(ctx.user.id)
+    affiliateNetworkEngine.getAffiliateStats(legacyNumericUserId(ctx.user.id))
   ),
 
   // ── Reward System ─────────────────────────────────────────────────────────
@@ -592,7 +605,7 @@ export const phase33Router = router({
     ),
 
   getMyArchives: protectedProcedure.query(({ ctx }) =>
-    decentralizedArchiveEngine.getCreatorArchives(ctx.user.id)
+    decentralizedArchiveEngine.getCreatorArchives(legacyNumericUserId(ctx.user.id))
   ),
 
   getArchiveStats: publicProcedure.query(() =>
@@ -658,7 +671,7 @@ export const phase34Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      jobMarketEngine.postJob({ posterId: ctx.user.id, ...input })
+      jobMarketEngine.postJob({ posterId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   applyToJob: protectedProcedure
@@ -672,7 +685,7 @@ export const phase34Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      jobMarketEngine.applyToJob({ applicantId: ctx.user.id, ...input })
+      jobMarketEngine.applyToJob({ applicantId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   searchJobs: publicProcedure
@@ -736,7 +749,7 @@ export const phase34Router = router({
   claimBounty: protectedProcedure
     .input(z.object({ bountyId: z.string() }))
     .mutation(({ ctx, input }) =>
-      bountyBoardEngine.claimBounty(input.bountyId, ctx.user.id)
+      bountyBoardEngine.claimBounty(input.bountyId, legacyNumericUserId(ctx.user.id))
     ),
 
   submitBounty: protectedProcedure
@@ -791,7 +804,7 @@ export const phase34Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      grantSystemEngine.applyForGrant({ applicantId: ctx.user.id, ...input })
+      grantSystemEngine.applyForGrant({ applicantId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   getActiveGrantPrograms: publicProcedure.query(() =>
@@ -815,7 +828,7 @@ export const phase34Router = router({
   contributeToPool: protectedProcedure
     .input(z.object({ poolId: z.string(), amount: z.number() }))
     .mutation(({ ctx, input }) =>
-      daoFundingEngine.contribute(input.poolId, ctx.user.id, input.amount)
+      daoFundingEngine.contribute(input.poolId, legacyNumericUserId(ctx.user.id), input.amount)
     ),
 
   proposeDaoDisbursal: protectedProcedure
@@ -830,7 +843,7 @@ export const phase34Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      daoFundingEngine.proposeDisbursal({ proposerId: ctx.user.id, ...input })
+      daoFundingEngine.proposeDisbursal({ proposerId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   voteOnProposal: protectedProcedure
@@ -844,7 +857,7 @@ export const phase34Router = router({
     .mutation(({ ctx, input }) =>
       daoFundingEngine.vote(
         input.proposalId,
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.inFavor,
         input.votingPower
       )
@@ -858,7 +871,7 @@ export const phase34Router = router({
 
   // ── Economic Reputation ───────────────────────────────────────────────────
   getMyEconomicReputation: protectedProcedure.query(({ ctx }) =>
-    economicReputationEngine.getScore(ctx.user.id)
+    economicReputationEngine.getScore(legacyNumericUserId(ctx.user.id))
   ),
 
   endorseSkill: protectedProcedure
@@ -910,7 +923,7 @@ export const phase35Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      legacyVaultEngine.createVault({ creatorId: ctx.user.id, ...input })
+      legacyVaultEngine.createVault({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   addVaultContent: protectedProcedure
@@ -940,7 +953,7 @@ export const phase35Router = router({
     .mutation(({ input }) => legacyVaultEngine.sealVault(input.vaultId)),
 
   getMyVaults: protectedProcedure.query(({ ctx }) =>
-    legacyVaultEngine.getCreatorVaults(ctx.user.id)
+    legacyVaultEngine.getCreatorVaults(legacyNumericUserId(ctx.user.id))
   ),
 
   getVaultStats: publicProcedure.query(() => legacyVaultEngine.getVaultStats()),
@@ -960,7 +973,7 @@ export const phase35Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      digitalWillEngine.createWill({ creatorId: ctx.user.id, ...input })
+      digitalWillEngine.createWill({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   addWillAsset: protectedProcedure
@@ -991,7 +1004,7 @@ export const phase35Router = router({
     .mutation(({ input }) => digitalWillEngine.activateWill(input.willId)),
 
   getMyWills: protectedProcedure.query(({ ctx }) =>
-    digitalWillEngine.getCreatorWills(ctx.user.id)
+    digitalWillEngine.getCreatorWills(legacyNumericUserId(ctx.user.id))
   ),
 
   getWillStats: publicProcedure.query(() => digitalWillEngine.getWillStats()),
@@ -1023,11 +1036,11 @@ export const phase35Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      successionPlanEngine.createPlan({ creatorId: ctx.user.id, ...input })
+      successionPlanEngine.createPlan({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   getMySuccessionPlans: protectedProcedure.query(({ ctx }) =>
-    successionPlanEngine.getCreatorPlans(ctx.user.id)
+    successionPlanEngine.getCreatorPlans(legacyNumericUserId(ctx.user.id))
   ),
 
   // ── Memorial Profiles ─────────────────────────────────────────────────────
@@ -1044,7 +1057,7 @@ export const phase35Router = router({
     )
     .mutation(({ ctx, input }) =>
       memorialProfileEngine.createMemorial({
-        memorializedBy: ctx.user.id,
+        memorializedBy: legacyNumericUserId(ctx.user.id),
         ...input,
       })
     ),
@@ -1059,7 +1072,7 @@ export const phase35Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      memorialProfileEngine.addTribute({ authorId: ctx.user.id, ...input })
+      memorialProfileEngine.addTribute({ authorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   visitMemorial: publicProcedure
@@ -1092,11 +1105,11 @@ export const phase35Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      legacyContentScheduler.schedule({ creatorId: ctx.user.id, ...input })
+      legacyContentScheduler.schedule({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   getMyLegacySchedules: protectedProcedure.query(({ ctx }) =>
-    legacyContentScheduler.getCreatorSchedules(ctx.user.id)
+    legacyContentScheduler.getCreatorSchedules(legacyNumericUserId(ctx.user.id))
   ),
 
   // ── Immortality Tokens ────────────────────────────────────────────────────
@@ -1114,7 +1127,7 @@ export const phase35Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      immortalityTokenEngine.mintToken({ creatorId: ctx.user.id, ...input })
+      immortalityTokenEngine.mintToken({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   purchaseImmortalityToken: protectedProcedure
@@ -1122,13 +1135,13 @@ export const phase35Router = router({
     .mutation(({ ctx, input }) =>
       immortalityTokenEngine.purchaseToken(
         input.tokenId,
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.purchasePrice
       )
     ),
 
   getMyImmortalityTokens: protectedProcedure.query(({ ctx }) =>
-    immortalityTokenEngine.getCreatorTokens(ctx.user.id)
+    immortalityTokenEngine.getCreatorTokens(legacyNumericUserId(ctx.user.id))
   ),
 
   getImmortalityStats: publicProcedure.query(() =>
@@ -1155,7 +1168,7 @@ export const phase35Router = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      culturalPreservationEngine.preserve({ creatorId: ctx.user.id, ...input })
+      culturalPreservationEngine.preserve({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   getGlobalMilestones: publicProcedure
@@ -1189,7 +1202,7 @@ export const phase35Router = router({
 
   // ── Legacy Dashboard ──────────────────────────────────────────────────────
   getMyLegacyProfile: protectedProcedure.query(({ ctx }) =>
-    legacyImmortalityDashboard.getCreatorLegacyProfile(ctx.user.id)
+    legacyImmortalityDashboard.getCreatorLegacyProfile(legacyNumericUserId(ctx.user.id))
   ),
 
   getPlatformLegacyStats: publicProcedure.query(() =>
