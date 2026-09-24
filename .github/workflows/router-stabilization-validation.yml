@@ -1,0 +1,51 @@
+name: Router Stabilization Validation
+
+on:
+  push:
+    branches:
+      - stabilize/router-authz-contracts-chat6-v2
+
+permissions:
+  contents: read
+
+jobs:
+  validate-router-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run platform contract and authorization tests
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/skycoin
+          STRIPE_API_KEY: sk_test_51MockKeyForTestingOnly0000000000
+          OPENAI_API_KEY: sk-proj-MockKeyForTestingOnly00000000000000000000
+          ADMIN_WALLET_ADDRESS: 0x16188a203a715de6b131e273b3a9bcf6d09e7d0a
+        run: pnpm exec vitest run server/platform.test.ts
+
+      - name: Verify routers.ts adds no TypeScript errors
+        shell: bash
+        run: |
+          set +e
+          pnpm check 2>&1 | tee typecheck.log
+          router_errors=$(grep -c "server/routers.ts" typecheck.log || true)
+          echo "router_errors=$router_errors"
+          if [ "$router_errors" -ne 0 ]; then
+            grep "server/routers.ts" typecheck.log
+            exit 1
+          fi
+
+      - name: Verify high-severity dependency audit
+        run: pnpm audit --audit-level=high
