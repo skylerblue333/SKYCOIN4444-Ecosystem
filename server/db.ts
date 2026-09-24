@@ -117,23 +117,15 @@ export async function ensureAllTokenBalances(userId: string) {
   const existingSet = new Set(existing.map(r => r.tokenSymbol));
   const missing = ALL_SUPPORTED_TOKENS.filter(t => !existingSet.has(t));
   if (missing.length === 0) return;
-  const STARTER: Record<string, number> = {
-    SKY444: 1000,
-    BTC: 0.001,
-    ETH: 0.05,
-    SOL: 1,
-    DOGE: 500,
-    TRUMP: 100,
-    USDT: 50,
-    XMR: 0.1,
-  };
+  // Never fabricate external-asset ownership on signup. Balance rows are
+  // placeholders only until a verified deposit/provider credits them.
   await db.insert(tokenBalances).values(
     missing.map(token => ({
       id: `tb_${userId}_${token}`,
       userId,
       tokenSymbol: token,
       token,
-      balance: STARTER[token] ?? 0,
+      balance: 0,
     }))
   );
 }
