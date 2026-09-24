@@ -659,10 +659,12 @@ export class ThreadedCommentService {
     await db
       .delete(schema.comments)
       .where(eq(schema.comments.parentId, String(commentId)));
-    await db
-      .update(schema.posts)
-      .set({ commentCount: sql`GREATEST(${schema.posts.commentCount} - 1, 0)` })
-      .where(eq(schema.posts.id, comment.postId));
+    if (comment.postId) {
+      await db
+        .update(schema.posts)
+        .set({ commentCount: sql`GREATEST(${schema.posts.commentCount} - 1, 0)` })
+        .where(eq(schema.posts.id, comment.postId));
+    }
 
     return true;
   }
@@ -754,7 +756,7 @@ export class RepostService {
       .from(schema.posts)
       .where(
         and(
-          eq(schema.posts.parentId, postId),
+          eq(schema.posts.parentId, String(postId)),
           or(eq(schema.posts.isRepost, true), eq(schema.posts.isQuote, true))
         )
       )
@@ -779,7 +781,7 @@ export class RepostService {
       .where(
         and(
           eq(schema.posts.authorId, String(userId)),
-          eq(schema.posts.parentId, postId),
+          eq(schema.posts.parentId, String(postId)),
           or(eq(schema.posts.isRepost, true), eq(schema.posts.isQuote, true))
         )
       );
@@ -860,6 +862,7 @@ export class StoryService {
 
     const userStoryMap = new Map<string, any[]>();
     for (const story of stories) {
+      if (!story.authorId) continue;
       if (!userStoryMap.has(story.authorId))
         userStoryMap.set(story.authorId, []);
       userStoryMap.get(story.authorId)!.push(story);
