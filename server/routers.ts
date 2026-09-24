@@ -495,7 +495,8 @@ const tokenRouter = router({
     const database = await db.getDb();
     const [supply] = await database
       .select({ total: sql<number>`coalesce(sum(${tokenBalances.balance}), 0)` })
-      .from(tokenBalances);
+      .from(tokenBalances)
+      .where(eq(tokenBalances.tokenSymbol, "SKY444"));
     const [staked] = await database
       .select({
         total: sql<number>`coalesce(sum(${stakingPositions.amount}), 0)`,
@@ -513,6 +514,8 @@ const tokenRouter = router({
       totalStaked: Number(staked?.total ?? 0),
       burnedTokens: 0,
       stakingParticipants: Number(staked?.participants ?? 0),
+      asset: "SKY444" as const,
+      supplySource: "user_balance_sum" as const,
       burnAccounting: "not_configured" as const,
       priceSource: "not_configured" as const,
     };
