@@ -145,126 +145,13 @@ function APYBadge({ apy }: { apy: number }) {
   );
 }
 
-function StakeDialog({
-  pool,
-  onSuccess,
-}: {
-  pool: any;
-  onSuccess: () => void;
-}) {
-  const [amount, setAmount] = useState("");
-  const [open, setOpen] = useState(false);
-
-  const stakeMutation = trpc.staking.stake.useMutation({
-    onSuccess: () => {
-      toast.success(`Successfully staked ${amount} SKY444 in ${pool.name}!`);
-      setAmount("");
-      setOpen(false);
-      onSuccess();
-    },
-    onError: err =>
-      toast.error(err.message || "Failed to stake. Please try again."),
-  });
-
-  const estimatedDaily = amount
-    ? ((parseFloat(amount) * (pool.apy / 100)) / 365).toFixed(2)
-    : "0.00";
-  const estimatedTotal = amount
-    ? (parseFloat(amount) * (pool.apy / 100) * (pool.lockDays / 365)).toFixed(2)
-    : "0.00";
-
+function StakingUnavailableButton() {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-          <Coins className="w-4 h-4 mr-2" /> Stake Now
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-card border-border/50">
-        <DialogHeader>
-          <DialogTitle className="text-xl">Stake in {pool.name}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 mt-4">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
-            <span className="text-sm text-muted-foreground">Pool APY</span>
-            <APYBadge apy={pool.apy} />
-          </div>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
-            <span className="text-sm text-muted-foreground">Lock Period</span>
-            <span className="font-mono font-bold">{pool.lockDays} Days</span>
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground mb-1.5 block">
-              Amount to Stake (SKY444)
-            </label>
-            <Input
-              type="number"
-              placeholder={`Min: ${pool.minStake} SKY444`}
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-              className="bg-background/50 border-border/30 font-mono"
-            />
-          </div>
-          {amount && parseFloat(amount) > 0 && (
-            <div className="space-y-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Daily Reward</span>
-                <span className="font-mono text-purple-400">
-                  +{estimatedDaily} SKY444
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">
-                  Total Reward ({pool.lockDays}d)
-                </span>
-                <span className="font-mono text-purple-400 font-bold">
-                  +{estimatedTotal} SKY444
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Unlock Date</span>
-                <span className="font-mono">
-                  {new Date(
-                    Date.now() + pool.lockDays * 86400000
-                  ).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          )}
-          <Button
-            className="w-full bg-primary hover:bg-primary/90 font-semibold"
-            disabled={
-              !amount ||
-              parseFloat(amount) < pool.minStake ||
-              stakeMutation.isPending
-            }
-            onClick={() =>
-              stakeMutation.mutate({
-                poolId: pool.id,
-                amount: parseFloat(amount),
-              })
-            }
-          >
-            {stakeMutation.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Staking...
-              </>
-            ) : (
-              <>
-                <Lock className="w-4 h-4 mr-2" /> Confirm Stake
-              </>
-            )}
-          </Button>
-          <p className="text-xs text-muted-foreground text-center">
-            Tokens will be locked for {pool.lockDays} days. Early withdrawal
-            incurs a 10% penalty.
-          </p>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <Button className="w-full" variant="outline" disabled>
+      <Lock className="w-4 h-4 mr-2" /> Staking not configured
+    </Button>
   );
 }
-
 export default function StakingPortal() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { data: pools, isLoading: poolsLoading } =
@@ -277,19 +164,11 @@ export default function StakingPortal() {
     enabled: isAuthenticated,
   });
 
-  const claimRewards = trpc.staking.claimRewards.useMutation({
-    onSuccess: () => {
-      toast.success("Rewards claimed successfully!");
-      refetchPositions();
-    },
-    onError: () => toast.error("Failed to claim rewards."),
-  });
-
   const totalStaked = pools?.reduce((sum, p) => sum + p.totalStaked, 0) ?? 0;
   const totalParticipants =
     pools?.reduce((sum, p) => sum + p.participants, 0) ?? 0;
-  const userTotalStaked = positions?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
-  const userTotalEarned = positions?.reduce((sum, p) => sum + p.earned, 0) ?? 0;
+  const userTotalStaked =
+    positions?.reduce((sum, p) => sum + Number(p.amount ?? 0), 0) ?? 0;
 
   return (
     <div className="min-h-screen">
@@ -308,8 +187,8 @@ export default function StakingPortal() {
               Staking <span className="text-primary">Portal</span>
             </h1>
             <p className="text-lg text-muted-foreground">
-              Stake your SKY444 tokens and earn 8-20% APY. Choose your lock
-              period and start earning daily rewards.
+              Staking accounting is not enabled in this beta yet. Existing
+              persisted positions are shown below for verification.
             </p>
           </div>
 
@@ -340,19 +219,19 @@ export default function StakingPortal() {
               </div>
             </div>
             <div className="p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur text-center">
-              <div className="text-2xl font-bold font-mono text-purple-400">
-                8-20%
+              <div className="text-lg font-bold font-mono text-purple-400">
+                Not configured
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                APY Range
+                APY
               </div>
             </div>
             <div className="p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur text-center">
-              <div className="text-2xl font-bold font-mono text-[oklch(0.7_0.2_60)]">
-                Daily
+              <div className="text-lg font-bold font-mono text-[oklch(0.7_0.2_60)]">
+                Not configured
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                Reward Distribution
+                Rewards
               </div>
             </div>
           </div>
@@ -364,83 +243,49 @@ export default function StakingPortal() {
         <section className="pb-8">
           <div className="container mx-auto px-4">
             <div className="p-6 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <Wallet className="w-5 h-5 text-primary" /> Persisted staking positions
+              </h3>
+              <div className="grid grid-cols-2 gap-6 mt-3">
                 <div>
-                  <h3 className="text-lg font-bold flex items-center gap-2">
-                    <Wallet className="w-5 h-5 text-primary" /> Your Staking
-                    Portfolio
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-3">
-                    <div>
-                      <span className="text-xs text-muted-foreground block">
-                        Total Staked
-                      </span>
-                      <span className="font-mono font-bold text-lg">
-                        {userTotalStaked.toLocaleString()} SKY444
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground block">
-                        Total Earned
-                      </span>
-                      <span className="font-mono font-bold text-lg text-purple-400">
-                        +{userTotalEarned.toLocaleString()} SKY444
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground block">
-                        Active Positions
-                      </span>
-                      <span className="font-mono font-bold text-lg">
-                        {positions.length}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground block">
-                        Avg APY
-                      </span>
-                      <span className="font-mono font-bold text-lg text-primary">
-                        {positions.length > 0
-                          ? (
-                              positions.reduce((s, p) => s + p.apy, 0) /
-                              positions.length
-                            ).toFixed(1)
-                          : 0}
-                        %
-                      </span>
-                    </div>
-                  </div>
+                  <span className="text-xs text-muted-foreground block">Total recorded amount</span>
+                  <span className="font-mono font-bold text-lg">
+                    {userTotalStaked.toLocaleString()} SKY444
+                  </span>
                 </div>
-                <Button
-                  onClick={() => claimRewards.mutate()}
-                  disabled={claimRewards.isPending || userTotalEarned === 0}
-                  className="bg-purple-600 hover:bg-purple-600 text-white font-semibold"
-                >
-                  {claimRewards.isPending ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Gift className="w-4 h-4 mr-2" />
-                  )}
-                  Claim All Rewards
-                </Button>
+                <div>
+                  <span className="text-xs text-muted-foreground block">Recorded positions</span>
+                  <span className="font-mono font-bold text-lg">{positions.length}</span>
+                </div>
               </div>
+              <p className="text-xs text-muted-foreground mt-4">
+                Reward accrual, claims, new staking, and withdrawals are not configured in this beta.
+              </p>
             </div>
           </div>
         </section>
       )}
-
       {/* Staking Pools */}
       <section className="pb-16">
         <div className="container mx-auto px-4">
-          <StakingCharts />
+          {pools && pools.length > 0 && <StakingCharts />}
           <h2 className="text-2xl font-bold mb-6">Available Pools</h2>
           {poolsLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
+          ) : !pools || pools.length === 0 ? (
+            <div className="p-10 rounded-xl border border-border/50 bg-card/80 text-center">
+              <Shield className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <h3 className="font-semibold mb-2">Staking pools are not configured</h3>
+              <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+                This beta does not expose staking, reward claims, or withdrawals until
+                accounting, idempotency, and unlock rules are implemented and verified.
+              </p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {pools?.map(pool => (
+              {pools.map(pool => (
                 <div
                   key={pool.id}
                   className="relative p-6 rounded-xl border border-border/50 bg-card/80 backdrop-blur hover:border-primary/30 transition-all"
@@ -507,7 +352,7 @@ export default function StakingPortal() {
                       <span>
                         {Math.min(
                           100,
-                          (pool.totalStaked / (pool.totalStaked * 1.5)) * 100
+                          pool.totalStaked > 0 ? 100 / 1.5 : 0
                         ).toFixed(0)}
                         %
                       </span>
@@ -516,17 +361,14 @@ export default function StakingPortal() {
                       <div
                         className="h-full bg-gradient-to-r from-primary to-green-400 rounded-full"
                         style={{
-                          width: `${Math.min(100, (pool.totalStaked / (pool.totalStaked * 1.5)) * 100)}%`,
+                          width: `${Math.min(100, pool.totalStaked > 0 ? 100 / 1.5 : 0)}%`,
                         }}
                       />
                     </div>
                   </div>
 
                   {isAuthenticated ? (
-                    <StakeDialog
-                      pool={pool}
-                      onSuccess={() => refetchPositions()}
-                    />
+                    <StakingUnavailableButton />
                   ) : (
                     <a href={getLoginUrl()} className="block">
                       <Button className="w-full" variant="outline">
@@ -558,56 +400,26 @@ export default function StakingPortal() {
                     className="p-5 rounded-xl border border-border/50 bg-card/80 backdrop-blur"
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold">{pos.poolName}</h3>
-                          <APYBadge apy={pos.apy} />
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <h3 className="font-semibold mb-2">Recorded staking position</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground block text-xs">
-                              Staked
-                            </span>
+                            <span className="text-muted-foreground block text-xs">Amount</span>
                             <span className="font-mono font-medium">
-                              {pos.amount.toLocaleString()} SKY444
+                              {Number(pos.amount ?? 0).toLocaleString()} SKY444
                             </span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground block text-xs">
-                              Earned
-                            </span>
-                            <span className="font-mono font-medium text-purple-400">
-                              +{pos.earned.toLocaleString()} SKY444
+                            <span className="text-muted-foreground block text-xs">Recorded</span>
+                            <span className="font-mono font-medium">
+                              {pos.createdAt ? new Date(pos.createdAt).toLocaleDateString() : "Unknown"}
                             </span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground block text-xs flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> Unlock Date
-                            </span>
-                            <span className="font-mono font-medium">
-                              {new Date(pos.unlockDate).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground block text-xs">
-                              Progress
-                            </span>
-                            <span className="font-mono font-medium">
-                              {pos.progress}%
-                            </span>
+                            <span className="text-muted-foreground block text-xs">Position ID</span>
+                            <span className="font-mono text-xs break-all">{pos.id}</span>
                           </div>
                         </div>
-                      </div>
-                      <div className="w-full md:w-48">
-                        <div className="h-2 bg-background/50 rounded-full overflow-hidden border border-border/30">
-                          <div
-                            className="h-full bg-gradient-to-r from-primary to-green-400 rounded-full transition-all"
-                            style={{ width: `${pos.progress}%` }}
-                          />
-                        </div>
-                        <p className="text-[10px] text-muted-foreground text-right mt-1">
-                          {pos.progress}% complete
-                        </p>
                       </div>
                     </div>
                   </div>
