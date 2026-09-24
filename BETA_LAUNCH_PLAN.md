@@ -91,22 +91,23 @@ Everything else can remain accessible as experimental only if it cannot compromi
 - Publish accurate beta notes and known limitations.
 - Tag the release after all gates pass.
 
-## Immediate blockers observed on September 23, 2026
+## Current verified checkpoint — September 24, 2026
 
-- The latest `main` GitHub Actions runs are failing.
-- One workflow uses npm caching/install commands while the repository is pinned to pnpm.
-- The larger CI workflow contains unsupported workflow keys and references scripts that are not present in `package.json`.
-- The deployment workflow contains AWS resource names that are not established as the real SKYCOIN4444 deployment target.
-- Repository documentation correctly labels the current state as an engineering beta; older production-oriented documentation should not be used as readiness evidence.
+- Stabilization PR #1 is merged to `main` at merge commit `e6639b01f92a6974c0b371e3e4493a5ff135481e`.
+- The merged stabilization evidence includes green full-suite tests, production build, Docker image validation, dependency audit, runtime smoke/resilience, and a destructive MySQL backup/restore drill.
+- The launch tracker records **2,161/2,161 tests** passing on the exact pre-merge head and TypeScript debt reduced from **1,572 to 1,539** errors. A clean typecheck remains a release gate.
+- Runtime smoke proves MySQL readiness/release identity, concurrent liveness traffic, and fail-closed behavior when Stripe webhook configuration is missing.
+- Persistent-user reads and deterministic persisted IDs replaced earlier mock-user behavior; fake password-login success was removed.
+- PR #27 (`stabilize/gamefi-contracts-2026-09-24`) is a stabilization-only follow-up correcting GameFi persistence contracts; it is intentionally not treated as verified until its exact head receives CI evidence.
+- No GitHub Actions workflow run was present yet for PR #27 head `a128772b050e75c454d0da56742ea6972e247891` when this checkpoint was recorded.
 
-## Stabilization progress — September 23, 2026
+## Highest-priority unresolved release gates
 
-- CI now uses pnpm consistently and no longer treats copied AWS identifiers as a verified deployment target.
-- Full TypeScript debt is reported without hiding test/build execution; the initial baseline is 1,251 compiler errors across legacy/experimental and active modules.
-- The canonical User type is now exported from the Drizzle schema for auth/context consumers.
-- The unused direct `sharp` dependency was removed.
-- Audit-generated dependency overrides were re-resolved into the lockfile. GitHub's verification run reported **No known vulnerabilities found** before committing the generated package/lockfile changes back to this branch.
-- The next evidence gate is a fresh user-triggered CI run from the clean dependency commit so tests and production build results can be classified.
+1. Prove hosted signup/login/logout/session persistence across refresh/restart and verify authorization boundaries.
+2. Finish the clean TypeScript gate rather than relying indefinitely on a no-regression debt baseline.
+3. Exercise social feed, chat history/reconnect, and HopeAI streaming/provider failure against persistent staging data.
+4. Enable deployed structured logs/error tracking/metrics/alerts and verify alert delivery.
+5. Load/resilience test the core APIs, verify the real deployment target, and prove rollback before the soak period.
 
 ## Release rule
 
