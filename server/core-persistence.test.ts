@@ -24,6 +24,7 @@ import {
   getUnreadNotificationCount,
   getUserById,
   getUserStats,
+  markAllNotificationsAsRead,
   markMessageAsRead,
   markNotificationAsRead,
   removeLike,
@@ -154,6 +155,20 @@ describe("beta core persistence", () => {
 
     await markNotificationAsRead(notification.id, user2);
     expect(await getUnreadNotificationCount(user2)).toBe(0);
+  });
+
+  it("marks all notifications read without crossing user boundaries", async () => {
+    await createNotification(user2, "message", "First message");
+    await createNotification(user2, "follow", "New follower");
+    await createNotification(user1, "system", "Other user's notice");
+
+    expect(await getUnreadNotificationCount(user2)).toBe(2);
+    expect(await getUnreadNotificationCount(user1)).toBe(1);
+
+    await markAllNotificationsAsRead(user2);
+
+    expect(await getUnreadNotificationCount(user2)).toBe(0);
+    expect(await getUnreadNotificationCount(user1)).toBe(1);
   });
 
   it("persists direct-message history and recipient-scoped read state", async () => {
