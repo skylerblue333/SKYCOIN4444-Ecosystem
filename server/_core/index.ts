@@ -113,6 +113,12 @@ async function startServer() {
   );
   app.use(globalLimiter);
   app.use(requestTimeout(30_000));
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.on("finish", () => {
+      healthMonitor.recordRequest(res.statusCode < 500);
+    });
+    next();
+  });
 
   app.get("/api/health", async (_req: Request, res: Response) => {
     let dbStatus = "unknown";
