@@ -67,6 +67,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate
     timeout-minutes: 25
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/skycoin
     services:
       mysql:
         image: mysql:8.0
@@ -95,6 +97,36 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Initialize test database schema
+        run: pnpm exec drizzle-kit push --force
+
+      - name: Verify beta-critical test tables
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import mysql from "mysql2/promise";
+
+          const db = await mysql.createConnection(process.env.DATABASE_URL);
+          try {
+            const [rows] = await db.query("SHOW TABLES");
+            const present = new Set(rows.map(row => String(Object.values(row)[0])));
+            const required = [
+              "users",
+              "dating_profiles",
+              "dating_matches",
+              "dating_messages",
+              "dating_notifications",
+            ];
+            const missing = required.filter(table => !present.has(table));
+            if (missing.length) {
+              throw new Error(`Database bootstrap missing required tables: ${missing.join(", ")}`);
+            }
+            console.log(`Database bootstrap verified (${present.size} tables present).`);
+          } finally {
+            await db.end();
+          }
+          NODE
 
       - name: Run test suite
         run: pnpm test
