@@ -9,6 +9,8 @@ import { gamificationRouter } from "./gamification-router";
 import { hopeAIRouter } from "./phase6-routers";
 import { pricesRouter } from "./price-router";
 import { systemRouter } from "./_core/systemRouter";
+import { complianceRouter } from "./compliance-router";
+import { economicRouter } from "./economic-router";
 import * as db from "./db";
 import {
   users,
@@ -450,7 +452,7 @@ export const appRouter = router({
   ai: aiRouter,
   hopeAI: hopeAIRouter,
   hopeIntelligence: hopeAIRouter,
-  complianceIntelligence: hopeAIRouter,
+  complianceIntelligence: complianceRouter,
   simulation: enterpriseRouter,
   languageExchange: enterpriseRouter,
   creator: userRouter,
@@ -465,7 +467,7 @@ export const appRouter = router({
   dm: messageRouter,
   blockchain: walletRouter,
   aiEngineer: aiRouter,
-  economy: transactionRouter,
+  economy: economicRouter,
   charity: mockRouter,
   trustSafety: mockRouter,
   ico: mockRouter,
