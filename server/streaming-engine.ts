@@ -135,8 +135,11 @@ export class StreamLifecycleService {
     const db = await getDb();
     if (!db) return null;
 
-    const [result] = await db.insert(schema.streams).values({
-      streamerId: hostId,
+    const streamId = Date.now();
+
+    await db.insert(schema.streams).values({
+      id: String(streamId),
+      streamerId: String(hostId),
       title: data.title,
       description: data.description || null,
       category: data.category || "General",
@@ -146,7 +149,7 @@ export class StreamLifecycleService {
       startedAt: data.scheduledFor ? null : new Date(),
     });
 
-    return (result as any).insertId;
+    return streamId;
   }
 
   async goLive(streamId: number, hostId: number): Promise<boolean> {
@@ -159,9 +162,9 @@ export class StreamLifecycleService {
         status: schema.streams.status,
       })
       .from(schema.streams)
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
-    if (!stream || stream.streamerId !== hostId) return false;
+    if (!stream || stream.streamerId !== String(hostId)) return false;
     if (stream.status === "live") return true;
 
     await db
@@ -170,7 +173,7 @@ export class StreamLifecycleService {
         status: "live",
         startedAt: new Date(),
       })
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
     return true;
   }
@@ -185,9 +188,9 @@ export class StreamLifecycleService {
     const [stream] = await db
       .select()
       .from(schema.streams)
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
-    if (!stream || stream.streamerId !== hostId) return null;
+    if (!stream || stream.streamerId !== String(hostId)) return null;
 
     const endedAt = new Date();
     await db
@@ -196,7 +199,7 @@ export class StreamLifecycleService {
         status: "ended",
         endedAt,
       })
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
     const durationSec = stream.startedAt
       ? (endedAt.getTime() - new Date(stream.startedAt).getTime()) / 1000
@@ -270,7 +273,7 @@ export class StreamLifecycleService {
     return db
       .select()
       .from(schema.streams)
-      .where(eq(schema.streams.streamerId, hostId))
+      .where(eq(schema.streams.streamerId, String(hostId)))
       .orderBy(desc(schema.streams.createdAt))
       .limit(limit);
   }
@@ -291,9 +294,9 @@ export class StreamLifecycleService {
     const [stream] = await db
       .select({ streamerId: schema.streams.streamerId })
       .from(schema.streams)
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
-    if (!stream || stream.streamerId !== hostId) return false;
+    if (!stream || stream.streamerId !== String(hostId)) return false;
 
     const updates: any = {};
     if (data.title) updates.title = data.title;
@@ -303,7 +306,7 @@ export class StreamLifecycleService {
     await db
       .update(schema.streams)
       .set(updates)
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
     return true;
   }
 }
@@ -344,7 +347,7 @@ export class StreamChatService {
       .set({
         totalViews: sql`${schema.streams.totalViews} + 1`,
       })
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
     const message: StreamChatMessage = {
       id: Date.now(),
@@ -395,12 +398,11 @@ export class StreamChatService {
     if (!db) return false;
 
     await db.insert(schema.notifications).values({
-      userId,
+      id: `stream-timeout-${Date.now()}-${userId}`,
+      userId: String(userId),
       type: "system",
       title: `Chat timeout in stream #${streamId}`,
-      message: reason || `Timed out for ${durationSeconds} seconds`,
-      targetType: "stream",
-      targetId: streamId,
+      content: reason || `Timed out for ${durationSeconds} seconds`,
     });
 
     return true;
@@ -415,12 +417,11 @@ export class StreamChatService {
     if (!db) return false;
 
     await db.insert(schema.notifications).values({
-      userId,
+      id: `stream-ban-${Date.now()}-${userId}`,
+      userId: String(userId),
       type: "system",
       title: `Banned from stream #${streamId}`,
-      message: reason || "You have been banned from this stream's chat",
-      targetType: "stream",
-      targetId: streamId,
+      content: reason || "You have been banned from this stream's chat",
     });
 
     return true;
@@ -472,15 +473,17 @@ export class StreamDonationService {
     const [stream] = await db
       .select({ streamerId: schema.streams.streamerId })
       .from(schema.streams)
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
-    if (stream) {
-      await db.insert(schema.tips).values({
-        senderId: donorId,
-        receiverId: stream.streamerId,
-        amount: String(amount),
-        message: message || null,
-        currency: "SKY444",
+    if (stream?.streamerId) {
+      await db.insert(schema.transactions).values({
+        id: `stream-tip-${streamId}-${Date.now()}-${donorId}`,
+        userId: String(donorId),
+        type: "stream_tip",
+        amount,
+        toUserId: stream.streamerId,
+        status: "completed",
+        txHash: `stream:${streamId}`,
       });
     }
 
@@ -506,26 +509,34 @@ export class StreamDonationService {
     const [stream] = await db
       .select({ streamerId: schema.streams.streamerId })
       .from(schema.streams)
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
     if (!stream) return [];
 
+    if (!stream.streamerId) return [];
+
     const donors = await db
       .select({
-        senderId: schema.tips.senderId,
-        totalAmount: sql<string>`SUM(CAST(${schema.tips.amount} AS DECIMAL(20,2)))`,
+        senderId: schema.transactions.userId,
+        totalAmount: sql<string>`SUM(${schema.transactions.amount})`,
         donationCount: sql<number>`COUNT(*)`,
       })
-      .from(schema.tips)
-      .where(eq(schema.tips.receiverId, stream.streamerId))
-      .groupBy(schema.tips.senderId)
-      .orderBy(sql`SUM(CAST(${schema.tips.amount} AS DECIMAL(20,2))) DESC`)
+      .from(schema.transactions)
+      .where(
+        and(
+          eq(schema.transactions.toUserId, stream.streamerId),
+          eq(schema.transactions.type, "stream_tip"),
+          eq(schema.transactions.txHash, `stream:${streamId}`)
+        )
+      )
+      .groupBy(schema.transactions.userId)
+      .orderBy(sql`SUM(${schema.transactions.amount}) DESC`)
       .limit(limit);
 
     return donors.map((d: any) => ({
-      userId: d.senderId,
-      totalAmount: parseFloat(d.totalAmount || "0"),
-      donationCount: d.donationCount,
+      userId: Number(d.senderId),
+      totalAmount: Number(d.totalAmount || 0),
+      donationCount: Number(d.donationCount || 0),
     }));
   }
 
@@ -536,12 +547,19 @@ export class StreamDonationService {
     const db = await getDb();
     if (!db) return { current: 0, goal: goalAmount, percentage: 0 };
 
-    const [stream] = await db
-      .select({ totalViews: schema.streams.totalViews })
-      .from(schema.streams)
-      .where(eq(schema.streams.id, streamId));
+    const [result] = await db
+      .select({
+        current: sql<string>`COALESCE(SUM(${schema.transactions.amount}), 0)`,
+      })
+      .from(schema.transactions)
+      .where(
+        and(
+          eq(schema.transactions.type, "stream_tip"),
+          eq(schema.transactions.txHash, `stream:${streamId}`)
+        )
+      );
 
-    const current = Number(stream?.totalViews || 0);
+    const current = Number(result?.current || 0);
     return {
       current,
       goal: goalAmount,
@@ -571,15 +589,15 @@ export class StreamRaidService {
         status: schema.streams.status,
       })
       .from(schema.streams)
-      .where(eq(schema.streams.id, fromStreamId));
+      .where(eq(schema.streams.id, String(fromStreamId)));
 
-    if (!fromStream || fromStream.streamerId !== hostId) return null;
+    if (!fromStream || fromStream.streamerId !== String(hostId)) return null;
 
     // Verify target stream is live
     const [toStream] = await db
       .select({ status: schema.streams.status })
       .from(schema.streams)
-      .where(eq(schema.streams.id, toStreamId));
+      .where(eq(schema.streams.id, String(toStreamId)));
 
     if (!toStream || toStream.status !== "live") return null;
 
@@ -591,7 +609,7 @@ export class StreamRaidService {
       .set({
         viewerCount: sql`${schema.streams.viewerCount} + ${viewerCount}`,
       })
-      .where(eq(schema.streams.id, toStreamId));
+      .where(eq(schema.streams.id, String(toStreamId)));
 
     // End the raiding stream
     await db
@@ -600,7 +618,7 @@ export class StreamRaidService {
         status: "ended",
         endedAt: new Date(),
       })
-      .where(eq(schema.streams.id, fromStreamId));
+      .where(eq(schema.streams.id, String(fromStreamId)));
 
     return {
       id: Date.now(),
@@ -673,7 +691,7 @@ export class StreamAnalyticsService {
     const [stream] = await db
       .select()
       .from(schema.streams)
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
     if (!stream) return null;
 
@@ -737,7 +755,7 @@ export class StreamAnalyticsService {
       .from(schema.streams)
       .where(
         and(
-          eq(schema.streams.streamerId, hostId),
+          eq(schema.streams.streamerId, String(hostId)),
           gte(schema.streams.createdAt, since)
         )
       );
@@ -802,18 +820,16 @@ export class CoStreamService {
     const [stream] = await db
       .select({ streamerId: schema.streams.streamerId })
       .from(schema.streams)
-      .where(eq(schema.streams.id, streamId));
+      .where(eq(schema.streams.id, String(streamId)));
 
-    if (!stream || stream.streamerId !== hostId) return false;
+    if (!stream || stream.streamerId !== String(hostId)) return false;
 
     await db.insert(schema.notifications).values({
-      userId: inviteeId,
+      id: `co-stream-invite-${Date.now()}-${inviteeId}`,
+      userId: String(inviteeId),
       type: "stream_live",
       title: "Co-stream Invitation",
-      message: `You've been invited to co-stream on stream #${streamId}`,
-      actorId: hostId,
-      targetType: "stream",
-      targetId: streamId,
+      content: `You've been invited to co-stream on stream #${streamId} by user #${hostId}`,
     });
 
     return true;
