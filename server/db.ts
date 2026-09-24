@@ -53,7 +53,13 @@ export async function getUserByOpenId(openId: string) {
 
 export async function upsertUser(user: any) {
   if (!user.openId) throw new Error("User openId is required for upsert");
-  const values: any = { openId: user.openId };
+
+  // Canonical beta identity: OAuth openId is stable and unique, so it is a
+  // safe deterministic primary key when a separate id is not supplied.
+  const values: any = {
+    id: String(user.id ?? user.openId),
+    openId: String(user.openId),
+  };
   const textFields = ["name", "email", "loginMethod", "username", "avatar"];
   textFields.forEach(field => {
     if (user[field] !== undefined) {
@@ -67,8 +73,12 @@ export async function upsertUser(user: any) {
 
   values.lastSignedIn = user.lastSignedIn || new Date();
 
-  // Note: onDuplicateKeyUpdate is specific to MySQL
-  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: values });
+  // Never rewrite the primary key on an existing openId collision.
+  const { id: _id, ...updateValues } = values;
+  await db
+    .insert(users)
+    .values(values)
+    .onDuplicateKeyUpdate({ set: updateValues });
 }
 
 export async function ensureAllTokenBalances(userId: string) {
