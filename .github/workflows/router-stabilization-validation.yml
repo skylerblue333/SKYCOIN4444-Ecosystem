@@ -32,7 +32,7 @@ jobs:
           DATABASE_URL: mysql://root:root@127.0.0.1:3306/skycoin
           STRIPE_API_KEY: sk_test_51MockKeyForTestingOnly0000000000
           OPENAI_API_KEY: sk-proj-MockKeyForTestingOnly00000000000000000000
-          ADMIN_WALLET_ADDRESS: 0x16188a203a715de6b131e273b3a9bcf6d09e7d0a
+          ADMIN_WALLET_ADDRESS: "0x16188a203a715de6b131e273b3a9bcf6d09e7d0a"
         run: pnpm exec vitest run server/platform.test.ts
 
       - name: Verify routers.ts adds no TypeScript errors
