@@ -534,10 +534,10 @@ export class SearchService {
           authorId: post.authorId,
           likes: post.likes,
           comments: post.comments,
-          mediaUrl: post.mediaUrl,
+          mediaUrl: post.media,
         },
         boost: 1 + (post.likes || 0) * 0.01,
-        updatedAt: new Date(post.createdAt),
+        updatedAt: post.createdAt ?? new Date(0),
       });
       indexed++;
     }
@@ -548,16 +548,15 @@ export class SearchService {
       this.index.addDocument({
         id: `user_${user.id}`,
         type: "user",
-        content: `${user.name || ""} ${user.bio || ""} ${user.displayName || ""}`,
+        content: `${user.name || ""} ${user.bio || ""} ${user.username || ""}`,
         metadata: {
           name: user.name,
-          displayName: user.displayName,
+          displayName: user.username ?? user.name,
           avatarUrl: user.avatar,
-          level: user.level,
           xp: user.xp,
         },
-        boost: 1 + (user.level || 1) * 0.1,
-        updatedAt: new Date(user.createdAt),
+        boost: 1,
+        updatedAt: user.createdAt ?? new Date(0),
       });
       indexed++;
     }
@@ -571,33 +570,27 @@ export class SearchService {
         content: `${community.name} ${community.description || ""}`,
         metadata: {
           name: community.name,
-          memberCount: community.memberCount,
-          category: community.category,
-          iconUrl: community.avatar,
         },
-        boost: 1 + (community.memberCount || 0) * 0.001,
-        updatedAt: new Date(community.createdAt),
+        boost: 1,
+        updatedAt: community.createdAt ?? new Date(0),
       });
       indexed++;
     }
 
     // Index marketplace listings
-    const listings = await db.select().from(schema.listings).limit(10000);
+    const listings = await db.select().from(schema.marketplaceListings).limit(10000);
     for (const listing of listings) {
       this.index.addDocument({
         id: `listing_${listing.id}`,
         type: "listing",
-        content: `${listing.title} ${listing.description || ""}`,
+        content: listing.title || "",
         metadata: {
           title: listing.title,
           price: listing.price,
-          token: listing.currency,
           sellerId: listing.sellerId,
-          imageUrl: listing.imageUrl,
-          status: listing.status,
         },
-        boost: listing.status === "active" ? 1.5 : 0.5,
-        updatedAt: new Date(listing.createdAt),
+        boost: 1,
+        updatedAt: listing.createdAt ?? new Date(0),
       });
       indexed++;
     }
@@ -617,7 +610,7 @@ export class SearchService {
           category: stream.category,
         },
         boost: stream.status === "live" ? 3 : 1,
-        updatedAt: new Date(stream.createdAt),
+        updatedAt: stream.createdAt ?? new Date(0),
       });
       indexed++;
     }
