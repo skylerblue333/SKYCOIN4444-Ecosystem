@@ -306,10 +306,10 @@ export const auditLedger = mysqlTable("audit_ledger", {
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
   eventType: varchar("event_type", { length: 255 }).notNull(),
   action: varchar("action", { length: 255 }).notNull(),
-  details: varchar("details", { length: 255 }),
+  details: text("details"),
   ipAddress: varchar("ip_address", { length: 255 }),
   userAgent: varchar("user_agent", { length: 255 }),
-  status: varchar("status", { length: 255 }).default("success"), // success | failed | pending
+  status: varchar("status", { length: 255 }).default("success"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -509,10 +509,20 @@ export const custodyWallets = mysqlTable("custody_wallets", {
   userId: varchar("user_id", { length: 255 })
     .references(() => users.id)
     .notNull(),
-  provider: varchar("provider", { length: 255 }).notNull(), // coinbase | kraken | etc
-  externalId: varchar("external_id", { length: 255 }).notNull(),
+  provider: varchar("provider", { length: 255 }), // compatibility / external provider
+  externalId: varchar("external_id", { length: 255 }),
   balance: float("balance").default(0),
+  address: varchar("address", { length: 255 }),
+  derivationPath: varchar("derivation_path", { length: 255 }),
+  chainId: int("chain_id"),
+  chainName: varchar("chain_name", { length: 128 }),
+  walletType: varchar("wallet_type", { length: 64 }).default("hd"),
+  label: varchar("label", { length: 255 }),
+  isPrimary: boolean("is_primary").default(false),
+  lastKnownNonce: int("last_known_nonce").default(0),
+  cachedBalanceWei: varchar("cached_balance_wei", { length: 128 }).default("0"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const onChainTransactions = mysqlTable("on_chain_transactions", {
@@ -520,13 +530,32 @@ export const onChainTransactions = mysqlTable("on_chain_transactions", {
   userId: varchar("user_id", { length: 255 })
     .references(() => users.id)
     .notNull(),
-  blockchain: varchar("blockchain", { length: 255 }).notNull(), // ethereum | solana | bitcoin
+  walletId: varchar("wallet_id", { length: 255 }).references(
+    () => custodyWallets.id
+  ),
+  blockchain: varchar("blockchain", { length: 64 }).notNull(),
+  chainId: int("chain_id").notNull(),
   txHash: varchar("tx_hash", { length: 255 }).notNull(),
   fromAddress: varchar("from_address", { length: 255 }),
   toAddress: varchar("to_address", { length: 255 }),
   amount: float("amount"),
-  status: varchar("status", { length: 255 }).default("pending"),
+  valueWei: varchar("value_wei", { length: 128 }),
+  gasLimit: varchar("gas_limit", { length: 128 }),
+  maxFeePerGas: varchar("max_fee_per_gas", { length: 128 }),
+  maxPriorityFeePerGas: varchar("max_priority_fee_per_gas", { length: 128 }),
+  nonce: int("nonce"),
+  tokenContract: varchar("token_contract", { length: 255 }),
+  tokenSymbol: varchar("token_symbol", { length: 64 }),
+  tokenAmount: varchar("token_amount", { length: 128 }),
+  tokenDecimals: int("token_decimals"),
+  status: varchar("status", { length: 64 }).default("pending"),
+  confirmations: int("confirmations").default(0),
+  signedTxHex: text("signed_tx_hex"),
+  internalNote: text("internal_note"),
+  blockNumber: int("block_number"),
+  errorMessage: text("error_message"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 // ============ TOKEN & ECONOMY TABLES ============
