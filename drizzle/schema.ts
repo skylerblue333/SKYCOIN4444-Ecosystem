@@ -22,6 +22,9 @@ export const users = mysqlTable("users", {
   balance: float("balance").default(0),
   role: varchar("role", { length: 255 }).default("user"), // admin | user
   verified: boolean("verified").default(false),
+  isCreator: boolean("is_creator").default(false),
+  followerCount: int("follower_count").default(0),
+  postCount: int("post_count").default(0),
   openId: varchar("open_id", { length: 255 }).unique(),
   xp: int("xp").default(0), // Legacy compatibility
   lastSignedIn: timestamp("last_signed_in"),
@@ -37,14 +40,24 @@ export type NewUser = typeof users.$inferInsert;
 export const posts = mysqlTable("posts", {
   id: varchar("id", { length: 255 }).primaryKey(),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
+  authorId: varchar("author_id", { length: 255 }).references(() => users.id),
+  type: varchar("type", { length: 64 }).default("text"),
   content: varchar("content", { length: 255 }),
   media: varchar("media", { length: 255 }),
+  mediaUrl: varchar("media_url", { length: 255 }),
+  visibility: varchar("visibility", { length: 32 }).default("public"),
+  parentId: varchar("parent_id", { length: 255 }),
+  isRepost: boolean("is_repost").default(false),
+  isQuote: boolean("is_quote").default(false),
   likes: int("likes").default(0),
   comments: int("comments").default(0),
-  authorId: varchar("author_id", { length: 255 }), // Legacy compatibility
-  likeCount: int("likes").default(0), // Legacy alias
-  commentCount: int("comments").default(0), // Legacy alias
-  expiresAt: timestamp("updated_at"), // Legacy alias
+  likeCount: int("like_count").default(0),
+  commentCount: int("comment_count").default(0),
+  repostCount: int("repost_count").default(0),
+  viewCount: int("view_count").default(0),
+  shareCount: int("share_count").default(0),
+  aiScore: float("ai_score").default(0),
+  expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
@@ -54,14 +67,19 @@ export const comments = mysqlTable("comments", {
   id: varchar("id", { length: 255 }).primaryKey(),
   postId: varchar("post_id", { length: 255 }).references(() => posts.id),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
+  authorId: varchar("author_id", { length: 255 }).references(() => users.id),
+  parentId: varchar("parent_id", { length: 255 }),
   content: varchar("content", { length: 255 }),
+  likeCount: int("like_count").default(0),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 // ============ LIKES TABLE ============
 export const likes = mysqlTable("likes", {
   id: varchar("id", { length: 255 }).primaryKey(),
   postId: varchar("post_id", { length: 255 }).references(() => posts.id),
+  commentId: varchar("comment_id", { length: 255 }),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
@@ -168,7 +186,18 @@ export const communityMembers = mysqlTable("community_members", {
 export const channels = mysqlTable("channels", {
   id: varchar("id", { length: 255 }).primaryKey(),
   name: varchar("name", { length: 255 }),
+  type: varchar("type", { length: 64 }).default("text"),
   communityId: varchar("community_id", { length: 255 }).references(() => communities.id),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const channelMessages = mysqlTable("channel_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  channelId: varchar("channel_id", { length: 255 }).notNull(),
+  authorId: varchar("author_id", { length: 255 }).references(() => users.id),
+  content: varchar("content", { length: 1000 }).notNull(),
+  mediaUrl: varchar("media_url", { length: 255 }),
+  replyToId: int("reply_to_id"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
