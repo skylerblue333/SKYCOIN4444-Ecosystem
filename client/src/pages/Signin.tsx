@@ -2,49 +2,42 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { useLocation } from "wouter";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { KeyRound, Loader2, Mail } from "lucide-react";
 
 export function Signin() {
-  const [, setLocation] = useLocation();
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
+    accessKey: "",
   });
 
+  const betaAccess = trpc.auth.betaAccess.useMutation();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
+    setFormData(current => ({
+      ...current,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+
+    if (!formData.email || !formData.accessKey) {
+      toast.error("Enter your email and beta access key.");
+      return;
+    }
 
     try {
-      // Validation
-      if (!formData.email || !formData.password) {
-        toast.error("Please fill all fields");
-        setLoading(false);
-        return;
-      }
-
-      // Mock signin - in production, call API
-      const token = btoa(`${formData.email}:${formData.password}`);
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("user_email", formData.email);
-      localStorage.setItem("user_name", formData.email.split("@")[0]);
-
-      toast.success("Welcome back! 🎉");
-      setLocation("/");
-    } catch (error) {
-      toast.error("Sign in failed");
-    } finally {
-      setLoading(false);
+      await betaAccess.mutateAsync({
+        email: formData.email,
+        accessKey: formData.accessKey,
+      });
+      toast.success("Beta access granted.");
+      window.location.assign("/");
+    } catch {
+      toast.error("Beta access was not accepted.");
     }
   };
 
@@ -55,15 +48,14 @@ export function Signin() {
           <div className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
             SKYCOIN4444
           </div>
-          <CardTitle className="text-xl text-white">Sign In</CardTitle>
+          <CardTitle className="text-xl text-white">Beta Access</CardTitle>
           <p className="text-sm text-slate-400">
-            Welcome back to the ecosystem
+            This beta is invite-only. Use the email and access key provided to you.
           </p>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">
                 Email
@@ -73,77 +65,53 @@ export function Signin() {
                 <Input
                   type="email"
                   name="email"
+                  autoComplete="email"
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleChange}
                   className="pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                  disabled={loading}
+                  disabled={betaAccess.isPending}
                 />
               </div>
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">
-                Password
+                Beta access key
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
+                <KeyRound className="absolute left-3 top-3 w-4 h-4 text-purple-400" />
                 <Input
                   type="password"
-                  name="password"
-                  placeholder="••••••••"
-                  value={formData.password}
+                  name="accessKey"
+                  autoComplete="off"
+                  placeholder="Enter your invite key"
+                  value={formData.accessKey}
                   onChange={handleChange}
                   className="pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                  disabled={loading}
+                  disabled={betaAccess.isPending}
                 />
               </div>
             </div>
 
-            {/* Submit */}
             <Button
               type="submit"
-              disabled={loading}
+              disabled={betaAccess.isPending}
               className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
             >
-              {loading ? (
+              {betaAccess.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Signing In...
+                  Checking access...
                 </>
               ) : (
-                "Sign In"
+                "Enter Beta"
               )}
             </Button>
 
-            {/* Sign Up Link */}
-            <div className="text-center text-sm text-slate-400">
-              Don't have an account?{" "}
-              <button
-                type="button"
-                onClick={() => setLocation("/signup")}
-                className="text-purple-400 hover:text-purple-300 font-medium"
-              >
-                Create one
-              </button>
-            </div>
-
-            {/* Demo Credentials */}
-            <div className="mt-6 pt-6 border-t border-slate-700 space-y-2">
-              <p className="text-xs font-semibold text-slate-300">
-                🧪 Demo Credentials:
-              </p>
-              <div className="bg-slate-800 p-3 rounded text-xs text-slate-300 space-y-1">
-                <div>
-                  <span className="text-slate-500">Email:</span>{" "}
-                  demo@skycoin.com
-                </div>
-                <div>
-                  <span className="text-slate-500">Password:</span> demo1234
-                </div>
-              </div>
-            </div>
+            <p className="text-xs text-center text-slate-500">
+              No demo password or mock login is accepted. Access is validated by the server.
+            </p>
           </form>
         </CardContent>
       </Card>
