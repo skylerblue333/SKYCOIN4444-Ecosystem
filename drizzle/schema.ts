@@ -102,10 +102,15 @@ export const streams = mysqlTable("streams", {
   status: varchar("status", { length: 255 }), // live | ended | scheduled
   viewers: int("viewers").default(0),
   viewerCount: int("viewer_count").default(0),
+  peakViewers: int("peak_viewers").default(0),
+  totalViews: int("total_views").default(0),
   hlsUrl: varchar("hls_url", { length: 255 }),
   archiveUrl: varchar("archive_url", { length: 255 }),
+  thumbnailUrl: varchar("thumbnail_url", { length: 255 }),
   category: varchar("category", { length: 255 }),
+  scheduledAt: timestamp("scheduled_at"),
   startedAt: timestamp("started_at"),
+  endedAt: timestamp("ended_at"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
