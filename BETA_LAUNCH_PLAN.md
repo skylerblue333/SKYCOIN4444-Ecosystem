@@ -99,6 +99,15 @@ Everything else can remain accessible as experimental only if it cannot compromi
 - The deployment workflow contains AWS resource names that are not established as the real SKYCOIN4444 deployment target.
 - Repository documentation correctly labels the current state as an engineering beta; older production-oriented documentation should not be used as readiness evidence.
 
+## Stabilization progress — September 23, 2026
+
+- CI now uses pnpm consistently and no longer treats copied AWS identifiers as a verified deployment target.
+- Full TypeScript debt is reported without hiding test/build execution; the initial baseline is 1,251 compiler errors across legacy/experimental and active modules.
+- The canonical User type is now exported from the Drizzle schema for auth/context consumers.
+- The unused direct `sharp` dependency was removed.
+- Audit-generated dependency overrides were re-resolved into the lockfile. GitHub's verification run reported **No known vulnerabilities found** before committing the generated package/lockfile changes back to this branch.
+- The next evidence gate is a fresh user-triggered CI run from the clean dependency commit so tests and production build results can be classified.
+
 ## Release rule
 
 Do not add large new feature families during this stabilization window. New work enters the beta only when it directly closes one of the launch gates above.
