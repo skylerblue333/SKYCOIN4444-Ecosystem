@@ -6,6 +6,9 @@ import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
+export const isAutonomousMiningEnabled = () =>
+  process.env.AUTONOMOUS_MINING_ENABLED === "true";
+
 interface MiningSession {
   id: string;
   startTime: number;
@@ -38,6 +41,12 @@ class AutonomousMiningSystem {
    * Start 24/7 autonomous mining
    */
   async startMining(): Promise<void> {
+    if (!isAutonomousMiningEnabled()) {
+      throw new Error(
+        "Autonomous mining is disabled. Set AUTONOMOUS_MINING_ENABLED=true only after configuring and validating a real mining backend."
+      );
+    }
+
     if (this.isRunning) {
       console.log("[Mining] Mining already running");
       return;
