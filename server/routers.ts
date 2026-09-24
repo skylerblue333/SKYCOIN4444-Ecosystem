@@ -203,50 +203,105 @@ export const streamRouter = router({
 // ============ TRANSACTION PROCEDURES ============
 export const transactionRouter = router({
   list: protectedProcedure.query(async ({ ctx }) =>
-    db.getTransactions(ctx.user.id)
+    db.getTransactions(String(ctx.user.id))
   ),
   create: protectedProcedure
     .input(
       z.object({
-        type: z.string(),
-        amount: z.number(),
+        type: z.string().min(1).max(64),
+        amount: z.number().positive(),
         toUserId: z.string().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) =>
-      db.createTransaction({
-        ...input,
-        userId: ctx.user.id,
-        status: "completed",
-      })
-    ),
+    .mutation(async () => ({
+      success: false,
+      status: "not_configured" as const,
+      reason: "financial_transfer_not_configured" as const,
+      transactionId: null,
+    })),
   getBalance: protectedProcedure.query(async ({ ctx }) => {
-    const user = await db.getUserById(ctx.user.id);
-    return { balance: user?.balance || 0 };
+    const user = await db.getUserById(String(ctx.user.id));
+    return {
+      balance: user?.balance ?? 0,
+      source: "user_balance" as const,
+    };
   }),
 });
 
 // ============ WALLET PROCEDURES ============
 export const walletRouter = router({
-  list: protectedProcedure.query(async ({ ctx }) => []),
+  list: protectedProcedure.query(async ({ ctx }) =>
+    db.getWallets(String(ctx.user.id))
+  ),
   create: protectedProcedure
-    .input(z.object({ currency: z.string(), address: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .input(
+      z.object({
+        currency: z.string().min(1).max(32),
+        address: z.string().min(1).max(255),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const wallet = await db.createWallet(
+        String(ctx.user.id),
+        input.currency,
+        input.address
+      );
+      return { success: Boolean(wallet), wallet };
+    }),
   getBalance: protectedProcedure
-    .input(z.object({ currency: z.string() }))
-    .query(async ({ ctx, input }) => ({ balance: 0 })),
+    .input(z.object({ currency: z.string().min(1).max(32) }))
+    .query(async ({ ctx, input }) => {
+      const wallet = await db.getWalletByCurrency(
+        String(ctx.user.id),
+        input.currency
+      );
+      return wallet
+        ? {
+            balance: wallet.balance ?? 0,
+            currency: wallet.currency,
+            address: wallet.address,
+            status: "available" as const,
+          }
+        : {
+            balance: 0,
+            currency: input.currency.trim().toUpperCase(),
+            address: null,
+            status: "wallet_not_found" as const,
+          };
+    }),
   send: protectedProcedure
     .input(
       z.object({
-        currency: z.string(),
-        amount: z.number(),
-        toAddress: z.string(),
+        currency: z.string().min(1).max(32),
+        amount: z.number().positive(),
+        toAddress: z.string().min(1).max(255),
       })
     )
-    .mutation(async ({ ctx, input }) => ({ txHash: "0x..." })),
+    .mutation(async () => ({
+      success: false,
+      status: "not_configured" as const,
+      reason: "external_transfer_not_configured" as const,
+      txHash: null,
+    })),
   receive: protectedProcedure
-    .input(z.object({ currency: z.string() }))
-    .query(async ({ ctx, input }) => ({ address: "..." })),
+    .input(z.object({ currency: z.string().min(1).max(32) }))
+    .query(async ({ ctx, input }) => {
+      const wallet = await db.getWalletByCurrency(
+        String(ctx.user.id),
+        input.currency
+      );
+      return wallet
+        ? {
+            address: wallet.address,
+            currency: wallet.currency,
+            status: "available" as const,
+          }
+        : {
+            address: null,
+            currency: input.currency.trim().toUpperCase(),
+            status: "wallet_not_found" as const,
+          };
+    }),
 });
 
 // ============ NOTIFICATION PROCEDURES ============
