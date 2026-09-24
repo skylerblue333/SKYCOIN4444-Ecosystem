@@ -42,9 +42,6 @@ export const posts = mysqlTable("posts", {
   likes: int("likes").default(0),
   comments: int("comments").default(0),
   authorId: varchar("author_id", { length: 255 }), // Legacy compatibility
-  likeCount: int("likes").default(0), // Legacy alias
-  commentCount: int("comments").default(0), // Legacy alias
-  expiresAt: timestamp("updated_at"), // Legacy alias
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
@@ -208,7 +205,6 @@ export const notifications = mysqlTable("notifications", {
   id: varchar("id", { length: 255 }).primaryKey(),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
   type: varchar("type", { length: 255 }), // like | comment | follow | message | order
-  title: varchar("content", { length: 255 }), // Legacy alias
   content: varchar("content", { length: 255 }),
   read: boolean("read").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
