@@ -68,7 +68,7 @@ export const authRouter = router({
         });
       }
 
-      const upserted = await db.upsertUser({
+      await db.upsertUser({
         openId,
         email,
         name: "Invited Beta Tester",
@@ -76,7 +76,7 @@ export const authRouter = router({
         lastSignedIn: new Date(),
       });
 
-      const user = upserted ?? (await db.getUserByOpenId(openId));
+      const user = await db.getUserByOpenId(openId);
       if (!user) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
