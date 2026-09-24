@@ -9,4 +9,3 @@ export { userSubscriptions as creatorSubscriptions } from "./schema-extended";
 export { xpEvents as tips } from "./schema-extended";
 export { stakingRecords as stakingPositions } from "./schema-extended";
 export { carts as listings } from "./schema-extended";
-export { realtimeEvents as channelMessages } from "./schema-extended";
