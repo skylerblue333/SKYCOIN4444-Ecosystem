@@ -1,36 +1,18 @@
-import crypto from "crypto";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "./_core/trpc";
 import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { sdk } from "./_core/sdk";
+import {
+  betaAccessKeyIssue,
+  betaAccessOpenId,
+  betaAuthMode,
+  normalizeBetaEmail,
+  verifyBetaAccessKey,
+} from "./_core/betaAccessAuth";
+import { evaluateBetaAdmission } from "./_core/betaAdmission";
 import * as db from "./db";
-
-function digest(value: string) {
-  return crypto.createHash("sha256").update(value, "utf8").digest();
-}
-
-export function isBetaAccessKeyValid(
-  candidate: string,
-  configuredKey = process.env.BETA_ACCESS_KEY ?? ""
-) {
-  if (!candidate || !configuredKey) return false;
-  return crypto.timingSafeEqual(digest(candidate), digest(configuredKey));
-}
-
-export function isBetaEmailAllowed(
-  email: string,
-  configuredEmails = process.env.BETA_ALLOWED_EMAILS ?? ""
-) {
-  const allowlist = configuredEmails
-    .split(/[;,\n]/)
-    .map(value => value.trim().toLowerCase())
-    .filter(Boolean);
-
-  if (allowlist.length === 0) return true;
-  return allowlist.includes(email.trim().toLowerCase());
-}
 
 export const authRouter = router({
   me: publicProcedure.query(async ({ ctx }) => ctx.user || null),
@@ -53,40 +35,48 @@ export const authRouter = router({
   betaAccess: publicProcedure
     .input(
       z.object({
-        email: z.string().email().max(320),
+        email: z.string().min(1).max(320),
         accessKey: z.string().min(1).max(512),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const configuredKey = process.env.BETA_ACCESS_KEY ?? "";
-      if (!configuredKey) {
+      const configurationIssue = betaAccessKeyIssue();
+      if (betaAuthMode() !== "access_key" || configurationIssue) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "Beta access is not configured.",
         });
       }
 
-      const email = input.email.trim().toLowerCase();
-      if (
-        !isBetaAccessKeyValid(input.accessKey, configuredKey) ||
-        !isBetaEmailAllowed(email)
-      ) {
+      const email = normalizeBetaEmail(input.email);
+      if (!email) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "A valid email is required.",
+        });
+      }
+
+      const openId = betaAccessOpenId(email);
+      const admission = evaluateBetaAdmission({ openId, email });
+      const keyValid = verifyBetaAccessKey(input.accessKey);
+
+      // Keep invite membership and credential validity indistinguishable.
+      if (!admission.allowed || !keyValid) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Invalid beta access credentials.",
         });
       }
 
-      const openId = `beta:${email}`;
-      await db.upsertUser({
+      const upserted = await db.upsertUser({
         openId,
         email,
-        name: email.split("@")[0] || "Beta Tester",
+        name: "Invited Beta Tester",
         loginMethod: "beta_access",
         lastSignedIn: new Date(),
       });
 
-      const user = await db.getUserByOpenId(openId);
+      const user = upserted ?? (await db.getUserByOpenId(openId));
       if (!user) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -95,7 +85,7 @@ export const authRouter = router({
       }
 
       const sessionToken = await sdk.createSessionToken(openId, {
-        name: user.name || "",
+        name: user.name || "Invited Beta Tester",
         expiresInMs: ONE_YEAR_MS,
       });
 
