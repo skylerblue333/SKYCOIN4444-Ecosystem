@@ -19,6 +19,9 @@ const {
   messages,
   transactions,
   wallets,
+  products,
+  orders,
+  reviews,
 } = schema;
 
 function stableId(prefix: string, ...parts: string[]) {
@@ -254,32 +257,127 @@ export async function deletePost(userId: string, postId: string) {
 
 // ============ PRODUCT HELPERS ============
 export async function getProducts(limit = 20, offset = 0, category?: string) {
-  return [];
+  const base = db.select().from(products);
+  if (category) {
+    return base
+      .where(eq(products.category, category))
+      .orderBy(desc(products.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+  return base.orderBy(desc(products.createdAt)).limit(limit).offset(offset);
 }
 
 export async function getProductById(id: string) {
-  return null;
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, id))
+    .limit(1);
+  return product ?? null;
 }
 
-export async function createProduct(data: any) {
-  return { id: "1", ...data };
+export async function createProduct(data: {
+  name: string;
+  price: number;
+  category: string;
+  sellerId: string;
+}) {
+  const id = `product_${nanoid(20)}`;
+  await db.insert(products).values({
+    id,
+    name: data.name,
+    price: data.price,
+    category: data.category,
+    sellerId: data.sellerId,
+  });
+  return getProductById(id);
 }
 
 // ============ ORDER HELPERS ============
 export async function getOrders(userId: string) {
-  return [];
+  return db
+    .select()
+    .from(orders)
+    .where(eq(orders.userId, userId))
+    .orderBy(desc(orders.createdAt));
 }
 
-export async function createOrder(
+export async function createOrder(input: {
+  userId: string;
+  productId: string;
+  quantity: number;
+  shippingAddress: string;
+}) {
+  const product = await getProductById(input.productId);
+  if (!product) {
+    return { success: false as const, reason: "product_not_found" as const };
+  }
+  if (
+    product.stock !== null &&
+    product.stock !== undefined &&
+    product.stock < input.quantity
+  ) {
+    return { success: false as const, reason: "insufficient_stock" as const };
+  }
+
+  const id = `order_${nanoid(20)}`;
+  const total = (product.price ?? 0) * input.quantity;
+  await db.insert(orders).values({
+    id,
+    userId: input.userId,
+    productId: input.productId,
+    quantity: input.quantity,
+    total,
+    status: "pending",
+    shippingAddress: input.shippingAddress,
+  });
+
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.id, id))
+    .limit(1);
+  return { success: true as const, order: order ?? null };
+}
+
+export async function updateOrderStatus(
   userId: string,
-  productId: string,
-  quantity: number
+  orderId: string,
+  status: string
 ) {
-  return { id: "1", userId, productId, quantity };
-}
+  if (status !== "cancelled") {
+    return {
+      success: false as const,
+      reason: "seller_fulfillment_not_configured" as const,
+    };
+  }
 
-export async function updateOrderStatus(orderId: string, status: string) {
-  return { success: true };
+  const [owned] = await db
+    .select({ id: orders.id, status: orders.status })
+    .from(orders)
+    .where(and(eq(orders.id, orderId), eq(orders.userId, userId)))
+    .limit(1);
+
+  if (!owned) {
+    return {
+      success: false as const,
+      reason: "order_not_found_or_not_owner" as const,
+    };
+  }
+
+  if (owned.status !== "pending") {
+    return {
+      success: false as const,
+      reason: "order_not_pending" as const,
+    };
+  }
+
+  await db
+    .update(orders)
+    .set({ status: "cancelled" })
+    .where(eq(orders.id, orderId));
+  return { success: true as const };
 }
 
 // ============ TRANSACTION HELPERS ============
@@ -594,16 +692,33 @@ export async function markMessageAsRead(messageId: string, recipientId: string) 
 
 // ============ REVIEW HELPERS ============
 export async function getReviews(productId: string) {
-  return [];
+  return db
+    .select()
+    .from(reviews)
+    .where(eq(reviews.productId, productId))
+    .orderBy(desc(reviews.createdAt));
 }
 
 export async function createReview(
   productId: string,
   userId: string,
   rating: number,
-  content: string
+  comment: string
 ) {
-  return { id: "1", productId, userId, rating, content };
+  const id = `review_${nanoid(20)}`;
+  await db.insert(reviews).values({
+    id,
+    productId,
+    userId,
+    rating,
+    comment,
+  });
+  const [review] = await db
+    .select()
+    .from(reviews)
+    .where(eq(reviews.id, id))
+    .limit(1);
+  return review ?? null;
 }
 
 // ============ STREAM HELPERS ============
