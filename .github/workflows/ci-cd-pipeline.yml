@@ -386,5 +386,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Scan tracked files for committed secrets
+        run: pnpm security:secrets
+
       - name: Block high-severity dependency vulnerabilities
         run: pnpm audit --audit-level=high
