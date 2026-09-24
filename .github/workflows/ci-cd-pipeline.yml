@@ -38,20 +38,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: TypeScript check (baseline debt)
+      - name: TypeScript debt no-regression gate
         id: typecheck
-        continue-on-error: true
         shell: bash
         run: |
-          set +e
-          pnpm check 2>&1 | tee typecheck.log
-          status=${PIPESTATUS[0]}
-          errors=$(grep -c "error TS" typecheck.log || true)
-          echo "errors=$errors" >> "$GITHUB_OUTPUT"
-          echo "### TypeScript stabilization debt" >> "$GITHUB_STEP_SUMMARY"
-          echo "Current compiler error count: **$errors**" >> "$GITHUB_STEP_SUMMARY"
-          echo "This report is temporarily non-blocking so test/build failures can be exposed in parallel. Beta release still requires this debt to be resolved or explicitly removed from the beta compilation scope." >> "$GITHUB_STEP_SUMMARY"
-          exit $status
+          pnpm check:type-debt 2>&1 | tee typecheck.log
 
       - name: Upload typecheck report
         if: always()
