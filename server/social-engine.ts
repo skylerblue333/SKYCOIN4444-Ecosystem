@@ -24,6 +24,7 @@ import {
   or,
   like,
   inArray,
+  notInArray,
 } from "drizzle-orm";
 
 // ═══════════════════════════════════════════════════════════════
@@ -105,7 +106,7 @@ export class DirectMessageService {
       )
       .where(
         and(
-          eq(schema.communityMembers.userId, userId),
+          eq(schema.communityMembers.userId, String(userId)),
           eq(schema.channels.type, "text")
         )
       )
@@ -113,22 +114,15 @@ export class DirectMessageService {
       .limit(limit)
       .offset(offset);
 
-    return conversations.map(
-      (conv: {
-        id: number;
-        name: string;
-        communityId: number;
-        createdAt: Date;
-      }) => ({
-        id: conv.id,
-        participantIds: [userId],
-        lastMessageAt: conv.createdAt,
-        lastMessagePreview: "",
-        unreadCount: 0,
-        isGroup: false,
-        groupName: conv.name,
-      })
-    );
+    return conversations.map(conv => ({
+      id: Number(conv.id),
+      participantIds: [userId],
+      lastMessageAt: conv.createdAt || new Date(),
+      lastMessagePreview: "",
+      unreadCount: 0,
+      isGroup: false,
+      groupName: conv.name || undefined,
+    }));
   }
 
   async getMessages(
@@ -140,7 +134,7 @@ export class DirectMessageService {
     const db = await getDb();
     if (!db) return [];
 
-    const conditions = [eq(schema.channelMessages.channelId, channelId)];
+    const conditions = [eq(schema.channelMessages.channelId, String(channelId))];
     if (before) {
       conditions.push(sql`${schema.channelMessages.id} < ${before}`);
     }
@@ -152,18 +146,18 @@ export class DirectMessageService {
       .orderBy(desc(schema.channelMessages.createdAt))
       .limit(limit);
 
-    return messages.map((msg: typeof schema.channelMessages.$inferSelect) => ({
+    return messages.map(msg => ({
       id: msg.id,
       conversationId: channelId,
-      senderId: msg.authorId,
+      senderId: Number(msg.authorId),
       content: msg.content,
       mediaUrl: msg.mediaUrl || undefined,
       replyToId: msg.replyToId || undefined,
       isEdited: false,
       isDeleted: false,
-      readBy: [msg.authorId],
+      readBy: msg.authorId ? [Number(msg.authorId)] : [],
       reactions: {},
-      createdAt: msg.createdAt,
+      createdAt: msg.createdAt || new Date(),
     }));
   }
 
@@ -178,8 +172,8 @@ export class DirectMessageService {
     if (!db) return null;
 
     const [result] = await db.insert(schema.channelMessages).values({
-      channelId,
-      authorId: senderId,
+      channelId: String(channelId),
+      authorId: String(senderId),
       content,
       mediaUrl: mediaUrl || null,
       replyToId: replyToId || null,
@@ -205,10 +199,10 @@ export class DirectMessageService {
     if (!db) return;
     await db
       .update(schema.notifications)
-      .set({ isRead: true })
+      .set({ read: true })
       .where(
         and(
-          eq(schema.notifications.userId, userId),
+          eq(schema.notifications.userId, String(userId)),
           eq(schema.notifications.type, "system")
         )
       );
@@ -223,7 +217,7 @@ export class DirectMessageService {
       .from(schema.channelMessages)
       .where(eq(schema.channelMessages.id, messageId));
 
-    if (!msg || msg.authorId !== userId) return false;
+    if (!msg || msg.authorId !== String(userId)) return false;
 
     await db
       .update(schema.channelMessages)
@@ -285,18 +279,18 @@ export class BookmarkService {
     const db = await getDb();
     if (!db) return null;
 
-    const [result] = await db.insert(schema.notifications).values({
-      userId,
-      type: "system",
+    const bookmarkId = Date.now();
+    await db.insert(schema.notifications).values({
+      id: String(bookmarkId),
+      userId: String(userId),
+      type: "bookmark",
       title: `bookmark:${postId}`,
-      message: note || "",
-      targetType: "post",
-      targetId: postId,
-      isRead: true,
+      content: note || "",
+      read: true,
     });
 
     return {
-      id: (result as any).insertId,
+      id: bookmarkId,
       userId,
       postId,
       note,
@@ -312,7 +306,7 @@ export class BookmarkService {
       .delete(schema.notifications)
       .where(
         and(
-          eq(schema.notifications.userId, userId),
+          eq(schema.notifications.userId, String(userId)),
           sql`${schema.notifications.title} = ${`bookmark:${postId}`}`
         )
       );
@@ -333,7 +327,7 @@ export class BookmarkService {
       .from(schema.notifications)
       .where(
         and(
-          eq(schema.notifications.userId, userId),
+          eq(schema.notifications.userId, String(userId)),
           sql`${schema.notifications.title} LIKE 'bookmark:%'`
         )
       )
@@ -341,17 +335,13 @@ export class BookmarkService {
       .limit(limit)
       .offset(offset);
 
-    return bookmarks.map((b: any) => {
-      const data =
-        typeof b.data === "string" ? JSON.parse(b.data) : b.data || {};
-      return {
-        id: b.id,
-        userId: b.userId,
-        postId: data.postId || 0,
-        note: b.message || undefined,
-        createdAt: b.createdAt,
-      };
-    });
+    return bookmarks.map((b: any) => ({
+      id: Number(b.id),
+      userId: Number(b.userId),
+      postId: Number(String(b.title || "").replace(/^bookmark:/, "")) || 0,
+      note: b.content || undefined,
+      createdAt: b.createdAt || new Date(),
+    }));
   }
 
   async isBookmarked(userId: number, postId: number): Promise<boolean> {
@@ -363,7 +353,7 @@ export class BookmarkService {
       .from(schema.notifications)
       .where(
         and(
-          eq(schema.notifications.userId, userId),
+          eq(schema.notifications.userId, String(userId)),
           sql`${schema.notifications.title} = ${`bookmark:${postId}`}`
         )
       );
@@ -406,17 +396,21 @@ export class ReactionService {
       .select({ id: schema.likes.id })
       .from(schema.likes)
       .where(
-        and(eq(schema.likes.userId, userId), eq(schema.likes.postId, postId))
+        and(eq(schema.likes.userId, String(userId)), eq(schema.likes.postId, String(postId)))
       )
       .limit(1);
 
     if (existing.length > 0) return true;
 
-    await db.insert(schema.likes).values({ userId, postId });
+    await db.insert(schema.likes).values({
+      id: `post-like-${postId}-${userId}`,
+      userId: String(userId),
+      postId: String(postId),
+    });
     await db
       .update(schema.posts)
       .set({ likeCount: sql`${schema.posts.likeCount} + 1` })
-      .where(eq(schema.posts.id, postId));
+      .where(eq(schema.posts.id, String(postId)));
 
     return true;
   }
@@ -428,12 +422,12 @@ export class ReactionService {
     await db
       .delete(schema.likes)
       .where(
-        and(eq(schema.likes.userId, userId), eq(schema.likes.postId, postId))
+        and(eq(schema.likes.userId, String(userId)), eq(schema.likes.postId, String(postId)))
       );
     await db
       .update(schema.posts)
       .set({ likeCount: sql`GREATEST(${schema.posts.likeCount} - 1, 0)` })
-      .where(eq(schema.posts.id, postId));
+      .where(eq(schema.posts.id, String(postId)));
 
     return true;
   }
@@ -447,13 +441,15 @@ export class ReactionService {
     const reactions = await db
       .select({ userId: schema.likes.userId })
       .from(schema.likes)
-      .where(eq(schema.likes.postId, postId));
+      .where(eq(schema.likes.postId, String(postId)));
 
     const result: Record<string, { count: number; userIds: number[] }> = {};
     if (reactions.length > 0) {
       result["❤️"] = {
         count: reactions.length,
-        userIds: reactions.map((r: { userId: number }) => r.userId),
+        userIds: reactions
+          .map(r => Number(r.userId))
+          .filter(id => Number.isFinite(id)),
       };
     }
     return result;
@@ -479,23 +475,26 @@ export class ThreadedCommentService {
       const [parent] = await db
         .select({ id: schema.comments.id, parentId: schema.comments.parentId })
         .from(schema.comments)
-        .where(eq(schema.comments.id, parentId));
+        .where(eq(schema.comments.id, String(parentId)));
       if (parent) depth = parent.parentId ? 2 : 1;
     }
 
-    const [result] = await db.insert(schema.comments).values({
-      postId,
-      authorId,
-      parentId: parentId || null,
+    const commentId = Date.now();
+    await db.insert(schema.comments).values({
+      id: String(commentId),
+      postId: String(postId),
+      userId: String(authorId),
+      authorId: String(authorId),
+      parentId: parentId ? String(parentId) : null,
       content,
     });
 
     await db
       .update(schema.posts)
       .set({ commentCount: sql`${schema.posts.commentCount} + 1` })
-      .where(eq(schema.posts.id, postId));
+      .where(eq(schema.posts.id, String(postId)));
 
-    const insertId = (result as any).insertId;
+    const insertId = commentId;
     return {
       id: insertId,
       postId,
@@ -538,26 +537,26 @@ export class ThreadedCommentService {
         updatedAt: schema.comments.updatedAt,
       })
       .from(schema.comments)
-      .where(eq(schema.comments.postId, postId))
+      .where(eq(schema.comments.postId, String(postId)))
       .orderBy(orderClause)
       .limit(limit);
 
-    const commentMap = new Map<number, ThreadedComment>();
+    const commentMap = new Map<string, ThreadedComment>();
     const rootComments: ThreadedComment[] = [];
 
     for (const c of allComments) {
       const comment: ThreadedComment = {
-        id: c.id,
-        postId: c.postId,
-        authorId: c.authorId,
-        parentId: c.parentId || undefined,
-        content: c.content,
-        likeCount: c.likeCount,
+        id: Number(c.id),
+        postId: Number(c.postId),
+        authorId: Number(c.authorId),
+        parentId: c.parentId ? Number(c.parentId) : undefined,
+        content: c.content || "",
+        likeCount: c.likeCount || 0,
         replyCount: 0,
         depth: 0,
         path: `${c.id}`,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt,
+        createdAt: c.createdAt || new Date(),
+        updatedAt: c.updatedAt || c.createdAt || new Date(),
         replies: [],
       };
       commentMap.set(c.id, comment);
@@ -588,8 +587,8 @@ export class ThreadedCommentService {
       .from(schema.likes)
       .where(
         and(
-          eq(schema.likes.userId, userId),
-          eq(schema.likes.commentId, commentId)
+          eq(schema.likes.userId, String(userId)),
+          eq(schema.likes.commentId, String(commentId))
         )
       )
       .limit(1);
@@ -599,15 +598,19 @@ export class ThreadedCommentService {
       await db
         .update(schema.comments)
         .set({ likeCount: sql`GREATEST(${schema.comments.likeCount} - 1, 0)` })
-        .where(eq(schema.comments.id, commentId));
+        .where(eq(schema.comments.id, String(commentId)));
       return false;
     }
 
-    await db.insert(schema.likes).values({ userId, commentId });
+    await db.insert(schema.likes).values({
+      id: `comment-like-${commentId}-${userId}`,
+      userId: String(userId),
+      commentId: String(commentId),
+    });
     await db
       .update(schema.comments)
       .set({ likeCount: sql`${schema.comments.likeCount} + 1` })
-      .where(eq(schema.comments.id, commentId));
+      .where(eq(schema.comments.id, String(commentId)));
     return true;
   }
 
@@ -622,14 +625,14 @@ export class ThreadedCommentService {
     const [comment] = await db
       .select({ authorId: schema.comments.authorId })
       .from(schema.comments)
-      .where(eq(schema.comments.id, commentId));
+      .where(eq(schema.comments.id, String(commentId)));
 
-    if (!comment || comment.authorId !== userId) return false;
+    if (!comment || comment.authorId !== String(userId)) return false;
 
     await db
       .update(schema.comments)
       .set({ content: newContent, updatedAt: new Date() })
-      .where(eq(schema.comments.id, commentId));
+      .where(eq(schema.comments.id, String(commentId)));
     return true;
   }
 
@@ -647,15 +650,15 @@ export class ThreadedCommentService {
         postId: schema.comments.postId,
       })
       .from(schema.comments)
-      .where(eq(schema.comments.id, commentId));
+      .where(eq(schema.comments.id, String(commentId)));
 
     if (!comment) return false;
-    if (!isAdmin && comment.authorId !== userId) return false;
+    if (!isAdmin && comment.authorId !== String(userId)) return false;
 
-    await db.delete(schema.comments).where(eq(schema.comments.id, commentId));
+    await db.delete(schema.comments).where(eq(schema.comments.id, String(commentId)));
     await db
       .delete(schema.comments)
-      .where(eq(schema.comments.parentId, commentId));
+      .where(eq(schema.comments.parentId, String(commentId)));
     await db
       .update(schema.posts)
       .set({ commentCount: sql`GREATEST(${schema.posts.commentCount} - 1, 0)` })
@@ -680,11 +683,14 @@ export class RepostService {
 
     const isQuote = !!quoteText;
 
-    const [result] = await db.insert(schema.posts).values({
-      authorId: userId,
+    const repostId = Date.now();
+    await db.insert(schema.posts).values({
+      id: String(repostId),
+      userId: String(userId),
+      authorId: String(userId),
       type: "text",
       content: quoteText || null,
-      parentId: originalPostId,
+      parentId: String(originalPostId),
       isRepost: !isQuote,
       isQuote,
       visibility: "public",
@@ -693,13 +699,13 @@ export class RepostService {
     await db
       .update(schema.posts)
       .set({ repostCount: sql`${schema.posts.repostCount} + 1` })
-      .where(eq(schema.posts.id, originalPostId));
+      .where(eq(schema.posts.id, String(originalPostId)));
     await db
       .update(schema.users)
       .set({ postCount: sql`${schema.users.postCount} + 1` })
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
-    return (result as any).insertId;
+    return repostId;
   }
 
   async undoRepost(userId: number, originalPostId: number): Promise<boolean> {
@@ -711,8 +717,8 @@ export class RepostService {
       .from(schema.posts)
       .where(
         and(
-          eq(schema.posts.authorId, userId),
-          eq(schema.posts.parentId, originalPostId),
+          eq(schema.posts.authorId, String(userId)),
+          eq(schema.posts.parentId, String(originalPostId)),
           or(eq(schema.posts.isRepost, true), eq(schema.posts.isQuote, true))
         )
       )
@@ -724,7 +730,7 @@ export class RepostService {
     await db
       .update(schema.posts)
       .set({ repostCount: sql`GREATEST(${schema.posts.repostCount} - 1, 0)` })
-      .where(eq(schema.posts.id, originalPostId));
+      .where(eq(schema.posts.id, String(originalPostId)));
 
     return true;
   }
@@ -772,7 +778,7 @@ export class RepostService {
       .from(schema.posts)
       .where(
         and(
-          eq(schema.posts.authorId, userId),
+          eq(schema.posts.authorId, String(userId)),
           eq(schema.posts.parentId, postId),
           or(eq(schema.posts.isRepost, true), eq(schema.posts.isQuote, true))
         )
@@ -797,8 +803,11 @@ export class StoryService {
 
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    const [result] = await db.insert(schema.posts).values({
-      authorId: userId,
+    const storyId = Date.now();
+    await db.insert(schema.posts).values({
+      id: String(storyId),
+      userId: String(userId),
+      authorId: String(userId),
       type: "story",
       content,
       mediaUrl,
@@ -806,7 +815,7 @@ export class StoryService {
       expiresAt,
     });
 
-    return (result as any).insertId;
+    return storyId;
   }
 
   async getFollowingStories(
@@ -822,10 +831,10 @@ export class StoryService {
     const following = await db
       .select({ followingId: schema.follows.followingId })
       .from(schema.follows)
-      .where(eq(schema.follows.followerId, userId));
+      .where(eq(schema.follows.followerId, String(userId)));
 
     const followingIds = following.map(
-      (f: { followingId: number }) => f.followingId
+      f => String(f.followingId)
     );
     if (followingIds.length === 0) return [];
 
@@ -849,7 +858,7 @@ export class StoryService {
       )
       .orderBy(desc(schema.posts.createdAt));
 
-    const userStoryMap = new Map<number, any[]>();
+    const userStoryMap = new Map<string, any[]>();
     for (const story of stories) {
       if (!userStoryMap.has(story.authorId))
         userStoryMap.set(story.authorId, []);
@@ -868,17 +877,10 @@ export class StoryService {
       .from(schema.users)
       .where(inArray(schema.users.id, userIds));
 
-    const userMap = new Map(
-      users.map(
-        (u: { id: number; name: string | null; avatar: string | null }) => [
-          u.id,
-          u,
-        ]
-      )
-    );
+    const userMap = new Map(users.map(u => [u.id, u]));
 
-    return userIds.map((uid: number) => ({
-      userId: uid,
+    return userIds.map(uid => ({
+      userId: Number(uid),
       userName: String(userMap.get(uid)?.name || "Unknown"),
       avatar: userMap.get(uid)?.avatar || undefined,
       stories: userStoryMap.get(uid) || [],
@@ -891,7 +893,7 @@ export class StoryService {
     await db
       .update(schema.posts)
       .set({ viewCount: sql`${schema.posts.viewCount} + 1` })
-      .where(eq(schema.posts.id, storyId));
+      .where(eq(schema.posts.id, String(storyId)));
   }
 
   async cleanupExpiredStories(): Promise<number> {
@@ -923,10 +925,10 @@ export class FeedAlgorithmService {
     const following = await db
       .select({ followingId: schema.follows.followingId })
       .from(schema.follows)
-      .where(eq(schema.follows.followerId, userId));
+      .where(eq(schema.follows.followerId, String(userId)));
 
     const followingIds = following.map(
-      (f: { followingId: number }) => f.followingId
+      f => String(f.followingId)
     );
 
     const posts = await db
@@ -961,9 +963,9 @@ export class FeedAlgorithmService {
         (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60);
       score += Math.max(0, 100 - ageHours * 4);
       if (followingIds.includes(post.authorId)) score += 50;
-      score += Math.min(post.likeCount * 2, 40);
-      score += Math.min(post.commentCount * 3, 30);
-      score += Math.min(post.repostCount * 5, 25);
+      score += Math.min((post.likeCount || 0) * 2, 40);
+      score += Math.min((post.commentCount || 0) * 3, 30);
+      score += Math.min((post.repostCount || 0) * 5, 25);
       const aiScore = parseFloat(String(post.aiScore || "0"));
       score += aiScore * 10;
       return { ...post, feedScore: score };
@@ -1002,10 +1004,10 @@ export class FeedAlgorithmService {
     const following = await db
       .select({ followingId: schema.follows.followingId })
       .from(schema.follows)
-      .where(eq(schema.follows.followerId, userId));
+      .where(eq(schema.follows.followerId, String(userId)));
 
     const excludeIds = [
-      ...following.map((f: { followingId: number }) => f.followingId),
+      ...following.map(f => String(f.followingId)),
       userId,
     ];
 
@@ -1015,7 +1017,7 @@ export class FeedAlgorithmService {
       .where(
         and(
           eq(schema.posts.visibility, "public"),
-          sql`${schema.posts.authorId} NOT IN (${excludeIds.join(",") || "0"})`,
+          notInArray(schema.posts.authorId, excludeIds.map(String)),
           isNull(schema.posts.expiresAt)
         )
       )
@@ -1032,10 +1034,10 @@ export class FeedAlgorithmService {
     const following = await db
       .select({ followingId: schema.follows.followingId })
       .from(schema.follows)
-      .where(eq(schema.follows.followerId, userId));
+      .where(eq(schema.follows.followerId, String(userId)));
 
     const excludeIds = [
-      ...following.map((f: { followingId: number }) => f.followingId),
+      ...following.map(f => String(f.followingId)),
       userId,
     ];
 
@@ -1050,7 +1052,7 @@ export class FeedAlgorithmService {
         isCreator: schema.users.isCreator,
       })
       .from(schema.users)
-      .where(sql`${schema.users.id} NOT IN (${excludeIds.join(",") || "0"})`)
+      .where(notInArray(schema.users.id, excludeIds.map(String)))
       .orderBy(desc(schema.users.followerCount))
       .limit(limit);
   }
@@ -1085,19 +1087,25 @@ export class MentionService {
       .where(inArray(schema.users.username, mentions));
 
     for (const user of mentionedUsers) {
-      if (user.id === authorId) continue;
+      if (user.id === String(authorId)) continue;
+      const target = postId
+        ? `post:${postId}`
+        : commentId
+          ? `comment:${commentId}`
+          : "profile";
       await db.insert(schema.notifications).values({
+        id: `mention-${Date.now()}-${user.id}`,
         userId: user.id,
         type: "mention",
         title: "You were mentioned",
-        message: content.substring(0, 100),
-        actorId: authorId,
-        targetType: postId ? "post" : "comment",
-        targetId: postId || commentId || null,
+        content: `${target}|${content.substring(0, 100)}`,
+        read: false,
       });
     }
 
-    return mentionedUsers.map((u: { id: number }) => u.id);
+    return mentionedUsers
+      .map(u => Number(u.id))
+      .filter(id => Number.isFinite(id));
   }
 
   async getMentionSuggestions(
@@ -1123,7 +1131,7 @@ export class MentionService {
             like(schema.users.username, `${query}%`),
             like(schema.users.name, `%${query}%`)
           ),
-          sql`${schema.users.id} != ${currentUserId}`
+          sql`${schema.users.id} != ${String(currentUserId)}`
         )
       )
       .limit(limit);
