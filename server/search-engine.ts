@@ -554,7 +554,6 @@ export class SearchService {
           displayName: user.username ?? user.name,
           avatarUrl: user.avatar,
           xp: user.xp,
-          xp: user.xp,
         },
         boost: 1,
         updatedAt: user.createdAt ?? new Date(0),
@@ -571,7 +570,6 @@ export class SearchService {
         content: `${community.name} ${community.description || ""}`,
         metadata: {
           name: community.name,
-
         },
         boost: 1,
         updatedAt: community.createdAt ?? new Date(0),
@@ -589,9 +587,7 @@ export class SearchService {
         metadata: {
           title: listing.title,
           price: listing.price,
-
           sellerId: listing.sellerId,
-
         },
         boost: 1,
         updatedAt: listing.createdAt ?? new Date(0),
