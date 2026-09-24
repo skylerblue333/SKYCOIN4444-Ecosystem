@@ -21,6 +21,7 @@ import {
   tokenBalances,
   transactions,
   follows,
+  posts,
   communityMembers,
   directMessages,
   payouts,
@@ -90,7 +91,7 @@ function normalizeTwin(row: TwinMemory): NormalizedTwin {
 // TWIN MEMORY
 // ════════════════════════════════════════════════════════════════════════
 export async function getTwinMemory(
-  userId: number
+  userId: string
 ): Promise<NormalizedTwin | null> {
   const db = await getDb();
   if (!db) return null;
@@ -104,7 +105,7 @@ export async function getTwinMemory(
 
 // Ensure a twin row exists for the user; returns the normalized row.
 export async function ensureTwinMemory(
-  userId: number
+  userId: string
 ): Promise<NormalizedTwin | null> {
   const db = await getDb();
   if (!db) return null;
@@ -118,7 +119,7 @@ export async function ensureTwinMemory(
 }
 
 export async function updateTwinMemory(
-  userId: number,
+  userId: string,
   patch: Partial<{
     summary: string;
     goals: TwinGoal[];
@@ -147,7 +148,7 @@ export async function updateTwinMemory(
 
 // ── Twin facts (append-only, traceable) ────────────────────────────────────
 export async function addTwinFact(data: {
-  userId: number;
+  userId: string;
   kind?: TwinFact["kind"];
   content: string;
   source?: string;
@@ -170,7 +171,7 @@ export async function addTwinFact(data: {
 }
 
 export async function getTwinFacts(
-  userId: number,
+  userId: string,
   limit = 50
 ): Promise<TwinFact[]> {
   const db = await getDb();
@@ -184,7 +185,7 @@ export async function getTwinFacts(
 }
 
 export async function deactivateTwinFact(
-  userId: number,
+  userId: string,
   factId: number
 ): Promise<void> {
   const db = await getDb();
@@ -199,7 +200,7 @@ export async function deactivateTwinFact(
 // REPUTATION
 // ════════════════════════════════════════════════════════════════════════
 export async function getReputation(
-  userId: number
+  userId: string
 ): Promise<ReputationScore | null> {
   const db = await getDb();
   if (!db) return null;
@@ -212,7 +213,7 @@ export async function getReputation(
 }
 
 export async function upsertReputation(data: {
-  userId: number;
+  userId: string;
   learningScore: number;
   builderScore: number;
   teachingScore: number;
@@ -276,27 +277,44 @@ export async function getReputationLeaderboard(limit = 20): Promise<
 }
 
 // Raw user activity signals used to deterministically compute reputation.
-export async function getUserActivitySignals(userId: number) {
+export async function getUserActivitySignals(userId: string) {
   const db = await getDb();
   if (!db) return null;
   const [u] = await db
     .select({
       xp: users.xp,
-      level: users.level,
-      reputation: users.reputation,
-      followerCount: users.followerCount,
-      postCount: users.postCount,
-      contributionScore: users.contributionScore,
-      reliabilityScore: users.reliabilityScore,
-      behaviorScore: users.behaviorScore,
-      toxicityScore: users.toxicityScore,
-      isCreator: users.isCreator,
+      role: users.role,
       verified: users.verified,
     })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
   if (!u) return null;
+
+  const [followerAgg] = await db
+    .select({ total: sql<number>`count(*)` })
+    .from(follows)
+    .where(eq(follows.followingId, userId));
+  const [postAgg] = await db
+    .select({ total: sql<number>`count(*)` })
+    .from(posts)
+    .where(eq(posts.userId, userId));
+
+  const xp = Number(u.xp ?? 0);
+  const baseSignals = {
+    xp,
+    level: Math.max(1, Math.floor(xp / 1000) + 1),
+    reputation: 0,
+    followerCount: Number(followerAgg?.total ?? 0),
+    postCount: Number(postAgg?.total ?? 0),
+    contributionScore: 0,
+    reliabilityScore: 0,
+    behaviorScore: 0,
+    toxicityScore: 0,
+    isCreator: u.role === "creator",
+    verified: Boolean(u.verified),
+  };
+
   // Count durable contributions tracked by the intelligence layer itself.
   const [missionAgg] = await db
     .select({
@@ -317,7 +335,7 @@ export async function getUserActivitySignals(userId: number) {
     .from(aiMarketListings)
     .where(eq(aiMarketListings.sellerId, userId));
   return {
-    ...u,
+    ...baseSignals,
     missionsTotal: Number(missionAgg?.total ?? 0),
     missionsCompleted: Number(missionAgg?.completed ?? 0),
     blueprints: Number(blueprintAgg?.total ?? 0),
@@ -359,7 +377,7 @@ export async function getOpportunity(id: number): Promise<Opportunity | null> {
 }
 
 export async function createOpportunity(data: {
-  postedBy: number | null;
+  postedBy: string | null;
   type: Opportunity["type"];
   title: string;
   description?: string;
@@ -390,7 +408,7 @@ export async function createOpportunity(data: {
 }
 
 export async function getMatchesForUser(
-  userId: number,
+  userId: string,
   limit = 30
 ): Promise<Array<OpportunityMatch & { opportunity: Opportunity | null }>> {
   const db = await getDb();
@@ -412,7 +430,7 @@ export async function getMatchesForUser(
 }
 
 export async function getExistingMatch(
-  userId: number,
+  userId: string,
   opportunityId: number
 ): Promise<OpportunityMatch | null> {
   const db = await getDb();
@@ -431,7 +449,7 @@ export async function getExistingMatch(
 }
 
 export async function upsertMatch(data: {
-  userId: number;
+  userId: string;
   opportunityId: number;
   score: number;
   reasoning: string;
@@ -461,7 +479,7 @@ export async function upsertMatch(data: {
 }
 
 export async function setMatchStatus(
-  userId: number,
+  userId: string,
   opportunityId: number,
   status: OpportunityMatch["status"]
 ): Promise<void> {
@@ -481,7 +499,7 @@ export async function setMatchStatus(
 // ════════════════════════════════════════════════════════════════════════
 // MISSION CONTROL EXTRAS (real cross-module signals)
 // ════════════════════════════════════════════════════════════════════════
-export async function getMissionControlExtras(userId: number): Promise<{
+export async function getMissionControlExtras(userId: string): Promise<{
   unreadMessages: number;
   communities: number;
   revenue: number;
@@ -516,7 +534,7 @@ export async function getMissionControlExtras(userId: number): Promise<{
 // PRO-NETWORK GRAPH SUGGESTIONS (friends-of-friends, ranked by mutual ties)
 // ════════════════════════════════════════════════════════════════════════
 export type NetworkSuggestion = {
-  userId: number;
+  userId: string;
   name: string | null;
   username: string | null;
   avatar: string | null;
@@ -528,7 +546,7 @@ export type NetworkSuggestion = {
 // not already follow. Ranked by how many of my connections vouch for them, then
 // by their computed reputation. Pure graph math over real `follows` edges.
 export async function getProNetworkSuggestions(
-  userId: number,
+  userId: string,
   limit = 10
 ): Promise<NetworkSuggestion[]> {
   const db = await getDb();
@@ -568,20 +586,22 @@ export async function getProNetworkSuggestions(
     )
     .orderBy(sql`count(*) desc, ${reputationScores.overall} desc`)
     .limit(limit);
-  return rows.map(r => ({
-    userId: r.userId,
-    name: r.name ?? null,
-    username: r.username ?? null,
-    avatar: r.avatar ?? null,
-    mutualCount: Number(r.mutualCount ?? 0),
-    reputation: r.reputation ?? null,
-  }));
+  return rows
+    .filter((r): r is typeof r & { userId: string } => r.userId !== null)
+    .map(r => ({
+      userId: r.userId,
+      name: r.name ?? null,
+      username: r.username ?? null,
+      avatar: r.avatar ?? null,
+      mutualCount: Number(r.mutualCount ?? 0),
+      reputation: r.reputation ?? null,
+    }));
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // MISSIONS
 // ════════════════════════════════════════════════════════════════════════
-export async function listMissions(userId: number): Promise<Mission[]> {
+export async function listMissions(userId: string): Promise<Mission[]> {
   const db = await getDb();
   if (!db) return [];
   return db
@@ -593,7 +613,7 @@ export async function listMissions(userId: number): Promise<Mission[]> {
 
 export async function getMissionWithSteps(
   missionId: number,
-  userId: number
+  userId: string
 ): Promise<{ mission: Mission; steps: MissionStep[] } | null> {
   const db = await getDb();
   if (!db) return null;
@@ -612,7 +632,7 @@ export async function getMissionWithSteps(
 }
 
 export async function createMission(data: {
-  userId: number;
+  userId: string;
   title: string;
   category: Mission["category"];
   description?: string;
@@ -693,7 +713,7 @@ export async function recomputeMissionProgress(
 // STARTUP BLUEPRINTS
 // ════════════════════════════════════════════════════════════════════════
 export async function createBlueprint(data: {
-  userId: number;
+  userId: string;
   idea: string;
   name?: string;
   tagline?: string;
@@ -724,7 +744,7 @@ export async function createBlueprint(data: {
 }
 
 export async function listBlueprints(
-  userId: number
+  userId: string
 ): Promise<StartupBlueprint[]> {
   const db = await getDb();
   if (!db) return [];
@@ -737,7 +757,7 @@ export async function listBlueprints(
 
 export async function getBlueprint(
   id: number,
-  userId: number
+  userId: string
 ): Promise<StartupBlueprint | null> {
   const db = await getDb();
   if (!db) return null;
@@ -798,7 +818,7 @@ export async function getListingFull(
 }
 
 export async function createMarketListing(data: {
-  sellerId: number;
+  sellerId: string;
   kind: AiMarketListing["kind"];
   title: string;
   description?: string;
@@ -826,7 +846,7 @@ export async function createMarketListing(data: {
 
 export async function hasPurchased(
   listingId: number,
-  buyerId: number
+  buyerId: string
 ): Promise<boolean> {
   const db = await getDb();
   if (!db) return false;
@@ -850,7 +870,7 @@ function centsToCoin(cents: number): number {
 }
 
 // Read a user's SKY444 spendable balance as a number.
-export async function getCoinBalance(userId: number): Promise<number> {
+export async function getCoinBalance(userId: string): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
   const [row] = await db
@@ -859,7 +879,7 @@ export async function getCoinBalance(userId: number): Promise<number> {
     .where(
       and(
         eq(tokenBalances.userId, userId),
-        eq(tokenBalances.token, SETTLEMENT_TOKEN)
+        eq(tokenBalances.tokenSymbol, SETTLEMENT_TOKEN)
       )
     )
     .limit(1);
@@ -867,12 +887,17 @@ export async function getCoinBalance(userId: number): Promise<number> {
 }
 
 // Ensure a SKY444 balance row exists for a user (idempotent).
-async function ensureCoinRow(userId: number): Promise<void> {
+async function ensureCoinRow(userId: string): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db
     .insert(tokenBalances)
-    .values({ userId, token: SETTLEMENT_TOKEN, balance: "0" })
+    .values({
+      id: `tb_${userId}_${SETTLEMENT_TOKEN}`,
+      userId,
+      tokenSymbol: SETTLEMENT_TOKEN,
+      balance: 0,
+    })
     .onDuplicateKeyUpdate({ set: { updatedAt: new Date() } })
     .catch(() => undefined);
 }
@@ -882,8 +907,8 @@ async function ensureCoinRow(userId: number): Promise<void> {
 // Free (priceCents === 0) listings skip the transfer but still record entitlement.
 export async function purchaseWithCoins(data: {
   listingId: number;
-  buyerId: number;
-  sellerId: number;
+  buyerId: string;
+  sellerId: string;
   priceCents: number;
 }): Promise<{ ok: boolean; reason?: string }> {
   const db = await getDb();
@@ -910,7 +935,7 @@ export async function purchaseWithCoins(data: {
       .where(
         and(
           eq(tokenBalances.userId, data.buyerId),
-          eq(tokenBalances.token, SETTLEMENT_TOKEN),
+          eq(tokenBalances.tokenSymbol, SETTLEMENT_TOKEN),
           sql`${tokenBalances.balance} >= ${coinPrice}`
         )
       );
@@ -933,34 +958,30 @@ export async function purchaseWithCoins(data: {
       .where(
         and(
           eq(tokenBalances.userId, data.sellerId),
-          eq(tokenBalances.token, SETTLEMENT_TOKEN)
+          eq(tokenBalances.tokenSymbol, SETTLEMENT_TOKEN)
         )
       );
     // Record an auditable transaction for both sides.
+    const settlementRef = `ai-market:${SETTLEMENT_TOKEN}:${data.listingId}:${Date.now()}`;
     await db
       .insert(transactions)
       .values([
         {
+          id: `${settlementRef}:debit`,
           userId: data.buyerId,
-          type: "transfer" as any,
-          token: SETTLEMENT_TOKEN,
-          amount: String(-coinPrice) as any,
-          status: "confirmed",
-          metadata: {
-            kind: "ai_market_purchase",
-            listingId: data.listingId,
-          } as any,
+          toUserId: data.sellerId,
+          type: "transfer",
+          amount: -coinPrice,
+          status: "completed",
+          txHash: settlementRef,
         },
         {
+          id: `${settlementRef}:credit`,
           userId: data.sellerId,
-          type: "transfer" as any,
-          token: SETTLEMENT_TOKEN,
-          amount: String(coinPrice) as any,
-          status: "confirmed",
-          metadata: {
-            kind: "ai_market_sale",
-            listingId: data.listingId,
-          } as any,
+          type: "deposit",
+          amount: coinPrice,
+          status: "completed",
+          txHash: settlementRef,
         },
       ])
       .catch(() => undefined);
@@ -981,7 +1002,7 @@ export async function purchaseWithCoins(data: {
 // True only if this buyer has a purchase that has NOT yet been rated.
 export async function canRate(
   listingId: number,
-  buyerId: number
+  buyerId: string
 ): Promise<boolean> {
   const db = await getDb();
   if (!db) return false;
@@ -1003,7 +1024,7 @@ export async function canRate(
 // storing fabricated per-row review text. Returns false if already rated.
 export async function addListingRating(
   listingId: number,
-  buyerId: number,
+  buyerId: string,
   stars: number
 ): Promise<boolean> {
   const db = await getDb();
@@ -1035,7 +1056,7 @@ export async function addListingRating(
   return true;
 }
 
-export async function getPurchases(buyerId: number): Promise<
+export async function getPurchases(buyerId: string): Promise<
   Array<{
     listing: Omit<AiMarketListing, "content">;
     pricePaidCents: number;
