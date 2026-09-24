@@ -347,12 +347,20 @@ export const datingProfiles = mysqlTable("dating_profiles", {
     .references(() => users.id)
     .notNull(),
   bio: varchar("bio", { length: 255 }),
-  photos: varchar("photos", { length: 255 }), // JSON array
-  interests: varchar("interests", { length: 255 }), // JSON array
+  photos: text("photos"), // JSON array
+  interests: text("interests"), // JSON array
   location: varchar("location", { length: 255 }),
   age: int("age"),
   gender: varchar("gender", { length: 255 }),
   lookingFor: varchar("looking_for", { length: 255 }),
+  height: varchar("height", { length: 64 }),
+  bodyType: varchar("body_type", { length: 64 }),
+  ethnicity: varchar("ethnicity", { length: 128 }),
+  religion: varchar("religion", { length: 128 }),
+  education: varchar("education", { length: 255 }),
+  occupation: varchar("occupation", { length: 255 }),
+  relationshipGoal: varchar("relationship_goal", { length: 128 }),
+  isActive: boolean("is_active").default(true),
   verified: boolean("verified").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
