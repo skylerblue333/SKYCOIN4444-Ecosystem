@@ -1,4 +1,5 @@
-import { Router } from "express";
+import { Router, type Request, type Response, type NextFunction } from "express";
+import { timingSafeEqual } from "crypto";
 import { db } from "./db";
 import os from "os";
 import { performance } from "perf_hooks";
@@ -164,11 +165,11 @@ class HealthMonitor {
    * Check cache health
    */
   private checkCache(): HealthCheck {
-    // Placeholder for cache health check
+    // Do not report an unverified dependency as healthy.
     return {
-      status: "pass",
+      status: "warn",
       responseTime: 0,
-      message: "Cache operational",
+      message: "Cache health check not configured",
       lastChecked: new Date(),
     };
   }
@@ -180,7 +181,8 @@ class HealthMonitor {
     const memUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
     const uptime = (Date.now() - this.startTime) / 1000;
-    const rps = this.requestCount / (uptime || 1);
+    const metricsWindowSeconds = (Date.now() - this.lastMetricsReset) / 1000;
+    const rps = this.requestCount / (metricsWindowSeconds || 1);
 
     return {
       memoryUsage: {
@@ -227,6 +229,15 @@ class HealthMonitor {
     type: string,
     message: string
   ): Alert {
+    const existing = this.alerts.find(
+      alert =>
+        !alert.resolved &&
+        alert.severity === severity &&
+        alert.type === type &&
+        alert.message === message
+    );
+    if (existing) return existing;
+
     const alert: Alert = {
       id: `${Date.now()}-${Math.random()}`,
       severity,
@@ -327,6 +338,33 @@ export const healthMonitor = new HealthMonitor();
 // Express router
 export const healthRouter = Router();
 
+function requireHealthAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const expected = process.env.HEALTH_ADMIN_TOKEN;
+  if (!expected) {
+    res.status(503).json({ error: "Health admin controls are not configured" });
+    return;
+  }
+
+  const authorization = req.get("authorization") || "";
+  const provided = authorization.replace(/^Bearer\s+/i, "");
+  const expectedBuffer = Buffer.from(expected);
+  const providedBuffer = Buffer.from(provided);
+
+  if (
+    expectedBuffer.length !== providedBuffer.length ||
+    !timingSafeEqual(expectedBuffer, providedBuffer)
+  ) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  next();
+}
+
 /**
  * GET /health - Basic health check
  */
@@ -382,7 +420,7 @@ healthRouter.get("/health/alerts", (req, res) => {
 /**
  * POST /health/alerts/:id/resolve - Resolve alert
  */
-healthRouter.post("/health/alerts/:id/resolve", (req, res) => {
+healthRouter.post("/health/alerts/:id/resolve", requireHealthAdmin, (req, res) => {
   const { id } = req.params;
   healthMonitor.resolveAlert(id);
   res.json({ success: true });
@@ -391,7 +429,7 @@ healthRouter.post("/health/alerts/:id/resolve", (req, res) => {
 /**
  * POST /health/metrics/reset - Reset metrics
  */
-healthRouter.post("/health/metrics/reset", (req, res) => {
+healthRouter.post("/health/metrics/reset", requireHealthAdmin, (req, res) => {
   healthMonitor.resetMetrics();
   res.json({ success: true });
 });
