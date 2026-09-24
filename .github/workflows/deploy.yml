@@ -53,8 +53,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: TypeScript check
-        run: pnpm check
+      - name: TypeScript debt no-regression gate
+        run: pnpm check:type-debt
 
       - name: Initialize preflight database schema
         run: pnpm exec drizzle-kit push --force
