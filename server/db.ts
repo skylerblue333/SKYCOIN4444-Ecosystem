@@ -17,11 +17,21 @@ export async function getDb() {
 
 // ============ USER HELPERS ============
 export async function getUserById(id: string) {
-  return { id, name: "User", email: "user@example.com", balance: 0 };
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, String(id)))
+    .limit(1);
+  return user ?? null;
 }
 
 export async function getUserByEmail(email: string) {
-  return { id: "1", name: "User", email, balance: 0 };
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+  return user ?? null;
 }
 
 export async function createUser(data: any) {
