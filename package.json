@@ -9,7 +9,7 @@
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
-    "test": "STRIPE_API_KEY=sk_test_51MockKeyForTestingOnly00000000 OPENAI_API_KEY=sk-proj-MockKeyForTestingOnly00000000000000000000 ADMIN_WALLET_ADDRESS=0x16188a203a715de6b131e273b3a9bcf6d09e7d0a DATABASE_URL=mysql://root:root@localhost:3306/skycoin vitest run",
+    "test": "STRIPE_API_KEY=sk_test_51MockKeyForTestingOnly00000000 OPENAI_API_KEY=sk-proj-MockKeyForTestingOnly00000000000000000000 ADMIN_WALLET_ADDRESS=0x16188a203a715de6b131e273b3a9bcf6d09e7d0a DATABASE_URL=mysql://root:root@localhost:3306/skycoin vitest run",\n    "security:secrets": "node scripts/scan-secrets.mjs",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },
   "dependencies": {
