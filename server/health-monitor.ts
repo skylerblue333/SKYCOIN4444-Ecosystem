@@ -100,10 +100,10 @@ class HealthMonitor {
     const usagePercent = (usedMemory / totalMemory) * 100;
 
     const status =
-      usagePercent > this.thresholds.memoryUsagePercent
-        ? "warn"
-        : usagePercent > 95
-          ? "fail"
+      usagePercent > 95
+        ? "fail"
+        : usagePercent > this.thresholds.memoryUsagePercent
+          ? "warn"
           : "pass";
 
     return {
@@ -125,10 +125,10 @@ class HealthMonitor {
     const usagePercent = avgLoad * 100;
 
     const status =
-      usagePercent > this.thresholds.cpuUsagePercent
-        ? "warn"
-        : usagePercent > 95
-          ? "fail"
+      usagePercent > 95
+        ? "fail"
+        : usagePercent > this.thresholds.cpuUsagePercent
+          ? "warn"
           : "pass";
 
     return {
@@ -146,10 +146,10 @@ class HealthMonitor {
     const errorRate =
       this.requestCount > 0 ? (this.errorCount / this.requestCount) * 100 : 0;
     const status =
-      errorRate > this.thresholds.errorRatePercent
-        ? "warn"
-        : errorRate > 10
-          ? "fail"
+      errorRate > 10
+        ? "fail"
+        : errorRate > this.thresholds.errorRatePercent
+          ? "warn"
           : "pass";
 
     return {
