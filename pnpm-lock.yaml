@@ -253,9 +253,6 @@ importers:
       recharts:
         specifier: ^3.9.1
         version: 3.9.1(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react-is@18.3.1)(react@19.2.7)(redux@5.0.1)
-      sharp:
-        specifier: ^0.35.3
-        version: 0.35.3(@types/node@26.1.0)
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
