@@ -260,6 +260,19 @@ export const messages = mysqlTable("messages", {
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const hopeAIChatMessages = mysqlTable("hope_ai_chat_messages", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
+  role: varchar("role", { length: 32 }).notNull(),
+  content: text("content").notNull(),
+  tone: varchar("tone", { length: 64 }),
+  emotionalState: varchar("emotional_state", { length: 64 }),
+  sessionId: varchar("session_id", { length: 255 }),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
 // ============ REVIEWS TABLE ============
 export const reviews = mysqlTable("reviews", {
   id: varchar("id", { length: 255 }).primaryKey(),
