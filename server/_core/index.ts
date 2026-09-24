@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import { createServer } from "http";
+import { randomUUID } from "crypto";
 import net from "net";
 import helmet from "helmet";
 import compression from "compression";
@@ -80,6 +81,41 @@ async function startServer() {
   const server = createServer(app);
   const isDev = process.env.NODE_ENV === "development";
 
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const incomingRequestId = req.get("x-request-id");
+    const requestId =
+      incomingRequestId && /^[A-Za-z0-9._:-]{1,128}$/.test(incomingRequestId)
+        ? incomingRequestId
+        : randomUUID();
+    const startedAt = process.hrtime.bigint();
+
+    res.setHeader("X-Request-Id", requestId);
+    res.on("finish", () => {
+      if (req.path.startsWith("/api/") && !req.path.startsWith("/api/health")) {
+        healthMonitor.recordRequest(res.statusCode < 500);
+
+        if (!isDev) {
+          const durationMs =
+            Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+          console.log(
+            JSON.stringify({
+              timestamp: new Date().toISOString(),
+              level: res.statusCode >= 500 ? "error" : "info",
+              event: "http_request",
+              requestId,
+              method: req.method,
+              path: req.path,
+              status: res.statusCode,
+              durationMs: Number(durationMs.toFixed(2)),
+            })
+          );
+        }
+      }
+    });
+
+    next();
+  });
+
   app.use(
     helmet({
       contentSecurityPolicy: false,
@@ -107,19 +143,9 @@ async function startServer() {
     console.warn("[Mining] Failed to initialize advanced mining engine:", err);
   }
   app.use(compression({ level: 6, threshold: 1024 }) as any);
-  app.use(
-    isDev
-      ? morgan("dev")
-      : morgan("combined", { skip: req => req.path === "/api/health" })
-  );
+  if (isDev) app.use(morgan("dev"));
   app.use(globalLimiter);
   app.use(requestTimeout(30_000));
-  app.use((_req: Request, res: Response, next: NextFunction) => {
-    res.on("finish", () => {
-      healthMonitor.recordRequest(res.statusCode < 500);
-    });
-    next();
-  });
 
   const checkDatabaseReadiness = async () => {
     const t0 = Date.now();
