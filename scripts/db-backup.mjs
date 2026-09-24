@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
+import { pipeline } from "node:stream/promises";
 import path from "node:path";
 
 function databaseConfig() {
@@ -25,37 +26,36 @@ function databaseConfig() {
   };
 }
 
-function runDump(config, outputPath) {
-  return new Promise((resolve, reject) => {
-    const args = [
-      "--host", config.host,
-      "--port", config.port,
-      "--user", config.user,
-      "--single-transaction",
-      "--quick",
-      "--routines",
-      "--triggers",
-      "--events",
-      "--hex-blob",
-      "--default-character-set=utf8mb4",
-      config.database,
-    ];
+async function runDump(config, outputPath) {
+  const args = [
+    "--host", config.host,
+    "--port", config.port,
+    "--user", config.user,
+    "--single-transaction",
+    "--quick",
+    "--routines",
+    "--triggers",
+    "--events",
+    "--hex-blob",
+    "--default-character-set=utf8mb4",
+    config.database,
+  ];
 
-    const child = spawn("mysqldump", args, {
-      env: { ...process.env, MYSQL_PWD: config.password },
-      stdio: ["ignore", "pipe", "inherit"],
-    });
+  const child = spawn("mysqldump", args, {
+    env: { ...process.env, MYSQL_PWD: config.password },
+    stdio: ["ignore", "pipe", "inherit"],
+  });
+  const out = createWriteStream(outputPath, { flags: "wx" });
 
-    const out = createWriteStream(outputPath, { flags: "wx" });
-    child.stdout.pipe(out);
-
+  const exit = new Promise((resolve, reject) => {
     child.on("error", reject);
-    out.on("error", reject);
     child.on("close", code => {
-      if (code !== 0) return reject(new Error(`mysqldump exited with code ${code}`));
-      out.end(resolve);
+      if (code === 0) resolve();
+      else reject(new Error(`mysqldump exited with code ${code}`));
     });
   });
+
+  await Promise.all([pipeline(child.stdout, out), exit]);
 }
 
 const config = databaseConfig();
