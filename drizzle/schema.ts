@@ -32,6 +32,9 @@ export const users = mysqlTable("users", {
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+
 // ============ POSTS TABLE ============
 export const posts = mysqlTable("posts", {
   id: varchar("id", { length: 255 }).primaryKey(),
