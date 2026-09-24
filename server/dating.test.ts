@@ -1,6 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { db } from "./db";
 import {
+  users,
   datingProfiles,
   datingMatches,
   datingMessages,
@@ -8,332 +10,374 @@ import {
   datingNotifications,
   datingLikes,
 } from "../drizzle/schema";
-import { eq, and } from "drizzle-orm";
 
 describe("Dating System", () => {
-  const testUserId1 = 1;
-  const testUserId2 = 2;
+  const testUserId1 = "dating-test-user-1";
+  const testUserId2 = "dating-test-user-2";
+  const testUserIds = [testUserId1, testUserId2];
+
+  async function cleanupTestRows() {
+    await db
+      .delete(datingMessages)
+      .where(inArray(datingMessages.senderId, testUserIds));
+    await db
+      .delete(datingNotifications)
+      .where(inArray(datingNotifications.userId, testUserIds));
+    await db
+      .delete(datingLikes)
+      .where(inArray(datingLikes.userId, testUserIds));
+    await db
+      .delete(datingSubscriptions)
+      .where(inArray(datingSubscriptions.userId, testUserIds));
+    await db
+      .delete(datingMatches)
+      .where(
+        or(
+          inArray(datingMatches.userId1, testUserIds),
+          inArray(datingMatches.userId2, testUserIds)
+        )
+      );
+    await db
+      .delete(datingProfiles)
+      .where(inArray(datingProfiles.userId, testUserIds));
+    await db.delete(users).where(inArray(users.id, testUserIds));
+  }
 
   beforeEach(async () => {
-    // Setup test data
-    console.log("Setting up test data...");
+    await cleanupTestRows();
+    // The users schema exposes legacy aliases that map to the same physical
+    // columns (name/displayName and xp/level). A generic ORM insert therefore
+    // emits duplicate MySQL column names. Seed only the physical columns needed
+    // by these foreign-key integration tests.
+    await db.execute(sql`
+      INSERT INTO users (id, email, username, name)
+      VALUES
+        (${testUserId1}, 'dating-user-1@example.test', 'dating-test-user-1', 'Dating Test User 1'),
+        (${testUserId2}, 'dating-user-2@example.test', 'dating-test-user-2', 'Dating Test User 2')
+    `);
   });
 
   afterEach(async () => {
-    // Cleanup test data
-    console.log("Cleaning up test data...");
+    await cleanupTestRows();
   });
 
   describe("Profile Management", () => {
-    it("should create a dating profile", async () => {
-      const profile = {
+    it("creates a profile using the current schema", async () => {
+      await db.execute(sql`
+        INSERT INTO dating_profiles
+          (id, user_id, age, gender, bio, interests, location, looking_for)
+        VALUES
+          ('profile-1', ${testUserId1}, 28, 'male', 'Test bio',
+           ${JSON.stringify(["hiking", "photography"])}, 'Test City', 'female')
+      `);
+
+      const [profile] = await db
+        .select()
+        .from(datingProfiles)
+        .where(eq(datingProfiles.id, "profile-1"));
+
+      expect(profile).toMatchObject({
+        id: "profile-1",
         userId: testUserId1,
         age: 28,
         gender: "male",
         bio: "Test bio",
-        interests: ["hiking", "photography"],
-        height: "5 feet 10 inches",
-        bodyType: "athletic",
-        relationshipGoal: "serious",
-      };
-
-      const result = await db
-        .insert(datingProfiles)
-        .values(profile)
-        .returning();
-
-      expect(result).toHaveLength(1);
-      expect(result[0].userId).toBe(testUserId1);
-      expect(result[0].age).toBe(28);
+        location: "Test City",
+        lookingFor: "female",
+      });
     });
 
-    it("should update a dating profile", async () => {
-      const profile = {
-        userId: testUserId1,
-        age: 28,
-        gender: "male",
-        bio: "Original bio",
-        interests: [],
-        relationshipGoal: "casual",
-      };
+    it("updates a dating profile", async () => {
+      await db.execute(sql`
+        INSERT INTO dating_profiles (id, user_id, age, bio)
+        VALUES ('profile-2', ${testUserId1}, 28, 'Original bio')
+      `);
 
-      const inserted = await db
-        .insert(datingProfiles)
-        .values(profile)
-        .returning();
-
-      const updated = await db
+      await db
         .update(datingProfiles)
         .set({ bio: "Updated bio", age: 29 })
-        .where(eq(datingProfiles.id, inserted[0].id))
-        .returning();
+        .where(eq(datingProfiles.id, "profile-2"));
 
-      expect(updated[0].bio).toBe("Updated bio");
-      expect(updated[0].age).toBe(29);
+      const [updated] = await db
+        .select()
+        .from(datingProfiles)
+        .where(eq(datingProfiles.id, "profile-2"));
+
+      expect(updated.bio).toBe("Updated bio");
+      expect(updated.age).toBe(29);
     });
 
-    it("should calculate profile completeness", async () => {
-      const profile = {
-        userId: testUserId1,
-        age: 28,
-        gender: "male",
-        bio: "Test bio",
-        interests: ["hiking", "photography"],
-        height: "5 feet 10 inches",
-        bodyType: "athletic",
-        education: "Bachelor",
-        occupation: "Engineer",
-        relationshipGoal: "serious",
-      };
+    it("stores profile preference fields represented by the schema", async () => {
+      const interests = JSON.stringify(["hiking", "photography", "chess"]);
+      await db.execute(sql`
+        INSERT INTO dating_profiles
+          (id, user_id, age, interests, looking_for, verified)
+        VALUES
+          ('profile-3', ${testUserId1}, 28, ${interests}, 'everyone', true)
+      `);
 
-      const result = await db
-        .insert(datingProfiles)
-        .values(profile)
-        .returning();
+      const [profile] = await db
+        .select()
+        .from(datingProfiles)
+        .where(eq(datingProfiles.id, "profile-3"));
 
-      // Profile completeness should be calculated based on filled fields
-      const filledFields = Object.values(profile).filter(
-        v => v !== null && v !== undefined && v !== ""
-      ).length;
-      const completeness = Math.round((filledFields / 10) * 100);
-
-      expect(completeness).toBeGreaterThan(0);
-      expect(completeness).toBeLessThanOrEqual(100);
+      expect(profile.interests).toBe(interests);
+      expect(profile.lookingFor).toBe("everyone");
+      expect(profile.verified).toBe(true);
     });
   });
 
   describe("Matching System", () => {
-    it("should create a like match", async () => {
-      const match = {
-        user1Id: testUserId1,
-        user2Id: testUserId2,
-        matchType: "like" as const,
-        isMutual: false,
-      };
-
-      const result = await db.insert(datingMatches).values(match).returning();
-
-      expect(result).toHaveLength(1);
-      expect(result[0].matchType).toBe("like");
-      expect(result[0].isMutual).toBe(false);
-    });
-
-    it("should detect mutual matches", async () => {
-      // User 1 likes User 2
+    it("creates a pending match", async () => {
       await db.insert(datingMatches).values({
-        user1Id: testUserId1,
-        user2Id: testUserId2,
-        matchType: "like",
-        isMutual: false,
+        id: "match-1",
+        userId1: testUserId1,
+        userId2: testUserId2,
+        status: "pending",
       });
 
-      // User 2 likes User 1 back
-      const mutualMatch = await db
-        .insert(datingMatches)
-        .values({
-          user1Id: testUserId2,
-          user2Id: testUserId1,
-          matchType: "mutual_like",
-          isMutual: true,
-        })
-        .returning();
+      const [match] = await db
+        .select()
+        .from(datingMatches)
+        .where(eq(datingMatches.id, "match-1"));
 
-      expect(mutualMatch[0].isMutual).toBe(true);
-      expect(mutualMatch[0].matchType).toBe("mutual_like");
+      expect(match.status).toBe("pending");
+      expect(match.userId1).toBe(testUserId1);
+      expect(match.userId2).toBe(testUserId2);
     });
 
-    it("should handle superlike matches", async () => {
-      const match = {
-        user1Id: testUserId1,
-        user2Id: testUserId2,
-        matchType: "superlike" as const,
-        isMutual: false,
-      };
+    it("promotes a pending match to matched", async () => {
+      await db.insert(datingMatches).values({
+        id: "match-2",
+        userId1: testUserId1,
+        userId2: testUserId2,
+        status: "pending",
+      });
 
-      const result = await db.insert(datingMatches).values(match).returning();
+      await db
+        .update(datingMatches)
+        .set({ status: "matched" })
+        .where(eq(datingMatches.id, "match-2"));
 
-      expect(result[0].matchType).toBe("superlike");
+      const [match] = await db
+        .select()
+        .from(datingMatches)
+        .where(eq(datingMatches.id, "match-2"));
+
+      expect(match.status).toBe("matched");
+    });
+
+    it("supports reverse-direction match candidates", async () => {
+      await db.insert(datingMatches).values([
+        {
+          id: "match-3a",
+          userId1: testUserId1,
+          userId2: testUserId2,
+          status: "pending",
+        },
+        {
+          id: "match-3b",
+          userId1: testUserId2,
+          userId2: testUserId1,
+          status: "pending",
+        },
+      ]);
+
+      const matches = await db
+        .select()
+        .from(datingMatches)
+        .where(
+          or(
+            eq(datingMatches.id, "match-3a"),
+            eq(datingMatches.id, "match-3b")
+          )
+        );
+
+      expect(matches).toHaveLength(2);
     });
   });
 
   describe("Messaging System", () => {
-    it("should send a message", async () => {
-      const matchId = 1;
-      const message = {
-        matchId,
+    it("sends a message for an existing match", async () => {
+      await db.insert(datingMatches).values({
+        id: "message-match-1",
+        userId1: testUserId1,
+        userId2: testUserId2,
+        status: "matched",
+      });
+      await db.insert(datingMessages).values({
+        id: "message-1",
+        matchId: "message-match-1",
         senderId: testUserId1,
-        recipientId: testUserId2,
         content: "Hello, how are you?",
-        mediaUrl: null,
-        mediaType: null,
-      };
+      });
 
-      const result = await db
-        .insert(datingMessages)
-        .values(message)
-        .returning();
+      const [message] = await db
+        .select()
+        .from(datingMessages)
+        .where(eq(datingMessages.id, "message-1"));
 
-      expect(result).toHaveLength(1);
-      expect(result[0].content).toBe("Hello, how are you?");
-      expect(result[0].senderId).toBe(testUserId1);
+      expect(message.content).toBe("Hello, how are you?");
+      expect(message.senderId).toBe(testUserId1);
+      expect(message.read).toBe(false);
     });
 
-    it("should retrieve message history", async () => {
-      const matchId = 1;
-
-      // Insert multiple messages
+    it("retrieves message history for a match", async () => {
+      await db.insert(datingMatches).values({
+        id: "message-match-2",
+        userId1: testUserId1,
+        userId2: testUserId2,
+        status: "matched",
+      });
       await db.insert(datingMessages).values([
         {
-          matchId,
+          id: "message-2a",
+          matchId: "message-match-2",
           senderId: testUserId1,
-          recipientId: testUserId2,
           content: "Message 1",
-          mediaUrl: null,
-          mediaType: null,
         },
         {
-          matchId,
+          id: "message-2b",
+          matchId: "message-match-2",
           senderId: testUserId2,
-          recipientId: testUserId1,
           content: "Message 2",
-          mediaUrl: null,
-          mediaType: null,
         },
       ]);
 
       const messages = await db
         .select()
         .from(datingMessages)
-        .where(eq(datingMessages.matchId, matchId))
-        .orderBy(t => t.createdAt);
+        .where(eq(datingMessages.matchId, "message-match-2"))
+        .orderBy(datingMessages.createdAt);
 
-      expect(messages.length).toBeGreaterThanOrEqual(2);
+      expect(messages).toHaveLength(2);
+      expect(messages.map(message => message.content)).toEqual([
+        "Message 1",
+        "Message 2",
+      ]);
     });
   });
 
   describe("Subscription System", () => {
-    it("should create a subscription", async () => {
-      const subscription = {
+    it("creates a premium subscription", async () => {
+      await db.insert(datingSubscriptions).values({
+        id: "subscription-1",
         userId: testUserId1,
         tier: "premium",
-        status: "active",
-        price: 9.99,
-        endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      };
+      });
 
-      const result = await db
-        .insert(datingSubscriptions)
-        .values(subscription)
-        .returning();
+      const [subscription] = await db
+        .select()
+        .from(datingSubscriptions)
+        .where(eq(datingSubscriptions.id, "subscription-1"));
 
-      expect(result).toHaveLength(1);
-      expect(result[0].tier).toBe("premium");
-      expect(result[0].status).toBe("active");
+      expect(subscription.tier).toBe("premium");
+      expect(subscription.userId).toBe(testUserId1);
     });
 
-    it("should handle subscription upgrades", async () => {
-      // Create initial subscription
-      const initial = await db
-        .insert(datingSubscriptions)
-        .values({
-          userId: testUserId1,
-          tier: "premium",
-          status: "active",
-          price: 9.99,
-        })
-        .returning();
+    it("upgrades a subscription tier", async () => {
+      await db.insert(datingSubscriptions).values({
+        id: "subscription-2",
+        userId: testUserId1,
+        tier: "premium",
+      });
 
-      // Upgrade to VIP
-      const upgraded = await db
+      await db
         .update(datingSubscriptions)
-        .set({ tier: "vip", price: 24.99 })
-        .where(eq(datingSubscriptions.id, initial[0].id))
-        .returning();
+        .set({ tier: "vip" })
+        .where(eq(datingSubscriptions.id, "subscription-2"));
 
-      expect(upgraded[0].tier).toBe("vip");
-      expect(upgraded[0].price).toBe(24.99);
+      const [subscription] = await db
+        .select()
+        .from(datingSubscriptions)
+        .where(eq(datingSubscriptions.id, "subscription-2"));
+
+      expect(subscription.tier).toBe("vip");
     });
 
-    it("should cancel subscription", async () => {
-      const subscription = await db
-        .insert(datingSubscriptions)
-        .values({
-          userId: testUserId1,
-          tier: "premium",
-          status: "active",
-          price: 9.99,
-        })
-        .returning();
+    it("persists subscription expiry", async () => {
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      await db.insert(datingSubscriptions).values({
+        id: "subscription-3",
+        userId: testUserId1,
+        tier: "premium",
+        expiresAt,
+      });
 
-      const cancelled = await db
-        .update(datingSubscriptions)
-        .set({ status: "cancelled" })
-        .where(eq(datingSubscriptions.id, subscription[0].id))
-        .returning();
+      const [subscription] = await db
+        .select()
+        .from(datingSubscriptions)
+        .where(eq(datingSubscriptions.id, "subscription-3"));
 
-      expect(cancelled[0].status).toBe("cancelled");
+      expect(subscription.expiresAt).toBeInstanceOf(Date);
+      // MySQL TIMESTAMP has no fractional precision here, and mysql2 may
+      // round/truncate at the second boundary. Validate persistence within one
+      // second instead of requiring identical millisecond flooring.
+      expect(
+        Math.abs((subscription.expiresAt?.getTime() ?? 0) - expiresAt.getTime())
+      ).toBeLessThan(1000);
     });
   });
 
   describe("Notification System", () => {
-    it("should create a notification", async () => {
-      const notification = {
+    it("creates a notification", async () => {
+      await db.insert(datingNotifications).values({
+        id: "notification-1",
         userId: testUserId1,
-        type: "match" as const,
-        content: "You have a new match!",
+        type: "match",
         relatedUserId: testUserId2,
         read: false,
-      };
+      });
 
-      const result = await db
-        .insert(datingNotifications)
-        .values(notification)
-        .returning();
+      const [notification] = await db
+        .select()
+        .from(datingNotifications)
+        .where(eq(datingNotifications.id, "notification-1"));
 
-      expect(result).toHaveLength(1);
-      expect(result[0].type).toBe("match");
-      expect(result[0].read).toBe(false);
+      expect(notification.type).toBe("match");
+      expect(notification.relatedUserId).toBe(testUserId2);
+      expect(notification.read).toBe(false);
     });
 
-    it("should mark notification as read", async () => {
-      const notification = await db
-        .insert(datingNotifications)
-        .values({
-          userId: testUserId1,
-          type: "message",
-          content: "New message",
-          read: false,
-        })
-        .returning();
+    it("marks a notification as read", async () => {
+      await db.insert(datingNotifications).values({
+        id: "notification-2",
+        userId: testUserId1,
+        type: "message",
+        read: false,
+      });
 
-      const marked = await db
+      await db
         .update(datingNotifications)
         .set({ read: true })
-        .where(eq(datingNotifications.id, notification[0].id))
-        .returning();
+        .where(eq(datingNotifications.id, "notification-2"));
 
-      expect(marked[0].read).toBe(true);
+      const [notification] = await db
+        .select()
+        .from(datingNotifications)
+        .where(eq(datingNotifications.id, "notification-2"));
+
+      expect(notification.read).toBe(true);
     });
 
-    it("should retrieve unread notifications", async () => {
-      // Create multiple notifications
+    it("retrieves unread notifications", async () => {
       await db.insert(datingNotifications).values([
         {
+          id: "notification-3a",
           userId: testUserId1,
           type: "match",
-          content: "Match 1",
           read: false,
         },
         {
+          id: "notification-3b",
           userId: testUserId1,
           type: "message",
-          content: "Message 1",
           read: false,
         },
         {
+          id: "notification-3c",
           userId: testUserId1,
           type: "like",
-          content: "Like 1",
           read: true,
         },
       ]);
@@ -348,46 +392,66 @@ describe("Dating System", () => {
           )
         );
 
-      expect(unread.length).toBeGreaterThanOrEqual(2);
+      expect(unread).toHaveLength(2);
     });
   });
 
-  describe("Like/Pass System", () => {
-    it("should record a like", async () => {
-      const like = {
-        fromUserId: testUserId1,
-        toUserId: testUserId2,
-        type: "like" as const,
-      };
+  describe("Like System", () => {
+    it("records a like", async () => {
+      await db.insert(datingLikes).values({
+        id: "like-1",
+        userId: testUserId1,
+        likedUserId: testUserId2,
+        type: "like",
+      });
 
-      const result = await db.insert(datingLikes).values(like).returning();
+      const [like] = await db
+        .select()
+        .from(datingLikes)
+        .where(eq(datingLikes.id, "like-1"));
 
-      expect(result).toHaveLength(1);
-      expect(result[0].type).toBe("like");
+      expect(like.type).toBe("like");
+      expect(like.likedUserId).toBe(testUserId2);
     });
 
-    it("should record a superlike", async () => {
-      const superlike = {
-        fromUserId: testUserId1,
-        toUserId: testUserId2,
-        type: "superlike" as const,
-      };
+    it("records a superlike", async () => {
+      await db.insert(datingLikes).values({
+        id: "like-2",
+        userId: testUserId1,
+        likedUserId: testUserId2,
+        type: "superlike",
+      });
 
-      const result = await db.insert(datingLikes).values(superlike).returning();
+      const [like] = await db
+        .select()
+        .from(datingLikes)
+        .where(eq(datingLikes.id, "like-2"));
 
-      expect(result[0].type).toBe("superlike");
+      expect(like.type).toBe("superlike");
     });
 
-    it("should record a pass", async () => {
-      const pass = {
-        fromUserId: testUserId1,
-        toUserId: testUserId2,
-        type: "pass" as const,
-      };
+    it("retrieves likes created by a user", async () => {
+      await db.insert(datingLikes).values([
+        {
+          id: "like-3a",
+          userId: testUserId1,
+          likedUserId: testUserId2,
+          type: "like",
+        },
+        {
+          id: "like-3b",
+          userId: testUserId1,
+          likedUserId: testUserId2,
+          type: "superlike",
+        },
+      ]);
 
-      const result = await db.insert(datingLikes).values(pass).returning();
+      const likes = await db
+        .select()
+        .from(datingLikes)
+        .where(eq(datingLikes.userId, testUserId1));
 
-      expect(result[0].type).toBe("pass");
+      expect(likes).toHaveLength(2);
     });
   });
 });
