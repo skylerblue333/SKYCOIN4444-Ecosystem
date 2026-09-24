@@ -4,7 +4,10 @@ on:
   push:
     branches: [main, "stabilize/**"]
   pull_request:
-    branches: [main]
+    # Run CI for stacked stabilization PRs too. PR #27 targets another
+    # stabilization branch, so filtering only `main` left its exact head
+    # without pull-request CI evidence.
+    branches: [main, "stabilize/**"]
   workflow_dispatch:
 
 permissions:
