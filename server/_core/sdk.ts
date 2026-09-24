@@ -2,7 +2,8 @@ import { AXIOS_TIMEOUT_MS, COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { ForbiddenError } from "@shared/_core/errors";
 import axios, { type AxiosInstance } from "axios";
 import * as cookieModule from "cookie";
-const parseCookieHeader = (cookieModule as any).parse;
+const parseCookieHeader =
+  (cookieModule as any).parse ?? (cookieModule as any).default?.parse;
 import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
 import type { User } from "../../drizzle/schema";
@@ -149,6 +150,10 @@ class SDKServer {
   private parseCookies(cookieHeader: string | undefined) {
     if (!cookieHeader) {
       return new Map<string, string>();
+    }
+
+    if (typeof parseCookieHeader !== "function") {
+      throw new Error("Cookie parser is unavailable in the production runtime");
     }
 
     const parsed = parseCookieHeader(cookieHeader);
