@@ -2,6 +2,7 @@
 export * from "./schema";
 export * from "./relations";
 export * from "./schema-extended";
+export * from "./intelligence-schema";
 
 // Aliases for legacy code compatibility (TS2339 / TS2551)
 export { userSubscriptions as subscriptions } from "./schema-extended";
