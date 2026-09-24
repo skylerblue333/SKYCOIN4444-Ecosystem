@@ -13,7 +13,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { healthRouter, healthMonitor } from "../health-monitor";
+import { healthRouter, healthMonitor, requireHealthAdmin } from "../health-monitor";
 import { miningRouter as autonomousMiningRouter } from "../autonomous-mining";
 import miningRouter from "../mining-router";
 import walletApiRouter from "../wallet-api";
@@ -146,47 +146,19 @@ async function startServer() {
   app.use(globalLimiter);
   app.use(requestTimeout(30_000));
 
-  app.get("/api/health", async (_req: Request, res: Response) => {
-    let dbStatus = "unknown";
-    let dbLatencyMs = 0;
-    try {
-      const { getDb } = await import("../db");
-      const db = await getDb();
-      if (db) {
-        const t0 = Date.now();
-        await db.execute("SELECT 1");
-        dbLatencyMs = Date.now() - t0;
-        dbStatus = "healthy";
-      }
-    } catch {
-      dbStatus = "degraded";
+  app.get(
+    "/api/cache-stats",
+    requireHealthAdmin,
+    async (_req: Request, res: Response) => {
+      const { cacheStats, getSlowQueryLog } = await import("../query-cache");
+      res.json({
+        cache: cacheStats(),
+        slowQueries: getSlowQueryLog().slice(-20),
+      });
     }
-    const mem = process.memoryUsage();
-    res.json({
-      status: dbStatus === "healthy" ? "ok" : "degraded",
-      timestamp: new Date().toISOString(),
-      uptime: Math.floor(process.uptime()),
-      environment: process.env.NODE_ENV || "production",
-      services: {
-        database: { status: dbStatus, latencyMs: dbLatencyMs },
-        server: {
-          status: "healthy",
-          memoryMB: Math.round(mem.heapUsed / 1024 / 1024),
-          rssMB: Math.round(mem.rss / 1024 / 1024),
-        },
-      },
-    });
-  });
+  );
 
-  app.get("/api/cache-stats", (_req: Request, res: Response) => {
-    const { cacheStats, getSlowQueryLog } = require("../query-cache");
-    res.json({
-      cache: cacheStats(),
-      slowQueries: getSlowQueryLog().slice(-20),
-    });
-  });
-
-  app.get("/api/metrics", (_req: Request, res: Response) => {
+  app.get("/api/metrics", requireHealthAdmin, (_req: Request, res: Response) => {
     const mem = process.memoryUsage();
     const cpu = process.cpuUsage();
     res.json({
