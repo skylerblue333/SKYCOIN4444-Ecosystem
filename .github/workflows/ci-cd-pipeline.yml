@@ -2,7 +2,7 @@ name: SKYCOIN4444 Beta CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "stabilize/**"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -95,6 +95,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Prepare ephemeral test database
+        run: pnpm db:test:prepare
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/skycoin
 
       - name: Run test suite
         run: pnpm test

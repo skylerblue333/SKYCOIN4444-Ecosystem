@@ -22,6 +22,19 @@ jobs:
     name: Validate deployable build
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: skycoin
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,6 +50,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Prepare ephemeral validation database
+        run: pnpm db:test:prepare
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/skycoin
 
       - name: TypeScript check
         run: pnpm check
