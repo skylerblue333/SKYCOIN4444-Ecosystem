@@ -1,0 +1,71 @@
+name: Intelligence Schema Build Validation
+
+on:
+  push:
+    branches:
+      - stabilize/intelligence-schema-build-chat6
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/skycoin
+      STRIPE_API_KEY: sk_test_51MockKeyForTestingOnly0000000000
+      OPENAI_API_KEY: sk-proj-MockKeyForTestingOnly00000000000000000000
+      ADMIN_WALLET_ADDRESS: "0x16188a203a715de6b131e273b3a9bcf6d09e7d0a"
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: skycoin
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Push typed schema to ephemeral MySQL
+        run: pnpm exec drizzle-kit push --force
+
+      - name: Run focused intelligence tests
+        run: pnpm exec vitest run server/intelligence-engine.test.ts server/stabilization-router-wiring.test.ts server/platform.test.ts
+
+      - name: Measure TypeScript debt
+        shell: bash
+        run: |
+          set +e
+          pnpm check 2>&1 | tee typecheck.log
+          total_errors=$(grep -c "error TS" typecheck.log || true)
+          db_intelligence_errors=$(grep -c "server/db-intelligence.ts" typecheck.log || true)
+          intelligence_router_errors=$(grep -c "server/intelligence-router.ts" typecheck.log || true)
+          echo "total_errors=$total_errors"
+          echo "db_intelligence_errors=$db_intelligence_errors"
+          echo "intelligence_router_errors=$intelligence_router_errors"
+          if [ "$db_intelligence_errors" -ne 0 ]; then
+            grep "server/db-intelligence.ts" typecheck.log
+            exit 1
+          fi
+          exit 0
+
+      - name: Production build
+        env:
+          NODE_ENV: production
+        run: pnpm build
+
+      - name: High-severity dependency audit
+        run: pnpm audit --audit-level=high
