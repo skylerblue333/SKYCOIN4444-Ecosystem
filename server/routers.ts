@@ -132,9 +132,9 @@ export const marketplaceRouter = router({
   listProducts: publicProcedure
     .input(
       z.object({
-        category: z.string().optional(),
-        limit: z.number().default(20),
-        offset: z.number().default(0),
+        category: z.string().max(255).optional(),
+        limit: z.number().int().min(1).max(100).default(20),
+        offset: z.number().int().min(0).default(0),
       })
     )
     .query(async ({ input }) =>
@@ -145,39 +145,80 @@ export const marketplaceRouter = router({
     .query(async ({ input }) => db.getProductById(input.id)),
   createProduct: protectedProcedure
     .input(
-      z.object({ name: z.string(), price: z.number(), category: z.string() })
+      z.object({
+        name: z.string().min(1).max(255),
+        price: z.number().nonnegative(),
+        category: z.string().min(1).max(255),
+      })
     )
     .mutation(async ({ ctx, input }) =>
-      db.createProduct({ ...input, sellerId: ctx.user.id })
+      db.createProduct({
+        ...input,
+        sellerId: String(ctx.user.id),
+      })
     ),
   createOrder: protectedProcedure
     .input(
       z.object({
         productId: z.string(),
-        quantity: z.number(),
-        shippingAddress: z.string(),
+        quantity: z.number().int().positive().max(1000),
+        shippingAddress: z.string().min(1).max(255),
       })
     )
     .mutation(async ({ ctx, input }) =>
-      db.createOrder({ ...input, userId: ctx.user.id, status: "pending" })
+      db.createOrder({
+        ...input,
+        userId: String(ctx.user.id),
+      })
     ),
   getOrders: protectedProcedure.query(async ({ ctx }) =>
-    db.getOrders(ctx.user.id)
+    db.getOrders(String(ctx.user.id))
   ),
   updateOrderStatus: protectedProcedure
-    .input(z.object({ orderId: z.string(), status: z.string() }))
-    .mutation(async ({ input }) =>
-      db.updateOrderStatus(input.orderId, input.status)
+    .input(
+      z.object({
+        orderId: z.string(),
+        status: z.string().min(1).max(64),
+      })
+    )
+    .mutation(async ({ ctx, input }) =>
+      db.updateOrderStatus(
+        String(ctx.user.id),
+        input.orderId,
+        input.status
+      )
     ),
+  getReviews: publicProcedure
+    .input(z.object({ productId: z.string() }))
+    .query(async ({ input }) => db.getReviews(input.productId)),
   addReview: protectedProcedure
     .input(
       z.object({
         productId: z.string(),
-        rating: z.number(),
-        comment: z.string(),
+        rating: z.number().int().min(1).max(5),
+        comment: z.string().min(1).max(255),
       })
     )
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .mutation(async ({ ctx, input }) => {
+      const product = await db.getProductById(input.productId);
+      if (!product) {
+        return {
+          success: false as const,
+          reason: "product_not_found" as const,
+          review: null,
+        };
+      }
+      const review = await db.createReview(
+        input.productId,
+        String(ctx.user.id),
+        input.rating,
+        input.comment
+      );
+      return {
+        success: Boolean(review),
+        review,
+      };
+    }),
 });
 
 // ============ STREAMING PROCEDURES ============
