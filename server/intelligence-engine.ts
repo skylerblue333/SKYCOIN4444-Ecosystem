@@ -50,7 +50,7 @@ function parseJson<T>(raw: string, fallback: T): T {
 
 // Build a system-prompt string from the user's persisted twin memory + facts.
 // This is what makes HOPE AI feel like it *knows* the user across 298 pages.
-export async function buildTwinContext(userId: number): Promise<string> {
+export async function buildTwinContext(userId: string): Promise<string> {
   const twin = await repo.ensureTwinMemory(userId);
   const facts = await repo.getTwinFacts(userId, 30);
   if (!twin) return "";
@@ -118,7 +118,7 @@ export async function buildTwinContext(userId: number): Promise<string> {
 const clamp = (n: number, lo = 0, hi = 100) =>
   Math.max(lo, Math.min(hi, Math.round(n)));
 
-export async function computeReputation(userId: number) {
+export async function computeReputation(userId: string) {
   const s = await repo.getUserActivitySignals(userId);
   if (!s) return null;
 
@@ -182,7 +182,7 @@ export async function computeReputation(userId: number) {
 // 3. OPPORTUNITY MATCHING — real LLM scoring grounded in twin context
 // ════════════════════════════════════════════════════════════════════════
 export async function scoreOpportunity(
-  userId: number,
+  userId: string,
   opp: Opportunity
 ): Promise<{ score: number; reasoning: string }> {
   const context = await buildTwinContext(userId);
@@ -225,7 +225,7 @@ export async function scoreOpportunity(
 
 // Score every open opportunity (optionally of a type) for the user and persist.
 export async function refreshMatches(
-  userId: number,
+  userId: string,
   type?: Opportunity["type"]
 ): Promise<number> {
   const opps = await repo.listOpportunities({
@@ -304,7 +304,7 @@ export type StartupOutput = {
 // 6. DAILY SUGGESTIONS — LLM next-best-actions grounded in twin + today snapshot
 // ════════════════════════════════════════════════════════════════════════
 export async function generateDailySuggestions(
-  userId: number,
+  userId: string,
   snapshot: {
     activeMissions: number;
     unreadMessages: number;
