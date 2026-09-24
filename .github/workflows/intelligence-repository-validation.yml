@@ -1,0 +1,54 @@
+name: Intelligence Repository Validation
+
+on:
+  push:
+    branches:
+      - stabilize/intelligence-repository-string-ids-chat6
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Focused intelligence tests
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/skycoin
+          STRIPE_API_KEY: sk_test_51MockKeyForTestingOnly0000000000
+          OPENAI_API_KEY: sk-proj-MockKeyForTestingOnly00000000000000000000
+          ADMIN_WALLET_ADDRESS: "0x16188a203a715de6b131e273b3a9bcf6d09e7d0a"
+        run: pnpm exec vitest run server/intelligence-engine.test.ts
+
+      - name: Measure TypeScript debt
+        shell: bash
+        run: |
+          set +e
+          pnpm check 2>&1 | tee typecheck.log
+          total_errors=$(grep -c "error TS" typecheck.log || true)
+          repo_errors=$(grep -c "server/db-intelligence.ts" typecheck.log || true)
+          router_errors=$(grep -c "server/intelligence-router.ts" typecheck.log || true)
+          echo "total_errors=$total_errors"
+          echo "repo_errors=$repo_errors"
+          echo "router_errors=$router_errors"
+          if [ "$repo_errors" -ne 0 ]; then
+            grep "server/db-intelligence.ts" typecheck.log
+            exit 1
+          fi
+
+      - name: Production build
+        env:
+          NODE_ENV: production
+        run: pnpm build
+
+      - name: High-severity dependency audit
+        run: pnpm audit --audit-level=high
