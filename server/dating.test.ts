@@ -63,16 +63,13 @@ describe("Dating System", () => {
 
   describe("Profile Management", () => {
     it("creates a profile using the current schema", async () => {
-      await db.insert(datingProfiles).values({
-        id: "profile-1",
-        userId: testUserId1,
-        age: 28,
-        gender: "male",
-        bio: "Test bio",
-        interests: JSON.stringify(["hiking", "photography"]),
-        location: "Test City",
-        lookingFor: "female",
-      });
+      await db.execute(sql`
+        INSERT INTO dating_profiles
+          (id, user_id, age, gender, bio, interests, location, looking_for)
+        VALUES
+          ('profile-1', ${testUserId1}, 28, 'male', 'Test bio',
+           ${JSON.stringify(["hiking", "photography"])}, 'Test City', 'female')
+      `);
 
       const [profile] = await db
         .select()
@@ -91,12 +88,10 @@ describe("Dating System", () => {
     });
 
     it("updates a dating profile", async () => {
-      await db.insert(datingProfiles).values({
-        id: "profile-2",
-        userId: testUserId1,
-        age: 28,
-        bio: "Original bio",
-      });
+      await db.execute(sql`
+        INSERT INTO dating_profiles (id, user_id, age, bio)
+        VALUES ('profile-2', ${testUserId1}, 28, 'Original bio')
+      `);
 
       await db
         .update(datingProfiles)
@@ -114,14 +109,12 @@ describe("Dating System", () => {
 
     it("stores profile preference fields represented by the schema", async () => {
       const interests = JSON.stringify(["hiking", "photography", "chess"]);
-      await db.insert(datingProfiles).values({
-        id: "profile-3",
-        userId: testUserId1,
-        age: 28,
-        interests,
-        lookingFor: "everyone",
-        verified: true,
-      });
+      await db.execute(sql`
+        INSERT INTO dating_profiles
+          (id, user_id, age, interests, looking_for, verified)
+        VALUES
+          ('profile-3', ${testUserId1}, 28, ${interests}, 'everyone', true)
+      `);
 
       const [profile] = await db
         .select()
@@ -317,7 +310,11 @@ describe("Dating System", () => {
         .where(eq(datingSubscriptions.id, "subscription-3"));
 
       expect(subscription.expiresAt).toBeInstanceOf(Date);
-      expect(subscription.expiresAt?.getTime()).toBe(expiresAt.getTime());
+      // MySQL TIMESTAMP defaults to second precision unless fractional
+      // precision is declared, so compare at the persisted precision.
+      expect(Math.floor((subscription.expiresAt?.getTime() ?? 0) / 1000)).toBe(
+        Math.floor(expiresAt.getTime() / 1000)
+      );
     });
   });
 
