@@ -310,11 +310,12 @@ describe("Dating System", () => {
         .where(eq(datingSubscriptions.id, "subscription-3"));
 
       expect(subscription.expiresAt).toBeInstanceOf(Date);
-      // MySQL TIMESTAMP defaults to second precision unless fractional
-      // precision is declared, so compare at the persisted precision.
-      expect(Math.floor((subscription.expiresAt?.getTime() ?? 0) / 1000)).toBe(
-        Math.floor(expiresAt.getTime() / 1000)
-      );
+      // MySQL TIMESTAMP has no fractional precision here, and mysql2 may
+      // round/truncate at the second boundary. Validate persistence within one
+      // second instead of requiring identical millisecond flooring.
+      expect(
+        Math.abs((subscription.expiresAt?.getTime() ?? 0) - expiresAt.getTime())
+      ).toBeLessThan(1000);
     });
   });
 
