@@ -27,6 +27,7 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("last_signed_in"),
   loginMethod: varchar("login_method", { length: 255 }),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  expiresAt: timestamp("expires_at"),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -205,6 +206,7 @@ export const notifications = mysqlTable("notifications", {
   id: varchar("id", { length: 255 }).primaryKey(),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
   type: varchar("type", { length: 255 }), // like | comment | follow | message | order
+  title: varchar("title", { length: 255 }),
   content: varchar("content", { length: 255 }),
   read: boolean("read").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
