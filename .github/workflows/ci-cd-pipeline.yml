@@ -167,7 +167,9 @@ jobs:
       PORT: "3000"
       JWT_SECRET: ci-runtime-smoke-secret-not-for-production
       VITE_APP_ID: ci-runtime-smoke
-      OAUTH_SERVER_URL: https://example.invalid
+      VITE_BETA_AUTH_MODE: access_key
+      BETA_ACCESS_KEY: ci-runtime-smoke-beta-access-key-00000000000000000000000000000000
+      BETA_ALLOWED_EMAILS: ci-session@example.invalid
       SKYCOIN_RELEASE_SHA: ${{ github.sha }}
     services:
       mysql:
@@ -240,6 +242,12 @@ jobs:
           }
           if (body.services?.authentication?.ready !== true) {
             throw new Error("Authentication configuration readiness was not proven");
+          }
+          if (body.services?.authentication?.providers?.betaAccess !== true) {
+            throw new Error("Beta access provider readiness was not proven");
+          }
+          if (body.services?.authentication?.providers?.oauth !== false) {
+            throw new Error("Runtime smoke unexpectedly depends on OAuth");
           }
           NODE
 
