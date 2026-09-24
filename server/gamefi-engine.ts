@@ -15,7 +15,12 @@
 
 import { getDb } from "./db";
 import * as schema from "../drizzle";
+import { stakingPositions as coreStakingPositions } from "../drizzle/schema";
 import { eq, and, desc, sql, gte, lte, or, asc } from "drizzle-orm";
+
+function levelFromXp(xp: number | null | undefined): number {
+  return Math.floor(Math.max(0, xp ?? 0) / 1000);
+}
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -228,12 +233,12 @@ export class TournamentService {
     // Record tournament creation in transactions
     if (config.entryFee > 0) {
       await db.insert(schema.transactions).values({
-        userId: creatorId,
-        type: "purchase",
-        token: "SKY444",
-        amount: String(config.entryFee),
-        status: "confirmed",
-        metadata: { type: "tournament_creation", name: config.name },
+        id: `tournament-create-${Date.now()}-${creatorId}`,
+        userId: String(creatorId),
+        type: "tournament_creation",
+        amount: config.entryFee,
+        status: "completed",
+        txHash: `tournament:${config.name}`,
       });
     }
 
@@ -267,8 +272,8 @@ export class TournamentService {
       .from(schema.tokenBalances)
       .where(
         and(
-          eq(schema.tokenBalances.userId, userId),
-          eq(schema.tokenBalances.token, "SKY444")
+          eq(schema.tokenBalances.userId, String(userId)),
+          eq(schema.tokenBalances.tokenSymbol, "SKY444")
         )
       );
 
@@ -533,9 +538,9 @@ export class QuestEngine {
 
     // Get user's current progress from their XP/level
     const [user] = await db
-      .select({ xp: schema.users.xp, level: schema.users.level })
+      .select({ xp: schema.users.xp })
       .from(schema.users)
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
     return this.questTemplates.map((template, index) => ({
       ...template,
@@ -564,7 +569,7 @@ export class QuestEngine {
             .from(schema.posts)
             .where(
               and(
-                eq(schema.posts.authorId, userId),
+                eq(schema.posts.authorId, String(userId)),
                 gte(
                   schema.posts.createdAt,
                   new Date(Date.now() - 24 * 60 * 60 * 1000)
@@ -577,15 +582,10 @@ export class QuestEngine {
         case "stake_amount": {
           const [result] = await db
             .select({
-              total: sql<string>`COALESCE(SUM(CAST(${schema.stakingPositions.amount} AS DECIMAL(20,2))), 0)`,
+              total: sql<string>`COALESCE(SUM(${coreStakingPositions.amount}), 0)`,
             })
-            .from(schema.stakingPositions)
-            .where(
-              and(
-                eq(schema.stakingPositions.userId, userId),
-                eq(schema.stakingPositions.status, "active")
-              )
-            );
+            .from(coreStakingPositions)
+            .where(eq(coreStakingPositions.userId, String(userId)));
           req.current = parseFloat(String(result?.total || "0"));
           break;
         }
@@ -597,7 +597,7 @@ export class QuestEngine {
             .from(schema.transactions)
             .where(
               and(
-                eq(schema.transactions.userId, userId),
+                eq(schema.transactions.userId, String(userId)),
                 eq(schema.transactions.type, "swap")
               )
             );
@@ -607,10 +607,15 @@ export class QuestEngine {
         case "tip_amount": {
           const [result] = await db
             .select({
-              total: sql<string>`COALESCE(SUM(CAST(${schema.tips.amount} AS DECIMAL(20,2))), 0)`,
+              total: sql<string>`COALESCE(SUM(${schema.transactions.amount}), 0)`,
             })
-            .from(schema.tips)
-            .where(eq(schema.tips.senderId, userId));
+            .from(schema.transactions)
+            .where(
+              and(
+                eq(schema.transactions.userId, String(userId)),
+                eq(schema.transactions.type, "stream_tip")
+              )
+            );
           req.current = parseFloat(String(result?.total || "0"));
           break;
         }
@@ -618,7 +623,7 @@ export class QuestEngine {
           const [result] = await db
             .select({ count: sql<number>`COUNT(*)` })
             .from(schema.follows)
-            .where(eq(schema.follows.followerId, userId));
+            .where(eq(schema.follows.followerId, String(userId)));
           req.current = result?.count || 0;
           break;
         }
@@ -644,7 +649,7 @@ export class QuestEngine {
       .set({
         xp: sql`${schema.users.xp} + ${quest.xpReward}`,
       })
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
     // Award token rewards
     for (const reward of quest.rewards) {
@@ -656,8 +661,8 @@ export class QuestEngine {
           })
           .where(
             and(
-              eq(schema.tokenBalances.userId, userId),
-              eq(schema.tokenBalances.token, "SKY444")
+              eq(schema.tokenBalances.userId, String(userId)),
+              eq(schema.tokenBalances.tokenSymbol, "SKY444")
             )
           );
       }
@@ -861,7 +866,7 @@ export class AchievementService {
     const [user] = await db
       .select()
       .from(schema.users)
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
     if (!user) return [];
 
@@ -875,7 +880,7 @@ export class AchievementService {
         tipsReceived: sql<number>`(SELECT COUNT(*) FROM tips WHERE receiverId = ${userId})`,
       })
       .from(schema.users)
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
     const unlocked: Achievement[] = [];
 
@@ -942,7 +947,7 @@ export class AchievementService {
       .set({
         xp: sql`${schema.users.xp} + ${achievement.xpReward}`,
       })
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
     if (achievement.tokenReward > 0) {
       await db
@@ -952,20 +957,20 @@ export class AchievementService {
         })
         .where(
           and(
-            eq(schema.tokenBalances.userId, userId),
-            eq(schema.tokenBalances.token, "SKY444")
+            eq(schema.tokenBalances.userId, String(userId)),
+            eq(schema.tokenBalances.tokenSymbol, "SKY444")
           )
         );
     }
 
     // Create notification
     await db.insert(schema.notifications).values({
-      userId,
-      type: "system",
+      id: `achievement-${achievementId}-${userId}-${Date.now()}`,
+      userId: String(userId),
+      type: "achievement",
       title: `Achievement Unlocked: ${achievement.name}`,
-      message: achievement.description,
-      targetType: "achievement",
-      targetId: achievementId,
+      content: achievement.description,
+      read: false,
     });
 
     return true;
@@ -988,15 +993,22 @@ export class SeasonPassService {
     const db = await getDb();
     if (!db) return null;
 
+    const now = new Date();
     const [season] = await db
       .select()
-      .from(schema.seasons)
-      .where(eq(schema.seasons.status, "active"))
+      .from(schema.battlePasses)
+      .where(
+        and(
+          lte(schema.battlePasses.startDate, now),
+          gte(schema.battlePasses.endDate, now)
+        )
+      )
+      .orderBy(desc(schema.battlePasses.startDate))
       .limit(1);
 
     if (!season) return null;
 
-    const maxLevel = 100;
+    const maxLevel = season.totalTiers || 100;
     const tiers: SeasonTier[] = [];
     for (let i = 1; i <= maxLevel; i++) {
       tiers.push({
@@ -1015,12 +1027,13 @@ export class SeasonPassService {
     }
 
     return {
-      id: season.id,
-      seasonNumber: season.number,
+      id: Number.parseInt(season.id, 10) || 0,
+      seasonNumber:
+        Number.parseInt(season.seasonId.replace(/\D/g, ""), 10) || 1,
       name: season.name,
       theme: "default",
-      startDate: season.startsAt,
-      endDate: season.endsAt,
+      startDate: season.startDate,
+      endDate: season.endDate,
       maxLevel,
       tiers,
       currentXp: 0,
@@ -1039,12 +1052,12 @@ export class SeasonPassService {
     if (!db) return { level: 0, xp: 0, isPremium: false, claimedRewards: [] };
 
     const [user] = await db
-      .select({ xp: schema.users.xp, level: schema.users.level })
+      .select({ xp: schema.users.xp })
       .from(schema.users)
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
     return {
-      level: user?.level || 0,
+      level: levelFromXp(user?.xp),
       xp: user?.xp || 0,
       isPremium: false,
       claimedRewards: [],
@@ -1060,33 +1073,32 @@ export class SeasonPassService {
     if (!db) return { newXp: 0, newLevel: 0, leveledUp: false };
 
     const [user] = await db
-      .select({ xp: schema.users.xp, level: schema.users.level })
+      .select({ xp: schema.users.xp })
       .from(schema.users)
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
     if (!user) return { newXp: 0, newLevel: 0, leveledUp: false };
 
     const newXp = (user.xp || 0) + amount;
     const xpPerLevel = 1000;
     const newLevel = Math.floor(newXp / xpPerLevel);
-    const leveledUp = newLevel > (user.level || 0);
+    const leveledUp = newLevel > levelFromXp(user.xp);
 
     await db
       .update(schema.users)
       .set({
         xp: newXp,
-        level: newLevel,
       })
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
     if (leveledUp) {
       await db.insert(schema.notifications).values({
-        userId,
-        type: "system",
+        id: `level-up-${userId}-${newLevel}-${Date.now()}`,
+        userId: String(userId),
+        type: "level_up",
         title: `Level Up! You're now level ${newLevel}`,
-        message: `You earned ${amount} XP from ${source}`,
-        targetType: "level",
-        targetId: newLevel,
+        content: `You earned ${amount} XP from ${source}`,
+        read: false,
       });
     }
 
@@ -1104,8 +1116,8 @@ export class SeasonPassService {
       .from(schema.tokenBalances)
       .where(
         and(
-          eq(schema.tokenBalances.userId, userId),
-          eq(schema.tokenBalances.token, "SKY444")
+          eq(schema.tokenBalances.userId, String(userId)),
+          eq(schema.tokenBalances.tokenSymbol, "SKY444")
         )
       );
 
@@ -1119,8 +1131,8 @@ export class SeasonPassService {
       })
       .where(
         and(
-          eq(schema.tokenBalances.userId, userId),
-          eq(schema.tokenBalances.token, "SKY444")
+          eq(schema.tokenBalances.userId, String(userId)),
+          eq(schema.tokenBalances.tokenSymbol, "SKY444")
         )
       );
 
@@ -1198,8 +1210,8 @@ export class GuildService {
       })
       .where(
         and(
-          eq(schema.tokenBalances.userId, leaderId),
-          eq(schema.tokenBalances.token, "SKY444")
+          eq(schema.tokenBalances.userId, String(leaderId)),
+          eq(schema.tokenBalances.tokenSymbol, "SKY444")
         )
       );
 
@@ -1248,8 +1260,8 @@ export class GuildService {
       })
       .where(
         and(
-          eq(schema.tokenBalances.userId, userId),
-          eq(schema.tokenBalances.token, "SKY444")
+          eq(schema.tokenBalances.userId, String(userId)),
+          eq(schema.tokenBalances.tokenSymbol, "SKY444")
         )
       );
 
@@ -1305,8 +1317,8 @@ export class GuildWarService {
       })
       .where(
         and(
-          eq(schema.tokenBalances.userId, leaderId),
-          eq(schema.tokenBalances.token, "SKY444")
+          eq(schema.tokenBalances.userId, String(leaderId)),
+          eq(schema.tokenBalances.tokenSymbol, "SKY444")
         )
       );
 
@@ -1367,7 +1379,7 @@ export class LeaderboardEngine {
   async getGlobalLeaderboard(
     limit = 100
   ): Promise<
-    { userId: number; name: string; xp: number; level: number; rank: number }[]
+    { userId: string; name: string; xp: number; level: number; rank: number }[]
   > {
     const db = await getDb();
     if (!db) return [];
@@ -1377,7 +1389,6 @@ export class LeaderboardEngine {
         userId: schema.users.id,
         name: schema.users.name,
         xp: schema.users.xp,
-        level: schema.users.level,
       })
       .from(schema.users)
       .orderBy(desc(schema.users.xp))
@@ -1387,7 +1398,7 @@ export class LeaderboardEngine {
       userId: u.userId,
       name: u.name || "Anonymous",
       xp: u.xp || 0,
-      level: u.level || 0,
+      level: levelFromXp(u.xp),
       rank: i + 1,
     }));
   }
@@ -1395,7 +1406,7 @@ export class LeaderboardEngine {
   async getWeeklyLeaderboard(
     limit = 50
   ): Promise<
-    { userId: number; name: string; weeklyXp: number; rank: number }[]
+    { userId: string; name: string; weeklyXp: number; rank: number }[]
   > {
     const db = await getDb();
     if (!db) return [];
@@ -1423,7 +1434,7 @@ export class LeaderboardEngine {
 
   async getTradingLeaderboard(limit = 50): Promise<
     {
-      userId: number;
+      userId: string | null;
       volume: number;
       trades: number;
       profit: number;
@@ -1459,7 +1470,7 @@ export class LeaderboardEngine {
   async getStreamingLeaderboard(
     limit = 50
   ): Promise<
-    { userId: number; totalViewers: number; streams: number; rank: number }[]
+    { userId: string | null; totalViewers: number; streams: number; rank: number }[]
   > {
     const db = await getDb();
     if (!db) return [];
@@ -1507,7 +1518,7 @@ export class AntiCheatService {
       .from(schema.transactions)
       .where(
         and(
-          eq(schema.transactions.userId, userId),
+          eq(schema.transactions.userId, String(userId)),
           gte(
             schema.transactions.createdAt,
             new Date(Date.now() - 60 * 60 * 1000)
@@ -1524,11 +1535,11 @@ export class AntiCheatService {
     const [user] = await db
       .select({ xp: schema.users.xp, createdAt: schema.users.createdAt })
       .from(schema.users)
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, String(userId)));
 
     if (user) {
       const daysSinceCreation =
-        (Date.now() - new Date(user.createdAt).getTime()) /
+        (Date.now() - new Date(user.createdAt ?? Date.now()).getTime()) /
         (24 * 60 * 60 * 1000);
       const xpPerDay = (user.xp || 0) / Math.max(1, daysSinceCreation);
       if (xpPerDay > 10000) {
