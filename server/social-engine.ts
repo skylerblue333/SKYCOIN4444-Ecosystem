@@ -598,7 +598,7 @@ export class ThreadedCommentService {
       await db.delete(schema.likes).where(eq(schema.likes.id, existing[0].id));
       await db
         .update(schema.comments)
-        .set({ likes: sql`GREATEST(${schema.comments.likeCount} - 1, 0)` })
+        .set({ likeCount: sql`GREATEST(${schema.comments.likeCount} - 1, 0)` })
         .where(eq(schema.comments.id, commentId));
       return false;
     }
@@ -606,7 +606,7 @@ export class ThreadedCommentService {
     await db.insert(schema.likes).values({ userId, commentId });
     await db
       .update(schema.comments)
-      .set({ likes: sql`${schema.comments.likeCount} + 1` })
+      .set({ likeCount: sql`${schema.comments.likeCount} + 1` })
       .where(eq(schema.comments.id, commentId));
     return true;
   }
