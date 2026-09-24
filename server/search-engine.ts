@@ -532,11 +532,11 @@ export class SearchService {
         content: post.content || "",
         metadata: {
           authorId: post.authorId,
-          likes: post.likeCount,
-          comments: post.commentCount,
+          likes: post.likes,
+          comments: post.comments,
           mediaUrl: post.mediaUrl,
         },
-        boost: 1 + (post.likeCount || 0) * 0.01,
+        boost: 1 + (post.likes || 0) * 0.01,
         updatedAt: new Date(post.createdAt),
       });
       indexed++;
