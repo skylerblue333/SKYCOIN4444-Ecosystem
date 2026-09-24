@@ -338,7 +338,7 @@ export const healthMonitor = new HealthMonitor();
 // Express router
 export const healthRouter = Router();
 
-function requireHealthAdmin(
+export function requireHealthAdmin(
   req: Request,
   res: Response,
   next: NextFunction
@@ -394,7 +394,7 @@ healthRouter.get("/health", async (req, res) => {
 /**
  * GET /health/detailed - Detailed health check
  */
-healthRouter.get("/health/detailed", async (req, res) => {
+healthRouter.get("/health/detailed", requireHealthAdmin, async (req, res) => {
   try {
     const health = await healthMonitor.getHealthStatus();
     res.json(health);
@@ -409,7 +409,7 @@ healthRouter.get("/health/detailed", async (req, res) => {
 /**
  * GET /health/alerts - Get active alerts
  */
-healthRouter.get("/health/alerts", (req, res) => {
+healthRouter.get("/health/alerts", requireHealthAdmin, (req, res) => {
   const alerts = healthMonitor.getAlerts();
   res.json({
     count: alerts.length,
