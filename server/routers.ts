@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { adminProcedure, publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { miningRouter } from "./mining";
 import { voiceRouter } from "./voice-router";
 import { enterpriseRouter } from "./enterprise-router";
@@ -24,8 +24,14 @@ import {
   messages,
   reviews,
   follows,
+  communities,
+  stakingPositions,
+  tokenBalances,
+  moderationLogs,
+  datingReports,
 } from "../drizzle/schema";
-import { eq, desc, and, or } from "drizzle-orm";
+import { battlePasses } from "../drizzle/schema-extended";
+import { eq, desc, and, or, sql, gte, lte } from "drizzle-orm";
 
 // ============ USER PROCEDURES ============
 export const userRouter = router({
@@ -48,6 +54,11 @@ export const userRouter = router({
     .input(z.object({ userId: z.string() }))
     .query(async ({ input }) => {
       return db.getUserById(input.userId);
+    }),
+  profile: publicProcedure
+    .input(z.object({ userId: z.union([z.string(), z.number()]) }))
+    .query(async ({ input }) => {
+      return (await db.getUserById(String(input.userId))) ?? null;
     }),
   follow: protectedProcedure
     .input(z.object({ userId: z.string() }))
@@ -281,20 +292,44 @@ export const analyticsRouter = router({
 });
 
 // ============ ADMIN PROCEDURES ============
-export const adminRouter = router({
-  getUsers: protectedProcedure.query(async ({ ctx }) => []),
-  banUser: protectedProcedure
-    .input(z.object({ userId: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
-  deleteContent: protectedProcedure
-    .input(z.object({ contentId: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
-  getReports: protectedProcedure.query(async ({ ctx }) => []),
-  getSystemStats: protectedProcedure.query(async ({ ctx }) => ({
-    totalUsers: 0,
-    totalTransactions: 0,
+async function getAdminStats() {
+  const database = await db.getDb();
+  const [userCount] = await database.select({ count: sql<number>`count(*)` }).from(users);
+  const [postCount] = await database.select({ count: sql<number>`count(*)` }).from(posts);
+  const [txCount] = await database.select({ count: sql<number>`count(*)` }).from(transactions);
+  return {
+    totalUsers: Number(userCount?.count ?? 0),
+    totalPosts: Number(postCount?.count ?? 0),
+    totalTransactions: Number(txCount?.count ?? 0),
     totalRevenue: 0,
-  })),
+  };
+}
+
+export const adminRouter = router({
+  getUsers: adminProcedure.query(async () => {
+    const database = await db.getDb();
+    return database.select().from(users).limit(100);
+  }),
+  banUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      // Account-state mutation is intentionally gated until a canonical
+      // ban/suspension column and audit trail are defined.
+      return { success: false, userId: input.userId, reason: "not_configured" };
+    }),
+  deleteContent: adminProcedure
+    .input(z.object({ contentId: z.string() }))
+    .mutation(async ({ input }) => ({
+      success: false,
+      contentId: input.contentId,
+      reason: "not_configured",
+    })),
+  getReports: adminProcedure.query(async () => {
+    const database = await db.getDb();
+    return database.select().from(datingReports).orderBy(desc(datingReports.createdAt)).limit(100);
+  }),
+  getSystemStats: adminProcedure.query(getAdminStats),
+  stats: adminProcedure.query(getAdminStats),
 });
 
 // ============ SEARCH PROCEDURES ============
@@ -325,33 +360,127 @@ export const settingsRouter = router({
     .mutation(async ({ ctx, input }) => ({ success: true })),
 });
 
-// ============ MOCK ROUTERS FOR TEST COMPLIANCE ============
-const mockRouter = router({
-  stats: publicProcedure.query(async () => ({
-    totalUsers: 1000,
-    activeSessions: 100,
-    totalPosts: 500,
-    totalTransactions: 200,
-    activeUsers: 150,
-    totalCommunities: 10,
-  })),
+// ============ BETA CONTRACT ROUTERS ============
+const platformRouter = router({
+  stats: publicProcedure.query(async () => {
+    const database = await db.getDb();
+    const [userCount] = await database.select({ count: sql<number>`count(*)` }).from(users);
+    const [postCount] = await database.select({ count: sql<number>`count(*)` }).from(posts);
+    const [txCount] = await database.select({ count: sql<number>`count(*)` }).from(transactions);
+    const [communityCount] = await database.select({ count: sql<number>`count(*)` }).from(communities);
+    return {
+      totalUsers: Number(userCount?.count ?? 0),
+      activeSessions: 0,
+      totalPosts: Number(postCount?.count ?? 0),
+      totalTransactions: Number(txCount?.count ?? 0),
+      activeUsers: Number(userCount?.count ?? 0),
+      totalCommunities: Number(communityCount?.count ?? 0),
+      sessionTracking: "not_configured" as const,
+    };
+  }),
   health: publicProcedure.query(async () => ({
-    status: "healthy",
-    uptime: 3600,
-    version: "1.0.0",
+    status: "healthy" as const,
+    uptime: Math.floor(process.uptime()),
+    version: process.env.npm_package_version ?? "1.0.0",
   })),
-  metrics: publicProcedure.query(async () => ({
-    totalSupply: 1000000,
-    circulatingSupply: 500000,
-    price: 1.5,
-    marketCap: 1500000,
-    totalUsers: 1000,
-    totalStaked: 250000,
-  })),
+});
+
+const tokenRouter = router({
+  metrics: publicProcedure.query(async () => {
+    const database = await db.getDb();
+    const [supply] = await database
+      .select({ total: sql<number>`coalesce(sum(${tokenBalances.balance}), 0)` })
+      .from(tokenBalances);
+    const [staked] = await database
+      .select({
+        total: sql<number>`coalesce(sum(${stakingPositions.amount}), 0)`,
+        participants: sql<number>`count(distinct ${stakingPositions.userId})`,
+      })
+      .from(stakingPositions);
+    const [userCount] = await database.select({ count: sql<number>`count(*)` }).from(users);
+    const totalSupply = Number(supply?.total ?? 0);
+    return {
+      totalSupply,
+      circulatingSupply: totalSupply,
+      price: null,
+      marketCap: null,
+      totalUsers: Number(userCount?.count ?? 0),
+      totalStaked: Number(staked?.total ?? 0),
+      burnedTokens: 0,
+      stakingParticipants: Number(staked?.participants ?? 0),
+      burnAccounting: "not_configured" as const,
+      priceSource: "not_configured" as const,
+    };
+  }),
+});
+
+const stakingRouter = router({
+  pools: publicProcedure.query(async () => []),
+  userPositions: protectedProcedure.query(async ({ ctx }) => {
+    const database = await db.getDb();
+    return database
+      .select()
+      .from(stakingPositions)
+      .where(eq(stakingPositions.userId, String(ctx.user.id)));
+  }),
+});
+
+const gamefiRouter = router({
+  leaderboard: publicProcedure.query(async () => []),
+  seasonPass: publicProcedure.query(async () => {
+    const database = await db.getDb();
+    const now = new Date();
+    const [season] = await database
+      .select()
+      .from(battlePasses)
+      .where(and(lte(battlePasses.startDate, now), gte(battlePasses.endDate, now)))
+      .orderBy(desc(battlePasses.startDate))
+      .limit(1);
+    if (!season) {
+      return { season: null, name: null, status: "not_configured" as const };
+    }
+    return {
+      season: season.seasonId,
+      name: season.name,
+      status: "active" as const,
+      startDate: season.startDate,
+      endDate: season.endDate,
+    };
+  }),
+});
+
+const moderationRouter = router({
+  stats: adminProcedure.query(async () => {
+    const database = await db.getDb();
+    const [actions] = await database
+      .select({ count: sql<number>`count(*)` })
+      .from(moderationLogs);
+    const [reports] = await database
+      .select({
+        total: sql<number>`count(*)`,
+        resolved: sql<number>`sum(case when ${datingReports.status} = 'resolved' then 1 else 0 end)`,
+      })
+      .from(datingReports);
+    const totalReports = Number(reports?.total ?? 0);
+    const resolvedReports = Number(reports?.resolved ?? 0);
+    return {
+      totalActions: Number(actions?.count ?? 0),
+      accuracy: totalReports === 0 ? 1 : resolvedReports / totalReports,
+      totalReports,
+      resolvedReports,
+    };
+  }),
+});
+
+// Placeholder namespaces remain explicit and must not be treated as beta-ready.
+const placeholderRouter = router({
+  stats: publicProcedure.query(async () => ({ status: "not_configured" as const })),
+  health: publicProcedure.query(async () => ({ status: "not_configured" as const })),
+  metrics: publicProcedure.query(async () => ({ status: "not_configured" as const })),
   pools: publicProcedure.query(async () => []),
   userPositions: protectedProcedure.query(async () => []),
   leaderboard: publicProcedure.query(async () => []),
-  seasonPass: publicProcedure.query(async () => ({})),
+  seasonPass: publicProcedure.query(async () => ({ status: "not_configured" as const })),
 });
 
 // ============ MAIN ROUTER ============
@@ -386,27 +515,27 @@ export const appRouter = router({
   creatorGrowth: userRouter,
   prices: pricesRouter,
   system: systemRouter,
-  platform: mockRouter,
-  token: mockRouter,
-  staking: mockRouter,
-  gamefi: mockRouter,
-  moderation: mockRouter,
+  platform: platformRouter,
+  token: tokenRouter,
+  staking: stakingRouter,
+  gamefi: gamefiRouter,
+  moderation: moderationRouter,
   dm: messageRouter,
   blockchain: walletRouter,
   aiEngineer: aiRouter,
   economy: transactionRouter,
-  charity: mockRouter,
-  trustSafety: mockRouter,
-  ico: mockRouter,
-  audienceLockIn: mockRouter,
-  shadowIdentity: mockRouter,
-  reputation: mockRouter,
-  missions: mockRouter,
-  governance: mockRouter,
-  goc: mockRouter,
-  aiPersonas: mockRouter,
-  aiMarketplace: mockRouter,
-  aiMarket: mockRouter,
+  charity: placeholderRouter,
+  trustSafety: placeholderRouter,
+  ico: placeholderRouter,
+  audienceLockIn: placeholderRouter,
+  shadowIdentity: placeholderRouter,
+  reputation: placeholderRouter,
+  missions: placeholderRouter,
+  governance: placeholderRouter,
+  goc: placeholderRouter,
+  aiPersonas: placeholderRouter,
+  aiMarketplace: placeholderRouter,
+  aiMarket: placeholderRouter,
 });
 
 export type AppRouter = typeof appRouter;
