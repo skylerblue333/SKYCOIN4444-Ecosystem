@@ -586,14 +586,16 @@ export async function getProNetworkSuggestions(
     )
     .orderBy(sql`count(*) desc, ${reputationScores.overall} desc`)
     .limit(limit);
-  return rows.map(r => ({
-    userId: r.userId,
-    name: r.name ?? null,
-    username: r.username ?? null,
-    avatar: r.avatar ?? null,
-    mutualCount: Number(r.mutualCount ?? 0),
-    reputation: r.reputation ?? null,
-  }));
+  return rows
+    .filter((r): r is typeof r & { userId: string } => r.userId !== null)
+    .map(r => ({
+      userId: r.userId,
+      name: r.name ?? null,
+      username: r.username ?? null,
+      avatar: r.avatar ?? null,
+      mutualCount: Number(r.mutualCount ?? 0),
+      reputation: r.reputation ?? null,
+    }));
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -877,7 +879,7 @@ export async function getCoinBalance(userId: string): Promise<number> {
     .where(
       and(
         eq(tokenBalances.userId, userId),
-        eq(tokenBalances.token, SETTLEMENT_TOKEN)
+        eq(tokenBalances.tokenSymbol, SETTLEMENT_TOKEN)
       )
     )
     .limit(1);
@@ -890,7 +892,12 @@ async function ensureCoinRow(userId: string): Promise<void> {
   if (!db) return;
   await db
     .insert(tokenBalances)
-    .values({ userId, token: SETTLEMENT_TOKEN, balance: "0" })
+    .values({
+      id: `tb_${userId}_${SETTLEMENT_TOKEN}`,
+      userId,
+      tokenSymbol: SETTLEMENT_TOKEN,
+      balance: 0,
+    })
     .onDuplicateKeyUpdate({ set: { updatedAt: new Date() } })
     .catch(() => undefined);
 }
@@ -928,7 +935,7 @@ export async function purchaseWithCoins(data: {
       .where(
         and(
           eq(tokenBalances.userId, data.buyerId),
-          eq(tokenBalances.token, SETTLEMENT_TOKEN),
+          eq(tokenBalances.tokenSymbol, SETTLEMENT_TOKEN),
           sql`${tokenBalances.balance} >= ${coinPrice}`
         )
       );
@@ -951,34 +958,30 @@ export async function purchaseWithCoins(data: {
       .where(
         and(
           eq(tokenBalances.userId, data.sellerId),
-          eq(tokenBalances.token, SETTLEMENT_TOKEN)
+          eq(tokenBalances.tokenSymbol, SETTLEMENT_TOKEN)
         )
       );
     // Record an auditable transaction for both sides.
+    const settlementRef = `ai-market:${SETTLEMENT_TOKEN}:${data.listingId}:${Date.now()}`;
     await db
       .insert(transactions)
       .values([
         {
+          id: `${settlementRef}:debit`,
           userId: data.buyerId,
-          type: "transfer" as any,
-          token: SETTLEMENT_TOKEN,
-          amount: String(-coinPrice) as any,
-          status: "confirmed",
-          metadata: {
-            kind: "ai_market_purchase",
-            listingId: data.listingId,
-          } as any,
+          toUserId: data.sellerId,
+          type: "transfer",
+          amount: -coinPrice,
+          status: "completed",
+          txHash: settlementRef,
         },
         {
+          id: `${settlementRef}:credit`,
           userId: data.sellerId,
-          type: "transfer" as any,
-          token: SETTLEMENT_TOKEN,
-          amount: String(coinPrice) as any,
-          status: "confirmed",
-          metadata: {
-            kind: "ai_market_sale",
-            listingId: data.listingId,
-          } as any,
+          type: "deposit",
+          amount: coinPrice,
+          status: "completed",
+          txHash: settlementRef,
         },
       ])
       .catch(() => undefined);
