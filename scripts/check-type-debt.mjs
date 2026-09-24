@@ -59,6 +59,12 @@ if (!Number.isFinite(baseline)) {
         `TypeScript debt regressed by ${errors - baseline} errors.`
       );
       process.exitCode = 1;
+    } else if (errors === 0 && result.status !== 0) {
+      console.error(
+        `TypeScript debt measurement failed before compiler diagnostics were produced (exit ${result.status ?? "unknown"}).`
+      );
+      if (output.trim()) console.error(output.trim());
+      process.exitCode = 2;
     } else {
       if (errors < baseline) {
         console.log(
