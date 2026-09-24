@@ -1,10 +1,14 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { createTRPCClient, httpLink, TRPCClientError } from "@trpc/client";
 import mysql from "mysql2/promise";
-import { SignJWT } from "jose";
+import superjson from "superjson";
 
 const mode = process.argv[2];
-const stateFile = process.env.RUNTIME_SESSION_STATE_FILE || ".runtime-session-state.json";
+const stateFile =
+  process.env.RUNTIME_SESSION_STATE_FILE || ".runtime-session-state.json";
 const baseUrl = process.env.RUNTIME_BASE_URL || "http://127.0.0.1:3000";
+const sessionEmail =
+  process.env.RUNTIME_SESSION_EMAIL || "ci-session@example.invalid";
 
 function required(name) {
   const value = process.env[name];
@@ -12,115 +16,121 @@ function required(name) {
   return value;
 }
 
-function unwrapTrpc(payload) {
-  const data = payload?.result?.data;
-  if (data && typeof data === "object" && "json" in data) return data.json;
-  return data;
+function createClient(cookieHeader = null, captureSetCookie = null) {
+  return createTRPCClient({
+    links: [
+      httpLink({
+        url: `${baseUrl}/api/trpc`,
+        transformer: superjson,
+        async fetch(input, init) {
+          const headers = new Headers(init?.headers);
+          if (cookieHeader) headers.set("cookie", cookieHeader);
+          const response = await fetch(input, { ...(init ?? {}), headers });
+          const setCookie = response.headers.get("set-cookie");
+          if (setCookie && captureSetCookie) captureSetCookie(setCookie);
+          return response;
+        },
+      }),
+    ],
+  });
 }
 
-async function trpcQuery(path, token) {
-  const response = await fetch(`${baseUrl}/api/trpc/${path}`, {
-    headers: token ? { cookie: `app_session_id=${token}` } : {},
-  });
-  const text = await response.text();
-  let body = null;
-  try {
-    body = text ? JSON.parse(text) : null;
-  } catch {
-    throw new Error(`${path} returned non-JSON response (${response.status}): ${text.slice(0, 300)}`);
+function cookieHeaderFromSetCookie(setCookie) {
+  const pair = setCookie.split(";", 1)[0]?.trim();
+  if (!pair?.startsWith("app_session_id=")) {
+    throw new Error(`Beta access response did not set app_session_id: ${setCookie}`);
   }
-  return { response, body, data: unwrapTrpc(body) };
+  return pair;
 }
 
 async function seed() {
-  const databaseUrl = required("DATABASE_URL");
-  const jwtSecret = required("JWT_SECRET");
-  const appId = required("VITE_APP_ID");
-  const release = process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || "local";
-  const suffix = release.replace(/[^a-zA-Z0-9]/g, "").slice(0, 16) || "local";
-  const id = `ci-session-user-${suffix}`;
-  const openId = `ci-session-openid-${suffix}`;
-  const email = `ci-session-${suffix}@example.invalid`;
-  const name = "CI Session Persistence User";
+  required("DATABASE_URL");
+  const accessKey = required("BETA_ACCESS_KEY");
+  let setCookie = null;
+  const client = createClient(null, value => {
+    setCookie = value;
+  });
 
-  const db = await mysql.createConnection(databaseUrl);
-  try {
-    await db.execute(
-      `INSERT INTO users (id, open_id, email, name, login_method, role, last_signed_in)
-       VALUES (?, ?, ?, ?, ?, 'user', NOW())
-       ON DUPLICATE KEY UPDATE
-         email = VALUES(email),
-         name = VALUES(name),
-         login_method = VALUES(login_method),
-         role = 'user'`,
-      [id, openId, email, name, "ci-runtime-session"]
-    );
-  } finally {
-    await db.end();
+  const result = await client.auth.betaAccess.mutate({
+    email: sessionEmail,
+    accessKey,
+  });
+
+  if (!result?.success || result?.authentication !== "beta_access_session") {
+    throw new Error(`Beta access did not create a session: ${JSON.stringify(result)}`);
+  }
+  if (!result.user?.id || result.user?.email !== sessionEmail) {
+    throw new Error(`Beta access returned unexpected identity: ${JSON.stringify(result)}`);
+  }
+  if (!setCookie) {
+    throw new Error("Beta access did not return a Set-Cookie header");
   }
 
-  const token = await new SignJWT({ openId, appId, name })
-    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-    .setIssuedAt()
-    .setExpirationTime("30m")
-    .sign(new TextEncoder().encode(jwtSecret));
-
+  const cookieHeader = cookieHeaderFromSetCookie(setCookie);
   await writeFile(
     stateFile,
-    JSON.stringify({ id, openId, email, name, token }),
+    JSON.stringify({
+      id: String(result.user.id),
+      email: result.user.email,
+      name: result.user.name,
+      cookieHeader,
+    }),
     { mode: 0o600 }
   );
-  console.log(`Seeded persisted runtime auth user ${id}`);
+
+  console.log(`Created real beta-access runtime session for ${result.user.id}`);
 }
 
 async function verify() {
   const databaseUrl = required("DATABASE_URL");
   const state = JSON.parse(await readFile(stateFile, "utf8"));
 
-  const anonymous = await trpcQuery("auth.me");
-  if (!anonymous.response.ok || anonymous.data !== null) {
+  const anonymous = createClient();
+  const anonymousUser = await anonymous.auth.me.query();
+  if (anonymousUser !== null) {
     throw new Error(
-      `Anonymous auth.me must return null: status=${anonymous.response.status} body=${JSON.stringify(anonymous.body)}`
+      `Anonymous auth.me must return null: ${JSON.stringify(anonymousUser)}`
     );
   }
 
-  const authenticated = await trpcQuery("auth.me", state.token);
-  if (!authenticated.response.ok) {
-    throw new Error(
-      `Authenticated auth.me failed: ${authenticated.response.status} ${JSON.stringify(authenticated.body)}`
-    );
-  }
+  const authenticated = createClient(state.cookieHeader);
+  const authUser = await authenticated.auth.me.query();
   if (
-    authenticated.data?.id !== state.id ||
-    authenticated.data?.openId !== state.openId ||
-    authenticated.data?.email !== state.email
+    authUser?.id !== state.id ||
+    authUser?.email !== state.email
   ) {
     throw new Error(
-      `Authenticated identity mismatch: ${JSON.stringify(authenticated.data)}`
+      `Authenticated identity mismatch: ${JSON.stringify(authUser)}`
     );
   }
 
-  const protectedUser = await trpcQuery("user.me", state.token);
-  if (!protectedUser.response.ok) {
-    throw new Error(
-      `Protected user.me failed: ${protectedUser.response.status} ${JSON.stringify(protectedUser.body)}`
-    );
-  }
+  const protectedUser = await authenticated.user.me.query();
   if (
-    protectedUser.data?.id !== state.id ||
-    protectedUser.data?.openId !== state.openId
+    protectedUser?.id !== state.id ||
+    protectedUser?.email !== state.email
   ) {
     throw new Error(
-      `Protected user identity mismatch: ${JSON.stringify(protectedUser.data)}`
+      `Protected user identity mismatch: ${JSON.stringify(protectedUser)}`
     );
   }
 
-  const tampered = `${state.token.slice(0, -1)}${state.token.endsWith("a") ? "b" : "a"}`;
-  const rejected = await trpcQuery("user.me", tampered);
-  if (rejected.response.status < 400) {
-    throw new Error(
-      `Tampered session unexpectedly authenticated: ${rejected.response.status} ${JSON.stringify(rejected.body)}`
-    );
+  const [cookieName, token = ""] = state.cookieHeader.split("=", 2);
+  const tamperedToken =
+    token.length > 2
+      ? `${token.slice(0, -1)}${token.endsWith("a") ? "b" : "a"}`
+      : `${token}tampered`;
+  const tampered = createClient(`${cookieName}=${tamperedToken}`);
+
+  let rejected = false;
+  try {
+    await tampered.user.me.query();
+  } catch (error) {
+    rejected =
+      error instanceof TRPCClientError &&
+      (error.data?.code === "UNAUTHORIZED" || error.data?.httpStatus === 401);
+  }
+  if (!rejected) {
+    throw new Error("Tampered session was not rejected by a protected route");
   }
 
   const db = await mysql.createConnection(databaseUrl);
@@ -130,11 +140,20 @@ async function verify() {
       [state.id]
     );
     const user = rows[0];
-    if (!user || user.id !== state.id || user.openId !== state.openId || user.email !== state.email) {
-      throw new Error(`Persisted database identity mismatch: ${JSON.stringify(user)}`);
+    if (
+      !user ||
+      String(user.id) !== state.id ||
+      user.openId !== state.id ||
+      user.email !== state.email
+    ) {
+      throw new Error(
+        `Persisted database identity mismatch: ${JSON.stringify(user)}`
+      );
     }
     if (!user.lastSignedIn) {
-      throw new Error("Authenticated request did not update persisted last_signed_in");
+      throw new Error(
+        "Authenticated request did not update persisted last_signed_in"
+      );
     }
   } finally {
     await db.end();
@@ -148,5 +167,7 @@ if (mode === "seed") {
 } else if (mode === "verify") {
   await verify();
 } else {
-  throw new Error("Usage: node scripts/runtime-session-persistence.mjs <seed|verify>");
+  throw new Error(
+    "Usage: node scripts/runtime-session-persistence.mjs <seed|verify>"
+  );
 }
