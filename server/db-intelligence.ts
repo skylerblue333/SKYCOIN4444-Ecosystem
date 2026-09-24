@@ -22,9 +22,11 @@ import {
   transactions,
   follows,
   posts,
+  notifications,
   communityMembers,
   directMessages,
   payouts,
+  hopeAiMessages,
   users,
   type TwinMemory,
   type TwinFact,
@@ -194,6 +196,31 @@ export async function deactivateTwinFact(
     .update(twinFacts)
     .set({ active: false })
     .where(and(eq(twinFacts.id, factId), eq(twinFacts.userId, userId)));
+}
+
+
+export async function saveHopeAIMessage(data: {
+  userId: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  tone?: string;
+  emotionalState?: string;
+  sessionId?: string;
+}): Promise<number | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [res] = await db
+    .insert(hopeAiMessages)
+    .values({
+      userId: data.userId,
+      role: data.role,
+      content: data.content,
+      tone: data.tone ?? null,
+      emotionalState: data.emotionalState ?? null,
+      sessionId: data.sessionId ?? null,
+    })
+    .$returningId();
+  return res?.id ?? null;
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -499,6 +526,34 @@ export async function setMatchStatus(
 // ════════════════════════════════════════════════════════════════════════
 // MISSION CONTROL EXTRAS (real cross-module signals)
 // ════════════════════════════════════════════════════════════════════════
+export async function getUnreadNotificationCount(
+  userId: string
+): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const [row] = await db
+    .select({ total: sql<number>`count(*)` })
+    .from(notifications)
+    .where(and(eq(notifications.userId, userId), eq(notifications.read, false)));
+  return Number(row?.total ?? 0);
+}
+
+export async function getUserFeed(
+  userId: string,
+  limit = 5,
+  offset = 0
+) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(posts)
+    .where(eq(posts.userId, userId))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
 export async function getMissionControlExtras(userId: string): Promise<{
   unreadMessages: number;
   communities: number;
