@@ -4,12 +4,25 @@
  * Imported and merged into appRouter in routers.ts.
  */
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import {
   router,
   publicProcedure,
   protectedProcedure,
   adminProcedure,
 } from "./_core/trpc";
+
+function legacyNumericUserId(userId: string): number {
+  const numericId = Number(userId);
+  if (!Number.isSafeInteger(numericId) || numericId < 0) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message:
+        "This legacy subsystem is not yet migrated to canonical string user IDs.",
+    });
+  }
+  return numericId;
+}
 
 // ─── Phase 6A: Creator OS ─────────────────────────────────────────────────────
 export const creatorOSRouter = router({
@@ -37,7 +50,7 @@ export const creatorOSRouter = router({
     }),
   getContacts: protectedProcedure.query(async ({ ctx }) => {
     const { creatorCRM } = await import("./creator-os-engine");
-    return creatorCRM.getContacts(ctx.user!.id);
+    return creatorCRM.getContacts(legacyNumericUserId(ctx.user!.id));
   }),
   // Content Scheduling
   schedulePost: protectedProcedure
@@ -61,7 +74,7 @@ export const creatorOSRouter = router({
     }),
   getScheduledPosts: protectedProcedure.query(async ({ ctx }) => {
     const { contentScheduler } = await import("./creator-os-engine");
-    return contentScheduler.getScheduledPosts(ctx.user!.id);
+    return contentScheduler.getScheduledPosts(legacyNumericUserId(ctx.user!.id));
   }),
   // Revenue Forecasting
   getRevenueForecast: protectedProcedure
@@ -92,19 +105,19 @@ export const audienceLockInRouter = router({
   }),
   getLoyaltyProfile: protectedProcedure.query(async ({ ctx }) => {
     const { loyaltySystem } = await import("./audience-lockin-engine");
-    return loyaltySystem.getProfile(ctx.user!.id);
+    return loyaltySystem.getProfile(legacyNumericUserId(ctx.user!.id));
   }),
   getUserBadges: protectedProcedure.query(async ({ ctx }) => {
     const { fanBadges } = await import("./audience-lockin-engine");
-    return fanBadges.getUserBadges(ctx.user!.id);
+    return fanBadges.getUserBadges(legacyNumericUserId(ctx.user!.id));
   }),
   getActiveQuests: protectedProcedure.query(async ({ ctx }) => {
     const { fanQuests } = await import("./audience-lockin-engine");
-    return fanQuests.getActiveQuests(ctx.user!.id);
+    return fanQuests.getActiveQuests(legacyNumericUserId(ctx.user!.id));
   }),
   getFanLevel: protectedProcedure.query(async ({ ctx }) => {
     const { fanLeveling } = await import("./audience-lockin-engine");
-    return fanLeveling.getLevel(ctx.user!.id);
+    return fanLeveling.getLevel(legacyNumericUserId(ctx.user!.id));
   }),
 });
 
@@ -196,7 +209,7 @@ export const economicExpansionRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { creatorLoans } = await import("./phase6-engines");
       return creatorLoans.applyForLoan(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.amount,
         input.currency,
         input.termDays,
@@ -205,7 +218,7 @@ export const economicExpansionRouter = router({
     }),
   getMyLoans: protectedProcedure.query(async ({ ctx }) => {
     const { creatorLoans } = await import("./phase6-engines");
-    return creatorLoans.getCreatorLoans(ctx.user!.id);
+    return creatorLoans.getCreatorLoans(legacyNumericUserId(ctx.user!.id));
   }),
   awardLoyaltyTokens: adminProcedure
     .input(
@@ -225,7 +238,7 @@ export const economicExpansionRouter = router({
     }),
   getLoyaltyBalance: protectedProcedure.query(async ({ ctx }) => {
     const { loyaltyTokenRewards } = await import("./phase6-engines");
-    return { balance: loyaltyTokenRewards.getBalance(ctx.user!.id) };
+    return { balance: loyaltyTokenRewards.getBalance(legacyNumericUserId(ctx.user!.id)) };
   }),
   getStakingMultiplier: protectedProcedure
     .input(
@@ -238,11 +251,11 @@ export const economicExpansionRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const { stakingMultipliers } = await import("./phase6-engines");
-      return stakingMultipliers.calculateMultiplier(ctx.user!.id, input);
+      return stakingMultipliers.calculateMultiplier(legacyNumericUserId(ctx.user!.id), input);
     }),
   getAdRevenue: protectedProcedure.query(async ({ ctx }) => {
     const { adRevenueSharing } = await import("./phase6-engines");
-    return adRevenueSharing.getCreatorAdRevenue(ctx.user!.id);
+    return adRevenueSharing.getCreatorAdRevenue(legacyNumericUserId(ctx.user!.id));
   }),
 });
 
@@ -259,7 +272,7 @@ export const hopeAIRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const { hopeAI } = await import("./phase6-engines");
-      return hopeAI.creatorCopilot(ctx.user!.id, input);
+      return hopeAI.creatorCopilot(legacyNumericUserId(ctx.user!.id), input);
     }),
   getContentPlan: protectedProcedure
     .input(
@@ -271,7 +284,7 @@ export const hopeAIRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const { hopeAI } = await import("./phase6-engines");
-      return hopeAI.contentPlanner(ctx.user!.id, input.niche, {
+      return hopeAI.contentPlanner(legacyNumericUserId(ctx.user!.id), input.niche, {
         topInterests: input.topInterests,
         peakHours: input.peakHours,
       });
@@ -298,7 +311,7 @@ export const hopeAIRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const { hopeAI } = await import("./phase6-engines");
-      return hopeAI.growthCopilot(ctx.user!.id, input);
+      return hopeAI.growthCopilot(legacyNumericUserId(ctx.user!.id), input);
     }),
   // ─── Hope AI Emotional Chat ─────────────────────────────────────────────
   chat: publicProcedure
@@ -546,7 +559,7 @@ export const discoveryRouter = router({
     .query(async ({ ctx, input }) => {
       const { discoveryEngine } = await import("./phase6-engines");
       return discoveryEngine.getPersonalized(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.interests,
         input.limit
       );
@@ -615,21 +628,21 @@ export const globalExpansionRouter = router({
 export const trustEmpireRouter = router({
   getTrustProfile: protectedProcedure.query(async ({ ctx }) => {
     const { trustEmpire } = await import("./phase6-engines");
-    return trustEmpire.getProfile(ctx.user!.id);
+    return trustEmpire.getProfile(legacyNumericUserId(ctx.user!.id));
   }),
   addVerification: protectedProcedure
     .input(z.object({ type: z.string(), expiresAt: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const { trustEmpire } = await import("./phase6-engines");
       return trustEmpire.addVerification(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.type,
         input.expiresAt ? new Date(input.expiresAt) : undefined
       );
     }),
   getTierBenefits: protectedProcedure.query(async ({ ctx }) => {
     const { trustEmpire } = await import("./phase6-engines");
-    const profile = trustEmpire.getProfile(ctx.user!.id);
+    const profile = trustEmpire.getProfile(legacyNumericUserId(ctx.user!.id));
     return trustEmpire.getTierBenefits(profile.tier);
   }),
   getTrustLeaderboard: publicProcedure
@@ -654,7 +667,7 @@ export const developerPlatformRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { developerPlatform } = await import("./phase7-engines");
       return developerPlatform.createAPIKey(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.appId,
         input.name,
         input.scopes,
@@ -663,7 +676,7 @@ export const developerPlatformRouter = router({
     }),
   getMyKeys: protectedProcedure.query(async ({ ctx }) => {
     const { developerPlatform } = await import("./phase7-engines");
-    return developerPlatform.getDeveloperKeys(ctx.user!.id);
+    return developerPlatform.getDeveloperKeys(legacyNumericUserId(ctx.user!.id));
   }),
   revokeKey: protectedProcedure
     .input(z.object({ keyId: z.string() }))
@@ -683,7 +696,7 @@ export const developerPlatformRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { developerPlatform } = await import("./phase7-engines");
       return developerPlatform.registerOAuthApp(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.name,
         input.description,
         input.redirectUris,
@@ -709,7 +722,7 @@ export const developerPlatformRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { pluginSystem } = await import("./phase7-engines");
-      return pluginSystem.publishPlugin(ctx.user!.id, input as any);
+      return pluginSystem.publishPlugin(legacyNumericUserId(ctx.user!.id), input as any);
     }),
   getPlugins: publicProcedure
     .input(z.object({ type: z.string().optional() }))
@@ -737,7 +750,7 @@ export const businessLayerRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { businessLayer } = await import("./phase7-engines");
-      return businessLayer.createBusiness(ctx.user!.id, input as any);
+      return businessLayer.createBusiness(legacyNumericUserId(ctx.user!.id), input as any);
     }),
   getBusiness: publicProcedure
     .input(z.object({ businessId: z.string() }))
@@ -787,7 +800,7 @@ export const brandEconomyRouter = router({
       const { brandEconomy } = await import("./phase7-engines");
       return brandEconomy.applyForSponsorship(
         input.listingId,
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.proposal
       );
     }),
@@ -816,20 +829,20 @@ export const educationRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { educationExpansion } = await import("./phase7-engines");
-      return educationExpansion.createCourse(ctx.user!.id, input as any);
+      return educationExpansion.createCourse(legacyNumericUserId(ctx.user!.id), input as any);
     }),
   enrollInCourse: protectedProcedure
     .input(z.object({ courseId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { educationExpansion } = await import("./phase7-engines");
-      return educationExpansion.enrollInCourse(ctx.user!.id, input.courseId);
+      return educationExpansion.enrollInCourse(legacyNumericUserId(ctx.user!.id), input.courseId);
     }),
   completeLesson: protectedProcedure
     .input(z.object({ courseId: z.string(), lessonId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { educationExpansion } = await import("./phase7-engines");
       return educationExpansion.completeLesson(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.courseId,
         input.lessonId
       );
@@ -847,7 +860,7 @@ export const educationRouter = router({
     }),
   getMyEnrollments: protectedProcedure.query(async ({ ctx }) => {
     const { educationExpansion } = await import("./phase7-engines");
-    return educationExpansion.getUserEnrollments(ctx.user!.id);
+    return educationExpansion.getUserEnrollments(legacyNumericUserId(ctx.user!.id));
   }),
 });
 
@@ -868,7 +881,7 @@ export const governanceRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { governanceExpansion } = await import("./phase7-engines");
-      return governanceExpansion.createProposal(ctx.user!.id, {
+      return governanceExpansion.createProposal(legacyNumericUserId(ctx.user!.id), {
         ...input,
         scope: input.scope as any,
         type: input.type as any,
@@ -888,7 +901,7 @@ export const governanceRouter = router({
       const { governanceExpansion } = await import("./phase7-engines");
       return governanceExpansion.castVote(
         input.proposalId,
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.vote,
         input.weight
       );
@@ -914,7 +927,7 @@ export const identityRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { identityExpansion } = await import("./phase7-engines");
       return identityExpansion.createProfile(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.displayName,
         input.bio
       );
@@ -924,7 +937,7 @@ export const identityRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { identityExpansion } = await import("./phase7-engines");
       return identityExpansion.linkAccount(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.platform,
         input.handle
       );
@@ -940,7 +953,7 @@ export const identityRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { identityExpansion } = await import("./phase7-engines");
       return identityExpansion.linkWallet(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.address,
         input.chain,
         input.primary
@@ -948,11 +961,11 @@ export const identityRouter = router({
     }),
   getProfile: protectedProcedure.query(async ({ ctx }) => {
     const { identityExpansion } = await import("./phase7-engines");
-    return identityExpansion.getProfile(ctx.user!.id);
+    return identityExpansion.getProfile(legacyNumericUserId(ctx.user!.id));
   }),
   exportIdentity: protectedProcedure.query(async ({ ctx }) => {
     const { identityExpansion } = await import("./phase7-engines");
-    return identityExpansion.exportPortableIdentity(ctx.user!.id);
+    return identityExpansion.exportPortableIdentity(legacyNumericUserId(ctx.user!.id));
   }),
 });
 
@@ -971,7 +984,7 @@ export const aiOrchestrationRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { aiOrchestration } = await import("./phase8-engines");
       const req = aiOrchestration.submitRequest(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         (input as any).copilotType as any,
         (input as any).context,
         (input as any).priority
@@ -1056,7 +1069,7 @@ export const universalMessagingRouter = router({
       const { universalMessaging } = await import("./phase8-engines");
       return universalMessaging.sendMessage(
         input.conversationId,
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.type as any,
         input.content,
         input.mediaUrl
@@ -1064,7 +1077,7 @@ export const universalMessagingRouter = router({
     }),
   getConversations: protectedProcedure.query(async ({ ctx }) => {
     const { universalMessaging } = await import("./phase8-engines");
-    return universalMessaging.getConversations(ctx.user!.id);
+    return universalMessaging.getConversations(legacyNumericUserId(ctx.user!.id));
   }),
   getMessages: protectedProcedure
     .input(
@@ -1078,12 +1091,12 @@ export const universalMessagingRouter = router({
     .input(z.object({ conversationId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { universalMessaging } = await import("./phase8-engines");
-      universalMessaging.markAsRead(input.conversationId, ctx.user!.id);
+      universalMessaging.markAsRead(input.conversationId, legacyNumericUserId(ctx.user!.id));
       return { success: true };
     }),
   getTotalUnread: protectedProcedure.query(async ({ ctx }) => {
     const { universalMessaging } = await import("./phase8-engines");
-    return { unread: universalMessaging.getTotalUnread(ctx.user!.id) };
+    return { unread: universalMessaging.getTotalUnread(legacyNumericUserId(ctx.user!.id)) };
   }),
 });
 
@@ -1105,7 +1118,7 @@ export const universalEventsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { universalEvents } = await import("./phase8-engines");
-      return universalEvents.createEvent(ctx.user!.id, "creator", {
+      return universalEvents.createEvent(legacyNumericUserId(ctx.user!.id), "creator", {
         ...input,
         category: input.category as any,
         format: input.format as any,
@@ -1117,7 +1130,7 @@ export const universalEventsRouter = router({
     .input(z.object({ eventId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { universalEvents } = await import("./phase8-engines");
-      return universalEvents.register(input.eventId, ctx.user!.id);
+      return universalEvents.register(input.eventId, legacyNumericUserId(ctx.user!.id));
     }),
   getUpcomingEvents: publicProcedure
     .input(
@@ -1135,7 +1148,7 @@ export const universalEventsRouter = router({
     }),
   getMyRegistrations: protectedProcedure.query(async ({ ctx }) => {
     const { universalEvents } = await import("./phase8-engines");
-    return universalEvents.getUserRegistrations(ctx.user!.id);
+    return universalEvents.getUserRegistrations(legacyNumericUserId(ctx.user!.id));
   }),
 });
 
@@ -1156,11 +1169,11 @@ export const appEcosystemRouter = router({
     .input(z.object({ appId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { appEcosystem } = await import("./phase8-engines");
-      return appEcosystem.installApp(input.appId, ctx.user!.id);
+      return appEcosystem.installApp(input.appId, legacyNumericUserId(ctx.user!.id));
     }),
   getMyApps: protectedProcedure.query(async ({ ctx }) => {
     const { appEcosystem } = await import("./phase8-engines");
-    return appEcosystem.getUserApps(ctx.user!.id);
+    return appEcosystem.getUserApps(legacyNumericUserId(ctx.user!.id));
   }),
   submitApp: protectedProcedure
     .input(
@@ -1178,7 +1191,7 @@ export const appEcosystemRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { appEcosystem } = await import("./phase8-engines");
-      return appEcosystem.submitApp(ctx.user!.id, input as any);
+      return appEcosystem.submitApp(legacyNumericUserId(ctx.user!.id), input as any);
     }),
 });
 
@@ -1277,7 +1290,7 @@ export const complianceRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { complianceEngine } = await import("./phase9-engines");
       return complianceEngine.submitDataSubjectRequest(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.type
       );
     }),
@@ -1374,7 +1387,7 @@ export const financialFinalizationRouter = router({
     .query(async ({ ctx, input }) => {
       const { financialFinalization } = await import("./phase9-engines");
       return financialFinalization.getCreatorPayoutSummary(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.period
       );
     }),
@@ -1389,7 +1402,7 @@ export const financialFinalizationRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { financialFinalization } = await import("./phase9-engines");
       return financialFinalization.generateTaxReport(
-        ctx.user!.id,
+        legacyNumericUserId(ctx.user!.id),
         input.year,
         input.jurisdiction,
         []
