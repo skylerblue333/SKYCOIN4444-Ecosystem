@@ -278,6 +278,26 @@ export const payouts = mysqlTable(
   })
 );
 
+export const hopeAiMessages = mysqlTable(
+  "hope_ai_messages",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: varchar("userId", { length: 255 }).notNull(),
+    role: mysqlEnum("role", ["user", "assistant", "system"]).notNull(),
+    content: text("content").notNull(),
+    tone: varchar("tone", { length: 64 }),
+    emotionalState: varchar("emotionalState", { length: 64 }),
+    sessionId: varchar("sessionId", { length: 120 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    userIdx: index("hope_ai_messages_userId_idx").on(table.userId),
+    sessionIdx: index("hope_ai_messages_sessionId_idx").on(table.sessionId),
+  })
+);
+
+export type HopeAiMessage = typeof hopeAiMessages.$inferSelect;
+
 export type TwinMemory = typeof twinMemory.$inferSelect;
 export type TwinFact = typeof twinFacts.$inferSelect;
 export type ReputationScore = typeof reputationScores.$inferSelect;
