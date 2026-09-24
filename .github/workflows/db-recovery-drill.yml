@@ -1,0 +1,96 @@
+name: Database Recovery Drill
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/db-backup.mjs"
+      - "scripts/db-restore.mjs"
+      - ".github/workflows/db-recovery-drill.yml"
+      - "drizzle/**"
+
+permissions:
+  contents: read
+
+env:
+  DATABASE_URL: mysql://root:root@127.0.0.1:3306/skycoin
+
+jobs:
+  recovery-drill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: skycoin
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Initialize schema
+        run: pnpm exec drizzle-kit push --force
+
+      - name: Insert recovery sentinel
+        run: |
+          mysql -h127.0.0.1 -P3306 -uroot -proot skycoin <<'SQL'
+          INSERT INTO users (id, email, username, name)
+          VALUES ('recovery-drill-user', 'recovery-drill@example.test', 'recovery-drill-user', 'Recovery Drill');
+          SQL
+
+      - name: Create backup
+        id: backup
+        shell: bash
+        run: |
+          path=$(pnpm --silent db:backup | tail -n 1)
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+          test -s "$path"
+          test -s "$path.sha256"
+
+      - name: Destroy sentinel
+        run: |
+          mysql -h127.0.0.1 -P3306 -uroot -proot skycoin             -e "DELETE FROM users WHERE id='recovery-drill-user';"
+          test "$(mysql -N -h127.0.0.1 -P3306 -uroot -proot skycoin             -e "SELECT COUNT(*) FROM users WHERE id='recovery-drill-user';")" = "0"
+
+      - name: Restore backup
+        env:
+          ALLOW_DB_RESTORE: "YES"
+          REQUIRE_BACKUP_CHECKSUM: "1"
+        run: pnpm db:restore -- "${{ steps.backup.outputs.path }}"
+
+      - name: Verify restored sentinel
+        run: |
+          test "$(mysql -N -h127.0.0.1 -P3306 -uroot -proot skycoin             -e "SELECT COUNT(*) FROM users WHERE id='recovery-drill-user';")" = "1"
+
+      - name: Record evidence
+        run: |
+          echo "## Database recovery drill" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Schema initialized: yes" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Backup checksum created and verified: yes" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Sentinel deleted before restore: yes" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Sentinel restored from backup: yes" >> "$GITHUB_STEP_SUMMARY"
