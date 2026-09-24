@@ -24,8 +24,7 @@ export const users = mysqlTable("users", {
   verified: boolean("verified").default(false),
   openId: varchar("open_id", { length: 255 }).unique(),
   xp: int("xp").default(0), // Legacy compatibility
-  level: int("xp").default(1), // Legacy alias
-  displayName: varchar("name", { length: 255 }), // Legacy alias
+
   lastSignedIn: timestamp("last_signed_in"),
   loginMethod: varchar("login_method", { length: 255 }),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -307,7 +306,7 @@ export const datingProfiles = mysqlTable("dating_profiles", {
   location: varchar("location", { length: 255 }),
   age: int("age"),
   gender: varchar("gender", { length: 255 }),
-  occupation: varchar("location", { length: 255 }), // Legacy alias
+
   lookingFor: varchar("looking_for", { length: 255 }),
   verified: boolean("verified").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
