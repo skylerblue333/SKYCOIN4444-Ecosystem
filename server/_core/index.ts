@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import { createServer } from "http";
+import { randomUUID } from "crypto";
 import net from "net";
 import helmet from "helmet";
 import compression from "compression";
@@ -12,7 +13,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { healthRouter, healthMonitor } from "../health-monitor";
+import { healthRouter, healthMonitor, requireHealthAdmin } from "../health-monitor";
 import { miningRouter as autonomousMiningRouter } from "../autonomous-mining";
 import miningRouter from "../mining-router";
 import walletApiRouter from "../wallet-api";
@@ -79,6 +80,41 @@ async function startServer() {
   const server = createServer(app);
   const isDev = process.env.NODE_ENV === "development";
 
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const incomingRequestId = req.get("x-request-id");
+    const requestId =
+      incomingRequestId && /^[A-Za-z0-9._:-]{1,128}$/.test(incomingRequestId)
+        ? incomingRequestId
+        : randomUUID();
+    const startedAt = process.hrtime.bigint();
+
+    res.setHeader("X-Request-Id", requestId);
+    res.on("finish", () => {
+      if (!req.path.startsWith("/api/health") && req.path.startsWith("/api/")) {
+        healthMonitor.recordRequest(res.statusCode < 500);
+
+        if (!isDev) {
+          const durationMs =
+            Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+          console.log(
+            JSON.stringify({
+              timestamp: new Date().toISOString(),
+              level: res.statusCode >= 500 ? "error" : "info",
+              event: "http_request",
+              requestId,
+              method: req.method,
+              path: req.path,
+              status: res.statusCode,
+              durationMs: Number(durationMs.toFixed(2)),
+            })
+          );
+        }
+      }
+    });
+
+    next();
+  });
+
   app.use(
     helmet({
       contentSecurityPolicy: false,
@@ -106,55 +142,23 @@ async function startServer() {
     console.warn("[Mining] Failed to initialize advanced mining engine:", err);
   }
   app.use(compression({ level: 6, threshold: 1024 }) as any);
-  app.use(
-    isDev
-      ? morgan("dev")
-      : morgan("combined", { skip: req => req.path === "/api/health" })
-  );
+  if (isDev) app.use(morgan("dev"));
   app.use(globalLimiter);
   app.use(requestTimeout(30_000));
 
-  app.get("/api/health", async (_req: Request, res: Response) => {
-    let dbStatus = "unknown";
-    let dbLatencyMs = 0;
-    try {
-      const { getDb } = await import("../db");
-      const db = await getDb();
-      if (db) {
-        const t0 = Date.now();
-        await db.execute("SELECT 1");
-        dbLatencyMs = Date.now() - t0;
-        dbStatus = "healthy";
-      }
-    } catch {
-      dbStatus = "degraded";
+  app.get(
+    "/api/cache-stats",
+    requireHealthAdmin,
+    async (_req: Request, res: Response) => {
+      const { cacheStats, getSlowQueryLog } = await import("../query-cache");
+      res.json({
+        cache: cacheStats(),
+        slowQueries: getSlowQueryLog().slice(-20),
+      });
     }
-    const mem = process.memoryUsage();
-    res.json({
-      status: dbStatus === "healthy" ? "ok" : "degraded",
-      timestamp: new Date().toISOString(),
-      uptime: Math.floor(process.uptime()),
-      environment: process.env.NODE_ENV || "production",
-      services: {
-        database: { status: dbStatus, latencyMs: dbLatencyMs },
-        server: {
-          status: "healthy",
-          memoryMB: Math.round(mem.heapUsed / 1024 / 1024),
-          rssMB: Math.round(mem.rss / 1024 / 1024),
-        },
-      },
-    });
-  });
+  );
 
-  app.get("/api/cache-stats", (_req: Request, res: Response) => {
-    const { cacheStats, getSlowQueryLog } = require("../query-cache");
-    res.json({
-      cache: cacheStats(),
-      slowQueries: getSlowQueryLog().slice(-20),
-    });
-  });
-
-  app.get("/api/metrics", (_req: Request, res: Response) => {
+  app.get("/api/metrics", requireHealthAdmin, (_req: Request, res: Response) => {
     const mem = process.memoryUsage();
     const cpu = process.cpuUsage();
     res.json({
