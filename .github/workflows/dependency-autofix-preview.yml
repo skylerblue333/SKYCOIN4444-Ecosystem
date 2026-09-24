@@ -28,11 +28,14 @@ jobs:
       - name: Install current lockfile
         run: pnpm install --frozen-lockfile
 
-      - name: Generate audit fixes
+      - name: Generate audit overrides
         run: pnpm audit --fix || true
 
-      - name: Show remaining high severity findings
-        run: pnpm audit --audit-level=high || true
+      - name: Re-resolve lockfile with security overrides
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify high severity findings are cleared
+        run: pnpm audit --audit-level=high
 
       - name: Upload regenerated dependency files
         uses: actions/upload-artifact@v4
