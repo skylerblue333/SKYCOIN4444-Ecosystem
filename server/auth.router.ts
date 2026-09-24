@@ -17,8 +17,10 @@ export const authRouter = router({
     return { success: true };
   }),
   login: publicProcedure
-    .input(z.object({ email: z.string(), password: z.string() }))
-    .mutation(async ({ input }) => ({
-      success: true,
+    .input(z.object({ email: z.string().email(), password: z.string().min(1) }))
+    .mutation(async () => ({
+      success: false,
+      reason: "password_login_not_configured" as const,
+      authentication: "oauth_session" as const,
     })),
 });
