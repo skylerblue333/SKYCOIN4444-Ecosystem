@@ -115,11 +115,13 @@ async function verify() {
   }
 
   const [cookieName, token = ""] = state.cookieHeader.split("=", 2);
-  const tamperedToken =
-    token.length > 2
-      ? `${token.slice(0, -1)}${token.endsWith("a") ? "b" : "a"}`
-      : `${token}tampered`;
-  const tampered = createClient(`${cookieName}=${tamperedToken}`);
+  const jwtParts = token.split(".");
+  if (jwtParts.length !== 3 || jwtParts[2].length === 0) {
+    throw new Error("Runtime session cookie is not a three-part JWT");
+  }
+  jwtParts[2] =
+    (jwtParts[2][0] === "a" ? "b" : "a") + jwtParts[2].slice(1);
+  const tampered = createClient(`${cookieName}=${jwtParts.join(".")}`);
 
   let rejected = false;
   try {
