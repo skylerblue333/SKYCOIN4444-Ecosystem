@@ -65,6 +65,22 @@ async function seed() {
   if (!setCookie) throw new Error("Beta access did not return a Set-Cookie header");
 
   const cookieHeader = cookieHeaderFromSetCookie(setCookie);
+  const baselineLastSignedIn = new Date("2000-01-01T00:00:00.000Z");
+
+  const databaseUrl = required("DATABASE_URL");
+  const db = await mysql.createConnection(databaseUrl);
+  try {
+    const [updateResult] = await db.execute(
+      "UPDATE users SET last_signed_in = ? WHERE id = ?",
+      [baselineLastSignedIn, String(result.user.id)]
+    );
+    if (!updateResult?.affectedRows) {
+      throw new Error("Unable to establish last_signed_in verification baseline");
+    }
+  } finally {
+    await db.end();
+  }
+
   await writeFile(
     stateFile,
     JSON.stringify({
@@ -72,6 +88,7 @@ async function seed() {
       email: result.user.email,
       name: result.user.name,
       cookieHeader,
+      baselineLastSignedIn: baselineLastSignedIn.toISOString(),
     }),
     { mode: 0o600 }
   );
@@ -150,6 +167,18 @@ async function verify() {
     }
     if (!user.lastSignedIn) {
       throw new Error("Authenticated request did not update persisted last_signed_in");
+    }
+
+    const baselineLastSignedIn = new Date(state.baselineLastSignedIn);
+    const persistedLastSignedIn = new Date(user.lastSignedIn);
+    if (
+      !Number.isFinite(baselineLastSignedIn.getTime()) ||
+      !Number.isFinite(persistedLastSignedIn.getTime()) ||
+      persistedLastSignedIn.getTime() <= baselineLastSignedIn.getTime()
+    ) {
+      throw new Error(
+        `Authenticated request did not advance persisted last_signed_in: baseline=${state.baselineLastSignedIn} current=${user.lastSignedIn}`
+      );
     }
   } finally {
     await db.end();
