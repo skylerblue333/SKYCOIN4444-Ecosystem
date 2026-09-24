@@ -153,11 +153,29 @@ async function startServer() {
   // Readiness: proves the process can reach the database required by core flows.
   const readinessHandler = async (_req: Request, res: Response) => {
     const database = await checkDatabaseReadiness();
-    res.status(database.ready ? 200 : 503).json({
-      status: database.ready ? "ready" : "not_ready",
+    const requiredAuthConfig = {
+      JWT_SECRET: Boolean(process.env.JWT_SECRET),
+      VITE_APP_ID: Boolean(process.env.VITE_APP_ID),
+      OAUTH_SERVER_URL: Boolean(process.env.OAUTH_SERVER_URL),
+    };
+    const missingAuthConfig = Object.entries(requiredAuthConfig)
+      .filter(([, configured]) => !configured)
+      .map(([name]) => name);
+    const authReady = missingAuthConfig.length === 0;
+    const ready = database.ready && authReady;
+
+    res.status(ready ? 200 : 503).json({
+      status: ready ? "ready" : "not_ready",
       timestamp: new Date().toISOString(),
       release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
-      services: { database },
+      services: {
+        database,
+        authentication: {
+          ready: authReady,
+          status: authReady ? "configured" : "not_configured",
+          missing: missingAuthConfig,
+        },
+      },
     });
   };
   app.get("/readyz", readinessHandler);
