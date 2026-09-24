@@ -35,6 +35,7 @@ import { getDb } from "./db.js";
 import { eventBus } from "./event-bus.js";
 import { custodyWallets, onChainTransactions } from "../drizzle/schema.js";
 import { eq, and, desc } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 
 // ─── Supported Chains ─────────────────────────────────────────────────────────
 
@@ -70,8 +71,8 @@ export type SupportedChain = keyof typeof SUPPORTED_CHAINS;
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface WalletInfo {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   address: string;
   derivationPath: string;
   chainId: number;
@@ -101,7 +102,7 @@ export interface TransactionRequest {
 }
 
 export interface SignedTransaction {
-  txId: number;
+  txId: string;
   signedHex: string;
   txHash: string;
   fromAddress: string;
@@ -112,7 +113,7 @@ export interface SignedTransaction {
 }
 
 export interface BroadcastResult {
-  txId: number;
+  txId: string;
   txHash: string;
   status: "broadcast" | "failed";
   errorMessage?: string;
@@ -125,6 +126,43 @@ export interface AddressValidationResult {
   errorMessage?: string;
 }
 
+function chainKeyForId(chainId: number): SupportedChain {
+  const entry = Object.entries(SUPPORTED_CHAINS).find(
+    ([, config]) => config.chainId === chainId
+  );
+  if (!entry) throw new Error(`Unsupported chainId: ${chainId}`);
+  return entry[0] as SupportedChain;
+}
+
+function walletInfoFromRow(
+  row: typeof custodyWallets.$inferSelect
+): WalletInfo {
+  if (
+    !row.address ||
+    !row.derivationPath ||
+    row.chainId == null ||
+    !row.chainName
+  ) {
+    throw new Error("Custody wallet record is missing required HD metadata");
+  }
+
+  return {
+    id: row.id,
+    userId: row.userId,
+    address: row.address,
+    derivationPath: row.derivationPath,
+    chainId: row.chainId,
+    chainName: row.chainName,
+    walletType: row.walletType === "imported" || row.walletType === "multisig"
+      ? row.walletType
+      : "hd",
+    label: row.label,
+    isPrimary: row.isPrimary ?? false,
+    cachedBalanceWei: row.cachedBalanceWei,
+    createdAt: row.createdAt ?? new Date(0),
+  };
+}
+
 // ─── Blockchain Custody Service ───────────────────────────────────────────────
 
 export class BlockchainCustodyService {
@@ -135,7 +173,7 @@ export class BlockchainCustodyService {
    * SECURITY: Master seed comes from env var only — never hardcoded.
    */
   deriveUserAddress(
-    userId: number,
+    userId: string | number,
     accountIndex = 0
   ): { address: string; derivationPath: string } {
     const masterSeed = process.env.WALLET_MASTER_SEED;
@@ -151,8 +189,13 @@ export class BlockchainCustodyService {
     const seed = bip39.mnemonicToSeedSync(masterSeed);
     const hdKey = HDKey.fromMasterSeed(seed);
 
-    // BIP-44: m/44'/60'/accountIndex'/0/userId
-    const derivationPath = `m/44'/60'/${accountIndex}'/0/${userId}`;
+    // Canonical users may have UUID/string IDs. Derive a stable non-hardened
+    // child index from the ID while keeping the BIP-44 account/change shape.
+    // A DB collision check in registerWallet prevents silent key reuse.
+    const canonicalUserId = String(userId);
+    const userHash = ethers.keccak256(ethers.toUtf8Bytes(canonicalUserId));
+    const childIndex = Number(BigInt(userHash) & 0x7fffffffn);
+    const derivationPath = `m/44'/60'/${accountIndex}'/0/${childIndex}`;
     const derived = hdKey.derive(derivationPath);
 
     if (!derived.privateKey) {
@@ -172,7 +215,7 @@ export class BlockchainCustodyService {
    * Only the address and derivation path are stored — never the private key.
    */
   async registerWallet(
-    userId: number,
+    userId: string | number,
     chain: SupportedChain = "ethereum",
     label?: string
   ): Promise<WalletInfo> {
@@ -180,6 +223,7 @@ export class BlockchainCustodyService {
     if (!db) throw new Error("DB unavailable");
 
     const chainConfig = SUPPORTED_CHAINS[chain];
+    const canonicalUserId = String(userId);
 
     // Check if user already has a wallet on this chain
     const [existing] = await db
@@ -187,30 +231,49 @@ export class BlockchainCustodyService {
       .from(custodyWallets)
       .where(
         and(
-          eq(custodyWallets.userId, userId),
+          eq(custodyWallets.userId, canonicalUserId),
           eq(custodyWallets.chainId, chainConfig.chainId)
         )
       )
       .limit(1);
 
     if (existing) {
-      return existing as WalletInfo;
+      return walletInfoFromRow(existing);
     }
 
     // Derive address
     const { address, derivationPath } = this.deriveUserAddress(userId);
 
+    const [addressCollision] = await db
+      .select()
+      .from(custodyWallets)
+      .where(
+        and(
+          eq(custodyWallets.address, address),
+          eq(custodyWallets.chainId, chainConfig.chainId)
+        )
+      )
+      .limit(1);
+
+    if (addressCollision && addressCollision.userId !== canonicalUserId) {
+      throw new Error("Derived wallet address collision; refusing key reuse");
+    }
+
     // Check if this is the user's first wallet (make it primary)
     const [anyWallet] = await db
       .select()
       .from(custodyWallets)
-      .where(eq(custodyWallets.userId, userId))
+      .where(eq(custodyWallets.userId, canonicalUserId))
       .limit(1);
 
     const isPrimary = !anyWallet;
 
-    const [result] = await db.insert(custodyWallets).values({
-      userId,
+    const walletId = randomUUID();
+    await db.insert(custodyWallets).values({
+      id: walletId,
+      userId: canonicalUserId,
+      provider: "internal-hd",
+      externalId: address,
       address,
       derivationPath,
       chainId: chainConfig.chainId,
@@ -224,8 +287,6 @@ export class BlockchainCustodyService {
       updatedAt: new Date(),
     });
 
-    const walletId = (result as { insertId: number }).insertId;
-
     eventBus.publish(
       "WALLET_CREATED",
       {
@@ -235,7 +296,7 @@ export class BlockchainCustodyService {
         chainId: chainConfig.chainId,
         chainName: chainConfig.name,
       },
-      userId
+      String(userId)
     );
 
     const [wallet] = await db
@@ -244,20 +305,20 @@ export class BlockchainCustodyService {
       .where(eq(custodyWallets.id, walletId))
       .limit(1);
 
-    return wallet as WalletInfo;
+    return walletInfoFromRow(wallet);
   }
 
   /**
    * Get all wallets for a user.
    */
-  async getUserWallets(userId: number): Promise<WalletInfo[]> {
+  async getUserWallets(userId: string | number): Promise<WalletInfo[]> {
     const db = await getDb();
     if (!db) return [];
     const wallets = await db
       .select()
       .from(custodyWallets)
-      .where(eq(custodyWallets.userId, userId));
-    return wallets as WalletInfo[];
+      .where(eq(custodyWallets.userId, canonicalUserId));
+    return wallets.map(walletInfoFromRow);
   }
 
   /**
@@ -293,11 +354,13 @@ export class BlockchainCustodyService {
    * Private key is derived ephemerally and immediately discarded.
    */
   async buildAndSignTransaction(
-    userId: number,
+    userId: string | number,
     request: TransactionRequest
   ): Promise<SignedTransaction> {
     const db = await getDb();
     if (!db) throw new Error("DB unavailable");
+
+    const canonicalUserId = String(userId);
 
     // Validate destination address
     const validation = this.validateAddress(request.to);
@@ -313,7 +376,7 @@ export class BlockchainCustodyService {
       .from(custodyWallets)
       .where(
         and(
-          eq(custodyWallets.userId, userId),
+          eq(custodyWallets.userId, canonicalUserId),
           eq(custodyWallets.chainId, request.chainId)
         )
       )
@@ -334,6 +397,9 @@ export class BlockchainCustodyService {
 
     const seed = bip39.mnemonicToSeedSync(masterSeed);
     const hdKey = HDKey.fromMasterSeed(seed);
+    if (!walletRecord.derivationPath) {
+      throw new Error("Wallet derivation path is missing");
+    }
     const derived = hdKey.derive(walletRecord.derivationPath);
 
     if (!derived.privateKey) throw new Error("Key derivation failed");
@@ -415,10 +481,14 @@ export class BlockchainCustodyService {
       (txData.gasLimit as bigint) * maxFeePerGas
     ).toString();
 
-    // Store in DB
-    const [insertResult] = await db.insert(onChainTransactions).values({
-      userId,
+    // Store in DB. The signed payload is retained only until an explicitly
+    // enabled broadcast attempt and is cleared on success or failure.
+    const txId = randomUUID();
+    await db.insert(onChainTransactions).values({
+      id: txId,
+      userId: canonicalUserId,
       walletId: walletRecord.id,
+      blockchain: chainKeyForId(request.chainId),
       txHash,
       chainId: request.chainId,
       fromAddress: signer.address,
@@ -434,13 +504,11 @@ export class BlockchainCustodyService {
       tokenDecimals: request.tokenDecimals ?? null,
       status: "signed",
       confirmations: 0,
-      signedTxHex: signedTx, // cleared after broadcast
+      signedTxHex: signedTx,
       internalNote: request.internalNote ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-
-    const txId = (insertResult as { insertId: number }).insertId;
 
     eventBus.publish(
       "TRANSACTION_SIGNED",
@@ -452,7 +520,7 @@ export class BlockchainCustodyService {
         fromAddress: signer.address,
         toAddress: validation.checksumAddress!,
       },
-      userId
+      String(userId)
     );
 
     return {
@@ -472,19 +540,27 @@ export class BlockchainCustodyService {
    * Clears signedTxHex from DB after broadcast.
    */
   async broadcastTransaction(
-    txId: number,
-    userId: number
+    txId: string | number,
+    userId: string | number
   ): Promise<BroadcastResult> {
     const db = await getDb();
     if (!db) throw new Error("DB unavailable");
+    if (process.env.ALLOW_LIVE_CHAIN_BROADCAST !== "YES") {
+      throw new Error(
+        "Live blockchain broadcast is disabled for this environment"
+      );
+    }
+
+    const canonicalTxId = String(txId);
+    const canonicalUserId = String(userId);
 
     const [txRecord] = await db
       .select()
       .from(onChainTransactions)
       .where(
         and(
-          eq(onChainTransactions.id, txId),
-          eq(onChainTransactions.userId, userId)
+          eq(onChainTransactions.id, canonicalTxId),
+          eq(onChainTransactions.userId, canonicalUserId)
         )
       )
       .limit(1);
@@ -513,7 +589,7 @@ export class BlockchainCustodyService {
           signedTxHex: null, // clear immediately after broadcast
           updatedAt: new Date(),
         })
-        .where(eq(onChainTransactions.id, txId));
+        .where(eq(onChainTransactions.id, canonicalTxId));
 
       // Update wallet nonce cache
       await db
@@ -532,18 +608,18 @@ export class BlockchainCustodyService {
           userId,
           chainId: txRecord.chainId,
         },
-        userId
+        String(userId)
       );
 
       // Start confirmation polling (non-blocking)
       void this.pollConfirmation(
-        txId,
+        canonicalTxId,
         response.hash,
         txRecord.chainId,
         provider
       );
 
-      return { txId, txHash: response.hash, status: "broadcast" };
+      return { txId: canonicalTxId, txHash: response.hash, status: "broadcast" };
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Unknown broadcast error";
@@ -556,7 +632,7 @@ export class BlockchainCustodyService {
           signedTxHex: null, // clear even on failure
           updatedAt: new Date(),
         })
-        .where(eq(onChainTransactions.id, txId));
+        .where(eq(onChainTransactions.id, canonicalTxId));
 
       eventBus.publish(
         "TRANSACTION_FAILED",
@@ -565,11 +641,11 @@ export class BlockchainCustodyService {
           userId,
           errorMessage,
         },
-        userId
+        String(userId)
       );
 
       return {
-        txId,
+        txId: canonicalTxId,
         txHash: txRecord.txHash ?? "",
         status: "failed",
         errorMessage,
@@ -581,7 +657,7 @@ export class BlockchainCustodyService {
    * Get transaction history for a user.
    */
   async getTransactionHistory(
-    userId: number,
+    userId: string | number,
     limit = 50
   ): Promise<(typeof onChainTransactions.$inferSelect)[]> {
     const db = await getDb();
@@ -589,7 +665,7 @@ export class BlockchainCustodyService {
     return db
       .select()
       .from(onChainTransactions)
-      .where(eq(onChainTransactions.userId, userId))
+      .where(eq(onChainTransactions.userId, String(userId)))
       .orderBy(desc(onChainTransactions.createdAt))
       .limit(limit);
   }
@@ -691,6 +767,11 @@ export class BlockchainCustodyService {
       8453: "https://mainnet.base.org",
     };
 
+    if (!rpcUrl && process.env.NODE_ENV === "production") {
+      throw new Error(
+        `Configured RPC URL required in production for chainId ${chainId}`
+      );
+    }
     const url = rpcUrl ?? fallbackRpcs[chainId];
     if (!url) throw new Error(`No RPC URL for chainId ${chainId}`);
 
@@ -701,7 +782,7 @@ export class BlockchainCustodyService {
    * Poll for transaction confirmation (non-blocking, runs in background).
    */
   private async pollConfirmation(
-    txId: number,
+    txId: string,
     txHash: string,
     chainId: number,
     provider: ethers.JsonRpcProvider,
@@ -729,7 +810,7 @@ export class BlockchainCustodyService {
               confirmations,
               updatedAt: new Date(),
             })
-            .where(eq(onChainTransactions.id, txId));
+            .where(eq(onChainTransactions.id, canonicalTxId));
 
           eventBus.publish("TRANSACTION_CONFIRMED", {
             txId,
@@ -751,7 +832,7 @@ export class BlockchainCustodyService {
     await db
       .update(onChainTransactions)
       .set({ status: "dropped", updatedAt: new Date() })
-      .where(eq(onChainTransactions.id, txId));
+      .where(eq(onChainTransactions.id, canonicalTxId));
   }
 }
 
