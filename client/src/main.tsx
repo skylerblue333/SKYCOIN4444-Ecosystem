@@ -11,6 +11,28 @@ import "./index.css";
 
 const queryClient = new QueryClient();
 
+function installOptionalAnalytics() {
+  const endpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT;
+  const websiteId = import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
+  if (!endpoint || !websiteId) return;
+
+  try {
+    const base = endpoint.endsWith("/") ? endpoint : `${endpoint}/`;
+    const scriptUrl = new URL("umami", base);
+    if (!["http:", "https:"].includes(scriptUrl.protocol)) return;
+
+    const script = document.createElement("script");
+    script.defer = true;
+    script.src = scriptUrl.toString();
+    script.dataset.websiteId = websiteId;
+    document.head.appendChild(script);
+  } catch (error) {
+    console.warn("[Analytics] Invalid endpoint; analytics disabled.", error);
+  }
+}
+
+installOptionalAnalytics();
+
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
