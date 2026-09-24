@@ -17,6 +17,7 @@ import { miningRouter as autonomousMiningRouter } from "../autonomous-mining";
 import miningRouter from "../mining-router";
 import walletApiRouter from "../wallet-api";
 import { registerMiningHeartbeats } from "../mining-heartbeat";
+import { betaAccessKeyIssue, betaAuthMode } from "./betaAccessAuth";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -157,9 +158,12 @@ async function startServer() {
       JWT_SECRET: Boolean(process.env.JWT_SECRET),
       VITE_APP_ID: Boolean(process.env.VITE_APP_ID),
     };
+    const selectedAuthMode = betaAuthMode();
     const authProviders = {
-      betaAccess: Boolean(process.env.BETA_ACCESS_KEY),
-      oauth: Boolean(process.env.OAUTH_SERVER_URL),
+      betaAccess:
+        selectedAuthMode === "access_key" && betaAccessKeyIssue() === null,
+      oauth:
+        selectedAuthMode === "oauth" && Boolean(process.env.OAUTH_SERVER_URL),
     };
     const missingAuthConfig = Object.entries(requiredSessionConfig)
       .filter(([, configured]) => !configured)
