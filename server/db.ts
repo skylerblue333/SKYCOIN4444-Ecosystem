@@ -1,19 +1,35 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
+import { createHash } from "node:crypto";
+import { nanoid } from "nanoid";
 import * as schema from "../drizzle/index";
-import { eq, sql } from "drizzle-orm";
+import { and, desc, eq, or, sql } from "drizzle-orm";
 
 const poolConnection = mysql.createPool(process.env.DATABASE_URL as string);
 
 export const db = drizzle(poolConnection, { schema, mode: "default" });
-const { users, tokenBalances } = schema;
+const {
+  users,
+  tokenBalances,
+  posts,
+  comments,
+  likes,
+  follows,
+  notifications,
+  messages,
+} = schema;
+
+function stableId(prefix: string, ...parts: string[]) {
+  const digest = createHash("sha256").update(parts.join("\0")).digest("hex").slice(0, 32);
+  return `${prefix}_${digest}`;
+}
 
 export async function getDb() {
   return db;
 }
 
-// TODO: Replace mock functions with real Drizzle ORM queries
-// For now, returning mock data to get the app running
+// Beta-critical persistence helpers below use the canonical MySQL schema.
+// Unimplemented product/wallet/stream helpers remain explicitly tracked debt.
 
 // ============ USER HELPERS ============
 export async function getUserById(id: string) {
@@ -136,13 +152,58 @@ export async function upsertTokenBalance(userId: string, token: string, amount: 
     });
 }
 
+
+export async function updateUserProfile(
+  userId: string,
+  patch: { name?: string; bio?: string; avatar?: string }
+) {
+  const values: Record<string, unknown> = { updatedAt: new Date() };
+  if (patch.name !== undefined) values.name = patch.name;
+  if (patch.bio !== undefined) values.bio = patch.bio;
+  if (patch.avatar !== undefined) values.avatar = patch.avatar;
+
+  await db.update(users).set(values as any).where(eq(users.id, String(userId)));
+  return getUserById(String(userId));
+}
+
+export async function getUserStats(userId: string) {
+  const [followersRow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(follows)
+    .where(eq(follows.followingId, userId));
+  const [followingRow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(follows)
+    .where(eq(follows.followerId, userId));
+  const [postsRow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(posts)
+    .where(eq(posts.userId, userId));
+
+  return {
+    followers: Number(followersRow?.count ?? 0),
+    following: Number(followingRow?.count ?? 0),
+    posts: Number(postsRow?.count ?? 0),
+    earnings: 0,
+  };
+}
+
 // ============ POST HELPERS ============
 export async function getPosts(limit = 20, offset = 0) {
-  return [];
+  return db
+    .select()
+    .from(posts)
+    .orderBy(desc(posts.createdAt))
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function getPostsByUser(userId: string) {
-  return [];
+  return db
+    .select()
+    .from(posts)
+    .where(eq(posts.userId, userId))
+    .orderBy(desc(posts.createdAt));
 }
 
 export async function createPost(
@@ -150,7 +211,49 @@ export async function createPost(
   content: string,
   media?: string
 ) {
-  return { id: "1", userId, content, media };
+  const id = `post_${nanoid(20)}`;
+  await db.insert(posts).values({
+    id,
+    userId,
+    content,
+    media: media ?? null,
+  });
+  const [post] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+  return post ?? { id, userId, content, media: media ?? null };
+}
+
+export async function updatePost(
+  userId: string,
+  postId: string,
+  content: string
+) {
+  const [owned] = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(and(eq(posts.id, postId), eq(posts.userId, userId)))
+    .limit(1);
+  if (!owned) return null;
+
+  await db
+    .update(posts)
+    .set({ content, updatedAt: new Date() })
+    .where(eq(posts.id, postId));
+  const [post] = await db.select().from(posts).where(eq(posts.id, postId)).limit(1);
+  return post ?? null;
+}
+
+export async function deletePost(userId: string, postId: string) {
+  const [owned] = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(and(eq(posts.id, postId), eq(posts.userId, userId)))
+    .limit(1);
+  if (!owned) return { success: false, reason: "not_found_or_not_owner" as const };
+
+  await db.delete(comments).where(eq(comments.postId, postId));
+  await db.delete(likes).where(eq(likes.postId, postId));
+  await db.delete(posts).where(eq(posts.id, postId));
+  return { success: true };
 }
 
 // ============ PRODUCT HELPERS ============
@@ -203,7 +306,11 @@ export async function updateWallet(userId: string, balance: number) {
 
 // ============ COMMENT HELPERS ============
 export async function getComments(postId: string) {
-  return [];
+  return db
+    .select()
+    .from(comments)
+    .where(eq(comments.postId, postId))
+    .orderBy(comments.createdAt);
 }
 
 export async function createComment(
@@ -211,42 +318,99 @@ export async function createComment(
   userId: string,
   content: string
 ) {
-  return { id: "1", postId, userId, content };
+  const id = `comment_${nanoid(20)}`;
+  await db.insert(comments).values({ id, postId, userId, content });
+  const [countRow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(comments)
+    .where(eq(comments.postId, postId));
+  await db
+    .update(posts)
+    .set({ comments: Number(countRow?.count ?? 0) })
+    .where(eq(posts.id, postId));
+  const [comment] = await db
+    .select()
+    .from(comments)
+    .where(eq(comments.id, id))
+    .limit(1);
+  return comment ?? { id, postId, userId, content };
 }
 
 // ============ LIKE HELPERS ============
 export async function getLikes(postId: string) {
-  return [];
+  return db.select().from(likes).where(eq(likes.postId, postId));
 }
 
 export async function createLike(postId: string, userId: string) {
-  return { success: true };
+  const id = stableId("like", postId, userId);
+  await db
+    .insert(likes)
+    .values({ id, postId, userId })
+    .onDuplicateKeyUpdate({ set: { postId, userId } });
+
+  const [countRow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(likes)
+    .where(eq(likes.postId, postId));
+  const count = Number(countRow?.count ?? 0);
+  await db.update(posts).set({ likes: count }).where(eq(posts.id, postId));
+  return { success: true, liked: true, count };
 }
 
 export async function removeLike(postId: string, userId: string) {
-  return { success: true };
+  const id = stableId("like", postId, userId);
+  await db.delete(likes).where(eq(likes.id, id));
+  const [countRow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(likes)
+    .where(eq(likes.postId, postId));
+  const count = Number(countRow?.count ?? 0);
+  await db.update(posts).set({ likes: count }).where(eq(posts.id, postId));
+  return { success: true, liked: false, count };
 }
 
 // ============ FOLLOW HELPERS ============
 export async function getFollowers(userId: string) {
-  return [];
+  return db
+    .select()
+    .from(follows)
+    .where(eq(follows.followingId, userId))
+    .orderBy(desc(follows.createdAt));
 }
 
 export async function getFollowing(userId: string) {
-  return [];
+  return db
+    .select()
+    .from(follows)
+    .where(eq(follows.followerId, userId))
+    .orderBy(desc(follows.createdAt));
 }
 
 export async function createFollow(followerId: string, followingId: string) {
+  if (followerId === followingId) {
+    return { success: false, reason: "cannot_follow_self" as const };
+  }
+  const id = stableId("follow", followerId, followingId);
+  await db
+    .insert(follows)
+    .values({ id, followerId, followingId })
+    .onDuplicateKeyUpdate({ set: { followerId, followingId } });
   return { success: true };
 }
 
 export async function removeFollow(followerId: string, followingId: string) {
+  const id = stableId("follow", followerId, followingId);
+  await db.delete(follows).where(eq(follows.id, id));
   return { success: true };
 }
 
 // ============ NOTIFICATION HELPERS ============
 export async function getNotifications(userId: string) {
-  return [];
+  return db
+    .select()
+    .from(notifications)
+    .where(eq(notifications.userId, userId))
+    .orderBy(desc(notifications.createdAt));
 }
 
 export async function createNotification(
@@ -254,16 +418,62 @@ export async function createNotification(
   type: string,
   content: string
 ) {
-  return { id: "1", userId, type, content };
+  const id = `notification_${nanoid(20)}`;
+  await db.insert(notifications).values({ id, userId, type, content, read: false });
+  const [notification] = await db
+    .select()
+    .from(notifications)
+    .where(eq(notifications.id, id))
+    .limit(1);
+  return notification ?? { id, userId, type, content, read: false };
 }
 
-export async function markNotificationAsRead(notificationId: string) {
+export async function markNotificationAsRead(
+  notificationId: string,
+  userId?: string
+) {
+  const predicate = userId
+    ? and(eq(notifications.id, notificationId), eq(notifications.userId, userId))
+    : eq(notifications.id, notificationId);
+  await db.update(notifications).set({ read: true }).where(predicate);
   return { success: true };
+}
+
+export async function deleteNotification(notificationId: string, userId: string) {
+  await db
+    .delete(notifications)
+    .where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)));
+  return { success: true };
+}
+
+export async function getUnreadNotificationCount(userId: string) {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(notifications)
+    .where(and(eq(notifications.userId, userId), eq(notifications.read, false)));
+  return Number(row?.count ?? 0);
 }
 
 // ============ MESSAGE HELPERS ============
 export async function getMessages(userId: string) {
-  return [];
+  return db
+    .select()
+    .from(messages)
+    .where(or(eq(messages.senderId, userId), eq(messages.recipientId, userId)))
+    .orderBy(messages.createdAt);
+}
+
+export async function getConversation(userId: string, otherUserId: string) {
+  return db
+    .select()
+    .from(messages)
+    .where(
+      or(
+        and(eq(messages.senderId, userId), eq(messages.recipientId, otherUserId)),
+        and(eq(messages.senderId, otherUserId), eq(messages.recipientId, userId))
+      )
+    )
+    .orderBy(messages.createdAt);
 }
 
 export async function createMessage(
@@ -271,7 +481,24 @@ export async function createMessage(
   recipientId: string,
   content: string
 ) {
-  return { id: "1", senderId, recipientId, content };
+  const id = `message_${nanoid(20)}`;
+  await db.insert(messages).values({
+    id,
+    senderId,
+    recipientId,
+    content,
+    read: false,
+  });
+  const [message] = await db.select().from(messages).where(eq(messages.id, id)).limit(1);
+  return message ?? { id, senderId, recipientId, content, read: false };
+}
+
+export async function markMessageAsRead(messageId: string, recipientId: string) {
+  await db
+    .update(messages)
+    .set({ read: true })
+    .where(and(eq(messages.id, messageId), eq(messages.recipientId, recipientId)));
+  return { success: true };
 }
 
 // ============ REVIEW HELPERS ============
