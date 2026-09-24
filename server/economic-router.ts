@@ -41,7 +41,7 @@ async function ensureEconomicTables() {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS sky_wallet_ledger (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      user_id INT NOT NULL,
+      user_id VARCHAR(255) NOT NULL,
       action_type VARCHAR(64) NOT NULL,
       amount DECIMAL(18,6) NOT NULL,
       fee DECIMAL(18,6) NOT NULL DEFAULT 0,
@@ -60,7 +60,7 @@ async function ensureEconomicTables() {
 
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS sky_balances (
-      user_id INT PRIMARY KEY,
+      user_id VARCHAR(255) PRIMARY KEY,
       balance DECIMAL(18,6) NOT NULL DEFAULT 0,
       total_earned DECIMAL(18,6) NOT NULL DEFAULT 0,
       total_spent DECIMAL(18,6) NOT NULL DEFAULT 0,
@@ -74,14 +74,14 @@ async function ensureEconomicTables() {
       id INT AUTO_INCREMENT PRIMARY KEY,
       source_action VARCHAR(64) NOT NULL,
       amount DECIMAL(18,6) NOT NULL,
-      from_user_id INT,
+      from_user_id VARCHAR(255),
       created_at BIGINT NOT NULL,
       INDEX idx_created_at (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 }
 
-async function getUserBalance(userId: number): Promise<number> {
+async function getUserBalance(userId: string): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
   const rows = await db.execute(
@@ -92,7 +92,7 @@ async function getUserBalance(userId: number): Promise<number> {
   return parseFloat(r[0].balance ?? "0");
 }
 
-async function ensureBalance(userId: number): Promise<void> {
+async function ensureBalance(userId: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
   await db.execute(sql`
@@ -103,7 +103,7 @@ async function ensureBalance(userId: number): Promise<void> {
 }
 
 async function recordTransaction(opts: {
-  userId: number;
+  userId: string;
   actionType: string;
   amount: number;
   fee: number;
