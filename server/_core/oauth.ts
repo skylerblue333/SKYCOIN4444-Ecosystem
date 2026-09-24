@@ -36,14 +36,15 @@ export function registerOAuthRoutes(app: Express) {
         lastSignedIn: new Date(),
       });
 
-      // Airdrop starter tokens to every new user (idempotent — skips existing balances)
+      // Create zero-balance asset rows for new users (idempotent). External assets
+      // are never credited until a verified provider/ledger confirms them.
       try {
         const freshUser = await db.getUserByOpenId(userInfo.openId);
         if (freshUser?.id) {
           await db.ensureAllTokenBalances(freshUser.id);
         }
       } catch (airdropErr) {
-        console.warn("[Airdrop] Failed to seed starter tokens:", airdropErr);
+        console.warn("[Wallet] Failed to initialize balance rows:", airdropErr);
       }
 
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
