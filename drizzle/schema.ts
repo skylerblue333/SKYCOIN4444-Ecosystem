@@ -271,7 +271,7 @@ export const tokenBalances = mysqlTable("token_balances", {
     .references(() => users.id)
     .notNull(),
   tokenSymbol: varchar("token_symbol", { length: 255 }).notNull(), // BTC, ETH, SOL, DOGE, SKY444
-  token: varchar("token_symbol", { length: 255 }), // Legacy alias
+  token: varchar("token", { length: 255 }), // Transitional compatibility field
   balance: float("balance").default(0),
   lockedBalance: float("locked_balance").default(0),
   stakedBalance: float("staked_balance").default(0),
