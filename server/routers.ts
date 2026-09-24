@@ -430,22 +430,29 @@ const gamefiRouter = router({
   seasonPass: publicProcedure.query(async () => {
     const database = await db.getDb();
     const now = new Date();
-    const [season] = await database
-      .select()
-      .from(battlePasses)
-      .where(and(lte(battlePasses.startDate, now), gte(battlePasses.endDate, now)))
-      .orderBy(desc(battlePasses.startDate))
-      .limit(1);
-    if (!season) {
+    try {
+      const [season] = await database
+        .select()
+        .from(battlePasses)
+        .where(and(lte(battlePasses.startDate, now), gte(battlePasses.endDate, now)))
+        .orderBy(desc(battlePasses.startDate))
+        .limit(1);
+      if (!season) {
+        return { season: null, name: null, status: "not_configured" as const };
+      }
+      return {
+        season: season.seasonId,
+        name: season.name,
+        status: "active" as const,
+        startDate: season.startDate,
+        endDate: season.endDate,
+      };
+    } catch (error) {
+      // battle_passes is currently outside the canonical beta Drizzle schema.
+      // Missing optional GameFi storage must degrade safely, not take down the API.
+      console.warn("[GameFi] Season storage unavailable:", String(error));
       return { season: null, name: null, status: "not_configured" as const };
     }
-    return {
-      season: season.seasonId,
-      name: season.name,
-      status: "active" as const,
-      startDate: season.startDate,
-      endDate: season.endDate,
-    };
   }),
 });
 
