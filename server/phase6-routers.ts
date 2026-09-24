@@ -330,14 +330,14 @@ export const hopeAIRouter = router({
       const { inferEmotionalState, generateHopeResponse } =
         await import("./hope-ai-engine");
       const inputSignals = input.signals || {};
-      // For authenticated users, inject persistent DB-grounded digital-twin
-      // memory so Hope "remembers" goals/projects/learning across sessions.
-      // Anonymous callers are unaffected (fully backwards compatible).
+      // Beta runtime uses only canonical persisted profile data here.
+      // The broader digital-twin/reputation/opportunity layer remains gated
+      // until its missing database schema is explicitly defined and migrated.
       let twinContext: string | undefined;
       if (ctx.user) {
         try {
-          const { buildTwinContext } = await import("./intelligence-engine");
-          twinContext = await buildTwinContext(ctx.user.id);
+          const { buildHopeProfileContext } = await import("./hope-profile-context");
+          twinContext = await buildHopeProfileContext(String(ctx.user.id));
         } catch {
           twinContext = undefined;
         }
