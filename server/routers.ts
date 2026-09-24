@@ -41,14 +41,14 @@ export const userRouter = router({
   updateProfile: protectedProcedure
     .input(
       z.object({
-        name: z.string().optional(),
-        bio: z.string().optional(),
-        avatar: z.string().optional(),
+        name: z.string().max(255).optional(),
+        bio: z.string().max(255).optional(),
+        avatar: z.string().max(255).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await db.getUserById(ctx.user.id);
-      return { success: true };
+      const user = await db.updateUserProfile(String(ctx.user.id), input);
+      return { success: Boolean(user), user };
     }),
   getProfile: publicProcedure
     .input(z.object({ userId: z.string() }))
@@ -63,19 +63,22 @@ export const userRouter = router({
   follow: protectedProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return { success: true };
+      const result = await db.createFollow(String(ctx.user.id), input.userId);
+      if (result.success) {
+        await db.createNotification(
+          input.userId,
+          "follow",
+          `${ctx.user.name || ctx.user.username || "Someone"} followed you`
+        );
+      }
+      return result;
     }),
   getFollowers: publicProcedure
     .input(z.object({ userId: z.string() }))
-    .query(async () => []),
+    .query(async ({ input }) => db.getFollowers(input.userId)),
   getStats: publicProcedure
     .input(z.object({ userId: z.string() }))
-    .query(async () => ({
-      followers: 0,
-      following: 0,
-      posts: 0,
-      earnings: 0,
-    })),
+    .query(async ({ input }) => db.getUserStats(input.userId)),
   suggestedFollows: publicProcedure.query(async () => []),
 });
 
@@ -94,16 +97,34 @@ export const postRouter = router({
     ),
   like: protectedProcedure
     .input(z.object({ postId: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .mutation(async ({ ctx, input }) =>
+      db.createLike(input.postId, String(ctx.user.id))
+    ),
   comment: protectedProcedure
-    .input(z.object({ postId: z.string(), content: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .input(z.object({ postId: z.string(), content: z.string().min(1).max(255) }))
+    .mutation(async ({ ctx, input }) => {
+      const comment = await db.createComment(
+        input.postId,
+        String(ctx.user.id),
+        input.content
+      );
+      return { success: true, comment };
+    }),
   delete: protectedProcedure
     .input(z.object({ postId: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .mutation(async ({ ctx, input }) =>
+      db.deletePost(String(ctx.user.id), input.postId)
+    ),
   edit: protectedProcedure
-    .input(z.object({ postId: z.string(), content: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .input(z.object({ postId: z.string(), content: z.string().min(1).max(255) }))
+    .mutation(async ({ ctx, input }) => {
+      const post = await db.updatePost(
+        String(ctx.user.id),
+        input.postId,
+        input.content
+      );
+      return { success: Boolean(post), post };
+    }),
 });
 
 // ============ MARKETPLACE PROCEDURES ============
@@ -230,27 +251,56 @@ export const walletRouter = router({
 
 // ============ NOTIFICATION PROCEDURES ============
 export const notificationRouter = router({
-  list: protectedProcedure.query(async ({ ctx }) => []),
+  list: protectedProcedure.query(async ({ ctx }) =>
+    db.getNotifications(String(ctx.user.id))
+  ),
   markAsRead: protectedProcedure
     .input(z.object({ notificationId: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .mutation(async ({ ctx, input }) =>
+      db.markNotificationAsRead(input.notificationId, String(ctx.user.id))
+    ),
   delete: protectedProcedure
     .input(z.object({ notificationId: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
-  getUnread: protectedProcedure.query(async ({ ctx }) => ({ count: 0 })),
+    .mutation(async ({ ctx, input }) =>
+      db.deleteNotification(input.notificationId, String(ctx.user.id))
+    ),
+  getUnread: protectedProcedure.query(async ({ ctx }) => ({
+    count: await db.getUnreadNotificationCount(String(ctx.user.id)),
+  })),
 });
 
 // ============ MESSAGE PROCEDURES ============
 export const messageRouter = router({
   list: protectedProcedure
     .input(z.object({ userId: z.string() }))
-    .query(async ({ ctx, input }) => []),
+    .query(async ({ ctx, input }) =>
+      db.getConversation(String(ctx.user.id), input.userId)
+    ),
   send: protectedProcedure
-    .input(z.object({ recipientId: z.string(), content: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .input(
+      z.object({
+        recipientId: z.string(),
+        content: z.string().min(1).max(255),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const message = await db.createMessage(
+        String(ctx.user.id),
+        input.recipientId,
+        input.content
+      );
+      await db.createNotification(
+        input.recipientId,
+        "message",
+        `New message from ${ctx.user.name || ctx.user.username || "a user"}`
+      );
+      return { success: true, message };
+    }),
   markAsRead: protectedProcedure
     .input(z.object({ messageId: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .mutation(async ({ ctx, input }) =>
+      db.markMessageAsRead(input.messageId, String(ctx.user.id))
+    ),
 });
 
 // ============ GAMING PROCEDURES ============
