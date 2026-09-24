@@ -40,9 +40,9 @@ jobs:
 
       - name: TypeScript debt no-regression gate
         id: typecheck
-        shell: bash
-        run: |
-          pnpm check:type-debt 2>&1 | tee typecheck.log
+        env:
+          TYPE_DEBT_REPORT_FILE: typecheck.log
+        run: pnpm check:type-debt
 
       - name: Upload typecheck report
         if: always()
