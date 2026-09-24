@@ -31,8 +31,6 @@ interface MinerConfig {
 export class PoolCredentialsManager {
   private credentials: Map<string, PoolCredential> = new Map();
   private minerConfigs: Map<string, MinerConfig> = new Map();
-  private encryptionKey =
-    process.env.POOL_ENCRYPTION_KEY || "default-key-change-in-production";
 
   /**
    * Add pool credentials
@@ -45,7 +43,7 @@ export class PoolCredentialsManager {
     poolUrl: string,
     poolPort: number
   ): PoolCredential {
-    const id = `pool-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const id = `pool-${crypto.randomUUID()}`;
 
     const credential: PoolCredential = {
       id,
@@ -132,7 +130,7 @@ export class PoolCredentialsManager {
     power: number,
     assignedPool: string
   ): MinerConfig {
-    const id = `miner-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const id = `miner-${crypto.randomUUID()}`;
 
     const config: MinerConfig = {
       id,
@@ -231,30 +229,60 @@ export class PoolCredentialsManager {
     };
   }
 
+  private getEncryptionKey(): string {
+    const key = process.env.POOL_ENCRYPTION_KEY;
+    if (!key || key.length < 32) {
+      throw new Error(
+        "POOL_ENCRYPTION_KEY must be configured with at least 32 characters"
+      );
+    }
+    return key;
+  }
+
   /**
-   * Encrypt password
+   * Encrypt password with a per-record salt and IV.
+   * Format: v1:<salt-hex>:<iv-hex>:<ciphertext-hex>
    */
   private encryptPassword(password: string): string {
     const algorithm = "aes-256-cbc";
-    const key = crypto.scryptSync(this.encryptionKey, "salt", 32);
+    const salt = crypto.randomBytes(16);
+    const key = crypto.scryptSync(this.getEncryptionKey(), salt, 32);
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(algorithm, key, iv);
     let encrypted = cipher.update(password, "utf8", "hex");
     encrypted += cipher.final("hex");
-    return iv.toString("hex") + ":" + encrypted;
+    return ["v1", salt.toString("hex"), iv.toString("hex"), encrypted].join(":");
   }
 
   /**
-   * Decrypt password
+   * Decrypt password. Supports the previous two-part ciphertext format only
+   * when a real POOL_ENCRYPTION_KEY is configured; no insecure fallback key
+   * is accepted.
    */
   private decryptPassword(encrypted: string): string {
     try {
       const algorithm = "aes-256-cbc";
-      const key = crypto.scryptSync(this.encryptionKey, "salt", 32);
       const parts = encrypted.split(":");
-      const iv = Buffer.from(parts[0], "hex");
+      let salt: Buffer;
+      let ivHex: string;
+      let ciphertext: string;
+
+      if (parts.length === 4 && parts[0] === "v1") {
+        salt = Buffer.from(parts[1], "hex");
+        ivHex = parts[2];
+        ciphertext = parts[3];
+      } else if (parts.length === 2) {
+        salt = Buffer.from("salt", "utf8");
+        ivHex = parts[0];
+        ciphertext = parts[1];
+      } else {
+        throw new Error("Unsupported encrypted credential format");
+      }
+
+      const key = crypto.scryptSync(this.getEncryptionKey(), salt, 32);
+      const iv = Buffer.from(ivHex, "hex");
       const decipher = crypto.createDecipheriv(algorithm, key, iv);
-      let decrypted = decipher.update(parts[1], "hex", "utf8");
+      let decrypted = decipher.update(ciphertext, "hex", "utf8");
       decrypted += decipher.final("utf8");
       return decrypted;
     } catch (error) {
