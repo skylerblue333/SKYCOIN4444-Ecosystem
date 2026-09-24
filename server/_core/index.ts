@@ -113,30 +113,85 @@ async function startServer() {
   );
   app.use(globalLimiter);
   app.use(requestTimeout(30_000));
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.on("finish", () => {
+      healthMonitor.recordRequest(res.statusCode < 500);
+    });
+    next();
+  });
 
-  app.get("/api/health", async (_req: Request, res: Response) => {
-    let dbStatus = "unknown";
-    let dbLatencyMs = 0;
+  const checkDatabaseReadiness = async () => {
+    const t0 = Date.now();
     try {
       const { getDb } = await import("../db");
-      const db = await getDb();
-      if (db) {
-        const t0 = Date.now();
-        await db.execute("SELECT 1");
-        dbLatencyMs = Date.now() - t0;
-        dbStatus = "healthy";
-      }
-    } catch {
-      dbStatus = "degraded";
+      const database = await getDb();
+      await database.execute("SELECT 1");
+      return {
+        ready: true,
+        status: "healthy" as const,
+        latencyMs: Date.now() - t0,
+      };
+    } catch (error) {
+      return {
+        ready: false,
+        status: "degraded" as const,
+        latencyMs: Date.now() - t0,
+        error: error instanceof Error ? error.message : "database unavailable",
+      };
     }
+  };
+
+  // Liveness: proves the Node process and HTTP server are responsive.
+  app.get("/healthz", (_req: Request, res: Response) => {
+    res.status(200).json({
+      status: "alive",
+      uptime: Math.floor(process.uptime()),
+      release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
+    });
+  });
+
+  // Readiness: proves the process can reach the database required by core flows.
+  const readinessHandler = async (_req: Request, res: Response) => {
+    const database = await checkDatabaseReadiness();
+    const requiredAuthConfig = {
+      JWT_SECRET: Boolean(process.env.JWT_SECRET),
+      VITE_APP_ID: Boolean(process.env.VITE_APP_ID),
+      OAUTH_SERVER_URL: Boolean(process.env.OAUTH_SERVER_URL),
+    };
+    const missingAuthConfig = Object.entries(requiredAuthConfig)
+      .filter(([, configured]) => !configured)
+      .map(([name]) => name);
+    const authReady = missingAuthConfig.length === 0;
+    const ready = database.ready && authReady;
+
+    res.status(ready ? 200 : 503).json({
+      status: ready ? "ready" : "not_ready",
+      timestamp: new Date().toISOString(),
+      release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
+      services: {
+        database,
+        authentication: {
+          ready: authReady,
+          status: authReady ? "configured" : "not_configured",
+          missing: missingAuthConfig,
+        },
+      },
+    });
+  };
+  app.get("/readyz", readinessHandler);
+  app.get("/api/beta/readiness", readinessHandler);
+
+  app.get("/api/health", async (_req: Request, res: Response) => {
+    const database = await checkDatabaseReadiness();
     const mem = process.memoryUsage();
-    res.json({
-      status: dbStatus === "healthy" ? "ok" : "degraded",
+    res.status(database.ready ? 200 : 503).json({
+      status: database.ready ? "ok" : "degraded",
       timestamp: new Date().toISOString(),
       uptime: Math.floor(process.uptime()),
       environment: process.env.NODE_ENV || "production",
+      release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
       services: {
-        database: { status: dbStatus, latencyMs: dbLatencyMs },
+        database,
         server: {
           status: "healthy",
           memoryMB: Math.round(mem.heapUsed / 1024 / 1024),
@@ -300,7 +355,7 @@ async function startServer() {
   });
 
   // ─── SSE: Live Notifications ──────────────────────────────────────────────────
-  const notifClients = new Map<number, Response[]>();
+  const notifClients = new Map<string, Response[]>();
   app.get("/api/notifications/stream", async (req: Request, res: Response) => {
     const { sdk } = await import("./sdk");
     let user: any;
@@ -315,7 +370,7 @@ async function startServer() {
     res.setHeader("Connection", "keep-alive");
     res.setHeader("X-Accel-Buffering", "no");
     res.flushHeaders();
-    const userId = user.id as number;
+    const userId = String(user.id);
     if (!notifClients.has(userId)) notifClients.set(userId, []);
     notifClients.get(userId)!.push(res);
     res.write(
@@ -335,7 +390,7 @@ async function startServer() {
   });
   // Expose broadcaster for use by notification helpers
   (global as any).__notifBroadcast = (
-    userId: number,
+    userId: string,
     event: string,
     data: unknown
   ) => {
@@ -399,9 +454,9 @@ async function startServer() {
     process.exit(1);
   });
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
-  if (port !== preferredPort)
+  const preferredPort = parseInt(process.env.PORT || "3000", 10);
+  const port = isDev ? await findAvailablePort(preferredPort) : preferredPort;
+  if (isDev && port !== preferredPort)
     console.log(`[Server] Port ${preferredPort} busy, using ${port}`);
   server.listen(port, () => {
     console.log(

@@ -415,7 +415,7 @@ export class ReactionService {
     await db.insert(schema.likes).values({ userId, postId });
     await db
       .update(schema.posts)
-      .set({ likeCount: sql`${schema.posts.likeCount} + 1` })
+      .set({ likes: sql`${schema.posts.likes} + 1` })
       .where(eq(schema.posts.id, postId));
 
     return true;
@@ -432,7 +432,7 @@ export class ReactionService {
       );
     await db
       .update(schema.posts)
-      .set({ likeCount: sql`GREATEST(${schema.posts.likeCount} - 1, 0)` })
+      .set({ likes: sql`GREATEST(${schema.posts.likes} - 1, 0)` })
       .where(eq(schema.posts.id, postId));
 
     return true;
@@ -492,7 +492,7 @@ export class ThreadedCommentService {
 
     await db
       .update(schema.posts)
-      .set({ commentCount: sql`${schema.posts.commentCount} + 1` })
+      .set({ comments: sql`${schema.posts.comments} + 1` })
       .where(eq(schema.posts.id, postId));
 
     const insertId = (result as any).insertId;
@@ -658,7 +658,7 @@ export class ThreadedCommentService {
       .where(eq(schema.comments.parentId, commentId));
     await db
       .update(schema.posts)
-      .set({ commentCount: sql`GREATEST(${schema.posts.commentCount} - 1, 0)` })
+      .set({ comments: sql`GREATEST(${schema.posts.comments} - 1, 0)` })
       .where(eq(schema.posts.id, comment.postId));
 
     return true;
@@ -936,8 +936,8 @@ export class FeedAlgorithmService {
         type: schema.posts.type,
         content: schema.posts.content,
         mediaUrl: schema.posts.mediaUrl,
-        likeCount: schema.posts.likeCount,
-        commentCount: schema.posts.commentCount,
+        likeCount: schema.posts.likes,
+        commentCount: schema.posts.comments,
         repostCount: schema.posts.repostCount,
         viewCount: schema.posts.viewCount,
         shareCount: schema.posts.shareCount,
@@ -990,7 +990,7 @@ export class FeedAlgorithmService {
         )
       )
       .orderBy(
-        sql`(${schema.posts.likeCount} * 2 + ${schema.posts.commentCount} * 3 + ${schema.posts.repostCount} * 5) DESC`
+        sql`(${schema.posts.likes} * 2 + ${schema.posts.comments} * 3 + ${schema.posts.repostCount} * 5) DESC`
       )
       .limit(limit);
   }
@@ -1020,7 +1020,7 @@ export class FeedAlgorithmService {
         )
       )
       .orderBy(
-        sql`(${schema.posts.likeCount} + ${schema.posts.commentCount} * 2) DESC`
+        sql`(${schema.posts.likes} + ${schema.posts.comments} * 2) DESC`
       )
       .limit(limit);
   }
