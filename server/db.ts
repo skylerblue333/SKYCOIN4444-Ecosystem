@@ -628,6 +628,14 @@ export async function markNotificationAsRead(
   return { success: true };
 }
 
+export async function markAllNotificationsAsRead(userId: string) {
+  await db
+    .update(notifications)
+    .set({ read: true })
+    .where(eq(notifications.userId, userId));
+  return { success: true };
+}
+
 export async function deleteNotification(notificationId: string, userId: string) {
   await db
     .delete(notifications)

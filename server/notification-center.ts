@@ -7,6 +7,7 @@
 import { getDb } from "./db";
 import * as schema from "../drizzle";
 import { eq, desc, and, sql } from "drizzle-orm";
+import { nanoid } from "nanoid";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -25,7 +26,7 @@ export type NotificationCategory =
   | "streaming";
 
 export interface NotificationPayload {
-  userId: number;
+  userId: string;
   type: string;
   title: string;
   body: string;
@@ -50,7 +51,7 @@ export interface NotificationTemplate {
 }
 
 export interface UserNotificationPreferences {
-  userId: number;
+  userId: string;
   enabled: boolean;
   channels: Record<NotificationChannel, boolean>;
   categories: Record<NotificationCategory, boolean>;
@@ -69,7 +70,7 @@ export interface DeliveryResult {
 }
 
 export interface NotificationDigest {
-  userId: number;
+  userId: string;
   period: string;
   notifications: Array<{
     type: string;
@@ -277,9 +278,9 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
 // ═══════════════════════════════════════════════════════════════
 
 export class NotificationCenter {
-  private preferences: Map<number, UserNotificationPreferences> = new Map();
+  private preferences: Map<string, UserNotificationPreferences> = new Map();
   private deliveryLog: DeliveryResult[] = [];
-  private rateLimitCounters: Map<number, { count: number; resetAt: number }> =
+  private rateLimitCounters: Map<string, { count: number; resetAt: number }> =
     new Map();
   private groupedNotifications: Map<string, NotificationPayload[]> = new Map();
 
@@ -288,7 +289,7 @@ export class NotificationCenter {
    */
   async sendFromTemplate(
     templateId: string,
-    userId: number,
+    userId: string,
     variables: Record<string, string | number>
   ): Promise<DeliveryResult[]> {
     const template = TEMPLATES[templateId];
@@ -478,21 +479,12 @@ export class NotificationCenter {
 
     try {
       await db.insert(schema.notifications).values({
+        id: `notification_${nanoid(20)}`,
         userId: payload.userId,
-        type: payload.type as
-          | "follow"
-          | "like"
-          | "comment"
-          | "mention"
-          | "repost"
-          | "donation"
-          | "achievement"
-          | "stream_live"
-          | "tournament"
-          | "system",
+        type: payload.type,
         title: payload.title,
-        message: payload.body,
-        isRead: false,
+        content: payload.body,
+        read: false,
         createdAt: new Date(),
       });
     } catch {
@@ -504,7 +496,7 @@ export class NotificationCenter {
    * Get user's notifications
    */
   async getUserNotifications(
-    userId: number,
+    userId: string,
     options?: {
       limit?: number;
       offset?: number;
@@ -520,7 +512,7 @@ export class NotificationCenter {
 
     const conditions = [eq(schema.notifications.userId, userId)];
     if (options?.unreadOnly) {
-      conditions.push(eq(schema.notifications.isRead, false));
+      conditions.push(eq(schema.notifications.read, false));
     }
 
     const results = await db
@@ -538,8 +530,8 @@ export class NotificationCenter {
    * Mark notifications as read
    */
   async markAsRead(
-    userId: number,
-    notificationIds?: number[]
+    userId: string,
+    notificationIds?: string[]
   ): Promise<number> {
     const db = await getDb();
     if (!db) return 0;
@@ -550,7 +542,7 @@ export class NotificationCenter {
       for (const id of notificationIds) {
         const result = await db
           .update(schema.notifications)
-          .set({ isRead: true })
+          .set({ read: true })
           .where(
             and(
               eq(schema.notifications.id, id),
@@ -566,7 +558,7 @@ export class NotificationCenter {
       // Mark all as read
       const result = await db
         .update(schema.notifications)
-        .set({ isRead: true })
+        .set({ read: true })
         .where(eq(schema.notifications.userId, userId));
       return (result[0] as { affectedRows?: number })?.affectedRows || 0;
     }
@@ -575,7 +567,7 @@ export class NotificationCenter {
   /**
    * Get unread count
    */
-  async getUnreadCount(userId: number): Promise<number> {
+  async getUnreadCount(userId: string): Promise<number> {
     const db = await getDb();
     if (!db) return 0;
 
@@ -585,7 +577,7 @@ export class NotificationCenter {
       .where(
         and(
           eq(schema.notifications.userId, userId),
-          eq(schema.notifications.isRead, false)
+          eq(schema.notifications.read, false)
         )
       );
 
@@ -596,7 +588,7 @@ export class NotificationCenter {
    * Generate notification digest for a user
    */
   async generateDigest(
-    userId: number,
+    userId: string,
     hoursBack: number = 24
   ): Promise<NotificationDigest> {
     const db = await getDb();
@@ -621,9 +613,9 @@ export class NotificationCenter {
 
       for (const r of results) {
         notifications.push({
-          type: r.type,
-          title: r.title,
-          message: r.message || "",
+          type: r.type ?? "system",
+          title: r.title ?? "Notification",
+          message: r.content ?? "",
         });
       }
     }
@@ -660,7 +652,7 @@ export class NotificationCenter {
   /**
    * Get/set user notification preferences
    */
-  getUserPreferences(userId: number): UserNotificationPreferences {
+  getUserPreferences(userId: string): UserNotificationPreferences {
     if (!this.preferences.has(userId)) {
       this.preferences.set(userId, {
         userId,
@@ -687,7 +679,7 @@ export class NotificationCenter {
    * Update user preferences
    */
   updatePreferences(
-    userId: number,
+    userId: string,
     updates: Partial<UserNotificationPreferences>
   ): void {
     const current = this.getUserPreferences(userId);
@@ -794,7 +786,7 @@ export class NotificationCenter {
     );
   }
 
-  private checkRateLimit(userId: number, maxPerHour: number): boolean {
+  private checkRateLimit(userId: string, maxPerHour: number): boolean {
     const now = Date.now();
     const counter = this.rateLimitCounters.get(userId);
 

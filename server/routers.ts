@@ -355,6 +355,9 @@ export const notificationRouter = router({
     .mutation(async ({ ctx, input }) =>
       db.markNotificationAsRead(input.notificationId, String(ctx.user.id))
     ),
+  markAllAsRead: protectedProcedure.mutation(async ({ ctx }) =>
+    db.markAllNotificationsAsRead(String(ctx.user.id))
+  ),
   delete: protectedProcedure
     .input(z.object({ notificationId: z.string() }))
     .mutation(async ({ ctx, input }) =>

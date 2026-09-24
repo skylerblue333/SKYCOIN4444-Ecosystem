@@ -40,14 +40,14 @@ export function NotificationCenter() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: notifs, refetch } = trpc.notification.list.useQuery(
-    { limit: 20 },
-    { enabled: !!user, refetchInterval: 30000 }
-  );
-  const markRead = trpc.notification.markRead.useMutation({
+  const { data: notifs, refetch } = trpc.notification.list.useQuery(undefined, {
+    enabled: !!user,
+    refetchInterval: 30000,
+  });
+  const markRead = trpc.notification.markAsRead.useMutation({
     onSuccess: () => refetch(),
   });
-  const markAllRead = trpc.notification.markAllRead.useMutation({
+  const markAllRead = trpc.notification.markAllAsRead.useMutation({
     onSuccess: () => refetch(),
   });
 
@@ -177,7 +177,9 @@ export function NotificationCenter() {
                       borderBottom: "1px solid oklch(0.15 0.025 270)",
                     }}
                     onClick={() => {
-                      if (!n.read) markRead.mutate({ id: n.id });
+                      if (!n.read) {
+                        markRead.mutate({ notificationId: n.id });
+                      }
                     }}
                   >
                     <div
@@ -188,7 +190,7 @@ export function NotificationCenter() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white leading-snug">
-                        {n.message || n.title || "New notification"}
+                        {n.content || n.title || "New notification"}
                       </p>
                       <p
                         className="text-xs mt-0.5"
