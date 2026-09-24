@@ -27,7 +27,6 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("last_signed_in"),
   loginMethod: varchar("login_method", { length: 255 }),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
-  expiresAt: timestamp("expires_at"),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -44,6 +43,7 @@ export const posts = mysqlTable("posts", {
   comments: int("comments").default(0),
   authorId: varchar("author_id", { length: 255 }), // Legacy compatibility
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  expiresAt: timestamp("expires_at"),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
