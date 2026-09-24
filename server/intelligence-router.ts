@@ -10,7 +10,6 @@ import { TRPCError } from "@trpc/server";
 import { router, publicProcedure, protectedProcedure } from "./_core/trpc";
 import * as repo from "./db-intelligence";
 import * as engine from "./intelligence-engine";
-import * as db from "./db";
 
 const goalSchema = z.object({
   id: z.string(),
@@ -126,7 +125,6 @@ const twinRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { inferEmotionalState, generateHopeResponse } =
         await import("./hope-ai-engine");
-      const { saveHopeAIMessage } = await import("./db");
       const twinContext = await engine.buildTwinContext(ctx.user.id);
       const userSignals = {
         userId: String(ctx.user.id),
@@ -141,13 +139,13 @@ const twinRouter = router({
         input.overrideTone as never
       );
       // Persist both turns to the existing chat history table (reliable, no loss).
-      await saveHopeAIMessage({
+      await repo.saveHopeAIMessage({
         userId: ctx.user.id,
         role: "user",
         content: input.messageText,
         sessionId: input.sessionId,
       });
-      await saveHopeAIMessage({
+      await repo.saveHopeAIMessage({
         userId: ctx.user.id,
         role: "assistant",
         content: hopeResponse.message,
@@ -187,8 +185,8 @@ const missionControlRouter = router({
         repo.getReputation(userId),
         repo.getMatchesForUser(userId, 5),
         repo.listMissions(userId),
-        db.getUnreadNotificationCount(userId),
-        db.getUserFeed(userId, 5, 0).catch(() => []),
+        repo.getUnreadNotificationCount(userId),
+        repo.getUserFeed(userId, 5, 0).catch(() => []),
         repo.listBlueprints(userId),
         repo.getMissionControlExtras(userId),
         repo.getProNetworkSuggestions(userId, 5),
