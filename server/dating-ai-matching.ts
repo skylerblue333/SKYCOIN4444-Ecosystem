@@ -18,8 +18,8 @@ import {
 import { invokeLLM } from "./_core/llm";
 
 export interface MatchingProfile {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   age: number | null;
   gender: string | null;
   lookingFor: string | null;
@@ -35,10 +35,43 @@ export interface MatchingProfile {
 }
 
 export interface CompatibilityScore {
-  userId: number;
+  userId: string;
   score: number;
   reasons: string[];
   matchType: "perfect" | "great" | "good" | "fair";
+}
+function parseStringArray(value: string | null | undefined): string[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === "string")
+      : [];
+  } catch {
+    return value
+      .split(",")
+      .map(item => item.trim())
+      .filter(Boolean);
+  }
+}
+
+function getLLMText(content: unknown): string {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+
+  return content
+    .map(part => {
+      if (
+        part &&
+        typeof part === "object" &&
+        "text" in part &&
+        typeof (part as { text?: unknown }).text === "string"
+      ) {
+        return (part as { text: string }).text;
+      }
+      return "";
+    })
+    .join("");
 }
 
 /**
@@ -116,8 +149,8 @@ Consider:
       ],
     });
 
-    const content = response.choices?.[0]?.message?.content;
-    if (typeof content !== "string") {
+    const content = getLLMText(response.choices?.[0]?.message?.content);
+    if (!content) {
       return {
         userId: profile2.userId,
         score: 50,
@@ -148,15 +181,16 @@ Consider:
  * Get recommended matches for a user
  */
 export async function getRecommendedMatches(
-  userId: number,
+  userId: string | number,
   limit: number = 10
 ): Promise<CompatibilityScore[]> {
   try {
+    const canonicalUserId = String(userId);
     // Get user's profile
     const userProfiles = await db
       .select()
       .from(datingProfiles)
-      .where(eq(datingProfiles.userId, userId));
+      .where(eq(datingProfiles.userId, canonicalUserId));
 
     const userProfile = userProfiles[0];
 
@@ -171,7 +205,7 @@ export async function getRecommendedMatches(
 
     // Get profiles that match user's preferences
     const conditions: any[] = [
-      ne(datingProfiles.userId, userId),
+      ne(datingProfiles.userId, canonicalUserId),
       eq(datingProfiles.isActive, true),
     ];
 
@@ -198,7 +232,7 @@ export async function getRecommendedMatches(
     const likedUsers = await db
       .select()
       .from(datingLikes)
-      .where(eq(datingLikes.userId, userId));
+      .where(eq(datingLikes.userId, canonicalUserId));
 
     const likedUserIds = new Set(likedUsers.map(l => l.likedUserId));
 
@@ -208,13 +242,15 @@ export async function getRecommendedMatches(
       .from(datingMatches)
       .where(
         drizzleOr(
-          eq(datingMatches.user1Id, userId),
-          eq(datingMatches.user2Id, userId)
+          eq(datingMatches.userId1, canonicalUserId),
+          eq(datingMatches.userId2, canonicalUserId)
         )
       );
 
     const matchedUserIds = new Set(
-      matches.flatMap(m => [m.user1Id, m.user2Id]).filter(id => id !== userId)
+      matches
+        .flatMap(m => [m.userId1, m.userId2])
+        .filter(id => id !== canonicalUserId)
     );
 
     // Filter out already liked/matched users
@@ -233,7 +269,7 @@ export async function getRecommendedMatches(
             gender: userProfile.gender,
             lookingFor: userProfile.lookingFor,
             bio: userProfile.bio,
-            interests: (userProfile.interests as string[]) || [],
+            interests: parseStringArray(userProfile.interests),
             height: userProfile.height,
             bodyType: userProfile.bodyType,
             ethnicity: userProfile.ethnicity,
@@ -249,7 +285,7 @@ export async function getRecommendedMatches(
             gender: candidate.gender,
             lookingFor: candidate.lookingFor,
             bio: candidate.bio,
-            interests: (candidate.interests as string[]) || [],
+            interests: parseStringArray(candidate.interests),
             height: candidate.height,
             bodyType: candidate.bodyType,
             ethnicity: candidate.ethnicity,
@@ -274,13 +310,14 @@ export async function getRecommendedMatches(
  * Analyze user profile for improvement suggestions
  */
 export async function analyzeProfileForImprovements(
-  userId: number
+  userId: string | number
 ): Promise<string[]> {
   try {
+    const canonicalUserId = String(userId);
     const [profile] = await db
       .select()
       .from(datingProfiles)
-      .where(eq(datingProfiles.userId, userId));
+      .where(eq(datingProfiles.userId, canonicalUserId));
 
     if (!profile) {
       return [];
@@ -290,7 +327,7 @@ export async function analyzeProfileForImprovements(
 Analyze this dating profile and suggest improvements:
 
 Bio: ${profile.bio || "Empty"}
-Interests: ${(profile.interests as string[])?.join(", ") || "Not specified"}
+Interests: ${parseStringArray(profile.interests).join(", ") || "Not specified"}
 Photos: ${profile.photos ? "Has photos" : "No photos"}
 Height: ${profile.height || "Not specified"}
 Body Type: ${profile.bodyType || "Not specified"}
@@ -315,7 +352,7 @@ Respond with a JSON array of strings.
       ],
     });
 
-    const content = response.choices?.[0]?.message?.content || "[]";
+    const content = getLLMText(response.choices?.[0]?.message?.content) || "[]";
     const suggestions = JSON.parse(content);
 
     return Array.isArray(suggestions) ? suggestions : [];
@@ -329,19 +366,21 @@ Respond with a JSON array of strings.
  * Get conversation starters based on profiles
  */
 export async function generateConversationStarters(
-  userId: number,
-  matchUserId: number
+  userId: string | number,
+  matchUserId: string | number
 ): Promise<string[]> {
   try {
+    const canonicalUserId = String(userId);
+    const canonicalMatchUserId = String(matchUserId);
     const [userProfile] = await db
       .select()
       .from(datingProfiles)
-      .where(eq(datingProfiles.userId, userId));
+      .where(eq(datingProfiles.userId, canonicalUserId));
 
     const [matchProfile] = await db
       .select()
       .from(datingProfiles)
-      .where(eq(datingProfiles.userId, matchUserId));
+      .where(eq(datingProfiles.userId, canonicalMatchUserId));
 
     if (!userProfile || !matchProfile) {
       return [];
@@ -352,12 +391,12 @@ Generate 5 creative and engaging conversation starters for a dating match based 
 
 Your Profile:
 - Bio: ${userProfile.bio || "Not provided"}
-- Interests: ${(userProfile.interests as string[])?.join(", ") || "Not specified"}
+- Interests: ${parseStringArray(userProfile.interests).join(", ") || "Not specified"}
 - Occupation: ${userProfile.occupation || "Not specified"}
 
 Match Profile:
 - Bio: ${matchProfile.bio || "Not provided"}
-- Interests: ${(matchProfile.interests as string[])?.join(", ") || "Not specified"}
+- Interests: ${parseStringArray(matchProfile.interests).join(", ") || "Not specified"}
 - Occupation: ${matchProfile.occupation || "Not specified"}
 
 Create conversation starters that:
@@ -384,7 +423,7 @@ Respond with a JSON array of 5 strings.
       ],
     });
 
-    const content = response.choices?.[0]?.message?.content || "[]";
+    const content = getLLMText(response.choices?.[0]?.message?.content) || "[]";
     const starters = JSON.parse(content);
 
     return Array.isArray(starters) ? starters : [];
