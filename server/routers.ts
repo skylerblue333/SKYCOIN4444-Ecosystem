@@ -9,6 +9,7 @@ import { gamificationRouter } from "./gamification-router";
 import { hopeAIRouter } from "./phase6-routers";
 import { pricesRouter } from "./price-router";
 import { systemRouter } from "./_core/systemRouter";
+import { enterpriseIntegrationRouter } from "./enterprise-integration-router";
 import * as db from "./db";
 import {
   users,
@@ -670,6 +671,7 @@ export const appRouter = router({
   settings: settingsRouter,
   voice: voiceRouter,
   enterprise: enterpriseRouter,
+  integrations: enterpriseIntegrationRouter,
   ai: aiRouter,
   hopeAI: hopeAIRouter,
   hopeIntelligence: hopeAIRouter,
