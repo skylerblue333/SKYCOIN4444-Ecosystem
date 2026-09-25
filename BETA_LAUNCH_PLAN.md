@@ -111,3 +111,78 @@ Everything else can remain accessible as experimental only if it cannot compromi
 ## Release rule
 
 Do not add large new feature families during this stabilization window. New work enters the beta only when it directly closes one of the launch gates above.
+
+
+## Stabilization waves 1–10 — execution ledger (September 25, 2026)
+
+This ledger sequences the remaining work. A wave is **not complete** until its exit evidence is attached to Issue #2 or the release PR. Later-wave preparation may proceed, but beta promotion remains gated by the earliest incomplete safety-critical wave.
+
+### Wave 1 — persistent identity and authorization
+- [ ] Prove signup/login/logout against the configured beta identity provider.
+- [ ] Prove an authenticated session survives browser refresh.
+- [ ] Prove expected session behavior across application restart/redeploy.
+- [ ] Exercise protected endpoints anonymously and with a non-owner account; record denial evidence.
+- [ ] Confirm persisted profile/user state comes from MySQL after restart.
+**Exit evidence:** request/session transcript + restart/redeploy proof + authorization-negative tests.
+
+### Wave 2 — persistent social, chat, and HopeAI
+- [ ] Create/read/update core social state after restart.
+- [ ] Prove one-to-one and group chat history plus reconnect.
+- [ ] Prove HopeAI streaming success and provider-failure behavior.
+- [ ] Identify and remove mocked-success behavior from these beta-critical paths.
+**Exit evidence:** deterministic integration/staging smoke results using persistent data.
+
+### Wave 3 — type safety and security
+- [ ] Drive the tracked TypeScript debt baseline toward zero without suppressing errors.
+- [ ] Review secret-like repository findings; rotate any real exposed credential.
+- [ ] Verify rate limits, permissions, security headers, and upload boundaries.
+**Exit evidence:** clean typecheck or explicitly documented remaining release-blocking debt + security review evidence.
+
+### Wave 4 — wallet and game integrity
+- [ ] Keep wallet/crypto behavior read-only or sandbox/test until authority/accounting/custody requirements are verified.
+- [ ] Validate Crash, Plinko, High-Low, Blackjack, and Roulette against shared session/accounting rules.
+- [ ] Add/test idempotency for duplicate-sensitive mutations.
+**Exit evidence:** accounting/session invariants and duplicate-request tests.
+
+### Wave 5 — observability and provider failures
+- [ ] Structured application logs.
+- [ ] Error tracking.
+- [ ] Latency/error/availability metrics.
+- [ ] Actionable alerts.
+- [ ] AI/email/storage/payment failure drills.
+**Exit evidence:** staged fault produces expected telemetry and alert without corrupting state.
+
+### Wave 6 — load and resilience
+- [ ] Load test login, feed, chat, HopeAI, and core APIs.
+- [ ] Exercise WebSocket disconnect/reconnect.
+- [ ] Exercise retries/timeouts and concurrent duplicate-sensitive operations.
+**Exit evidence:** stored load report with thresholds, failures, and remediation status.
+
+### Wave 7 — deployment and rollback
+- [ ] Verify the real beta deployment target and environment configuration.
+- [ ] Re-run migration/backup/restore against staging-compatible infrastructure.
+- [ ] Execute and time a rollback.
+**Exit evidence:** deployment + rollback runbook proven against the chosen target.
+
+### Wave 8 — release candidate
+- [ ] Freeze noncritical changes.
+- [ ] Run clean-account/browser end-to-end smoke.
+- [ ] Verify exact release SHA has green CI and all required artifacts.
+- [ ] Publish candidate known limitations.
+**Exit evidence:** one exact SHA satisfies all release gates.
+
+### Wave 9 — soak
+- [ ] Run the candidate for 24–48 hours with limited users/staging traffic.
+- [ ] Monitor errors, latency, resource use, provider failures, and data integrity.
+- [ ] Fix release blockers only and restart the soak when a candidate-changing fix lands.
+**Exit evidence:** completed soak with no unresolved release blocker.
+
+### Wave 10 — beta launch
+- [ ] Tag the exact verified commit.
+- [ ] Deploy that exact artifact/configuration.
+- [ ] Run post-deploy smoke and verify telemetry.
+- [ ] Publish accurate beta notes/known limitations.
+**Exit evidence:** tagged beta is live, observable, reversible, and matches the verified release candidate.
+
+### Current execution checkpoint
+Engineering integrity is established enough to begin the wave sequence: the stabilization work has demonstrated green tests/build/dependency/Docker/runtime/recovery gates on validated heads. Clean TypeScript remains open, and hosted identity/session/authorization proof remains the first unresolved release gate. Do not mark Waves 1–10 complete from code presence alone.

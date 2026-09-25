@@ -369,29 +369,14 @@ export const hopeAIRouter = router({
       };
     }),
   // ─── Chat History Persistence ─────────────────────────────────────────────
-  getChatHistory: protectedProcedure
-    .input(
-      z.object({
-        limit: z.number().optional(),
-        sessionId: z.string().optional(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      const { getHopeAIChatHistory } = await import("./db");
-      const history = await getHopeAIChatHistory(
-        ctx.user!.id,
-        input.limit ?? 50,
-        input.sessionId
-      );
-      // Return in chronological order (oldest first)
-      return history.reverse().map(m => ({
-        role: m.role,
-        content: m.content,
-        tone: m.tone,
-        emotionalState: m.emotionalState,
-        createdAt: m.createdAt,
-      }));
-    }),
+  // Disabled for beta until a canonical persisted HopeAI message schema exists.
+  // Returning an explicit capability status is safer than exposing procedures
+  // that import nonexistent persistence helpers at runtime.
+  getChatHistory: protectedProcedure.query(async () => ({
+    configured: false as const,
+    reason: "hope_ai_chat_persistence_not_configured" as const,
+    messages: [] as const,
+  })),
   saveChatMessage: protectedProcedure
     .input(
       z.object({
@@ -402,84 +387,27 @@ export const hopeAIRouter = router({
         sessionId: z.string().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const { saveHopeAIMessage } = await import("./db");
-      return saveHopeAIMessage({
-        userId: ctx.user!.id,
-        role: input.role,
-        content: input.content,
-        tone: input.tone,
-        emotionalState: input.emotionalState,
-        sessionId: input.sessionId,
-      });
-    }),
-  clearChatHistory: protectedProcedure
-    .input(z.object({ sessionId: z.string().optional() }))
-    .mutation(async ({ ctx, input }) => {
-      const { clearHopeAIChatHistory } = await import("./db");
-      await clearHopeAIChatHistory(ctx.user!.id, input.sessionId);
-      return { success: true };
-    }),
-  // ─── Long-Term Personality Memory ──────────────────────────────────────────
-  getPersonalityProfile: protectedProcedure.query(async ({ ctx }) => {
-    const { getHopeAIChatHistory } = await import("./db");
-    const history = await getHopeAIChatHistory(ctx.user!.id, 100);
-    if (!history.length)
-      return {
-        dominantStates: [],
-        dominantTones: [],
-        totalSessions: 0,
-        totalMessages: 0,
-        breakthroughTopics: [],
-        personalityInsights: [],
-        lastActive: null,
-      };
-    const stateCounts: Record<string, number> = {};
-    const toneCounts: Record<string, number> = {};
-    for (const msg of history) {
-      if (msg.emotionalState)
-        stateCounts[msg.emotionalState] =
-          (stateCounts[msg.emotionalState] ?? 0) + 1;
-      if (msg.tone) toneCounts[msg.tone] = (toneCounts[msg.tone] ?? 0) + 1;
-    }
-    const dominantStates = Object.entries(stateCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([state, count]) => ({ state, count }));
-    const dominantTones = Object.entries(toneCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([tone, count]) => ({ tone, count }));
-    const sorted = [...history].sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
-    let sessions = 1;
-    for (let i = 1; i < sorted.length; i++) {
-      const gap =
-        new Date(sorted[i].createdAt).getTime() -
-        new Date(sorted[i - 1].createdAt).getTime();
-      if (gap > 30 * 60 * 1000) sessions++;
-    }
-    return {
-      dominantStates,
-      dominantTones,
-      totalSessions: sessions,
-      totalMessages: history.length,
-      lastActive: sorted[sorted.length - 1]?.createdAt ?? null,
-      personalityInsights: [
-        dominantStates[0]
-          ? `You often feel ${dominantStates[0].state} when talking to HOPE.`
-          : null,
-        dominantTones[0]
-          ? `HOPE most often responds with a ${dominantTones[0].tone} tone for you.`
-          : null,
-        sessions > 5
-          ? `You've had ${sessions} conversations with HOPE — you're building a real connection.`
-          : null,
-      ].filter(Boolean) as string[],
-    };
-  }),
+    .mutation(async () => ({
+      success: false as const,
+      configured: false as const,
+      reason: "hope_ai_chat_persistence_not_configured" as const,
+    })),
+  clearChatHistory: protectedProcedure.mutation(async () => ({
+    success: false as const,
+    configured: false as const,
+    reason: "hope_ai_chat_persistence_not_configured" as const,
+  })),
+  getPersonalityProfile: protectedProcedure.query(async () => ({
+    configured: false as const,
+    reason: "hope_ai_chat_persistence_not_configured" as const,
+    dominantStates: [] as const,
+    dominantTones: [] as const,
+    totalSessions: 0,
+    totalMessages: 0,
+    breakthroughTopics: [] as const,
+    personalityInsights: [] as const,
+    lastActive: null,
+  })),
 
   // ─── Gray Area Deep Analysis ────────────────────────────────────────────
   grayArea: publicProcedure
