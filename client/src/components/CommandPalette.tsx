@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { ROUTE_CAPABILITIES, type RouteCapability } from "@/data/routeCatalog";
+import { AREA_STATUS_LABELS, ECOSYSTEM_AREAS } from "@/data/ecosystemAreas";
 
 const RECENT_KEY = "skycoin4444.recent-capabilities";
 const FAVORITES_KEY = "skycoin4444.favorite-capabilities";
@@ -273,18 +274,18 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           <details className="mx-4 mb-3 rounded-xl border border-white/10 bg-white/[0.02]">
             <summary className="cursor-pointer list-none px-3 py-2.5 text-xs font-medium text-white/75 marker:hidden">
               <span className="mr-2 text-purple-300">＋</span>
-              Explore all 20 platform areas
+              Explore all 66 ecosystem areas
               <span className="ml-2 text-white/35">searchable customer map</span>
             </summary>
             <div className="grid max-h-56 gap-1 overflow-y-auto border-t border-white/10 p-2 sm:grid-cols-2">
-              {PLATFORM_AREAS.map(([label, description, search]) => (
+              {ECOSYSTEM_AREAS.map(area => (
                 <button
-                  key={label}
-                  onClick={() => { setQuery(search); setActiveCategory("All"); setSelected(0); }}
+                  key={area.id}
+                  onClick={() => { setQuery(area.label); setActiveCategory("All"); setSelected(0); }}
                   className="rounded-lg px-2.5 py-2 text-left transition hover:bg-white/10"
                 >
-                  <div className="text-xs font-medium text-white">{label}</div>
-                  <div className="mt-0.5 line-clamp-1 text-[11px] text-white/40">{description}</div>
+                  <div className="flex items-center justify-between gap-2 text-xs font-medium text-white"><span>{area.label}</span><span className={`text-[10px] ${area.status === "verified" ? "text-emerald-300" : area.status === "beta" ? "text-cyan-300" : area.status === "blocked" ? "text-rose-300" : "text-amber-300"}`}>{AREA_STATUS_LABELS[area.status]}</span></div>
+                  <div className="mt-0.5 line-clamp-1 text-[11px] text-white/40">{area.description}</div>
                 </button>
               ))}
             </div>
