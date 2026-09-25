@@ -32,7 +32,6 @@ import {
 } from "../drizzle/schema";
 import { battlePasses } from "../drizzle/schema-extended";
 import { eq, desc, and, or, sql, gte, lte } from "drizzle-orm";
-import { streamingCore } from "./core-facades";
 
 const streamChatMessages = new Map<
   string,
@@ -230,41 +229,106 @@ export const marketplaceRouter = router({
 // ============ STREAMING PROCEDURES ============
 export const streamRouter = router({
   live: publicProcedure
-    .input(z.object({ category: z.string().optional(), limit: z.number().min(1).max(50).default(20) }).optional())
-    .query(async ({ input }) => streamingCore.getLiveStreams(input?.category, input?.limit ?? 20)),
+    .input(
+      z
+        .object({
+          category: z.string().max(255).optional(),
+          limit: z.number().min(1).max(50).default(20),
+        })
+        .optional()
+    )
+    .query(async ({ input }) =>
+      db.listPersistentLiveStreams(input?.category, input?.limit ?? 20)
+    ),
   create: protectedProcedure
-    .input(z.object({ title: z.string().min(1).max(120), description: z.string().max(500).optional(), category: z.string().max(40).optional(), tags: z.array(z.string().max(30)).max(10).optional() }))
-    .mutation(async ({ ctx, input }) => streamingCore.createStreamSession({ creatorId: Number(ctx.user.id), ...input })),
-  goLive: protectedProcedure
-    .input(z.object({ sessionId: z.string() }))
+    .input(
+      z.object({
+        title: z.string().trim().min(1).max(120),
+        description: z.string().trim().max(255).optional(),
+        category: z.string().trim().max(40).optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      const session = await streamingCore.goLive(input.sessionId, Number(ctx.user.id));
-      if (!session) throw new Error("Stream session not found or not owned by you");
+      const session = await db.createPersistentStreamSession({
+        creatorId: String(ctx.user.id),
+        ...input,
+      });
+      if (!session) throw new Error("Failed to persist stream session");
+      return session;
+    }),
+  goLive: protectedProcedure
+    .input(z.object({ sessionId: z.string().min(1).max(255) }))
+    .mutation(async ({ ctx, input }) => {
+      const session = await db.markPersistentStreamLive(
+        input.sessionId,
+        String(ctx.user.id)
+      );
+      if (!session) {
+        throw new Error("Stream session not found or not owned by you");
+      }
       return session;
     }),
   sendChat: protectedProcedure
-    .input(z.object({ streamId: z.string(), message: z.string() }))
+    .input(
+      z.object({
+        streamId: z.string().min(1).max(255),
+        message: z.string().trim().min(1).max(255),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      const message = { id: `chat_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, author: ctx.user.name || ctx.user.username || "Member", text: input.message.trim(), createdAt: new Date().toISOString() };
-      if (!message.text) throw new Error("Message cannot be empty");
+      const session = await db.getPersistentStreamSession(input.streamId);
+      if (!session || session.status !== "live") {
+        throw new Error("Live chat is available only for an active stream");
+      }
+
+      const message = {
+        id: `chat_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        author: ctx.user.name || ctx.user.username || "Member",
+        text: input.message,
+        createdAt: new Date().toISOString(),
+      };
       const current = streamChatMessages.get(input.streamId) ?? [];
-      streamChatMessages.set(input.streamId, [...current, message].slice(-200));
-      return message;
+      streamChatMessages.set(
+        input.streamId,
+        [...current, message].slice(-200)
+      );
+      return { ...message, persistence: "ephemeral" as const };
     }),
   chat: publicProcedure
-    .input(z.object({ streamId: z.string(), limit: z.number().default(100) }))
-    .query(async ({ input }) => (streamChatMessages.get(input.streamId) ?? []).slice(-input.limit)),
+    .input(
+      z.object({
+        streamId: z.string().min(1).max(255),
+        limit: z.number().min(1).max(200).default(100),
+      })
+    )
+    .query(async ({ input }) =>
+      (streamChatMessages.get(input.streamId) ?? []).slice(-input.limit)
+    ),
   donate: protectedProcedure
-    .input(z.object({ streamId: z.string(), amount: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      if (input.amount <= 0 || input.amount > 1000000) throw new Error("Tip amount is outside the allowed range");
-      const gift = await streamingCore.sendGift({ sessionId: input.streamId, senderId: Number(ctx.user.id), giftType: "coin", quantity: input.amount, message: "Viewer tip" });
-      if (!gift) throw new Error("This stream is not currently accepting tips");
-      return gift;
+    .input(
+      z.object({
+        streamId: z.string().min(1).max(255),
+        amount: z.number().positive().max(1_000_000),
+      })
+    )
+    .mutation(async () => {
+      throw new Error(
+        "Live-stream tipping is not configured: no verified settlement/accounting contract is enabled"
+      );
     }),
   endStream: protectedProcedure
-    .input(z.object({ streamId: z.string() }))
-    .mutation(async ({ ctx, input }) => streamingCore.endStream(input.streamId, Number(ctx.user.id))),
+    .input(z.object({ streamId: z.string().min(1).max(255) }))
+    .mutation(async ({ ctx, input }) => {
+      const session = await db.endPersistentStreamSession(
+        input.streamId,
+        String(ctx.user.id)
+      );
+      if (!session) {
+        throw new Error("Stream session not found or not owned by you");
+      }
+      streamChatMessages.delete(input.streamId);
+      return session;
+    }),
 });
 
 // ============ TRANSACTION PROCEDURES ============
