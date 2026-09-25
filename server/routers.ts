@@ -32,6 +32,12 @@ import {
 } from "../drizzle/schema";
 import { battlePasses } from "../drizzle/schema-extended";
 import { eq, desc, and, or, sql, gte, lte } from "drizzle-orm";
+import { streamingCore } from "./core-facades";
+
+const streamChatMessages = new Map<
+  string,
+  Array<{ id: string; author: string; text: string; createdAt: string }>
+>();
 
 // ============ USER PROCEDURES ============
 export const userRouter = router({
@@ -223,22 +229,42 @@ export const marketplaceRouter = router({
 
 // ============ STREAMING PROCEDURES ============
 export const streamRouter = router({
-  live: publicProcedure.query(async () => []),
+  live: publicProcedure
+    .input(z.object({ category: z.string().optional(), limit: z.number().min(1).max(50).default(20) }).optional())
+    .query(async ({ input }) => streamingCore.getLiveStreams(input?.category, input?.limit ?? 20)),
   create: protectedProcedure
-    .input(z.object({ title: z.string(), description: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .input(z.object({ title: z.string().min(1).max(120), description: z.string().max(500).optional(), category: z.string().max(40).optional(), tags: z.array(z.string().max(30)).max(10).optional() }))
+    .mutation(async ({ ctx, input }) => streamingCore.createStreamSession({ creatorId: Number(ctx.user.id), ...input })),
+  goLive: protectedProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const session = await streamingCore.goLive(input.sessionId, Number(ctx.user.id));
+      if (!session) throw new Error("Stream session not found or not owned by you");
+      return session;
+    }),
   sendChat: protectedProcedure
     .input(z.object({ streamId: z.string(), message: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .mutation(async ({ ctx, input }) => {
+      const message = { id: `chat_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, author: ctx.user.name || ctx.user.username || "Member", text: input.message.trim(), createdAt: new Date().toISOString() };
+      if (!message.text) throw new Error("Message cannot be empty");
+      const current = streamChatMessages.get(input.streamId) ?? [];
+      streamChatMessages.set(input.streamId, [...current, message].slice(-200));
+      return message;
+    }),
   chat: publicProcedure
     .input(z.object({ streamId: z.string(), limit: z.number().default(100) }))
-    .query(async () => []),
+    .query(async ({ input }) => (streamChatMessages.get(input.streamId) ?? []).slice(-input.limit)),
   donate: protectedProcedure
     .input(z.object({ streamId: z.string(), amount: z.number() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .mutation(async ({ ctx, input }) => {
+      if (input.amount <= 0 || input.amount > 1000000) throw new Error("Tip amount is outside the allowed range");
+      const gift = await streamingCore.sendGift({ sessionId: input.streamId, senderId: Number(ctx.user.id), giftType: "coin", quantity: input.amount, message: "Viewer tip" });
+      if (!gift) throw new Error("This stream is not currently accepting tips");
+      return gift;
+    }),
   endStream: protectedProcedure
     .input(z.object({ streamId: z.string() }))
-    .mutation(async ({ ctx, input }) => ({ success: true })),
+    .mutation(async ({ ctx, input }) => streamingCore.endStream(input.streamId, Number(ctx.user.id))),
 });
 
 // ============ TRANSACTION PROCEDURES ============
