@@ -1,22 +1,2 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-
-const TreasuryManagement = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">
-          TreasuryManagement
-        </h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">
-            TreasuryManagement feature coming soon...
-          </p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default TreasuryManagement;
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
+export default function TreasuryManagement() { return <EngineeringBetaWorkspace areaId="governance" title="Treasury management" description="Review treasury controls, proposal evidence, and authority boundaries without enabling unreviewed transfers or financial claims." actions={["Document treasury authority and approval thresholds.", "Review proposals before any transfer or custody action.", "Require audit logs, recovery controls, and independent review for economic flows."]} related={[{ label: "DAO governance", href: "/daogovernance" }, { label: "Treasury", href: "/daotreasury" }, { label: "Compliance", href: "/compliancecenter" }]} />; }

@@ -15,6 +15,7 @@
     "db:restore": "node scripts/db-restore.mjs",
     "catalog:routes": "node scripts/generate-route-catalog.mjs",
     "check:type-debt": "node scripts/check-type-debt.mjs",
+    "quality:gate": "node scripts/quality-gate.mjs",
     "staging:verify": "node scripts/staging-hosted-verify.mjs",
     "rc:browser-smoke": "node scripts/release-candidate-browser-smoke.mjs",
     "rc:evidence": "node scripts/release-candidate-evidence.mjs"

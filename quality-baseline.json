@@ -1,0 +1,5 @@
+{
+  "placeholderPages": 501,
+  "mockMarkers": 68,
+  "reason": "Baseline captured with scripts/quality-gate.mjs recursive TypeScript scan on 2026-09-25. The gate blocks future regressions; it does not treat the baseline as production quality."
+}
