@@ -4,6 +4,39 @@ This file records deliberate use of maintained open-source components to replace
 fragile or misleading in-house paths. It is not a claim that every platform
 feature is production-ready.
 
+## 2026-09-25 — Password/JWT security primitives
+
+**Replaced:** a legacy password-auth helper used raw SHA-256 for passwords,
+contained a hard-coded development JWT fallback secret, accepted any non-empty
+email/password pair as a successful login, and returned success for password
+changes/resets without persisted credential updates.
+
+**Adopted primitives:**
+
+- Node.js `node:crypto` `scrypt` KDF with a per-password random salt.
+  Node.js is MIT-licensed.
+- `jose` for HS256 JWT signing/verification (already present in
+  `package.json`). Upstream: https://github.com/panva/jose — MIT license.
+
+No third-party authentication server source is copied into this repository.
+
+### Runtime contract
+
+- password hashes use an explicit versioned scrypt encoding;
+- comparisons use `timingSafeEqual`;
+- legacy raw SHA-256 hashes are rejected rather than silently accepted;
+- JWT signing requires an explicitly configured `JWT_SECRET` of at least 32
+  characters; there is no fallback secret;
+- password signup/signin/change/reset helpers fail closed until a real
+  credential store and reset-delivery flow are integrated and tested.
+
+### Limitations
+
+This hardens a legacy helper and removes fake-success behavior. It does not
+enable email/password login for the beta, does not migrate any historical
+password database, and does not claim Keycloak or another identity provider is
+provisioned. The canonical beta auth router remains the source of truth.
+
 ## 2026-09-25 — Real Redis cache health
 
 **Replaced:** the health monitor previously hard-coded the cache check as
