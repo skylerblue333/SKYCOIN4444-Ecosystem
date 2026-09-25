@@ -5,9 +5,33 @@ import { nanoid } from "nanoid";
 import * as schema from "../drizzle/index";
 import { and, desc, eq, or, sql } from "drizzle-orm";
 
-const poolConnection = mysql.createPool(process.env.DATABASE_URL as string);
+let configuredDb: any | null = null;
+let poolConnection: ReturnType<typeof mysql.createPool> | null = null;
 
-export const db = drizzle(poolConnection, { schema, mode: "default" });
+function getConfiguredDb() {
+  if (configuredDb) return configuredDb;
+
+  const databaseUrl = process.env.DATABASE_URL?.trim();
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not configured");
+  }
+
+  poolConnection = mysql.createPool(databaseUrl);
+  configuredDb = drizzle(poolConnection, { schema, mode: "default" });
+  return configuredDb;
+}
+
+// Keep existing call sites source-compatible while deferring the actual MySQL
+// pool creation until a database-backed path is invoked. This allows liveness
+// and static beta surfaces to boot in a truthful degraded state when staging
+// database configuration is intentionally absent.
+export const db = new Proxy({} as any, {
+  get(_target, property) {
+    const database = getConfiguredDb();
+    const value = Reflect.get(database, property, database);
+    return typeof value === "function" ? value.bind(database) : value;
+  },
+});
 const {
   users,
   tokenBalances,
@@ -31,7 +55,7 @@ function stableId(prefix: string, ...parts: string[]) {
 }
 
 export async function getDb() {
-  return db;
+  return getConfiguredDb();
 }
 
 // Beta-critical persistence helpers below use the canonical MySQL schema.
