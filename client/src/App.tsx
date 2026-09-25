@@ -8,6 +8,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { CommandPalette, useCommandPalette } from "@/components/CommandPalette";
 import { EcosystemAreaStatus } from "@/components/EcosystemAreaStatus";
+import Navigation from "@/components/Navigation";
 
 // Lazy load all pages
 const ABTesting = lazy(() => import("./pages/ABTesting"));
@@ -1035,6 +1036,26 @@ const WorldSimulationControl = lazy(
 const YieldFarming = lazy(() => import("./pages/YieldFarming"));
 const ZapierIntegration = lazy(() => import("./pages/ZapierIntegration"));
 
+
+const ComponentsShowcase = lazy(() => import("./pages/ComponentShowcase"));
+const ITServicesLanding = lazy(() => import("./pages/ITServicesLanding"));
+const ITServicesPortal = lazy(() => import("./pages/ITServicesPortal"));
+const Phase20Hub = lazy(() => import("./pages/phase20/Phase20Hub"));
+const Wave2AiCore = lazy(() => import("./pages/wave2/AiCore"));
+const Wave2Marketplace = lazy(() => import("./pages/wave2/Marketplace"));
+const Wave2Notifications = lazy(() => import("./pages/wave2/Notifications"));
+const Wave2Profile = lazy(() => import("./pages/wave2/Profile"));
+const Wave3Analytics = lazy(() => import("./pages/wave3/Analytics"));
+const Wave3Gaming = lazy(() => import("./pages/wave3/Gaming"));
+const Wave3Governance = lazy(() => import("./pages/wave3/Governance"));
+const Wave3Learning = lazy(() => import("./pages/wave3/Learning"));
+const Wave4Admin = lazy(() => import("./pages/wave4/Admin"));
+const Wave4CreatorStudio = lazy(() => import("./pages/wave4/CreatorStudio"));
+const Wave4Explore = lazy(() => import("./pages/wave4/Explore"));
+const Wave4Payments = lazy(() => import("./pages/wave4/Payments"));
+const Wave4Security = lazy(() => import("./pages/wave4/Security"));
+const Wave4Settings = lazy(() => import("./pages/wave4/Settings"));
+
 const NotFound = lazy(() => import("./pages/NotFound"));
 const App = () => {
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } =
@@ -1052,6 +1073,7 @@ const App = () => {
               Skip to main content
             </a>
             <EcosystemAreaStatus />
+            <Navigation />
             <main id="main-content" className="flex-1">
               <Suspense
                 fallback={
@@ -2949,6 +2971,25 @@ const App = () => {
                     path="/zapierintegration"
                     component={ZapierIntegration}
                   />
+
+                  <Route path="/componentshowcase" component={ComponentsShowcase} />
+                  <Route path="/itserviceslanding" component={ITServicesLanding} />
+                  <Route path="/itservicesportal" component={ITServicesPortal} />
+                  <Route path="/phase20hub" component={Phase20Hub} />
+                  <Route path="/wave2/aicore" component={Wave2AiCore} />
+                  <Route path="/wave2/marketplace" component={Wave2Marketplace} />
+                  <Route path="/wave2/notifications" component={Wave2Notifications} />
+                  <Route path="/wave2/profile" component={Wave2Profile} />
+                  <Route path="/wave3/analytics" component={Wave3Analytics} />
+                  <Route path="/wave3/gaming" component={Wave3Gaming} />
+                  <Route path="/wave3/governance" component={Wave3Governance} />
+                  <Route path="/wave3/learning" component={Wave3Learning} />
+                  <Route path="/wave4/admin" component={Wave4Admin} />
+                  <Route path="/wave4/creatorstudio" component={Wave4CreatorStudio} />
+                  <Route path="/wave4/explore" component={Wave4Explore} />
+                  <Route path="/wave4/payments" component={Wave4Payments} />
+                  <Route path="/wave4/security" component={Wave4Security} />
+                  <Route path="/wave4/settings" component={Wave4Settings} />
                   {/* Default route */}
                   <Route path="/" component={Home} />
                   {/* 404 */}
