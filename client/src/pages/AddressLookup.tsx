@@ -1,18 +1,5 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
 
-const AddressLookup = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">AddressLookup</h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">AddressLookup feature coming soon...</p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default AddressLookup;
+export default function AddressLookup() {
+  return <EngineeringBetaWorkspace areaId="identity" title="Address lookup" description="Review identity and address lookup boundaries without implying verification or ownership from a lookup alone." actions={["Confirm the network and source before using a result.", "Treat lookup results as unverified until an approved identity flow passes.", "Do not expose private or sensitive address data in public logs."]} />;
+}

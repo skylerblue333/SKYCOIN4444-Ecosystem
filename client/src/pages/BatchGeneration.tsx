@@ -1,20 +1,5 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
 
-const BatchGeneration = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">BatchGeneration</h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">
-            BatchGeneration feature coming soon...
-          </p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default BatchGeneration;
+export default function BatchGeneration() {
+  return <EngineeringBetaWorkspace areaId="ai-content" title="Batch generation" description="Plan batch content generation with input validation, cost limits, and review checkpoints." actions={["Validate a small sample before scaling a batch.", "Set output, cost, and rate limits before running.", "Review generated content for accuracy, rights, and safety."]} />;
+}

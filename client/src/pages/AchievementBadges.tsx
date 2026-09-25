@@ -1,22 +1,5 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
 
-const AchievementBadges = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">
-          AchievementBadges
-        </h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">
-            AchievementBadges feature coming soon...
-          </p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default AchievementBadges;
+export default function AchievementBadges() {
+  return <EngineeringBetaWorkspace areaId="gamification" title="Achievement badges" description="Review badge definitions, evidence, and user-facing progress without implying rewards have monetary value." actions={["Read the criteria required for each badge.", "Keep achievement evidence attributable and auditable.", "Treat badges as product status, not financial entitlement."]} />;
+}

@@ -1,18 +1,5 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
 
-const AdvancedOrders = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">AdvancedOrders</h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">AdvancedOrders feature coming soon...</p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default AdvancedOrders;
+export default function AdvancedOrders() {
+  return <EngineeringBetaWorkspace areaId="trading" title="Advanced orders" description="Plan order conditions and risk controls without enabling unsupported trading or execution claims." actions={["Define order conditions and cancellation behavior first.", "Use test or paper workflows until execution is verified.", "Review fees, slippage, custody, and failure handling before any live action."]} />;
+}
