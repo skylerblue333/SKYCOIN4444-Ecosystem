@@ -4,6 +4,33 @@ This file records deliberate use of maintained open-source components to replace
 fragile or misleading in-house paths. It is not a claim that every platform
 feature is production-ready.
 
+## 2026-09-25 — Real Redis cache health
+
+**Replaced:** the health monitor previously hard-coded the cache check as
+`status: "pass"` with the message `"Cache operational"` without contacting
+any cache service.
+
+**Adopted component:** `ioredis` (already present in `package.json`).
+
+- Upstream: https://github.com/redis/ioredis
+- License: MIT
+- Integration style: package API only; no upstream source files copied into this
+  repository.
+- Runtime contract: when `REDIS_URL` is configured, health checks issue a real
+  Redis `PING` and report pass only after `PONG`.
+- Failure behavior: configured-but-unreachable Redis reports `fail`; an
+  intentionally unconfigured Redis dependency reports `warn` rather than a
+  fake success.
+- Test boundary: CI uses an injected Redis client so the integration contract is
+  deterministic without requiring a live external Redis service.
+
+### Limitations
+
+This proves the health endpoint no longer fabricates cache readiness. It does
+not yet migrate the repository's in-memory query cache or in-memory queue
+implementations to durable Redis/BullMQ storage, and it does not prove hosted
+Redis availability. Those require separate integration and failure-path tests.
+
 ## 2026-09-25 — Real LLM streaming
 
 **Replaced:** the `/api/ai/code-stream` path previously waited for a complete
