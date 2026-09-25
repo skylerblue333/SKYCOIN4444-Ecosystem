@@ -41,3 +41,18 @@ certification. Hosted provider-failure and reconnect tests remain release gates.
 4. Add focused tests for the integration boundary.
 5. Keep capability claims limited to what CI and hosted verification actually
    prove.
+
+
+## 2026-09-25 — Enterprise integration hub (12 products)
+
+Added optional adapters for Valkey, BullMQ, SeaweedFS/S3, OpenSearch, Qdrant,
+ClickHouse, Prometheus, OpenTelemetry, Fluent Bit, Flagsmith, Keycloak, and
+Kong. These integrations use package APIs or documented network protocols;
+third-party server source code is not copied into SKYCOIN4444.
+
+All operations are admin-only, environment-configured, bounded, and fail closed.
+Missing providers report `not_configured`, provider failures report
+`degraded`, and production provisioning is not claimed.
+
+Detailed contracts, licenses, limits, and environment variables are documented
+in `docs/ENTERPRISE_OPEN_SOURCE_WAVE.md`.
