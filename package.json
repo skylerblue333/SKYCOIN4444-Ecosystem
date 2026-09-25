@@ -13,6 +13,7 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "db:backup": "node scripts/db-backup.mjs",
     "db:restore": "node scripts/db-restore.mjs",
+    "catalog:routes": "node scripts/generate-route-catalog.mjs",
     "check:type-debt": "node scripts/check-type-debt.mjs"
   },
   "dependencies": {
