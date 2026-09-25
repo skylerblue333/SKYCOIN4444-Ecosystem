@@ -134,6 +134,7 @@ function waitForMessage(ws, predicate, timeoutMs = 4000) {
 async function websocketRoundTrip(id) {
   const started = performance.now();
   const ws = new WebSocket(wsUrl);
+  const readyPromise = waitForMessage(ws, msg => msg?.type === "ready");
 
   await new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -150,7 +151,7 @@ async function websocketRoundTrip(id) {
     });
   });
 
-  await waitForMessage(ws, msg => msg?.type === "ready");
+  await readyPromise;
   const pingId = `wave6-${id}`;
   ws.send(JSON.stringify({ type: "ping", id: pingId }));
   await waitForMessage(
