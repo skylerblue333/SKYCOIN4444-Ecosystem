@@ -15,7 +15,9 @@
     "db:restore": "node scripts/db-restore.mjs",
     "catalog:routes": "node scripts/generate-route-catalog.mjs",
     "check:type-debt": "node scripts/check-type-debt.mjs",
-    "staging:verify": "node scripts/staging-hosted-verify.mjs"
+    "staging:verify": "node scripts/staging-hosted-verify.mjs",
+    "rc:browser-smoke": "node scripts/release-candidate-browser-smoke.mjs",
+    "rc:evidence": "node scripts/release-candidate-evidence.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
