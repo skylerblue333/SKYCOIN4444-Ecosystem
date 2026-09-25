@@ -1,16 +1,17 @@
 name: Production readiness gate
 
 on:
-  pull_request:
+  workflow_dispatch:
   push:
-    branches: [main]
+    tags:
+      - "v*"
 
 permissions:
   contents: read
 
 jobs:
   release-gates:
-    name: Required release gates
+    name: Required production release gates
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -19,8 +20,6 @@ jobs:
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -34,7 +33,7 @@ jobs:
       - name: Dependency audit
         run: pnpm audit --audit-level high
 
-      - name: TypeScript validation
+      - name: Full TypeScript validation
         run: pnpm check
 
       - name: Tests
