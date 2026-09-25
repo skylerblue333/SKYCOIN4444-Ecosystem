@@ -39,10 +39,15 @@ export function getSessionCookieOptions(
   //       ? hostname
   //       : undefined;
 
+  const secure = isSecureRequest(req);
+
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req),
+    // Modern browsers reject SameSite=None cookies that are not Secure.
+    // Local/insecure HTTP beta runs are first-party, so Lax preserves the
+    // session without weakening the HTTPS production contract.
+    sameSite: secure ? "none" : "lax",
+    secure,
   };
 }
