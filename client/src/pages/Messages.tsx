@@ -1,50 +1,23 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { getLoginUrl } from "@/const";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Send,
-  Lock,
-  Shield,
-  MoreVertical,
-  Search,
-  MessageCircle,
   ArrowLeft,
-  Image,
-  Smile,
-  Mic,
-  Plus,
-  Phone,
-  Video,
-  Trash2,
-  Edit3,
-  Timer,
-  X,
   Check,
   CheckCheck,
+  Lock,
+  MessageCircle,
+  RefreshCw,
+  Search,
+  Send,
+  ShieldCheck,
   UserPlus,
-  Flame,
-  EyeOff,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 
 function timeAgo(ts: string | Date) {
   const diff = (Date.now() - new Date(ts).getTime()) / 1000;
@@ -59,131 +32,119 @@ function timeAgo(ts: string | Date) {
 
 export default function Messages() {
   const { user, isAuthenticated } = useAuth();
-  const [selectedChannelId, setSelectedChannelId] = useState<number | null>(
-    null
-  );
+  const [recipientDraft, setRecipientDraft] = useState("");
+  const [activeRecipientId, setActiveRecipientId] = useState("");
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [snapMode, setSnapMode] = useState(false);
-  const [editingMsgId, setEditingMsgId] = useState<number | null>(null);
-  const [editText, setEditText] = useState("");
-  const [showNewChat, setShowNewChat] = useState(false);
-  const [newChatUserId, setNewChatUserId] = useState("");
-  const [newChatMsg, setNewChatMsg] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const pendingReadIds = useRef<Set<string>>(new Set());
   const utils = trpc.useUtils();
 
-  const { data: conversations, isLoading: convoLoading } =
-    trpc.dm.conversations.useQuery(undefined, {
-      enabled: isAuthenticated,
-      refetchInterval: 5000,
-    });
-  const { data: messages, isLoading: msgLoading } = trpc.dm.messages.useQuery(
-    { channelId: selectedChannelId! },
-    { enabled: !!selectedChannelId, refetchInterval: 3000 }
+  const currentUserId = user?.id ? String(user.id) : "";
+
+  const conversation = trpc.message.list.useQuery(
+    { userId: activeRecipientId },
+    {
+      enabled: isAuthenticated && activeRecipientId.length > 0,
+      refetchInterval: 3000,
+      refetchOnWindowFocus: true,
+    }
   );
-  const { data: unreadData } = trpc.dm.unreadCount.useQuery(undefined, {
-    enabled: isAuthenticated,
-    refetchInterval: 5000,
-  });
 
-  const sendMutation = trpc.dm.send.useMutation({
-    onSuccess: () => {
+  const sendMutation = trpc.message.send.useMutation({
+    onSuccess: async () => {
       setMessageText("");
-      utils.dm.messages.invalidate({ channelId: selectedChannelId! });
-      utils.dm.conversations.invalidate();
+      await utils.message.list.invalidate({ userId: activeRecipientId });
     },
-    onError: e => toast.error(e.message),
+    onError: error => toast.error(error.message),
   });
 
-  const deleteMutation = trpc.dm.deleteMessage.useMutation({
-    onSuccess: () => {
-      utils.dm.messages.invalidate({ channelId: selectedChannelId! });
-      toast.success("Message deleted");
-    },
-    onError: e => toast.error(e.message),
-  });
+  const markReadMutation = trpc.message.markAsRead.useMutation();
 
-  const startConvoMutation = trpc.dm.startConversation.useMutation({
-    onSuccess: data => {
-      if (data.channelId) {
-        setSelectedChannelId(data.channelId);
-        utils.dm.conversations.invalidate();
-      }
-      setShowNewChat(false);
-      setNewChatUserId("");
-      setNewChatMsg("");
-    },
-    onError: e => toast.error(e.message),
-  });
-
-  const markReadMutation = trpc.dm.markRead.useMutation();
+  const messages = conversation.data ?? [];
 
   useEffect(() => {
-    if (selectedChannelId)
-      markReadMutation.mutate({ channelId: selectedChannelId });
-  }, [selectedChannelId]);
+    if (!currentUserId || !activeRecipientId) return;
+
+    for (const message of messages) {
+      if (
+        message.id &&
+        message.recipientId === currentUserId &&
+        !message.read &&
+        !pendingReadIds.current.has(message.id)
+      ) {
+        pendingReadIds.current.add(message.id);
+        markReadMutation.mutate(
+          { messageId: message.id },
+          {
+            onSettled: () => {
+              pendingReadIds.current.delete(message.id);
+              void utils.message.list.invalidate({ userId: activeRecipientId });
+            },
+          }
+        );
+      }
+    }
+  }, [
+    activeRecipientId,
+    currentUserId,
+    markReadMutation,
+    messages,
+    utils.message.list,
+  ]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages.length]);
 
-  // Snap mode: auto-delete messages after 10s from view
-  useEffect(() => {
-    if (!snapMode || !messages) return;
-    const timer = setTimeout(() => {
-      (messages as any[]).forEach((msg: any) => {
-        if (msg.senderId === user?.id) {
-          deleteMutation.mutate({ messageId: msg.id });
-        }
-      });
-    }, 10000);
-    return () => clearTimeout(timer);
-  }, [snapMode, messages]);
+  const filteredMessages = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return messages;
+    return messages.filter(message =>
+      (message.content ?? "").toLowerCase().includes(query)
+    );
+  }, [messages, searchQuery]);
+
+  const openConversation = useCallback(() => {
+    const recipientId = recipientDraft.trim();
+    if (!recipientId) {
+      toast.error("Enter a user ID");
+      return;
+    }
+    if (recipientId === currentUserId) {
+      toast.error("Choose another user");
+      return;
+    }
+
+    setActiveRecipientId(recipientId);
+    setSearchQuery("");
+  }, [currentUserId, recipientDraft]);
 
   const handleSend = useCallback(() => {
-    if (!messageText.trim() || !selectedChannelId) return;
+    const content = messageText.trim();
+    if (!content || !activeRecipientId) return;
+
     sendMutation.mutate({
-      channelId: selectedChannelId,
-      content: messageText.trim(),
+      recipientId: activeRecipientId,
+      content,
     });
-  }, [messageText, selectedChannelId, sendMutation]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const filteredConvos = ((conversations as any[]) || []).filter(
-    (c: any) =>
-      !searchQuery ||
-      (c.participantName || "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase())
-  );
-
-  const selectedConvo = ((conversations as any[]) || []).find(
-    (c: any) => c.id === selectedChannelId
-  );
+  }, [activeRecipientId, messageText, sendMutation]);
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center space-y-4">
+        <div className="max-w-md text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto">
             <Lock className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-black text-white">Private Messages</h2>
           <p className="text-slate-400">
-            Sign in to access your encrypted messages
+            Sign in to use the current one-to-one beta messaging flow.
           </p>
           <Button
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.72 0.28 305), oklch(0.72 0.28 340))",
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0"
+            onClick={() => {
+              window.location.href = getLoginUrl();
             }}
           >
             Sign In
@@ -194,556 +155,250 @@ export default function Messages() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ height: "calc(100vh - 64px)" }}>
-      {/* New Chat Dialog */}
-      <Dialog open={showNewChat} onOpenChange={setShowNewChat}>
-        <DialogContent className="bg-[#0e0a1a] border-white/10 text-white max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-purple-400" /> New Message
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <Input
-              placeholder="User ID or username..."
-              value={newChatUserId}
-              onChange={e => setNewChatUserId(e.target.value)}
-              className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
-            />
-            <Input
-              placeholder="First message (optional)..."
-              value={newChatMsg}
-              onChange={e => setNewChatMsg(e.target.value)}
-              className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
-            />
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1 border-white/10 text-white/60 bg-transparent"
-                onClick={() => setShowNewChat(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0"
-                disabled={!newChatUserId.trim() || startConvoMutation.isPending}
-                onClick={() => {
-                  const recipientId = parseInt(newChatUserId);
-                  if (isNaN(recipientId)) {
-                    toast.error("Enter a valid user ID");
-                    return;
-                  }
-                  startConvoMutation.mutate({
-                    recipientId,
-                    initialMessage: newChatMsg || undefined,
-                  });
-                }}
-              >
-                {startConvoMutation.isPending ? "Starting..." : "Start Chat"}
-              </Button>
+    <div
+      className="min-h-screen bg-[#07040d] text-white"
+      style={{ minHeight: "calc(100vh - 64px)" }}
+    >
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4 lg:flex-row lg:p-6">
+        <aside
+          className={`${
+            activeRecipientId ? "hidden lg:flex" : "flex"
+          } w-full flex-col rounded-2xl border border-white/10 bg-[#0d0817] p-4 lg:w-80`}
+        >
+          <div className="mb-5">
+            <div className="mb-2 flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-purple-400" />
+              <h1 className="text-xl font-black">Messages</h1>
             </div>
+            <p className="text-sm leading-relaxed text-slate-400">
+              The verified beta API currently exposes direct history by user ID,
+              sending, and recipient-scoped read state. Conversation discovery,
+              calling, deletion, and end-to-end encryption are not claimed here.
+            </p>
           </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Sidebar: Conversation List */}
-      <div
-        className={`${selectedChannelId ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 border-r border-white/5 bg-[#0a0614]/95`}
-      >
-        {/* Header */}
-        <div className="p-4 border-b border-white/5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-black text-white">Messages</h2>
-            <div className="flex items-center gap-2">
-              {unreadData && unreadData.count > 0 && (
-                <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">
-                  {unreadData.count}
-                </Badge>
-              )}
-              <Button
-                size="icon"
-                variant="ghost"
-                className="w-8 h-8 text-slate-400 hover:text-purple-400"
-                onClick={() => setShowNewChat(true)}
-                title="New conversation"
-              >
-                <UserPlus className="w-4 h-4" />
-              </Button>
-              <div className="flex items-center gap-1 text-xs text-green-400">
-                <Shield className="w-3 h-3" />
-                <span>E2E</span>
+          <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.03] p-3">
+            <label
+              htmlFor="recipient-id"
+              className="text-xs font-semibold uppercase tracking-wide text-slate-400"
+            >
+              Open direct conversation
+            </label>
+            <Input
+              id="recipient-id"
+              value={recipientDraft}
+              onChange={event => setRecipientDraft(event.target.value)}
+              onKeyDown={event => {
+                if (event.key === "Enter") openConversation();
+              }}
+              placeholder="Recipient user ID"
+              className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
+            />
+            <Button
+              className="w-full bg-purple-600 text-white hover:bg-purple-500"
+              onClick={openConversation}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Open Conversation
+            </Button>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-purple-500/15 bg-purple-500/5 p-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-purple-200">
+              <ShieldCheck className="h-4 w-4" />
+              Beta contract
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-slate-400">
+              History is read from the canonical message store. Incoming
+              messages are marked read only for the authenticated recipient.
+            </p>
+          </div>
+        </aside>
+
+        <main
+          className={`${
+            activeRecipientId ? "flex" : "hidden lg:flex"
+          } min-h-[70vh] flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0d0817]`}
+        >
+          {!activeRecipientId ? (
+            <div className="flex flex-1 items-center justify-center p-8 text-center">
+              <div className="max-w-sm space-y-3">
+                <MessageCircle className="mx-auto h-12 w-12 text-purple-400" />
+                <h2 className="text-xl font-bold">Open a direct conversation</h2>
+                <p className="text-sm text-slate-400">
+                  Enter another user&apos;s ID to load the persisted one-to-one
+                  history supported by the current beta backend.
+                </p>
               </div>
-            </div>
-          </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <Input
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search conversations..."
-              className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-slate-500 h-9"
-            />
-          </div>
-        </div>
-
-        {/* Conversations */}
-        <ScrollArea className="flex-1">
-          {convoLoading ? (
-            <div className="p-4 space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-12 h-12 rounded-full bg-white/5" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3 bg-white/5 rounded w-3/4" />
-                    <div className="h-2 bg-white/5 rounded w-1/2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : filteredConvos.length === 0 ? (
-            <div className="p-8 text-center">
-              <MessageCircle className="w-12 h-12 text-slate-700 mx-auto mb-3" />
-              <p className="text-slate-500 text-sm">No conversations yet</p>
-              <Button
-                size="sm"
-                className="mt-3 bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 border-0"
-                onClick={() => setShowNewChat(true)}
-              >
-                <UserPlus className="w-3.5 h-3.5 mr-1.5" /> Start a conversation
-              </Button>
             </div>
           ) : (
-            <div className="p-2 space-y-1">
-              {filteredConvos.map((convo: any) => (
-                <button
-                  key={convo.id}
-                  onClick={() => setSelectedChannelId(convo.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
-                    selectedChannelId === convo.id
-                      ? "bg-purple-500/15 border border-purple-500/30"
-                      : "hover:bg-white/5 border border-transparent"
-                  }`}
-                >
-                  <div className="relative flex-shrink-0">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={convo.participantAvatar || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold">
-                        {(convo.participantName || "?")[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    {convo.isOnline && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-[#0a0614]" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold text-white text-sm truncate">
-                        {convo.participantName || "Unknown"}
-                      </p>
-                      {convo.lastMessageAt && (
-                        <span className="text-xs text-slate-600 flex-shrink-0 ml-2">
-                          {timeAgo(convo.lastMessageAt)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-slate-500 truncate">
-                        {convo.lastMessage || "Start a conversation"}
-                      </p>
-                      {convo.unreadCount > 0 && (
-                        <Badge className="bg-purple-500 text-white text-xs ml-2 flex-shrink-0 min-w-[18px] h-[18px] flex items-center justify-center rounded-full p-0">
-                          {convo.unreadCount}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-      </div>
-
-      {/* Main Chat Area */}
-      <div
-        className={`${selectedChannelId ? "flex" : "hidden md:flex"} flex-1 flex-col bg-[#0a0614]/80`}
-      >
-        {!selectedChannelId ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/20 flex items-center justify-center mx-auto">
-                <MessageCircle className="w-10 h-10 text-purple-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white">
-                Select a conversation
-              </h3>
-              <p className="text-slate-500 text-sm">
-                Choose a conversation from the left to start messaging
-              </p>
-              <Button
-                size="sm"
-                className="bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 border-0"
-                onClick={() => setShowNewChat(true)}
-              >
-                <UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Message
-              </Button>
-              <div className="flex items-center gap-2 justify-center text-xs text-green-400">
-                <Shield className="w-3 h-3" />
-                <span>All messages are end-to-end encrypted</span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Chat Header */}
-            <div className="flex items-center gap-3 p-4 border-b border-white/5 bg-[#0a0614]/95">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden text-slate-400 hover:text-white"
-                onClick={() => setSelectedChannelId(null)}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              {selectedConvo && (
-                <>
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage
-                      src={selectedConvo.participantAvatar || undefined}
-                    />
-                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-sm">
-                      {(selectedConvo.participantName || "?")[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-bold text-white">
-                      {selectedConvo.participantName}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="flex items-center gap-1 text-green-400">
-                        <Shield className="w-3 h-3" /> Encrypted
-                      </span>
-                      {snapMode && (
-                        <span className="flex items-center gap-1 text-orange-400">
-                          <Flame className="w-3 h-3" /> Snap Mode
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {/* Header Actions */}
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-slate-400 hover:text-green-400 w-9 h-9"
-                      title="Voice call"
-                      onClick={() => toast.info("Voice call coming soon")}
-                    >
-                      <Phone className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-slate-400 hover:text-blue-400 w-9 h-9"
-                      title="Video call"
-                      onClick={() => toast.info("Video call coming soon")}
-                    >
-                      <Video className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`w-9 h-9 ${snapMode ? "text-orange-400" : "text-slate-400 hover:text-orange-400"}`}
-                      title={
-                        snapMode
-                          ? "Snap Mode ON — messages disappear"
-                          : "Enable Snap Mode"
-                      }
-                      onClick={() => {
-                        setSnapMode(!snapMode);
-                        toast.info(
-                          snapMode
-                            ? "Snap mode off"
-                            : "Snap mode on — messages disappear after 10s"
-                        );
-                      }}
-                    >
-                      <EyeOff className="w-4 h-4" />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-slate-400 hover:text-white w-9 h-9"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="bg-[#0e0a1a] border-white/10 text-white"
-                      >
-                        <DropdownMenuItem
-                          className="text-slate-300 hover:text-white cursor-pointer"
-                          onClick={() =>
-                            toast.info("Search in conversation coming soon")
-                          }
-                        >
-                          <Search className="w-4 h-4 mr-2" /> Search messages
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-white/10" />
-                        <DropdownMenuItem
-                          className="text-red-400 hover:text-red-300 cursor-pointer"
-                          onClick={() => toast.info("Block user coming soon")}
-                        >
-                          Block user
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              {snapMode && (
-                <div className="flex items-center justify-center mb-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs text-orange-400">
-                    <Timer className="w-3 h-3" /> Snap Mode: messages disappear
-                    after 10s
-                  </div>
-                </div>
-              )}
-              {msgLoading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
-                </div>
-              ) : !messages || (messages as any[]).length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/20 flex items-center justify-center mb-4">
-                    <Lock className="w-8 h-8 text-purple-400" />
-                  </div>
-                  <p className="text-slate-400 font-semibold">
-                    Encrypted conversation started
-                  </p>
-                  <p className="text-slate-600 text-sm mt-1">
-                    Send the first message
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {(messages as any[]).map((msg: any) => {
-                    const isOwn = msg.senderId === user?.id;
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`group flex items-end gap-2 ${isOwn ? "flex-row-reverse" : "flex-row"}`}
-                      >
-                        {!isOwn && (
-                          <Avatar className="w-8 h-8 flex-shrink-0">
-                            <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs font-bold">
-                              {(selectedConvo?.participantName ||
-                                "?")[0]?.toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-                        <div
-                          className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}
-                        >
-                          {editingMsgId === msg.id ? (
-                            <div className="flex gap-2 items-center">
-                              <Input
-                                value={editText}
-                                onChange={e => setEditText(e.target.value)}
-                                className="bg-white/10 border-white/20 text-white h-8 text-sm"
-                                onKeyDown={e => {
-                                  if (e.key === "Enter") {
-                                    // edit not fully wired to backend yet — just clear
-                                    setEditingMsgId(null);
-                                    toast.info("Edit saved locally");
-                                  }
-                                  if (e.key === "Escape") setEditingMsgId(null);
-                                }}
-                              />
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="w-7 h-7 text-green-400"
-                                onClick={() => setEditingMsgId(null)}
-                              >
-                                <Check className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="w-7 h-7 text-slate-500"
-                                onClick={() => setEditingMsgId(null)}
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div
-                              className={`px-4 py-2.5 rounded-2xl text-sm relative ${
-                                isOwn
-                                  ? "rounded-br-sm text-white"
-                                  : "bg-white/5 border border-white/10 text-slate-200 rounded-bl-sm"
-                              }`}
-                              style={
-                                isOwn
-                                  ? {
-                                      background:
-                                        "linear-gradient(135deg, oklch(0.55 0.28 305), oklch(0.55 0.28 340))",
-                                    }
-                                  : {}
-                              }
-                            >
-                              {msg.content}
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1.5">
-                            <Lock className="w-2.5 h-2.5 text-green-500/50" />
-                            <span className="text-xs text-slate-600">
-                              {new Date(msg.createdAt).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                            {isOwn && (
-                              <CheckCheck className="w-3 h-3 text-purple-400/60" />
-                            )}
-                            {/* Message actions (own messages only) */}
-                            {isOwn && editingMsgId !== msg.id && (
-                              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="w-5 h-5 text-slate-500 hover:text-blue-400"
-                                  onClick={() => {
-                                    setEditingMsgId(msg.id);
-                                    setEditText(msg.content);
-                                  }}
-                                >
-                                  <Edit3 className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="w-5 h-5 text-slate-500 hover:text-red-400"
-                                  onClick={() =>
-                                    deleteMutation.mutate({ messageId: msg.id })
-                                  }
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
-            </ScrollArea>
-
-            {/* Message Input */}
-            <div className="p-4 border-t border-white/5 bg-[#0a0614]/95">
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*,video/*"
-                className="hidden"
-                onChange={() => toast.info("Media upload coming soon")}
-              />
-              <div className="flex items-end gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-slate-500 hover:text-purple-400 flex-shrink-0"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="start"
-                    side="top"
-                    className="bg-[#0e0a1a] border-white/10 text-white"
-                  >
-                    <DropdownMenuItem
-                      className="cursor-pointer text-slate-300 hover:text-white"
-                      onClick={() => fileRef.current?.click()}
-                    >
-                      <Image className="w-4 h-4 mr-2 text-purple-400" /> Photo /
-                      Video
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer text-slate-300 hover:text-white"
-                      onClick={() => toast.info("GIF picker coming soon")}
-                    >
-                      <Smile className="w-4 h-4 mr-2 text-pink-400" /> GIF /
-                      Emoji
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer text-slate-300 hover:text-white"
-                      onClick={() => toast.info("Voice message coming soon")}
-                    >
-                      <Mic className="w-4 h-4 mr-2 text-blue-400" /> Voice
-                      Message
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <div className="flex-1 relative">
-                  <Input
-                    value={messageText}
-                    onChange={e => setMessageText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={
-                      snapMode
-                        ? "Snap message (disappears in 10s)..."
-                        : "Send an encrypted message..."
-                    }
-                    className={`bg-white/5 border-white/10 text-white placeholder:text-slate-500 pr-10 rounded-2xl ${snapMode ? "border-orange-500/30" : ""}`}
-                    maxLength={2000}
-                  />
+            <>
+              <header className="border-b border-white/10 p-4">
+                <div className="flex items-center gap-3">
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-500 hover:text-purple-400 w-8 h-8"
+                    className="lg:hidden text-slate-400 hover:text-white"
+                    onClick={() => setActiveRecipientId("")}
+                    aria-label="Back to recipient picker"
                   >
-                    <Smile className="w-4 h-4" />
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-bold">
+                      Direct message: {activeRecipientId}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Persisted beta history · refreshes every 3 seconds
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-slate-400 hover:text-purple-300"
+                    onClick={() => void conversation.refetch()}
+                    disabled={conversation.isFetching}
+                    aria-label="Refresh conversation"
+                  >
+                    <RefreshCw
+                      className={`h-4 w-4 ${
+                        conversation.isFetching ? "animate-spin" : ""
+                      }`}
+                    />
                   </Button>
                 </div>
-                <Button
-                  onClick={handleSend}
-                  disabled={!messageText.trim() || sendMutation.isPending}
-                  size="icon"
-                  className="flex-shrink-0 rounded-2xl w-10 h-10"
-                  style={{
-                    background: messageText.trim()
-                      ? "linear-gradient(135deg, oklch(0.72 0.28 305), oklch(0.72 0.28 340))"
-                      : undefined,
-                  }}
-                >
-                  {sendMutation.isPending ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-slate-700 text-center mt-2 flex items-center justify-center gap-1">
-                <Shield className="w-3 h-3 text-green-600" />
-                Messages are encrypted and private
-              </p>
-            </div>
-          </>
-        )}
+
+                <div className="relative mt-3">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-600" />
+                  <Input
+                    value={searchQuery}
+                    onChange={event => setSearchQuery(event.target.value)}
+                    placeholder="Search loaded messages"
+                    className="border-white/10 bg-white/5 pl-9 text-white placeholder:text-slate-600"
+                  />
+                </div>
+              </header>
+
+              <ScrollArea className="flex-1 p-4">
+                {conversation.isLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map(item => (
+                      <div
+                        key={item}
+                        className="h-16 animate-pulse rounded-xl bg-white/5"
+                      />
+                    ))}
+                  </div>
+                ) : conversation.error ? (
+                  <div className="mx-auto max-w-md rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-center">
+                    <p className="font-semibold text-red-200">
+                      Conversation could not be loaded
+                    </p>
+                    <p className="mt-1 text-sm text-red-200/70">
+                      {conversation.error.message}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-3 border-red-400/20 bg-transparent text-red-100"
+                      onClick={() => void conversation.refetch()}
+                    >
+                      Retry
+                    </Button>
+                  </div>
+                ) : filteredMessages.length === 0 ? (
+                  <div className="flex min-h-[45vh] items-center justify-center text-center">
+                    <div className="max-w-sm space-y-2">
+                      <MessageCircle className="mx-auto h-10 w-10 text-slate-700" />
+                      <p className="font-semibold text-slate-300">
+                        {searchQuery ? "No matching messages" : "No messages yet"}
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        {searchQuery
+                          ? "Clear the search to see the full loaded history."
+                          : "Send the first message in this direct conversation."}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredMessages.map(message => {
+                      const mine = message.senderId === currentUserId;
+                      return (
+                        <div
+                          key={message.id}
+                          className={`flex ${mine ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-[82%] rounded-2xl px-4 py-3 sm:max-w-[70%] ${
+                              mine
+                                ? "bg-purple-600 text-white"
+                                : "border border-white/10 bg-white/5 text-slate-100"
+                            }`}
+                          >
+                            <p className="whitespace-pre-wrap break-words text-sm">
+                              {message.content || ""}
+                            </p>
+                            <div
+                              className={`mt-1 flex items-center justify-end gap-1 text-[11px] ${
+                                mine ? "text-purple-100/70" : "text-slate-500"
+                              }`}
+                            >
+                              {message.createdAt && (
+                                <span>{timeAgo(message.createdAt)}</span>
+                              )}
+                              {mine &&
+                                (message.read ? (
+                                  <CheckCheck className="h-3.5 w-3.5" />
+                                ) : (
+                                  <Check className="h-3.5 w-3.5" />
+                                ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </ScrollArea>
+
+              <footer className="border-t border-white/10 p-4">
+                <div className="flex gap-2">
+                  <Input
+                    value={messageText}
+                    onChange={event => setMessageText(event.target.value)}
+                    onKeyDown={event => {
+                      if (event.key === "Enter" && !event.shiftKey) {
+                        event.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                    placeholder="Write a message"
+                    maxLength={255}
+                    className="border-white/10 bg-white/5 text-white placeholder:text-slate-600"
+                  />
+                  <Button
+                    type="button"
+                    className="bg-purple-600 text-white hover:bg-purple-500"
+                    disabled={!messageText.trim() || sendMutation.isPending}
+                    onClick={handleSend}
+                    aria-label="Send message"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="mt-2 text-xs text-slate-600">
+                  Current beta limit: 255 characters per message. Delivery is
+                  persisted through the server message API; real-time WebSocket
+                  delivery is not claimed on this screen.
+                </p>
+              </footer>
+            </>
+          )}
+        </main>
       </div>
     </div>
   );
