@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import Navigation from "@/components/Navigation";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { VoiceCommandBar } from "@/components/VoiceCommandBar";
+import { CommandPalette, useCommandPalette } from "@/components/CommandPalette";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   ExternalLink,
@@ -17,14 +18,24 @@ import {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
+  const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } =
+    useCommandPalette();
 
   return (
     <div className="min-h-screen bg-background">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[10000] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       {/* Premium Navigation */}
       <Navigation />
 
       {/* Main Content */}
-      <main className="pt-16">{children}</main>
+      <main id="main-content" className="pt-16">
+        {children}
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-white/10 mt-20 relative overflow-hidden">
@@ -54,11 +65,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
               <p className="text-sm text-white/50 mb-4 leading-relaxed max-w-xs">
-                A fully integrated AI-powered Web3 social ecosystem. One
-                platform. One vision. Unlimited potential.
+                An engineering-beta platform bringing together social,
+                AI, Web3, creator, and learning experiences. Explore the
+                capability map and verify each feature in its own workspace.
               </p>
               <p className="text-xs text-white/30 italic mb-4">
-                Built by Skyler Blue Spillers — AI mines for me 24/7
+                Built by Skyler Blue Spillers — capabilities are labeled by
+                their current maturity and verification status.
               </p>
               <div className="flex flex-wrap gap-2">
                 {["Web3", "AI-Powered", "Open Source", "Decentralized"].map(
@@ -196,8 +209,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </p>
             <div className="flex items-center gap-3">
               <p className="text-xs text-white/20 font-mono">
-                SKY444 &middot; ICO: Apr 24, 2027 &middot; 212,986+ lines
-                &middot; 966+ screens &middot; 305+ endpoints
+                SKYCOIN4444 &middot; Engineering beta &middot; Verify before relying
+                on financial, wallet, or production claims
               </p>
               <div className="flex items-center gap-1 text-xs text-purple-400 font-mono">
                 <Mic className="w-3 h-3" />
@@ -207,6 +220,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
+      <button
+        type="button"
+        onClick={() => setCommandPaletteOpen(true)}
+        className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-2 text-xs text-white/70 shadow-xl backdrop-blur transition hover:border-purple-400/50 hover:text-white sm:flex"
+        aria-label="Open command palette"
+      >
+        <span className="text-purple-300">⌘K</span>
+        <span>Jump anywhere</span>
+      </button>
+      <CommandPalette
+        open={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+      />
       <VoiceCommandBar onLogout={logout} />
       <MobileBottomNav />
     </div>
