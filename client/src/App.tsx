@@ -6,6 +6,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Toaster } from "@/components/ui/sonner";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { BottomTabBar } from "@/components/BottomTabBar";
+import { CommandPalette, useCommandPalette } from "@/components/CommandPalette";
 
 // Lazy load all pages
 const ABTesting = lazy(() => import("./pages/ABTesting"));
@@ -1034,15 +1035,37 @@ const YieldFarming = lazy(() => import("./pages/YieldFarming"));
 const ZapierIntegration = lazy(() => import("./pages/ZapierIntegration"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
-
 const App = () => {
+  const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } =
+    useCommandPalette();
+
   return (
     <ThemeProvider defaultTheme="dark">
       <TooltipProvider>
         <ErrorBoundary>
           <div className="flex min-h-screen flex-col">
-            <main className="flex-1">
-              <Suspense fallback={<div>Loading...</div>}>
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[10000] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-lg"
+            >
+              Skip to main content
+            </a>
+            <main id="main-content" className="flex-1">
+              <Suspense
+                fallback={
+                  <div className="min-h-[70vh] bg-background px-4 py-10" aria-busy="true" aria-live="polite">
+                    <div className="mx-auto max-w-screen-xl space-y-6">
+                      <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+                      <div className="h-10 w-2/3 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-full max-w-xl animate-pulse rounded bg-muted" />
+                      <div className="grid gap-4 pt-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3, 4, 5, 6].map(item => <div key={item} className="h-32 animate-pulse rounded-xl border border-border/50 bg-card" />)}
+                      </div>
+                      <p className="text-sm text-muted-foreground">Preparing your workspace…</p>
+                    </div>
+                  </div>
+                }
+              >
                 <Switch>
                   <Route path="/abtesting" component={ABTesting} />
                   <Route
@@ -2934,6 +2957,19 @@ const App = () => {
             {/* Bottom Navigation */}
             <MobileBottomNav />
             <BottomTabBar />
+            <button
+              type="button"
+              onClick={() => setCommandPaletteOpen(true)}
+              className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-2 text-xs text-white/70 shadow-xl backdrop-blur transition hover:border-purple-400/50 hover:text-white sm:flex"
+              aria-label="Open capability navigator"
+            >
+              <span className="text-purple-300">⌘K</span>
+              <span>Find a capability</span>
+            </button>
+            <CommandPalette
+              open={commandPaletteOpen}
+              onClose={() => setCommandPaletteOpen(false)}
+            />
             {/* Toast Notifications */}
             <Toaster />
           </div>
