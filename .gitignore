@@ -113,3 +113,6 @@ backups/
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
 .project-config.json
+
+# Hosted staging verification session cookie
+.staging-session-state.json
