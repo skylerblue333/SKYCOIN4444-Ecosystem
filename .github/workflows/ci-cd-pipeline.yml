@@ -408,3 +408,136 @@ jobs:
 
       - name: Block high-severity dependency vulnerabilities
         run: pnpm audit --audit-level=high
+
+  release-candidate:
+    name: Release Candidate Evidence
+    runs-on: ubuntu-latest
+    needs:
+      - validate
+      - test
+      - build
+      - runtime-smoke
+      - docker-image
+      - security
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/skycoin
+      NODE_ENV: production
+      PORT: "3000"
+      JWT_SECRET: ci-release-candidate-secret-not-for-production
+      VITE_APP_ID: ci-release-candidate
+      VITE_BETA_AUTH_MODE: access_key
+      BETA_ACCESS_KEY: ci-release-candidate-beta-access-key-00000000000000000000000000000000
+      BETA_ALLOWED_EMAILS: rc-clean-account@example.invalid
+      SKYCOIN_RELEASE_SHA: ${{ github.sha }}
+      RC_BASE_URL: http://127.0.0.1:3000
+      RC_EMAIL: rc-clean-account@example.invalid
+      RC_BETA_ACCESS_KEY: ci-release-candidate-beta-access-key-00000000000000000000000000000000
+      RC_WAVE7_HOSTED_PROVEN: "false"
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: skycoin
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - name: Checkout exact candidate source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download exact build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: skycoin4444-dist
+          path: dist
+
+      - name: Download type-debt evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: typecheck-report
+          path: rc-input/typecheck
+
+      - name: Download resilience evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: wave6-load-resilience-report
+          path: rc-input/wave6
+
+      - name: Download runtime evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: runtime-smoke-log
+          path: rc-input/runtime
+
+      - name: Initialize clean RC database
+        run: pnpm exec drizzle-kit push --force
+
+      - name: Boot exact candidate artifact
+        shell: bash
+        run: |
+          node dist/index.js > rc-runtime.log 2>&1 &
+          echo $! > rc-runtime.pid
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:3000/readyz > /tmp/rc-ready.json; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat rc-runtime.log
+          exit 1
+
+      - name: Locate headless Chrome
+        shell: bash
+        run: |
+          CHROME_BIN="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          "$CHROME_BIN" --version
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+
+      - name: Clean-profile browser and fresh-account smoke
+        run: pnpm rc:browser-smoke
+
+      - name: Generate exact-SHA candidate evidence
+        run: pnpm rc:evidence
+
+      - name: Stop RC runtime
+        if: always()
+        shell: bash
+        run: |
+          if [ -f rc-runtime.pid ]; then
+            kill "$(cat rc-runtime.pid)" 2>/dev/null || true
+          fi
+
+      - name: Upload release-candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-evidence-${{ github.sha }}
+          path: |
+            release-candidate-evidence.json
+            rc-browser-smoke.json
+            rc-browser-smoke.png
+            rc-runtime.log
+            RELEASE_CANDIDATE.md
+            RELEASE_NOTES_v1.0.0-beta.1.md
+          if-no-files-found: error
+          retention-days: 30
