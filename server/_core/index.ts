@@ -149,7 +149,7 @@ async function startServer() {
     res.status(200).json({
       status: "alive",
       uptime: Math.floor(process.uptime()),
-      release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
+      release: process.env.SKYCOIN_RELEASE_SHA || process.env.RENDER_GIT_COMMIT || process.env.GITHUB_SHA || null,
     });
   });
 
@@ -180,7 +180,7 @@ async function startServer() {
     res.status(ready ? 200 : 503).json({
       status: ready ? "ready" : "not_ready",
       timestamp: new Date().toISOString(),
-      release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
+      release: process.env.SKYCOIN_RELEASE_SHA || process.env.RENDER_GIT_COMMIT || process.env.GITHUB_SHA || null,
       services: {
         database,
         authentication: {
@@ -203,7 +203,7 @@ async function startServer() {
       timestamp: new Date().toISOString(),
       uptime: Math.floor(process.uptime()),
       environment: process.env.NODE_ENV || "production",
-      release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
+      release: process.env.SKYCOIN_RELEASE_SHA || process.env.RENDER_GIT_COMMIT || process.env.GITHUB_SHA || null,
       services: {
         database,
         server: {

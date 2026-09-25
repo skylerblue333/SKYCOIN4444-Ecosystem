@@ -8,6 +8,9 @@ on:
       - "scripts/db-restore.mjs"
       - ".github/workflows/db-recovery-drill.yml"
       - "drizzle/**"
+      - "render.yaml"
+      - "STAGING_RENDER.md"
+      - "scripts/staging-hosted-verify.mjs"
 
 permissions:
   contents: read
