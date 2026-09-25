@@ -284,6 +284,22 @@ jobs:
         shell: bash
         run: node scripts/runtime-session-persistence.mjs verify
 
+      - name: Verify session survives second restart
+        shell: bash
+        run: |
+          kill "$(cat runtime-smoke.pid)" 2>/dev/null || true
+          for attempt in {1..20}; do
+            if ! kill -0 "$(cat runtime-smoke.pid)" 2>/dev/null; then break; fi
+            sleep 0.25
+          done
+          node dist/index.js >> runtime-smoke.log 2>&1 &
+          echo $! > runtime-smoke.pid
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:3000/healthz > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/runtime-session-persistence.mjs verify
+
       - name: Verify logout clears browser session cookie
         shell: bash
         run: node scripts/runtime-session-persistence.mjs logout
