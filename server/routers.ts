@@ -347,9 +347,15 @@ export const walletRouter = router({
 
 // ============ NOTIFICATION PROCEDURES ============
 export const notificationRouter = router({
-  list: protectedProcedure.query(async ({ ctx }) =>
-    db.getNotifications(String(ctx.user.id))
-  ),
+  list: protectedProcedure
+    .input(
+      z
+        .object({ limit: z.number().int().min(1).max(50).default(20) })
+        .optional()
+    )
+    .query(async ({ ctx, input }) =>
+      db.getNotifications(String(ctx.user.id), input?.limit ?? 20)
+    ),
   markAsRead: protectedProcedure
     .input(z.object({ notificationId: z.string() }))
     .mutation(async ({ ctx, input }) =>
