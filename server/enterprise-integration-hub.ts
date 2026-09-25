@@ -98,13 +98,23 @@ type RedisLike = {
   quit(): Promise<unknown>;
 };
 
+type QueueCountType =
+  | "waiting"
+  | "active"
+  | "failed"
+  | "completed"
+  | "delayed"
+  | "paused"
+  | "prioritized"
+  | "waiting-children";
+
 type QueueLike = {
   add(
     name: string,
     data: unknown,
     options?: { jobId?: string }
   ): Promise<{ id?: string | number | null }>;
-  getJobCounts(...types: string[]): Promise<Record<string, number>>;
+  getJobCounts(...types: QueueCountType[]): Promise<Record<string, number>>;
   close(): Promise<void>;
 };
 
@@ -336,30 +346,67 @@ const objectRecord = (value: unknown): Record<string, unknown> => {
   return value as Record<string, unknown>;
 };
 
-const defaultRedisFactory = (url: string): RedisLike =>
-  new IORedis(url, {
+const defaultRedisFactory = (url: string): RedisLike => {
+  const client = new IORedis(url, {
     connectTimeout: 3_000,
     maxRetriesPerRequest: 1,
     enableOfflineQueue: false,
   });
+
+  return {
+    ping: () => client.ping(),
+    get: key => client.get(key),
+    set: async (key, value, mode, ttlSeconds) => {
+      if (mode === "EX" && typeof ttlSeconds === "number") {
+        await client.set(key, value, "EX", ttlSeconds);
+        return;
+      }
+      await client.set(key, value);
+    },
+    del: key => client.del(key),
+    quit: () => client.quit(),
+  };
+};
+
+const bullConnectionFromUrl = (rawUrl: string) => {
+  const parsed = new URL(rawUrl);
+  if (parsed.protocol !== "redis:" && parsed.protocol !== "rediss:") {
+    throw new Error("SKY_REDIS_URL must use redis or rediss");
+  }
+
+  const databaseText = parsed.pathname.replace(/^\//, "");
+  const database = databaseText ? Number.parseInt(databaseText, 10) : 0;
+  if (!Number.isSafeInteger(database) || database < 0) {
+    throw new Error("SKY_REDIS_URL contains an invalid database index");
+  }
+
+  return {
+    host: parsed.hostname,
+    port: parsed.port ? Number.parseInt(parsed.port, 10) : 6379,
+    username: parsed.username ? decodeURIComponent(parsed.username) : undefined,
+    password: parsed.password ? decodeURIComponent(parsed.password) : undefined,
+    db: database,
+    maxRetriesPerRequest: null,
+    ...(parsed.protocol === "rediss:" ? { tls: {} } : {}),
+  };
+};
 
 const defaultQueueFactory = (
   name: string,
   url: string,
   prefix: string
 ): QueueLike => {
-  const connection = new IORedis(url, {
-    connectTimeout: 3_000,
-    maxRetriesPerRequest: null,
+  // Pass connection options instead of an ioredis instance. BullMQ can carry
+  // a different transitive ioredis patch version, so sharing a concrete Redis
+  // class instance creates an unnecessary TypeScript/runtime coupling.
+  const queue = new Queue(name, {
+    connection: bullConnectionFromUrl(url),
+    prefix,
   });
-  const queue = new Queue(name, { connection, prefix });
   return {
     add: (jobName, data, options) => queue.add(jobName, data, options),
     getJobCounts: (...types) => queue.getJobCounts(...types),
-    close: async () => {
-      await queue.close();
-      await connection.quit();
-    },
+    close: () => queue.close(),
   };
 };
 
