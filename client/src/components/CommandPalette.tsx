@@ -284,8 +284,8 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                   onClick={() => { setQuery(area.label); setActiveCategory("All"); setSelected(0); }}
                   className="rounded-lg px-2.5 py-2 text-left transition hover:bg-white/10"
                 >
-                  <div className="flex items-center justify-between gap-2 text-xs font-medium text-white"><span>{area.label}</span><span className={`text-[10px] ${area.status === "verified" ? "text-emerald-300" : area.status === "beta" ? "text-cyan-300" : area.status === "blocked" ? "text-rose-300" : "text-amber-300"}`}>{AREA_STATUS_LABELS[area.status]}</span></div>
-                  <div className="mt-0.5 line-clamp-1 text-[11px] text-white/40">{area.description}</div>
+                  <div className="flex items-center justify-between gap-2 text-xs font-medium text-white"><span>{area.label}</span><span className="flex items-center gap-1.5"><span className="font-mono text-[10px] text-white/60">{area.maturityScore}/10</span><span className={`text-[10px] ${area.status === "verified" ? "text-emerald-300" : area.status === "beta" ? "text-cyan-300" : area.status === "blocked" ? "text-rose-300" : "text-amber-300"}`}>{AREA_STATUS_LABELS[area.status]}</span></span></div>
+                  <div className="mt-0.5 line-clamp-1 text-[11px] text-white/40">{area.description} · Next: {area.nextGate}</div>
                 </button>
               ))}
             </div>

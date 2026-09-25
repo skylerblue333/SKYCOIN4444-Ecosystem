@@ -3,6 +3,8 @@
 **Generated:** 2026-09-25
 **Tracked areas:** 66
 **Registered route capabilities:** 969
+**Lifecycle:** All areas are tracked as engineering beta; the score measures evidence, not marketing status.
+**Average maturity:** 3.1/10 (target: 10/10)
 
 > This is a conservative product-readiness inventory. A route, component, mock, or test file does not by itself prove a complete customer workflow, persistent data, production settlement, security review, or external provider integration.
 
@@ -17,74 +19,74 @@
 
 ## Area matrix
 
-| # | Area | Readiness | Customer surface |
-| ---: | --- | --- | --- |
-| 1 | AI assistants | beta | Chat, companion, and question-answering workflows |
-| 2 | AI agents | beta | Agent creation, orchestration, memory, and performance |
-| 3 | AI content studio | beta | Copy, image, audio, video, and batch generation |
-| 4 | AI coding | beta | Code generation, completion, review, and engineering tools |
-| 5 | AI research | beta | Research, analysis, and evidence workflows |
-| 6 | AI marketplace | planned | Discover, publish, and evaluate agent products |
-| 7 | AI safety | beta | Moderation, evaluation, and policy controls |
-| 8 | AI personalization | beta | Adaptive feeds, recommendations, and user intelligence |
-| 9 | Blockchain core | planned | Blocks, nodes, chain health, and ledger views |
-| 10 | Chain explorer | beta | Transactions, explorers, and network monitoring |
-| 11 | Wallets | beta | Wallet overview, connection, custody, and balances |
-| 12 | Payments | blocked | Checkout, cards, billing, and payment workflows |
-| 13 | Trading | beta | Trading terminals, orders, positions, and market views |
-| 14 | Staking | planned | Staking positions, APY, vesting, and yield surfaces |
-| 15 | Tokenomics | planned | Supply, rewards, emissions, and economic reporting |
-| 16 | Smart contracts | planned | ABI, contracts, deployment, and verification |
-| 17 | Digital assets | beta | NFTs, drops, galleries, and asset management |
-| 18 | Cross-chain | planned | Bridges and interoperability flows |
-| 19 | Identity | beta | Profiles, passports, verification, and account setup |
-| 20 | Access & security | beta | Permissions, sessions, MFA, and access control |
-| 21 | Privacy | planned | Privacy, data rights, anti-surveillance, and consent |
-| 22 | Compliance | planned | Compliance checks, reporting, audit, and policy workflows |
-| 23 | Governance | planned | DAO proposals, voting, treasury, and civic controls |
-| 24 | Social feed | beta | Posts, feeds, timelines, bookmarks, and engagement |
-| 25 | Messaging | beta | DMs, inboxes, chat, comments, and conversations |
-| 26 | Communities | beta | Groups, servers, community creation, and guidelines |
-| 27 | Live streaming | beta | Go live, watch, chat, reactions, tips, and stream analytics |
-| 28 | Creator studio | beta | Creator profiles, publishing, and studio workflows |
-| 29 | Creator monetization | planned | Subscriptions, tips, memberships, and creator economy |
-| 30 | Video | beta | Upload, playback, editing, clips, and VOD |
-| 31 | Audio & voice | planned | Audio creation, playback, messages, transcription, and voice |
-| 32 | Events & venues | beta | Events, venues, calendars, and virtual experiences |
-| 33 | Learning | beta | Courses, lessons, certificates, and learning journeys |
-| 34 | Classrooms | planned | Classroom management, assignments, and teaching |
-| 35 | Language exchange | beta | Language partners, practice, and translation |
-| 36 | Games & arcade | beta | Arcade, simulations, and playable experiences |
-| 37 | Competition | planned | Battles, tournaments, clans, and competitive play |
-| 38 | Gamification | beta | Achievements, badges, quests, and rewards |
-| 39 | Marketplace | beta | Products, listings, checkout, and discovery |
-| 40 | Commerce operations | planned | Orders, vendors, inventory, and fulfillment |
-| 41 | Enterprise CRM | planned | CRM, clients, partners, and business workflows |
-| 42 | Analytics | beta | Dashboards, reports, cohorts, and product metrics |
-| 43 | Marketing & growth | planned | Campaigns, attribution, audiences, and experimentation |
-| 44 | Notifications | beta | Alerts, reminders, notification center, and preferences |
-| 45 | Search & discovery | beta | Universal search, trends, recommendations, and directories |
-| 46 | Workflow automation | planned | Rules, builders, triggers, actions, and automation |
-| 47 | Developer APIs | beta | API docs, keys, usage, logs, and versioning |
-| 48 | SDK & integrations | planned | SDKs, client libraries, connected apps, and integrations |
-| 49 | Webhooks & events | planned | Webhooks, event delivery, and callback management |
-| 50 | Admin operations | beta | Admin dashboards, panels, batch operations, and settings |
-| 51 | Moderation | planned | Reports, flags, bans, queues, and safety operations |
-| 52 | Support & help | beta | Contact, bug reports, help, and user support |
-| 53 | Data management | planned | Tables, data lakes, processing, retention, and databases |
-| 54 | Storage & media | beta | Uploads, vaults, media libraries, and content storage |
-| 55 | Backup & recovery | planned | Backups, restores, archives, and recovery controls |
-| 56 | Mobile & desktop | beta | Device, browser, extension, and cross-platform surfaces |
-| 57 | Accessibility & UI | verified | Design system, accessible controls, and reusable UI |
-| 58 | Localization | planned | Language, region, editions, and localization |
-| 59 | Travel & lifestyle | planned | Travel planning, tips, reviews, photos, and documents |
-| 60 | Dating & relationships | planned | Discovery, matches, profiles, and conversations |
-| 61 | Charity & giving | planned | Charity, donations, causes, and leaderboards |
-| 62 | Civic & digital nation | planned | Citizen identity, nation modes, and civic participation |
-| 63 | Simulation worlds | beta | World simulation, civilization, and company experiences |
-| 64 | Real-time infrastructure | planned | WebSockets, event buses, presence, and live updates |
-| 65 | Observability | beta | Health, monitoring, logs, anomalies, and system status |
-| 66 | Release & DevOps | beta | Build, deploy, version, testing, and release operations |
+| # | Area | Lifecycle | Score | Readiness | Next gate |
+| ---: | --- | --- | ---: | --- | --- |
+| 1 | AI assistants | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 2 | AI agents | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 3 | AI content studio | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 4 | AI coding | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 5 | AI research | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 6 | AI marketplace | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 7 | AI safety | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 8 | AI personalization | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 9 | Blockchain core | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 10 | Chain explorer | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 11 | Wallets | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 12 | Payments | engineering beta | 1/10 | blocked | Required provider, authorization, settlement, or security dependency |
+| 13 | Trading | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 14 | Staking | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 15 | Tokenomics | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 16 | Smart contracts | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 17 | Digital assets | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 18 | Cross-chain | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 19 | Identity | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 20 | Access & security | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 21 | Privacy | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 22 | Compliance | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 23 | Governance | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 24 | Social feed | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 25 | Messaging | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 26 | Communities | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 27 | Live streaming | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 28 | Creator studio | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 29 | Creator monetization | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 30 | Video | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 31 | Audio & voice | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 32 | Events & venues | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 33 | Learning | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 34 | Classrooms | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 35 | Language exchange | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 36 | Games & arcade | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 37 | Competition | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 38 | Gamification | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 39 | Marketplace | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 40 | Commerce operations | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 41 | Enterprise CRM | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 42 | Analytics | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 43 | Marketing & growth | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 44 | Notifications | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 45 | Search & discovery | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 46 | Workflow automation | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 47 | Developer APIs | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 48 | SDK & integrations | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 49 | Webhooks & events | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 50 | Admin operations | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 51 | Moderation | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 52 | Support & help | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 53 | Data management | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 54 | Storage & media | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 55 | Backup & recovery | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 56 | Mobile & desktop | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 57 | Accessibility & UI | engineering beta | 6/10 | verified | Production deployment evidence and independent security review |
+| 58 | Localization | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 59 | Travel & lifestyle | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 60 | Dating & relationships | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 61 | Charity & giving | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 62 | Civic & digital nation | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 63 | Simulation worlds | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 64 | Real-time infrastructure | engineering beta | 2/10 | planned | Working backend action with persistence and an integration owner |
+| 65 | Observability | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
+| 66 | Release & DevOps | engineering beta | 4/10 | beta | Persistent customer action, automated tests, recovery behavior, and deployment evidence |
 
 ## Upgrade rule for every area
 

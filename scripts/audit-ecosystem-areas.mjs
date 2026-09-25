@@ -5,17 +5,21 @@ const registryPath = `${root}/client/src/data/ecosystemAreas.ts`;
 const routeCatalogPath = `${root}/client/src/data/routeCatalog.ts`;
 const registry = fs.readFileSync(registryPath, "utf8");
 const routeCatalog = fs.readFileSync(routeCatalogPath, "utf8");
-const areas = [...registry.matchAll(/\{ id: "([^"]+)", label: "([^"]+)", description: "([^"]+)", status: "([^"]+)"/g)]
-  .map(([, id, label, description, status]) => ({ id, label, description, status }));
+const areas = [...registry.matchAll(/\{ id: "([^"]+)", label: "([^"]+)", description: "([^"]+)", status: "([^"]+)", statusDescription: "([^"]+)", lifecycle: "([^"]+)", maturityScore: (\d+), targetScore: (\d+), nextGate: "([^"]+)" \}/g)]
+  .map(([, id, label, description, status, statusDescription, lifecycle, maturityScore, targetScore, nextGate]) => ({ id, label, description, status, statusDescription, lifecycle, maturityScore: Number(maturityScore), targetScore: Number(targetScore), nextGate }));
 if (areas.length !== 66) throw new Error(`Expected 66 areas, found ${areas.length}`);
+if (areas.some(area => area.lifecycle !== "engineering-beta" || area.targetScore !== 10 || area.maturityScore < 1 || area.maturityScore > 10 || !area.nextGate)) throw new Error("Invalid maturity lifecycle or score field");
 const routeCount = (routeCatalog.match(/"route":/g) ?? []).length;
 const counts = areas.reduce((acc, area) => { acc[area.status] = (acc[area.status] ?? 0) + 1; return acc; }, {});
+const averageScore = (areas.reduce((sum, area) => sum + area.maturityScore, 0) / areas.length).toFixed(1);
 const lines = [
   "# Ecosystem 66-Area Readiness",
   "",
   `**Generated:** ${new Date().toISOString().slice(0, 10)}`,
   `**Tracked areas:** ${areas.length}`,
   `**Registered route capabilities:** ${routeCount}`,
+  "**Lifecycle:** All areas are tracked as engineering beta; the score measures evidence, not marketing status.",
+  `**Average maturity:** ${averageScore}/10 (target: 10/10)`,
   "",
   "> This is a conservative product-readiness inventory. A route, component, mock, or test file does not by itself prove a complete customer workflow, persistent data, production settlement, security review, or external provider integration.",
   "",
@@ -30,9 +34,9 @@ const lines = [
   "",
   "## Area matrix",
   "",
-  "| # | Area | Readiness | Customer surface |",
-  "| ---: | --- | --- | --- |",
-  ...areas.map((area, index) => `| ${index + 1} | ${area.label} | ${area.status} | ${area.description} |`),
+  "| # | Area | Lifecycle | Score | Readiness | Next gate |",
+  "| ---: | --- | --- | ---: | --- | --- |",
+  ...areas.map((area, index) => `| ${index + 1} | ${area.label} | engineering beta | ${area.maturityScore}/10 | ${area.status} | ${area.nextGate} |`),
   "",
   "## Upgrade rule for every area",
   "",
