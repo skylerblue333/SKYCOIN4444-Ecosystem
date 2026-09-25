@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "./db";
 import os from "os";
 import { performance } from "perf_hooks";
+import { redisHealthProbe } from "./cache-health";
 
 interface HealthStatus {
   status: "healthy" | "degraded" | "unhealthy";
@@ -163,14 +164,8 @@ class HealthMonitor {
   /**
    * Check cache health
    */
-  private checkCache(): HealthCheck {
-    // Placeholder for cache health check
-    return {
-      status: "pass",
-      responseTime: 0,
-      message: "Cache operational",
-      lastChecked: new Date(),
-    };
+  private async checkCache(): Promise<HealthCheck> {
+    return redisHealthProbe.check();
   }
 
   /**
@@ -255,7 +250,7 @@ class HealthMonitor {
       memory: this.checkMemory(),
       cpu: this.checkCPU(),
       api: this.checkAPI(),
-      cache: this.checkCache(),
+      cache: await this.checkCache(),
     };
 
     const status = this.determineStatus(checks);
