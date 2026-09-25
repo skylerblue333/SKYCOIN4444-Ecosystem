@@ -26,6 +26,48 @@ const FAVORITES_KEY = "skycoin4444.favorite-capabilities";
 const MAX_RECENT = 8;
 const MAX_RESULTS = 80;
 
+const CUSTOMER_JOURNEYS = [
+  { id: "ai", label: "Start with HOPE AI", description: "Ask, create, and explore assistant workflows", route: "/hopeai", category: "AI" },
+  { id: "connect", label: "Connect & communicate", description: "Open chat and community experiences", route: "/chatmvp", category: "Community" },
+  { id: "learn", label: "Learn a skill", description: "Find courses, lessons, and quizzes", route: "/skyschool", category: "Learn & Play" },
+  { id: "web3", label: "Explore Web3 safely", description: "Review wallet and blockchain tools", route: "/walletoverview", category: "Money & Web3" },
+  { id: "build", label: "Build with the platform", description: "Read APIs and integration docs", route: "/apidocs", category: "Build & Admin" },
+  { id: "operate", label: "Operate securely", description: "Review security and system health", route: "/securitydashboard", category: "Build & Admin" },
+  { id: "create", label: "Create & monetize", description: "Open creator and audience tools", route: "/creatordashboard", category: "Community" },
+  { id: "language", label: "Find a language partner", description: "Discover structured language exchange", route: "/languagepartnerdiscovery", category: "Community" },
+] as const;
+
+const PLATFORM_AREAS = [
+  ["Blockchain & ledger", "Explore chain, blocks, custody, and ledger tools", "chain block ledger"],
+  ["Mesh network", "Discover network, relay, and connectivity capabilities", "network relay node"],
+  ["Identity & access", "Manage identity, profiles, permissions, and recovery surfaces", "identity access permission recovery"],
+  ["API & SDK", "Build integrations with API docs, keys, and testing tools", "api sdk developer"],
+  ["AI assistants & agents", "Use HopeAI, agents, memory, and automation", "ai assistant agent hope automation"],
+  ["Data & state", "Find database, state, storage, and data tools", "database state storage"],
+  ["Mobile & desktop", "Explore cross-platform and device experiences", "mobile desktop app"],
+  ["Messaging & chat", "Connect with direct, group, and live communication", "chat message voice video"],
+  ["Tokenomics & assets", "Review wallet, portfolio, rewards, and asset tools", "wallet token portfolio reward asset"],
+  ["Smart contracts", "Discover contract, transaction, and execution surfaces", "contract transaction execution"],
+  ["Commerce & enterprise", "Use marketplace, commerce, CRM, and team tools", "marketplace commerce enterprise crm"],
+  ["Shared UI system", "Browse reusable interface and accessibility surfaces", "ui accessibility component design"],
+  ["Security & cryptography", "Review security, audit, privacy, and protection tools", "security cryptography privacy audit"],
+  ["Decentralized storage", "Find storage, vault, backup, and content tools", "storage vault backup content"],
+  ["Creator & live", "Create, stream, publish, and understand audiences", "creator live stream publish"],
+  ["Learning & school", "Learn with courses, lessons, quizzes, and certificates", "school course lesson quiz"],
+  ["Games & engagement", "Explore games, challenges, achievements, and community play", "game arcade tournament achievement"],
+  ["Governance & compliance", "Review governance, policies, reports, and controls", "governance compliance policy"],
+  ["Developer operations", "Operate workflows, monitoring, backups, and deployments", "devops monitoring workflow deployment"],
+  ["Analytics & observability", "Measure product, network, finance, and operational health", "analytics metrics observability monitoring"],
+] as const;
+
+const PLANNED_GAPS = [
+  "Interactive sandbox for API, contract, and agent testing",
+  "Automated validator and node health management",
+  "Social recovery and guardian key management",
+  "Escrow, dispute resolution, and decentralized arbitration",
+  "Unified load testing, provider-failure drills, and observability",
+] as const;
+
 const CATEGORY_COLORS: Record<string, string> = {
   AI: "text-fuchsia-300",
   Community: "text-cyan-300",
@@ -124,15 +166,19 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     });
   }, []);
 
-  const execute = useCallback((capability: RouteCapability) => {
+  const executeRoute = useCallback((route: string) => {
     setRecent(current => {
-      const next = [capability.route, ...current.filter(item => item !== capability.route)].slice(0, MAX_RECENT);
+      const next = [route, ...current.filter(item => item !== route)].slice(0, MAX_RECENT);
       localStorage.setItem(RECENT_KEY, JSON.stringify(next));
       return next;
     });
-    navigate(capability.route);
+    navigate(route);
     onClose();
   }, [navigate, onClose]);
+
+  const execute = useCallback((capability: RouteCapability) => {
+    executeRoute(capability.route);
+  }, [executeRoute]);
 
   useEffect(() => {
     if (!open) return;
@@ -201,6 +247,62 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           <span>{query ? `Results for “${query}”` : "Start with a goal, feature, or category"}</span>
           <span>{results.length} of {ROUTE_CAPABILITIES.length} capabilities</span>
         </div>
+
+        {!query && activeCategory === "All" && (
+          <div className="border-b border-white/10 px-4 pb-3" aria-label="Customer journeys">
+            <div className="mb-2 flex items-center gap-2 text-xs font-medium text-white/70">
+              <Sparkles className="h-3.5 w-3.5 text-purple-300" aria-hidden="true" />
+              Start with a goal
+            </div>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {CUSTOMER_JOURNEYS.map(journey => (
+                <button
+                  key={journey.id}
+                  onClick={() => executeRoute(journey.route)}
+                  className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition hover:border-purple-400/40 hover:bg-purple-500/10"
+                >
+                  <div className="text-sm font-medium text-white">{journey.label}</div>
+                  <div className="mt-0.5 text-xs text-white/45">{journey.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!query && activeCategory === "All" && (
+          <details className="mx-4 mb-3 rounded-xl border border-white/10 bg-white/[0.02]">
+            <summary className="cursor-pointer list-none px-3 py-2.5 text-xs font-medium text-white/75 marker:hidden">
+              <span className="mr-2 text-purple-300">＋</span>
+              Explore all 20 platform areas
+              <span className="ml-2 text-white/35">searchable customer map</span>
+            </summary>
+            <div className="grid max-h-56 gap-1 overflow-y-auto border-t border-white/10 p-2 sm:grid-cols-2">
+              {PLATFORM_AREAS.map(([label, description, search]) => (
+                <button
+                  key={label}
+                  onClick={() => { setQuery(search); setActiveCategory("All"); setSelected(0); }}
+                  className="rounded-lg px-2.5 py-2 text-left transition hover:bg-white/10"
+                >
+                  <div className="text-xs font-medium text-white">{label}</div>
+                  <div className="mt-0.5 line-clamp-1 text-[11px] text-white/40">{description}</div>
+                </button>
+              ))}
+            </div>
+          </details>
+        )}
+
+        {!query && activeCategory === "All" && (
+          <details className="mx-4 mb-3 rounded-xl border border-dashed border-amber-400/20 bg-amber-400/[0.03]">
+            <summary className="cursor-pointer list-none px-3 py-2.5 text-xs font-medium text-amber-100/80 marker:hidden">
+              <span className="mr-2">＋</span>
+              Planned lifecycle capabilities
+              <span className="ml-2 text-amber-100/35">not presented as live features</span>
+            </summary>
+            <ul className="space-y-1 border-t border-amber-400/10 px-4 py-3 text-[11px] leading-relaxed text-amber-100/55">
+              {PLANNED_GAPS.map(gap => <li key={gap}>• {gap}</li>)}
+            </ul>
+          </details>
+        )}
 
         <div className="min-h-0 overflow-y-auto px-2 pb-2" role="listbox" aria-label="Capability results">
           {results.length === 0 ? (
