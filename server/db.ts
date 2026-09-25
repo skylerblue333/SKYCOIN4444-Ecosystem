@@ -594,12 +594,13 @@ export async function removeFollow(followerId: string, followingId: string) {
 }
 
 // ============ NOTIFICATION HELPERS ============
-export async function getNotifications(userId: string) {
+export async function getNotifications(userId: string, limit = 20) {
   return db
     .select()
     .from(notifications)
     .where(eq(notifications.userId, userId))
-    .orderBy(desc(notifications.createdAt));
+    .orderBy(desc(notifications.createdAt))
+    .limit(limit);
 }
 
 export async function createNotification(
