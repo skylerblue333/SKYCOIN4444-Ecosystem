@@ -18,6 +18,7 @@ import miningRouter from "../mining-router";
 import walletApiRouter from "../wallet-api";
 import { registerMiningHeartbeats } from "../mining-heartbeat";
 import { betaAccessKeyIssue, betaAuthMode } from "./betaAccessAuth";
+import { attachResilienceWebSocket } from "../resilience-websocket";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -78,6 +79,7 @@ async function startServer() {
   const app = express();
   app.set("trust proxy", 1); // Trust first proxy (load balancer / reverse proxy)
   const server = createServer(app);
+  attachResilienceWebSocket(server);
   const isDev = process.env.NODE_ENV === "development";
 
   app.use(
