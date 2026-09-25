@@ -90,6 +90,51 @@ async function waitForExpression(cdp, expression, timeoutMs = 15_000) {
   throw new Error(`Timed out waiting for browser expression: ${expression}`);
 }
 
+async function waitForChromeExit(child, timeoutMs = 5000) {
+  if (child.exitCode !== null) return;
+
+  let exited = false;
+  const exitPromise = new Promise(resolve => {
+    child.once("exit", () => {
+      exited = true;
+      resolve();
+    });
+  });
+
+  child.kill("SIGTERM");
+  await Promise.race([
+    exitPromise,
+    new Promise(resolve => setTimeout(resolve, timeoutMs)),
+  ]);
+
+  if (!exited && child.exitCode === null) {
+    child.kill("SIGKILL");
+    await Promise.race([
+      exitPromise,
+      new Promise(resolve => setTimeout(resolve, 2000)),
+    ]);
+  }
+}
+
+async function removeBrowserProfile(directory) {
+  let lastError;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      await rm(directory, {
+        recursive: true,
+        force: true,
+        maxRetries: 3,
+        retryDelay: 100,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+      await new Promise(resolve => setTimeout(resolve, 150 * (attempt + 1)));
+    }
+  }
+  throw lastError;
+}
+
 function trpcClient(cookieHeader) {
   return createTRPCClient({
     links: [
@@ -238,6 +283,6 @@ try {
   try {
     cdp?.close();
   } catch {}
-  chrome.kill("SIGTERM");
-  await rm(profileDir, { recursive: true, force: true });
+  await waitForChromeExit(chrome);
+  await removeBrowserProfile(profileDir);
 }
