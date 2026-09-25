@@ -170,7 +170,7 @@ async function websocketRoundTrip(id) {
 async function main() {
   const publicClient = createClient();
   const authClient = createClient(state.cookieHeader);
-
+  // Keep the representative tRPC workload below the configured API limiter\n  // (300 requests/minute). Rate-limit behavior is a separate security contract;\n  // this gate measures healthy-path latency rather than intentionally exhausting it.\n
   await runPool(
     "healthz",
     160,
@@ -198,8 +198,8 @@ async function main() {
 
   await runPool(
     "feed-list",
-    120,
-    16,
+    60,
+    12,
     async () => {
       await publicClient.post.list.query({ limit: 10, offset: 0 });
     },
@@ -208,8 +208,8 @@ async function main() {
 
   await runPool(
     "authenticated-identity",
-    100,
-    12,
+    45,
+    10,
     async () => {
       const user = await authClient.auth.me.query();
       if (String(user?.id) !== state.id) throw new Error("auth identity mismatch");
@@ -219,8 +219,8 @@ async function main() {
 
   await runPool(
     "protected-user",
-    100,
-    12,
+    45,
+    10,
     async () => {
       const user = await authClient.user.me.query();
       if (String(user?.id) !== state.id) throw new Error("protected identity mismatch");
@@ -230,8 +230,8 @@ async function main() {
 
   await runPool(
     "direct-message-history",
-    100,
-    12,
+    45,
+    10,
     async () => {
       await authClient.message.list.query({ userId: state.id });
     },
