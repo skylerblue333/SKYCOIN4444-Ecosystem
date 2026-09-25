@@ -233,7 +233,7 @@ export default function NotificationsHub() {
             <Card className="bg-slate-800/50 border-slate-700/50 p-6">
               <div className="text-center text-slate-400">
                 <Zap className="w-12 h-12 mx-auto mb-3 text-slate-500" />
-                <p>Real-time activity feed coming soon</p>
+                <p>Real-time activity feed engineering beta</p>
               </div>
             </Card>
           </TabsContent>

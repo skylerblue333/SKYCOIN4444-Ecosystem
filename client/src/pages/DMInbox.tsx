@@ -414,7 +414,7 @@ export default function DMInbox() {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8"
-                      onClick={() => toast.info("Voice call coming soon")}
+                      onClick={() => toast.info("Voice call engineering beta")}
                     >
                       <Phone className="w-4 h-4" />
                     </Button>
@@ -422,7 +422,7 @@ export default function DMInbox() {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8"
-                      onClick={() => toast.info("Video call coming soon")}
+                      onClick={() => toast.info("Video call engineering beta")}
                     >
                       <Video className="w-4 h-4" />
                     </Button>
@@ -570,7 +570,7 @@ export default function DMInbox() {
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8"
-                  onClick={() => toast.info("Image upload coming soon")}
+                  onClick={() => toast.info("Image upload engineering beta")}
                 >
                   <Image className="w-4 h-4" />
                 </Button>
@@ -578,7 +578,7 @@ export default function DMInbox() {
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8"
-                  onClick={() => toast.info("Emoji picker coming soon")}
+                  onClick={() => toast.info("Emoji picker engineering beta")}
                 >
                   <Smile className="w-4 h-4" />
                 </Button>
@@ -599,7 +599,7 @@ export default function DMInbox() {
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8"
-                  onClick={() => toast.info("Voice message coming soon")}
+                  onClick={() => toast.info("Voice message engineering beta")}
                 >
                   <Mic className="w-4 h-4" />
                 </Button>

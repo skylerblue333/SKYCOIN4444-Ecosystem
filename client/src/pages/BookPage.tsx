@@ -97,7 +97,7 @@ export default function BookPage() {
         <div className="flex justify-center mb-8">
           <Badge className="bg-purple-600/20 text-purple-300 border border-purple-500/30 px-4 py-1.5 text-sm">
             <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-            Coming Soon — Limited First Edition
+            engineering beta — Limited First Edition
           </Badge>
         </div>
 

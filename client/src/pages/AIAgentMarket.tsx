@@ -217,7 +217,7 @@ export default function AIAgentMarket() {
     toast.success(
       `Unlocking ${agent.name} — ${tier.charAt(0).toUpperCase() + tier.slice(1)}`,
       {
-        description: `$${price} — Payment processing coming soon. Connect Stripe to activate.`,
+        description: `$${price} — Payment processing engineering beta. Connect Stripe to activate.`,
       }
     );
   };

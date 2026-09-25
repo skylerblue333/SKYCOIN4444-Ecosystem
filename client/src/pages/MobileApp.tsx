@@ -110,7 +110,7 @@ export default function MobileApp() {
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1 text-center md:text-left">
               <Badge className="mb-4 bg-purple-500/20 text-purple-300 border-purple-500/30">
-                <Sparkles className="w-3 h-3 mr-1" /> Coming Soon — Join
+                <Sparkles className="w-3 h-3 mr-1" /> engineering beta — Join
                 Waitlist
               </Badge>
               <h1 className="text-4xl md:text-5xl font-black mb-4 text-gradient-psychedelic">

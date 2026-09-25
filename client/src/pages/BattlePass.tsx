@@ -307,7 +307,7 @@ export default function BattlePass() {
                 </p>
                 <button
                   onClick={() =>
-                    toast.info("Premium Battle Pass coming soon! Stay tuned.")
+                    toast.info("Premium Battle Pass engineering beta! Stay tuned.")
                   }
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-bold hover:from-amber-400 hover:to-yellow-300 transition-all hover:scale-105"
                 >

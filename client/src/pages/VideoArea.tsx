@@ -512,7 +512,7 @@ export default function VideoArea() {
                 <div
                   key={video.id}
                   className="group cursor-pointer"
-                  onClick={() => toast.info("Video player coming soon!")}
+                  onClick={() => toast.info("Video player engineering beta!")}
                 >
                   <div className="relative rounded-xl overflow-hidden mb-2 bg-black aspect-video">
                     <img
@@ -620,7 +620,7 @@ export default function VideoArea() {
                 <div
                   key={video.id}
                   className="flex gap-3 p-3 bg-[#0e0a1a] border border-white/5 hover:border-white/10 rounded-xl cursor-pointer group transition-all"
-                  onClick={() => toast.info("Video player coming soon!")}
+                  onClick={() => toast.info("Video player engineering beta!")}
                 >
                   <div className="text-2xl font-black text-slate-700 w-8 shrink-0 flex items-center justify-center">
                     {i < 3 ? ["🥇", "🥈", "🥉"][i] : i + 1}

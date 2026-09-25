@@ -266,7 +266,7 @@ export default function Payments() {
               <Button
                 variant="outline"
                 className="shrink-0"
-                onClick={() => toast.info("SKY444 payment coming soon")}
+                onClick={() => toast.info("SKY444 payment engineering beta")}
               >
                 <Coins className="w-4 h-4 mr-2" /> Use SKY444 Tokens
               </Button>
@@ -309,7 +309,7 @@ export default function Payments() {
                         variant="outline"
                         className="text-xs gap-1"
                         onClick={() =>
-                          toast.info("Payment method setup coming soon")
+                          toast.info("Payment method setup engineering beta")
                         }
                       >
                         Add Method <ArrowRight className="w-3 h-3" />

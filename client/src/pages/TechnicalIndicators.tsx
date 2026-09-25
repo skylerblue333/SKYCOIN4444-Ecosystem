@@ -1,22 +1,5 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
 
-const TechnicalIndicators = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">
-          TechnicalIndicators
-        </h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">
-            TechnicalIndicators feature coming soon...
-          </p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default TechnicalIndicators;
+export default function TechnicalIndicators() {
+  return <EngineeringBetaWorkspace areaId="admin-operations" title="Technical Indicators" description="This technical indicators surface is available as an engineering-beta workspace with explicit scope, readiness, and next actions." actions={["Review the technical indicators workflow and its current supported scope.", "Validate ownership, permissions, and failure handling before using it with real data.", "Use the readiness panel to track evidence, testing, and the next release gate."]} />;
+}

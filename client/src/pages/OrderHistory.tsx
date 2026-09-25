@@ -130,7 +130,7 @@ function OrderCard({ order }: { order: any }) {
             size="sm"
             variant="outline"
             className="h-7 text-xs border-white/10 text-slate-400"
-            onClick={() => toast.info("Invoice download coming soon")}
+            onClick={() => toast.info("Invoice download engineering beta")}
           >
             <Download className="w-3 h-3 mr-1" />
             Invoice

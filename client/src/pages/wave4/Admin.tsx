@@ -201,7 +201,7 @@ export default function AdminPage() {
         {/* Logs Tab */}
         <TabsContent value="logs">
           <Card className="p-6">
-            <p className="text-gray-600">Audit logs coming soon...</p>
+            <p className="text-gray-600">Audit logs engineering beta...</p>
           </Card>
         </TabsContent>
       </Tabs>

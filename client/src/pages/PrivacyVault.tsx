@@ -269,7 +269,7 @@ export default function PrivacyVault() {
                       variant="outline"
                       className="text-[10px] border-border/30 text-muted-foreground"
                     >
-                      Coming Soon
+                      engineering beta
                     </Badge>
                   ) : (
                     <Badge
@@ -313,7 +313,7 @@ export default function PrivacyVault() {
                     className="w-full text-xs"
                     disabled
                   >
-                    Coming Soon
+                    engineering beta
                   </Button>
                 )}
               </Card>

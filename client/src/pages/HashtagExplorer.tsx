@@ -159,7 +159,7 @@ export default function HashtagExplorer() {
                 </div>
                 <div className="text-center py-12 text-muted-foreground">
                   <Hash className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                  <div>Hashtag-filtered feed coming soon</div>
+                  <div>Hashtag-filtered feed engineering beta</div>
                   <div className="text-xs mt-1">
                     Posts tagged #{selectedTag} will appear here
                   </div>

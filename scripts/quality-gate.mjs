@@ -32,7 +32,7 @@ const checks = [
   { name: "maturity scores are within 1–10", pass: areaRecords.every(match => Number(match[6]) >= 1 && Number(match[6]) <= 10) },
   { name: "route catalog is populated", pass: routeCount >= 900 },
   { name: "route catalog and app route counts are close", pass: Math.abs(routeCount - routeCountFromApp) <= 400 },
-  { name: "placeholder pages do not regress", pass: placeholderPages <= baseline.placeholderPages },
+  { name: "all placeholder markers are removed", pass: placeholderPages === 0 },
   { name: "mock markers do not regress", pass: mockMarkers <= baseline.mockMarkers },
 ];
 const failed = checks.filter(check => !check.pass);

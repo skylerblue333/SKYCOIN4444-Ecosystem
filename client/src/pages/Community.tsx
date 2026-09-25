@@ -145,7 +145,7 @@ export default function Community() {
           {isAuthenticated ? (
             <Button
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
-              onClick={() => toast.info("Community creation coming soon!")}
+              onClick={() => toast.info("Community creation engineering beta!")}
             >
               <Plus className="w-4 h-4 mr-2" /> Create Community
             </Button>
