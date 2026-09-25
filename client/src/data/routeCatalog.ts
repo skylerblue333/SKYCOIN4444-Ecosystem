@@ -7763,5 +7763,149 @@ export const ROUTE_CAPABILITIES: RouteCapability[] = [
     "category": "Build & Admin",
     "intent": "Configure, measure, secure, or operate the platform",
     "component": "ZapierIntegration"
+  },
+  {
+    "id": "componentshowcase",
+    "route": "/componentshowcase",
+    "label": "Components Showcase",
+    "category": "Tools & Utilities",
+    "intent": "Browse the reusable interface component showcase",
+    "component": "ComponentsShowcase"
+  },
+  {
+    "id": "itserviceslanding",
+    "route": "/itserviceslanding",
+    "label": "IT Services Landing",
+    "category": "Build & Admin",
+    "intent": "Explore the IITR services landing experience",
+    "component": "ITServicesLanding"
+  },
+  {
+    "id": "itservicesportal",
+    "route": "/itservicesportal",
+    "label": "IT Services Portal",
+    "category": "Build & Admin",
+    "intent": "Open the IITR client services portal",
+    "component": "ITServicesPortal"
+  },
+  {
+    "id": "phase20hub",
+    "route": "/phase20hub",
+    "label": "Phase 20 Hub",
+    "category": "Build & Admin",
+    "intent": "Review the Phase 20 integrated engineering hub",
+    "component": "Phase20Hub"
+  },
+  {
+    "id": "wave2-aicore",
+    "route": "/wave2/aicore",
+    "label": "Wave 2 AI Core",
+    "category": "AI",
+    "intent": "Open the Wave 2 AI core workspace",
+    "component": "Wave2AiCore"
+  },
+  {
+    "id": "wave2-marketplace",
+    "route": "/wave2/marketplace",
+    "label": "Wave 2 Marketplace",
+    "category": "Community",
+    "intent": "Open the Wave 2 marketplace workspace",
+    "component": "Wave2Marketplace"
+  },
+  {
+    "id": "wave2-notifications",
+    "route": "/wave2/notifications",
+    "label": "Wave 2 Notifications",
+    "category": "Community",
+    "intent": "Open the Wave 2 notification workspace",
+    "component": "Wave2Notifications"
+  },
+  {
+    "id": "wave2-profile",
+    "route": "/wave2/profile",
+    "label": "Wave 2 Profile",
+    "category": "Community",
+    "intent": "Open the Wave 2 profile workspace",
+    "component": "Wave2Profile"
+  },
+  {
+    "id": "wave3-analytics",
+    "route": "/wave3/analytics",
+    "label": "Wave 3 Analytics",
+    "category": "Build & Admin",
+    "intent": "Open the Wave 3 analytics workspace",
+    "component": "Wave3Analytics"
+  },
+  {
+    "id": "wave3-gaming",
+    "route": "/wave3/gaming",
+    "label": "Wave 3 Gaming",
+    "category": "Learn & Play",
+    "intent": "Open the Wave 3 gaming workspace",
+    "component": "Wave3Gaming"
+  },
+  {
+    "id": "wave3-governance",
+    "route": "/wave3/governance",
+    "label": "Wave 3 Governance",
+    "category": "Money & Web3",
+    "intent": "Open the Wave 3 governance workspace",
+    "component": "Wave3Governance"
+  },
+  {
+    "id": "wave3-learning",
+    "route": "/wave3/learning",
+    "label": "Wave 3 Learning",
+    "category": "Learn & Play",
+    "intent": "Open the Wave 3 learning workspace",
+    "component": "Wave3Learning"
+  },
+  {
+    "id": "wave4-admin",
+    "route": "/wave4/admin",
+    "label": "Wave 4 Admin",
+    "category": "Build & Admin",
+    "intent": "Open the Wave 4 administration workspace",
+    "component": "Wave4Admin"
+  },
+  {
+    "id": "wave4-creatorstudio",
+    "route": "/wave4/creatorstudio",
+    "label": "Wave 4 Creator Studio",
+    "category": "Community",
+    "intent": "Open the Wave 4 creator studio workspace",
+    "component": "Wave4CreatorStudio"
+  },
+  {
+    "id": "wave4-explore",
+    "route": "/wave4/explore",
+    "label": "Wave 4 Explore",
+    "category": "Explore",
+    "intent": "Open the Wave 4 exploration workspace",
+    "component": "Wave4Explore"
+  },
+  {
+    "id": "wave4-payments",
+    "route": "/wave4/payments",
+    "label": "Wave 4 Payments",
+    "category": "Money & Web3",
+    "intent": "Open the Wave 4 payments planning workspace",
+    "component": "Wave4Payments"
+  },
+  {
+    "id": "wave4-security",
+    "route": "/wave4/security",
+    "label": "Wave 4 Security",
+    "category": "Build & Admin",
+    "intent": "Open the Wave 4 security workspace",
+    "component": "Wave4Security"
+  },
+  {
+    "id": "wave4-settings",
+    "route": "/wave4/settings",
+    "label": "Wave 4 Settings",
+    "category": "Tools & Utilities",
+    "intent": "Open the Wave 4 settings workspace",
+    "component": "Wave4Settings"
   }
 ];
