@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { CommandPalette, useCommandPalette } from "@/components/CommandPalette";
+import { EcosystemAreaStatus } from "@/components/EcosystemAreaStatus";
 
 // Lazy load all pages
 const ABTesting = lazy(() => import("./pages/ABTesting"));
@@ -1050,6 +1051,7 @@ const App = () => {
             >
               Skip to main content
             </a>
+            <EcosystemAreaStatus />
             <main id="main-content" className="flex-1">
               <Suspense
                 fallback={
