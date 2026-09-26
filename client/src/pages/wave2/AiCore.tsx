@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 const AiCorePage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<
     "chat" | "content" | "analysis" | "learn" | "logs"
   >("chat");
