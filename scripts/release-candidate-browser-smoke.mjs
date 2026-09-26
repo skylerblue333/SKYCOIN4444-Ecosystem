@@ -1,5 +1,5 @@
 import { execFileSync, spawn } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createTRPCClient, httpLink } from "@trpc/client";
@@ -11,6 +11,7 @@ const email = process.env.RC_EMAIL || "rc-clean-account@example.invalid";
 const accessKey = required("RC_BETA_ACCESS_KEY");
 const reportFile = process.env.RC_BROWSER_REPORT_FILE || "rc-browser-smoke.json";
 const screenshotFile = process.env.RC_BROWSER_SCREENSHOT_FILE || "rc-browser-smoke.png";
+const routeReportFile = process.env.RC_ROUTE_REPORT_FILE || "rc-route-smoke.json";
 const debugPort = Number(process.env.RC_CHROME_DEBUG_PORT || "9222");
 
 function required(name) {
@@ -88,6 +89,124 @@ async function waitForExpression(cdp, expression, timeoutMs = 15_000) {
     await new Promise(resolve => setTimeout(resolve, 150));
   }
   throw new Error(`Timed out waiting for browser expression: ${expression}`);
+}
+
+
+async function readRegisteredRoutes() {
+  const source = await readFile("client/src/data/routeCatalog.ts", "utf8");
+  const routes = [...source.matchAll(/"route":\s*"([^"]+)"/g)].map(match => match[1]);
+  return [...new Set(routes)];
+}
+
+async function scanRegisteredRoutes(cdp) {
+  const routes = await readRegisteredRoutes();
+  const failures = [];
+  const results = [];
+
+  for (let index = 0; index < routes.length; index++) {
+    const route = routes[index];
+
+    await cdp.call("Runtime.evaluate", {
+      expression: `(() => {
+        window.history.pushState({}, "", ${JSON.stringify(route)});
+        window.dispatchEvent(new PopStateEvent("popstate"));
+        return window.location.pathname;
+      })()`,
+      returnByValue: true,
+    });
+
+    const deadline = Date.now() + 4000;
+    let state = null;
+
+    while (Date.now() < deadline) {
+      const evaluated = await cdp.call("Runtime.evaluate", {
+        expression: `(() => {
+          const main = document.querySelector("#main-content");
+          const bodyText = document.body?.innerText || "";
+          const mainText = main?.innerText || "";
+          return {
+            path: window.location.pathname,
+            hasMain: Boolean(main),
+            mainTextLength: mainText.trim().length,
+            errorBoundary: bodyText.includes("An unexpected error occurred."),
+            loading: mainText.includes("Preparing your workspace…"),
+            bodySample: bodyText.slice(0, 500),
+            mainSample: mainText.slice(0, 300),
+          };
+        })()`,
+        returnByValue: true,
+      });
+      state = evaluated?.result?.value || null;
+
+      if (
+        state &&
+        state.path === route &&
+        !state.loading &&
+        (state.errorBoundary || (state.hasMain && state.mainTextLength > 0))
+      ) {
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    const failed =
+      !state ||
+      state.path !== route ||
+      state.errorBoundary ||
+      !state.hasMain ||
+      state.mainTextLength === 0 ||
+      state.loading;
+
+    const result = {
+      route,
+      ok: !failed,
+      path: state?.path || null,
+      hasMain: state?.hasMain ?? false,
+      mainTextLength: state?.mainTextLength ?? 0,
+      errorBoundary: state?.errorBoundary ?? false,
+      loading: state?.loading ?? false,
+      mainSample: state?.mainSample || "",
+      bodySample: state?.bodySample || "",
+    };
+    results.push(result);
+
+    if (failed) {
+      failures.push(result);
+
+      // A React error boundary remains latched after a render failure.
+      // Reset to a fresh app instance so one bad route does not hide later failures.
+      await cdp.call("Page.navigate", { url: `${baseUrl}/` });
+      try {
+        await waitForExpression(
+          cdp,
+          `document.readyState === "complete" && document.querySelector("#main-content") && !document.body.innerText.includes("An unexpected error occurred.")`,
+          10_000
+        );
+      } catch {}
+    }
+
+    // Pace the route walk so the browser smoke does not manufacture API-rate-limit
+    // failures while still exercising every registered screen in one session.
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    if ((index + 1) % 100 === 0 || index === routes.length - 1) {
+      console.log(
+        `Route smoke progress: ${index + 1}/${routes.length}; failures=${failures.length}`
+      );
+    }
+  }
+
+  const report = {
+    generatedAt: new Date().toISOString(),
+    baseUrl,
+    total: routes.length,
+    passed: results.length - failures.length,
+    failed: failures.length,
+    failures,
+  };
+  await writeFile(routeReportFile, JSON.stringify(report, null, 2) + "\n");
+
+  return report;
 }
 
 async function waitForChromeExit(child, timeoutMs = 5000) {
@@ -247,6 +366,27 @@ try {
     throw new Error("Browser session cookie did not survive reload");
   }
 
+  const routeSmoke = await scanRegisteredRoutes(cdp);
+  if (routeSmoke.failed > 0) {
+    console.error(
+      `Registered-route smoke found ${routeSmoke.failed}/${routeSmoke.total} failing screens`
+    );
+    for (const failure of routeSmoke.failures.slice(0, 100)) {
+      console.error(
+        `BROKEN_ROUTE ${failure.route} errorBoundary=${failure.errorBoundary} hasMain=${failure.hasMain} text=${JSON.stringify(failure.mainSample)}`
+      );
+    }
+    throw new Error(
+      `Registered-route browser smoke failed: ${routeSmoke.failed}/${routeSmoke.total} routes`
+    );
+  }
+
+  await cdp.call("Page.navigate", { url: `${baseUrl}/` });
+  await waitForExpression(
+    cdp,
+    `document.readyState === "complete" && window.location.pathname === "/" && document.querySelector("#main-content")`
+  );
+
   const screenshot = await cdp.call("Page.captureScreenshot", {
     format: "png",
     captureBeyondViewport: false,
@@ -274,6 +414,10 @@ try {
     finalPath: pageState?.result?.value?.path || null,
     pageTitle: pageState?.result?.value?.title || null,
     screenshot: screenshotFile,
+    registeredRoutesChecked: routeSmoke.total,
+    registeredRoutesPassed: routeSmoke.passed,
+    registeredRoutesFailed: routeSmoke.failed,
+    routeReport: routeReportFile,
   };
   await writeFile(reportFile, JSON.stringify(report, null, 2) + "\n");
   console.log(
