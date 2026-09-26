@@ -3,15 +3,13 @@ import { trpc } from "@/lib/trpc";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 
 export default function DigitalTwin() {
-  const { data: twin, isLoading } = trpc.hopeIntelligence.twin.get.useQuery();
+  const { data: twin, isLoading, error } = trpc.hopeIntelligence.twin.get.useQuery(undefined, { retry: false });
   const [activeTab, setActiveTab] = useState<
     "growth" | "predictions" | "relationships"
   >("growth");
 
-  if (isLoading) return <Spinner />;
 
   const growthTimeline = [
     { month: "Jun 2026", level: 1, achievements: 3, xp: 150 },
@@ -36,6 +34,21 @@ export default function DigitalTwin() {
             Your AI reflection — personality, growth, and future paths
           </p>
         </div>
+
+        {(isLoading || error) && (
+          <Card className="mb-8 border-cyan-500/20 bg-cyan-500/5 p-4">
+            <p className="font-medium text-cyan-200">
+              {isLoading
+                ? "Loading live twin data…"
+                : "Live twin data is unavailable; showing the beta preview."}
+            </p>
+            {error && (
+              <p className="mt-1 text-sm text-gray-400">
+                {error.message}
+              </p>
+            )}
+          </Card>
+        )}
 
         {/* Twin Profile */}
         <div className="grid grid-cols-3 gap-8 mb-12">

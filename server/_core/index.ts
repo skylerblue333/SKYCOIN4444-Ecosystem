@@ -42,7 +42,7 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests." },
-  skip: req => req.path === "/api/health",
+  skip: req => !req.path.startsWith("/api/") || req.path === "/api/health",
 });
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
