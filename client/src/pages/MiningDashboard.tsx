@@ -106,13 +106,16 @@ export default function MiningDashboard() {
       const response = await fetch("/api/mining/sessions?limit=50");
       if (!response.ok) throw new Error("Failed to fetch sessions");
       const data = await response.json();
-      setSessions(data.sessions);
+      const nextSessions: MiningSession[] = Array.isArray(data?.sessions)
+        ? data.sessions
+        : [];
+      setSessions(nextSessions);
 
-      // Prepare chart data
-      const chartData = data.sessions.map((session: MiningSession) => ({
-        name: new Date(session.startTime).toLocaleTimeString(),
-        coins: session.coinsGenerated,
-        rewards: session.rewardsSent,
+      // Prepare chart data from only the validated array shape.
+      const chartData = nextSessions.map((session: MiningSession) => ({
+        name: new Date(session.startTime ?? Date.now()).toLocaleTimeString(),
+        coins: Number(session.coinsGenerated ?? 0),
+        rewards: Number(session.rewardsSent ?? 0),
       }));
       setChartData(chartData);
     } catch (err) {
@@ -196,7 +199,7 @@ export default function MiningDashboard() {
           <h1 className="text-4xl font-bold text-white mb-2">
             ⛏️ Mining Dashboard
           </h1>
-          <p className="text-slate-400">24/7 Autonomous Crypto Mining System</p>
+          <p className="text-slate-400">Mining engineering-beta monitor</p>
         </div>
 
         {/* Error Alert */}
@@ -268,7 +271,7 @@ export default function MiningDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-yellow-500">
-                {stats?.totalCoinsGenerated.toLocaleString()}
+                {Number(stats?.totalCoinsGenerated ?? 0).toLocaleString()}
               </div>
               <p className="text-slate-400 text-sm mt-1">Generated</p>
             </CardContent>
@@ -284,7 +287,7 @@ export default function MiningDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-500">
-                ${stats?.totalRewardsSent.toLocaleString()}
+                ${Number(stats?.totalRewardsSent ?? 0).toLocaleString()}
               </div>
               <p className="text-slate-400 text-sm mt-1">To Admin Wallet</p>
             </CardContent>
@@ -314,7 +317,7 @@ export default function MiningDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-orange-500">
-                {stats?.totalSessions}
+                {Number(stats?.totalSessions ?? 0).toLocaleString()}
               </div>
               <p className="text-slate-400 text-sm mt-1">Completed</p>
             </CardContent>
@@ -438,7 +441,7 @@ export default function MiningDashboard() {
                   Average Coins/Session
                 </p>
                 <p className="text-2xl font-bold text-white">
-                  {stats?.averageCoinsPerSession.toFixed(2)}
+                  {Number(stats?.averageCoinsPerSession ?? 0).toFixed(2)}
                 </p>
               </div>
               <div>
@@ -498,7 +501,7 @@ export default function MiningDashboard() {
                       className="border-b border-slate-700 hover:bg-slate-700/50"
                     >
                       <td className="py-3 px-4 text-slate-300 font-mono text-xs">
-                        {session.id.slice(0, 20)}...
+                        {String(session.id ?? "session").slice(0, 20)}...
                       </td>
                       <td className="py-3 px-4">
                         <Badge
@@ -520,7 +523,7 @@ export default function MiningDashboard() {
                         {session.rewardsSent}
                       </td>
                       <td className="py-3 px-4 text-right text-slate-300">
-                        {session.poolsUsed.length}
+                        {Array.isArray(session.poolsUsed) ? session.poolsUsed.length : 0}
                       </td>
                       <td className="py-3 px-4 text-slate-400 text-xs">
                         {new Date(session.startTime).toLocaleTimeString()}
