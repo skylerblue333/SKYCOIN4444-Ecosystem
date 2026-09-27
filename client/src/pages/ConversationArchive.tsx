@@ -1,22 +1,5 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
 
-const ConversationArchive = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">
-          ConversationArchive
-        </h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">
-            ConversationArchive feature coming soon...
-          </p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default ConversationArchive;
+export default function ConversationArchive() {
+  return <EngineeringBetaWorkspace areaId="admin-operations" title="Conversation Archive" description="This conversation archive surface is available as an engineering-beta workspace with explicit scope, readiness, and next actions." actions={["Review the conversation archive workflow and its current supported scope.", "Validate ownership, permissions, and failure handling before using it with real data.", "Use the readiness panel to track evidence, testing, and the next release gate."]} />;
+}

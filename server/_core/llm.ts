@@ -1,3 +1,4 @@
+import OpenAI from "openai";
 import { ENV } from "./env";
 
 export type Role = "system" | "user" | "assistant" | "tool" | "function";
@@ -215,10 +216,17 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
+const resolveApiRoot = () =>
   ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://forge.manus.im/v1/chat/completions";
+    ? ENV.forgeApiUrl.replace(/\/$/, "")
+    : "https://forge.manus.im";
+
+const resolveApiBaseUrl = () => {
+  const root = resolveApiRoot().replace(/\/v1\/chat\/completions$/, "");
+  return root.endsWith("/v1") ? root : `${root}/v1`;
+};
+
+const resolveApiUrl = () => `${resolveApiBaseUrl()}/chat/completions`;
 
 const assertApiKey = () => {
   if (!ENV.forgeApiKey) {
@@ -339,6 +347,79 @@ const fetchWithBackoff = async (
     ? lastError
     : new Error("LLM request failed after exhausting retries");
 };
+
+export type LLMStreamChunk = {
+  choices?: Array<{
+    delta?: {
+      content?: string | null;
+    };
+  }>;
+};
+
+export type LLMStreamClient = {
+  chat: {
+    completions: {
+      create: (
+        body: Record<string, unknown>,
+        options?: { signal?: AbortSignal }
+      ) => Promise<AsyncIterable<LLMStreamChunk>>;
+    };
+  };
+};
+
+export type StreamLLMOptions = {
+  signal?: AbortSignal;
+  client?: LLMStreamClient;
+};
+
+/**
+ * Stream text deltas from an OpenAI-compatible chat-completions provider.
+ *
+ * Runtime uses the official openai-node client against the configured Forge
+ * base URL. A minimal client interface can be injected by tests so CI never
+ * requires a live provider or secret.
+ */
+export async function* streamLLMText(
+  params: Pick<InvokeParams, "messages" | "model" | "maxTokens" | "max_tokens">,
+  options: StreamLLMOptions = {}
+): AsyncGenerator<string, void, unknown> {
+  if (!options.client) {
+    assertApiKey();
+  }
+
+  const client: LLMStreamClient =
+    options.client ??
+    (new OpenAI({
+      apiKey: ENV.forgeApiKey,
+      baseURL: resolveApiBaseUrl(),
+      maxRetries: RETRY_MAX_RETRIES,
+    }) as unknown as LLMStreamClient);
+
+  const request: Record<string, unknown> = {
+    model: params.model || "gpt-4.1-mini",
+    messages: params.messages.map(normalizeMessage),
+    stream: true,
+  };
+
+  const resolvedMaxTokens = params.max_tokens ?? params.maxTokens;
+  if (typeof resolvedMaxTokens === "number") {
+    request.max_tokens = resolvedMaxTokens;
+  }
+
+  const stream = await client.chat.completions.create(
+    request,
+    options.signal ? { signal: options.signal } : undefined
+  );
+
+  for await (const chunk of stream) {
+    for (const choice of chunk.choices ?? []) {
+      const text = choice.delta?.content;
+      if (typeof text === "string" && text.length > 0) {
+        yield text;
+      }
+    }
+  }
+}
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   assertApiKey();

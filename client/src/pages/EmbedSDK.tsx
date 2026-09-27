@@ -189,7 +189,7 @@ export default function EmbedSDK() {
                 variant="outline"
                 className="border-white/20 text-white/70 hover:text-white gap-2"
                 onClick={() =>
-                  toast.info("Full docs at docs.skycoin4444.com — coming soon")
+                  toast.info("Full docs at docs.skycoin4444.com — engineering beta")
                 }
               >
                 <Code2 className="w-4 h-4" /> View Docs

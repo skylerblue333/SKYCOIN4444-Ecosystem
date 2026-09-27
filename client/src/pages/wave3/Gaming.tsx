@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 const GamingPage: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<
     "games" | "leaderboard" | "history" | "achievements"
   >("games");

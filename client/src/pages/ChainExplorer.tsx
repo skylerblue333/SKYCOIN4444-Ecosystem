@@ -1,18 +1,5 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
 
-const ChainExplorer = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">ChainExplorer</h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">ChainExplorer feature coming soon...</p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default ChainExplorer;
+export default function ChainExplorer() {
+  return <EngineeringBetaWorkspace areaId="chain-explorer" title="Chain explorer" description="Review chain activity with explicit source, freshness, and finality boundaries." actions={["Check network, block height, and timestamp before interpreting activity.", "Treat unconfirmed activity as provisional.", "Explorer views do not prove custody, settlement, or investment value."]} />;
+}

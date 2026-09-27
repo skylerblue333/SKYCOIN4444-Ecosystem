@@ -69,21 +69,21 @@ const BROWSERS = [
     name: "Globe",
     icon: Globe,
     color: "text-yellow-400",
-    status: "Coming Soon",
+    status: "engineering beta",
   },
   {
     name: "Firefox",
     icon: Globe,
     color: "text-orange-400",
-    status: "Coming Soon",
+    status: "engineering beta",
   },
   {
     name: "Brave",
     icon: Shield,
     color: "text-orange-500",
-    status: "Coming Soon",
+    status: "engineering beta",
   },
-  { name: "Edge", icon: Globe, color: "text-blue-400", status: "Coming Soon" },
+  { name: "Edge", icon: Globe, color: "text-blue-400", status: "engineering beta" },
 ];
 
 export default function BrowserExtension() {

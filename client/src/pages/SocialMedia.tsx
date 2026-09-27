@@ -189,7 +189,7 @@ export default function SocialMedia() {
                         size="icon"
                         variant="ghost"
                         className="h-8 w-8"
-                        onClick={() => toast.info("Image upload coming soon")}
+                        onClick={() => toast.info("Image upload engineering beta")}
                       >
                         <Image className="w-4 h-4" />
                       </Button>
@@ -197,7 +197,7 @@ export default function SocialMedia() {
                         size="icon"
                         variant="ghost"
                         className="h-8 w-8"
-                        onClick={() => toast.info("Video upload coming soon")}
+                        onClick={() => toast.info("Video upload engineering beta")}
                       >
                         <Video className="w-4 h-4" />
                       </Button>
@@ -213,7 +213,7 @@ export default function SocialMedia() {
                         size="icon"
                         variant="ghost"
                         className="h-8 w-8 text-primary"
-                        onClick={() => toast.info("AI draft coming soon")}
+                        onClick={() => toast.info("AI draft engineering beta")}
                       >
                         <Sparkles className="w-4 h-4" />
                       </Button>

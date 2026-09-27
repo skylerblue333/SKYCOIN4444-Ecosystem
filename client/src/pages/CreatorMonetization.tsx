@@ -88,7 +88,7 @@ const MONETIZATION_FEATURES = [
     desc: "Tiered fan clubs with perks",
     href: "/memberships",
     color: "oklch(0.82 0.16 80)",
-    badge: "Coming Soon",
+    badge: "engineering beta",
   },
   {
     icon: <Zap className="w-5 h-5" />,

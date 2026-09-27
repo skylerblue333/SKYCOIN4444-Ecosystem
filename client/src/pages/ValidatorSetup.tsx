@@ -1,18 +1,2 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-
-const ValidatorSetup = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">ValidatorSetup</h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">ValidatorSetup feature coming soon...</p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default ValidatorSetup;
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
+export default function ValidatorSetup() { return <EngineeringBetaWorkspace areaId="blockchain-core" title="Validator setup" description="Review validator operating requirements without suggesting that a production validator can be activated from this screen. Node health, key custody, monitoring, and recovery must be proven before launch." actions={["Review node and validator prerequisites.", "Keep validator keys isolated and rotate them through an approved process.", "Define health, alerting, pause, and recovery procedures before activation."]} related={[{ label: "Validator performance", href: "/validatorperformance" }, { label: "Blockchain monitor", href: "/blockchainmonitor" }, { label: "System observability", href: "/systemobservability" }]} />; }

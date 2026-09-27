@@ -1,22 +1,2 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-
-const WorkflowAutomation = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">
-          WorkflowAutomation
-        </h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">
-            WorkflowAutomation feature coming soon...
-          </p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default WorkflowAutomation;
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
+export default function WorkflowAutomation() { return <EngineeringBetaWorkspace areaId="workflow-automation" title="Workflow automation" description="Design repeatable rules and actions with clear execution evidence. The builder surface is available for beta exploration while durable triggers and provider delivery are being hardened." actions={["Map a trigger, condition, and action before enabling automation.", "Review the planned workflow and failure behavior before running it.", "Use the area readiness banner to track the next persistence and deployment gate."]} related={[{ label: "Workflow builder", href: "/workflowbuilder" }, { label: "Automation rules", href: "/automationrules" }, { label: "System status", href: "/systemstatus" }]} />; }

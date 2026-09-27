@@ -1,18 +1,2 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-
-const VideoCall = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">VideoCall</h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">VideoCall feature coming soon...</p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default VideoCall;
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
+export default function VideoCall() { return <EngineeringBetaWorkspace areaId="messaging" title="Video calls" description="Explore the real-time call surface with permission, participant, and connection-state expectations visible. Cross-user media sessions require a configured signaling and media service." actions={["Check camera and microphone permissions before joining.", "Review connection and participant states before sharing sensitive content.", "Use the live area for the currently supported broadcast workflow."]} related={[{ label: "Video chat", href: "/videochat" }, { label: "Messaging", href: "/chatmvp" }, { label: "Live streaming", href: "/live" }]} />; }

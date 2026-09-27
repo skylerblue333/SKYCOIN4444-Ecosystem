@@ -133,21 +133,21 @@ export default function Crypto() {
               <Button
                 className="w-full justify-start bg-primary/10 text-primary hover:bg-primary/20"
                 size="sm"
-                onClick={() => toast.info("Swap feature coming soon!")}
+                onClick={() => toast.info("Swap engineering beta!")}
               >
                 <ArrowUpDown className="w-4 h-4 mr-2" /> Swap Tokens
               </Button>
               <Button
                 className="w-full justify-start bg-purple-600/10 text-purple-400 hover:bg-purple-600/20"
                 size="sm"
-                onClick={() => toast.info("Send feature coming soon!")}
+                onClick={() => toast.info("Send engineering beta!")}
               >
                 <ArrowUp className="w-4 h-4 mr-2" /> Send
               </Button>
               <Button
                 className="w-full justify-start bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
                 size="sm"
-                onClick={() => toast.info("Receive feature coming soon!")}
+                onClick={() => toast.info("Receive engineering beta!")}
               >
                 <ArrowDown className="w-4 h-4 mr-2" /> Receive
               </Button>
@@ -299,7 +299,7 @@ export default function Crypto() {
                   size="sm"
                   className="w-full"
                   variant="outline"
-                  onClick={() => toast.info("Yield farming coming soon!")}
+                  onClick={() => toast.info("Yield farming engineering beta!")}
                 >
                   Start Farming
                 </Button>
@@ -323,7 +323,7 @@ export default function Crypto() {
                   size="sm"
                   className="w-full"
                   variant="outline"
-                  onClick={() => toast.info("Insurance coming soon!")}
+                  onClick={() => toast.info("Insurance engineering beta!")}
                 >
                   Get Coverage
                 </Button>

@@ -1,22 +1,2 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-
-const WalletIntegration = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">
-          WalletIntegration
-        </h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">
-            WalletIntegration feature coming soon...
-          </p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default WalletIntegration;
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
+export default function WalletIntegration() { return <EngineeringBetaWorkspace areaId="wallets" title="Wallet integrations" description="Review wallet connection and integration boundaries without implying custody or settlement. Signing and external transfer behavior remain gated until provider, threat-model, and recovery evidence is complete." actions={["Review supported wallet connection boundaries.", "Keep private keys and signing credentials outside the application.", "Use synthetic or test-network funds until the security gate passes."]} related={[{ label: "Wallet overview", href: "/walletoverview" }, { label: "Wallet", href: "/wallet" }, { label: "Security", href: "/securitydashboard" }]} />; }

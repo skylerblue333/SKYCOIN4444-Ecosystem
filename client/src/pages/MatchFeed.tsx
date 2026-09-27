@@ -114,7 +114,7 @@ export default function MatchFeed() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => toast("Filters coming soon")}
+          onClick={() => toast("Filters engineering beta")}
         >
           <Filter className="w-4 h-4" />
         </Button>

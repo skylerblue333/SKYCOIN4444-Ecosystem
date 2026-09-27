@@ -18,6 +18,7 @@ import miningRouter from "../mining-router";
 import walletApiRouter from "../wallet-api";
 import { registerMiningHeartbeats } from "../mining-heartbeat";
 import { betaAccessKeyIssue, betaAuthMode } from "./betaAccessAuth";
+import { attachResilienceWebSocket } from "../resilience-websocket";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -78,6 +79,7 @@ async function startServer() {
   const app = express();
   app.set("trust proxy", 1); // Trust first proxy (load balancer / reverse proxy)
   const server = createServer(app);
+  attachResilienceWebSocket(server);
   const isDev = process.env.NODE_ENV === "development";
 
   app.use(
@@ -147,7 +149,7 @@ async function startServer() {
     res.status(200).json({
       status: "alive",
       uptime: Math.floor(process.uptime()),
-      release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
+      release: process.env.SKYCOIN_RELEASE_SHA || process.env.RENDER_GIT_COMMIT || process.env.GITHUB_SHA || null,
     });
   });
 
@@ -178,7 +180,7 @@ async function startServer() {
     res.status(ready ? 200 : 503).json({
       status: ready ? "ready" : "not_ready",
       timestamp: new Date().toISOString(),
-      release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
+      release: process.env.SKYCOIN_RELEASE_SHA || process.env.RENDER_GIT_COMMIT || process.env.GITHUB_SHA || null,
       services: {
         database,
         authentication: {
@@ -201,7 +203,7 @@ async function startServer() {
       timestamp: new Date().toISOString(),
       uptime: Math.floor(process.uptime()),
       environment: process.env.NODE_ENV || "production",
-      release: process.env.SKYCOIN_RELEASE_SHA || process.env.GITHUB_SHA || null,
+      release: process.env.SKYCOIN_RELEASE_SHA || process.env.RENDER_GIT_COMMIT || process.env.GITHUB_SHA || null,
       services: {
         database,
         server: {
@@ -336,52 +338,73 @@ async function startServer() {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
+
     const prompt = (req.query.prompt as string) || "";
     const model = (req.query.model as string) || "claude-sonnet-4-5";
     if (!prompt) {
       res.status(400).json({ error: "prompt required" });
       return;
     }
+
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.setHeader("X-Accel-Buffering", "no");
     res.flushHeaders();
+
+    const abortController = new AbortController();
     let finished = false;
-    res.on("close", () => {
+    let totalChars = 0;
+
+    const onRequestAborted = () => abortController.abort();
+    const onResponseClosed = () => {
       finished = true;
-    });
-    const send = (event: string, data: unknown) => {
-      if (!finished && !res.writableEnded)
-        res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      if (!res.writableEnded) abortController.abort();
     };
-    try {
-      const { invokeLLM } = await import("./llm");
-      send("start", { model, timestamp: Date.now() });
-      const response = await invokeLLM({
-        model,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert TypeScript/React developer. Generate clean, production-ready code. Output only code with brief inline comments.",
-          },
-          { role: "user", content: prompt },
-        ],
-      });
-      const content = (response as any)?.choices?.[0]?.message?.content || "";
-      // Stream in chunks of 80 chars to simulate streaming
-      const chunkSize = 80;
-      for (let i = 0; i < content.length; i += chunkSize) {
-        if (finished) break;
-        send("chunk", { text: content.slice(i, i + chunkSize) });
-        await new Promise(r => setTimeout(r, 20));
+
+    req.on("aborted", onRequestAborted);
+    res.on("close", onResponseClosed);
+
+    const send = (event: string, data: unknown) => {
+      if (!finished && !res.writableEnded && !res.destroyed) {
+        res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
       }
-      send("done", { totalChars: content.length, model });
+    };
+
+    try {
+      const { streamLLMText } = await import("./llm");
+      send("start", { model, timestamp: Date.now() });
+
+      for await (const text of streamLLMText(
+        {
+          model,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an expert TypeScript/React developer. Generate clean, production-ready code. Output only code with brief inline comments.",
+            },
+            { role: "user", content: prompt },
+          ],
+        },
+        { signal: abortController.signal }
+      )) {
+        if (finished || abortController.signal.aborted) break;
+        totalChars += text.length;
+        send("chunk", { text });
+      }
+
+      if (!finished && !abortController.signal.aborted) {
+        send("done", { totalChars, model });
+      }
     } catch (err: any) {
-      send("error", { message: err.message || "Generation failed" });
+      if (!finished && !abortController.signal.aborted) {
+        send("error", { message: err?.message || "Generation failed" });
+      }
     } finally {
-      if (!res.writableEnded) res.end();
+      req.off("aborted", onRequestAborted);
+      res.off("close", onResponseClosed);
+      if (!res.writableEnded && !res.destroyed) res.end();
     }
   });
 

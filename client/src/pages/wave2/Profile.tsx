@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 const ProfilePage: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<
     "view" | "edit" | "posts" | "followers" | "activity"
   >("view");

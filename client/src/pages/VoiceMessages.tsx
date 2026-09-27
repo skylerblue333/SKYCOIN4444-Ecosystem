@@ -1,18 +1,2 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-
-const VoiceMessages = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">VoiceMessages</h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">VoiceMessages feature coming soon...</p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default VoiceMessages;
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
+export default function VoiceMessages() { return <EngineeringBetaWorkspace areaId="audio-voice" title="Voice messages" description="Prepare voice communication workflows with explicit recording, consent, transcription, and retention boundaries. Durable delivery and storage remain part of the next quality gate." actions={["Review microphone permission and consent requirements.", "Use the voice commands surface for supported interaction patterns.", "Treat recordings as user data with retention and deletion requirements."]} related={[{ label: "Voice commands", href: "/voicecommands" }, { label: "Audio library", href: "/audiolibrary" }, { label: "Privacy", href: "/privacy" }]} />; }

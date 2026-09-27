@@ -1,0 +1,58 @@
+name: Ecosystem quality gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "client/src/**"
+      - "server/**"
+      - "scripts/**"
+      - "quality-baseline.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/quality-gate.yml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  quality:
+    name: 66-area engineering quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Validate registry and quality evidence
+        run: pnpm quality:gate
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecosystem-quality-report
+          path: quality-report.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Build customer application
+        run: pnpm build
+        env:
+          NODE_ENV: production

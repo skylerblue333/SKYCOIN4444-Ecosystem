@@ -109,7 +109,7 @@ export default function Beta() {
                 ? "Live"
                 : f.status === "testing"
                   ? "Testing"
-                  : "Coming Soon"}
+                  : "engineering beta"}
             </Badge>
           </div>
         ))}

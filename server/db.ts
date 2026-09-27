@@ -5,9 +5,33 @@ import { nanoid } from "nanoid";
 import * as schema from "../drizzle/index";
 import { and, desc, eq, or, sql } from "drizzle-orm";
 
-const poolConnection = mysql.createPool(process.env.DATABASE_URL as string);
+let configuredDb: any | null = null;
+let poolConnection: ReturnType<typeof mysql.createPool> | null = null;
 
-export const db = drizzle(poolConnection, { schema, mode: "default" });
+function getConfiguredDb() {
+  if (configuredDb) return configuredDb;
+
+  const databaseUrl = process.env.DATABASE_URL?.trim();
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not configured");
+  }
+
+  poolConnection = mysql.createPool(databaseUrl);
+  configuredDb = drizzle(poolConnection, { schema, mode: "default" });
+  return configuredDb;
+}
+
+// Keep existing call sites source-compatible while deferring the actual MySQL
+// pool creation until a database-backed path is invoked. This allows liveness
+// and static beta surfaces to boot in a truthful degraded state when staging
+// database configuration is intentionally absent.
+export const db = new Proxy({} as any, {
+  get(_target, property) {
+    const database = getConfiguredDb();
+    const value = Reflect.get(database, property, database);
+    return typeof value === "function" ? value.bind(database) : value;
+  },
+});
 const {
   users,
   tokenBalances,
@@ -22,6 +46,7 @@ const {
   products,
   orders,
   reviews,
+  streams,
 } = schema;
 
 function stableId(prefix: string, ...parts: string[]) {
@@ -30,7 +55,7 @@ function stableId(prefix: string, ...parts: string[]) {
 }
 
 export async function getDb() {
-  return db;
+  return getConfiguredDb();
 }
 
 // Beta-critical persistence helpers below use the canonical MySQL schema.
@@ -758,4 +783,133 @@ export async function searchProducts(query: string) {
 
 export async function searchPosts(query: string) {
   return [];
+}
+
+
+// ============ PERSISTENT STREAM HELPERS ============
+// Stream session metadata is stored in the canonical MySQL streams table.
+// Media ingest/transcoding is intentionally outside this persistence layer.
+
+export type PersistentStreamStatus = "scheduled" | "live" | "ended";
+
+function normalizePersistentStream(row: typeof streams.$inferSelect) {
+  const status: PersistentStreamStatus =
+    row.status === "live" || row.status === "ended" ? row.status : "scheduled";
+
+  return {
+    id: row.id,
+    creatorId: row.streamerId ?? "",
+    title: row.title ?? "",
+    description: row.description ?? undefined,
+    category: row.category ?? undefined,
+    status,
+    viewerCount: row.viewerCount ?? row.viewers ?? 0,
+    peakViewers: row.peakViewers ?? 0,
+    totalViews: row.totalViews ?? 0,
+    hlsUrl: row.hlsUrl ?? null,
+    archiveUrl: row.archiveUrl ?? null,
+    thumbnailUrl: row.thumbnailUrl ?? null,
+    scheduledFor: row.scheduledAt ?? undefined,
+    startedAt: row.startedAt ?? undefined,
+    endedAt: row.endedAt ?? undefined,
+    createdAt: row.createdAt ?? undefined,
+  };
+}
+
+export async function createPersistentStreamSession(input: {
+  creatorId: string;
+  title: string;
+  description?: string;
+  category?: string;
+}) {
+  const id = `stream_${nanoid(20)}`;
+
+  await db.insert(streams).values({
+    id,
+    streamerId: input.creatorId,
+    title: input.title,
+    description: input.description,
+    category: input.category,
+    status: "scheduled",
+    viewers: 0,
+    viewerCount: 0,
+    peakViewers: 0,
+    totalViews: 0,
+  });
+
+  return getPersistentStreamSession(id);
+}
+
+export async function getPersistentStreamSession(id: string) {
+  const [row] = await db
+    .select()
+    .from(streams)
+    .where(eq(streams.id, id))
+    .limit(1);
+
+  return row ? normalizePersistentStream(row) : null;
+}
+
+export async function listPersistentLiveStreams(
+  category?: string,
+  limit = 20
+) {
+  const boundedLimit = Math.max(1, Math.min(limit, 50));
+  const predicate = category
+    ? and(eq(streams.status, "live"), eq(streams.category, category))
+    : eq(streams.status, "live");
+
+  const rows = await db
+    .select()
+    .from(streams)
+    .where(predicate)
+    .orderBy(desc(streams.startedAt), desc(streams.createdAt))
+    .limit(boundedLimit);
+
+  return rows.map(normalizePersistentStream);
+}
+
+export async function markPersistentStreamLive(
+  id: string,
+  creatorId: string
+) {
+  const existing = await getPersistentStreamSession(id);
+  if (!existing || existing.creatorId !== creatorId) return null;
+
+  // A live entry must have a playable shared-media URL. Browser-only camera
+  // preview is not enough to claim that a broadcast is live for other users.
+  if (!existing.hlsUrl?.trim()) {
+    throw new Error(
+      "Shared media ingest is not configured for this stream session"
+    );
+  }
+
+  await db
+    .update(streams)
+    .set({
+      status: "live",
+      startedAt: existing.startedAt ?? new Date(),
+      endedAt: null,
+    })
+    .where(and(eq(streams.id, id), eq(streams.streamerId, creatorId)));
+
+  return getPersistentStreamSession(id);
+}
+
+export async function endPersistentStreamSession(
+  id: string,
+  creatorId: string
+) {
+  const existing = await getPersistentStreamSession(id);
+  if (!existing || existing.creatorId !== creatorId) return null;
+
+  await db
+    .update(streams)
+    .set({
+      status: "ended",
+      endedAt: new Date(),
+    })
+    .where(and(eq(streams.id, id), eq(streams.streamerId, creatorId)));
+
+  return getPersistentStreamSession(id);
 }

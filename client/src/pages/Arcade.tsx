@@ -199,7 +199,7 @@ export default function Arcade() {
                 <Trophy className="w-10 h-10 text-primary/50 mx-auto mb-3" />
                 <h3 className="font-semibold mb-1">No tournaments yet</h3>
                 <p className="text-xs text-muted-foreground">
-                  Tournaments are coming soon!
+                  Tournaments are engineering beta!
                 </p>
               </Card>
             )}
@@ -242,7 +242,7 @@ export default function Arcade() {
                 <Target className="w-10 h-10 text-primary/50 mx-auto mb-3" />
                 <h3 className="font-semibold mb-1">No quests available</h3>
                 <p className="text-xs text-muted-foreground">
-                  Daily and weekly quests are coming soon!
+                  Daily and weekly quests are engineering beta!
                 </p>
               </Card>
             )}

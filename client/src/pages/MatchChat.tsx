@@ -122,7 +122,7 @@ export default function MatchChat() {
             variant="ghost"
             size="sm"
             className="p-1"
-            onClick={() => toast("Match options coming soon")}
+            onClick={() => toast("Match options engineering beta")}
           >
             <MoreVertical className="w-4 h-4" />
           </Button>

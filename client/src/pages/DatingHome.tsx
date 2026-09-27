@@ -124,7 +124,7 @@ export default function DatingHome() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => toast("Settings coming soon")}
+            onClick={() => toast("Settings engineering beta")}
           >
             <Settings className="w-4 h-4" />
           </Button>

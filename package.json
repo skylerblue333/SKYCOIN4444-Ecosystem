@@ -13,7 +13,12 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "db:backup": "node scripts/db-backup.mjs",
     "db:restore": "node scripts/db-restore.mjs",
-    "check:type-debt": "node scripts/check-type-debt.mjs"
+    "catalog:routes": "node scripts/generate-route-catalog.mjs",
+    "check:type-debt": "node scripts/check-type-debt.mjs",
+    "quality:gate": "node scripts/quality-gate.mjs",
+    "staging:verify": "node scripts/staging-hosted-verify.mjs",
+    "rc:browser-smoke": "node scripts/release-candidate-browser-smoke.mjs",
+    "rc:evidence": "node scripts/release-candidate-evidence.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",

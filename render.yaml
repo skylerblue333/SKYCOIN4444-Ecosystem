@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: skycoin4444-ecosystem-staging
+    runtime: docker
+    plan: free
+    region: ohio
+    branch: main
+    autoDeployTrigger: off
+    healthCheckPath: /healthz
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_APP_ID
+        value: skycoin4444-ecosystem-staging
+      - key: VITE_BETA_AUTH_MODE
+        value: access_key
+      - key: DATABASE_URL
+        sync: false
+      - key: BETA_ACCESS_KEY
+        sync: false
+      - key: BETA_ALLOWED_EMAILS
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: HEALTH_ADMIN_TOKEN
+        generateValue: true
+      - key: POOL_ENCRYPTION_KEY
+        generateValue: true

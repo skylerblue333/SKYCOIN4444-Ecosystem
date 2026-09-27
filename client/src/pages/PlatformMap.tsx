@@ -1245,7 +1245,7 @@ export default function PlatformMap() {
                     ? "All Status"
                     : l === "live"
                       ? "● Live"
-                      : "Coming Soon"}
+                      : "engineering beta"}
                 </button>
               ))}
             </div>

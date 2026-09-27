@@ -1,17 +1,21 @@
 /**
- * Standard Email/Password Authentication Service
- * Replaces Manus OAuth with functional signup/signin
+ * Legacy email/password authentication helpers.
+ *
+ * Password login is NOT configured for the current SKYCOIN4444 beta. The
+ * canonical auth router deliberately fails closed for password login. This file
+ * retains reusable cryptographic helpers without fabricating account
+ * persistence, password changes, reset delivery, or successful sign-in.
  */
 
-import crypto from "crypto";
+import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { SignJWT, jwtVerify } from "jose";
-import * as db from "./db";
-import { ENV } from "./_core/env";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "dev-secret-key-change-in-production"
-);
 const JWT_EXPIRY = "7d";
+const SCRYPT_N = 16_384;
+const SCRYPT_R = 8;
+const SCRYPT_P = 1;
+const SCRYPT_KEY_BYTES = 64;
+const MIN_JWT_SECRET_CHARS = 32;
 
 export interface SignupInput {
   email: string;
@@ -32,206 +36,202 @@ export interface AuthToken {
   expiresIn: string;
 }
 
-/**
- * Hash password with SHA256
- */
-export async function hashPassword(password: string): Promise<string> {
-  return crypto.createHash("sha256").update(password).digest("hex");
+function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET?.trim();
+  if (!secret || secret.length < MIN_JWT_SECRET_CHARS) {
+    throw new Error(
+      "JWT_SECRET must be configured with at least 32 characters"
+    );
+  }
+  return new TextEncoder().encode(secret);
+}
+
+function derivePasswordKey(password: string, salt: Buffer): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    scrypt(
+      password,
+      salt,
+      SCRYPT_KEY_BYTES,
+      { N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P },
+      (error, derivedKey) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(derivedKey);
+      }
+    );
+  });
 }
 
 /**
- * Verify password against hash
+ * Hash a password with the Node.js scrypt KDF and a unique random salt.
+ *
+ * Encoded format:
+ * scrypt$N$r$p$saltBase64Url$digestBase64Url
+ */
+export async function hashPassword(password: string): Promise<string> {
+  if (!password) throw new Error("Password is required");
+
+  const salt = randomBytes(16);
+  const digest = await derivePasswordKey(password, salt);
+
+  return [
+    "scrypt",
+    String(SCRYPT_N),
+    String(SCRYPT_R),
+    String(SCRYPT_P),
+    salt.toString("base64url"),
+    digest.toString("base64url"),
+  ].join("$");
+}
+
+/**
+ * Verify a password using the KDF parameters embedded in the stored hash.
+ * Malformed or unsupported hashes fail closed.
  */
 export async function verifyPassword(
   password: string,
-  hash: string
+  encodedHash: string
 ): Promise<boolean> {
   try {
-    const hashed = await hashPassword(password);
-    return hashed === hash;
+    const [scheme, nText, rText, pText, saltText, digestText, extra] =
+      encodedHash.split("$");
+
+    if (
+      scheme !== "scrypt" ||
+      extra !== undefined ||
+      !saltText ||
+      !digestText
+    ) {
+      return false;
+    }
+
+    const N = Number(nText);
+    const r = Number(rText);
+    const p = Number(pText);
+    if (N !== SCRYPT_N || r !== SCRYPT_R || p !== SCRYPT_P) {
+      return false;
+    }
+
+    const salt = Buffer.from(saltText, "base64url");
+    const expected = Buffer.from(digestText, "base64url");
+    if (salt.length !== 16 || expected.length !== SCRYPT_KEY_BYTES) {
+      return false;
+    }
+
+    const actual = await derivePasswordKey(password, salt);
+    return timingSafeEqual(actual, expected);
   } catch {
     return false;
   }
 }
 
 /**
- * Create JWT token
+ * Create a signed JWT only when an explicit strong runtime secret exists.
+ * This helper is not the canonical beta password-login path.
  */
 export async function createToken(
   userId: number,
   email: string
 ): Promise<string> {
-  const token = await new SignJWT({
-    userId,
-    email,
-    iat: Math.floor(Date.now() / 1000),
-  })
-    .setProtectedHeader({ alg: "HS256" })
+  return new SignJWT({ userId, email })
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setIssuedAt()
     .setExpirationTime(JWT_EXPIRY)
-    .sign(JWT_SECRET);
-
-  return token;
+    .sign(getJwtSecret());
 }
 
 /**
- * Verify JWT token
+ * Verify a JWT created by this legacy helper.
  */
 export async function verifyToken(
   token: string
 ): Promise<{ userId: number; email: string } | null> {
   try {
-    const verified = await jwtVerify(token, JWT_SECRET);
-    return {
-      userId: verified.payload.userId as number,
-      email: verified.payload.email as string,
-    };
+    const verified = await jwtVerify(token, getJwtSecret(), {
+      algorithms: ["HS256"],
+    });
+    const userId = verified.payload.userId;
+    const email = verified.payload.email;
+
+    if (typeof userId !== "number" || typeof email !== "string") {
+      return null;
+    }
+
+    return { userId, email };
   } catch {
     return null;
   }
 }
 
 /**
- * Sign up new user
+ * Password-account persistence is not configured. Do not create a user record
+ * or issue a token until a credential store with password-hash persistence is
+ * explicitly integrated and tested.
  */
 export async function signup(input: SignupInput): Promise<AuthToken | null> {
-  try {
-    // Validate input
-    if (!input.email || !input.password || !input.name) {
-      throw new Error("Missing required fields");
-    }
-
-    if (input.password.length < 8) {
-      throw new Error("Password must be at least 8 characters");
-    }
-
-    // Hash password
-    const hashedPassword = await hashPassword(input.password);
-
-    // Create user with upsert (email as openId for now)
-    await db.upsertUser({
-      openId: input.email,
-      email: input.email,
-      name: input.name,
-      loginMethod: "email",
-    });
-
-    // Create token
-    const token = await createToken(1, input.email);
-
-    return {
-      token,
-      userId: 1,
-      email: input.email,
-      name: input.name,
-      expiresIn: JWT_EXPIRY,
-    };
-  } catch (error) {
-    console.error("[Auth] Signup error:", error);
-    return null;
-  }
+  void input;
+  return null;
 }
 
 /**
- * Sign in user
+ * Password login is intentionally fail-closed. The previous implementation
+ * accepted any non-empty email/password pair and minted a token for user 1.
  */
 export async function signin(input: SigninInput): Promise<AuthToken | null> {
-  try {
-    // For now, accept any email/password combination
-    // In production, verify against stored hash
-    if (!input.email || !input.password) {
-      throw new Error("Invalid email or password");
-    }
-
-    // Create token
-    const token = await createToken(1, input.email);
-
-    return {
-      token,
-      userId: 1,
-      email: input.email,
-      name: input.email.split("@")[0],
-      expiresIn: JWT_EXPIRY,
-    };
-  } catch (error) {
-    console.error("[Auth] Signin error:", error);
-    return null;
-  }
+  void input;
+  return null;
 }
 
-/**
- * Get user from token
- */
 export async function getUserFromToken(token: string) {
-  try {
-    const payload = await verifyToken(token);
-    if (!payload) return null;
+  const payload = await verifyToken(token);
+  if (!payload) return null;
 
-    return {
-      id: payload.userId,
-      email: payload.email,
-      name: payload.email.split("@")[0],
-      role: "user",
-    };
-  } catch {
-    return null;
-  }
+  return {
+    id: payload.userId,
+    email: payload.email,
+    name: payload.email.split("@")[0],
+    role: "user",
+  };
 }
 
 /**
- * Change password
+ * Password mutation requires persisted credentials and current-password
+ * verification. Neither is configured in this legacy service.
  */
 export async function changePassword(
   userId: number,
   oldPassword: string,
   newPassword: string
 ): Promise<boolean> {
-  try {
-    // Simplified: just validate new password
-    if (newPassword.length < 8) return false;
-    return true;
-  } catch {
-    return false;
-  }
+  void userId;
+  void oldPassword;
+  void newPassword;
+  return false;
 }
 
 /**
- * Reset password (via email)
+ * Reset delivery/storage is not configured, so no reset token is minted.
  */
 export async function requestPasswordReset(
   email: string
 ): Promise<string | null> {
-  try {
-    // Generate reset token (valid for 1 hour)
-    const resetToken = await new SignJWT({
-      userId: 1,
-      type: "password_reset",
-      iat: Math.floor(Date.now() / 1000),
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("1h")
-      .sign(JWT_SECRET);
-
-    return resetToken;
-  } catch {
-    return null;
-  }
+  void email;
+  return null;
 }
 
 /**
- * Reset password with token
+ * Reset persistence is not configured. A token alone is not sufficient to
+ * claim that a password was changed.
  */
 export async function resetPassword(
   resetToken: string,
   newPassword: string
 ): Promise<boolean> {
-  try {
-    if (newPassword.length < 8) return false;
-    const payload = await jwtVerify(resetToken, JWT_SECRET);
-    if (payload.payload.type !== "password_reset") return false;
-    return true;
-  } catch {
-    return false;
-  }
+  void resetToken;
+  void newPassword;
+  return false;
 }
 
 export default {

@@ -1,18 +1,5 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { EngineeringBetaWorkspace } from "@/components/EngineeringBetaWorkspace";
 
-const CheckoutFlow = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-bold text-white">CheckoutFlow</h1>
-        <Card className="border-purple-600 bg-slate-800 p-6">
-          <p className="text-gray-300">CheckoutFlow feature coming soon...</p>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default CheckoutFlow;
+export default function CheckoutFlow() {
+  return <EngineeringBetaWorkspace areaId="payments" title="Checkout flow" description="Review checkout states, provider handoff, fulfillment, refunds, and failure recovery." actions={["Test success, cancellation, timeout, and duplicate-submit paths.", "Keep payment credentials outside the application.", "Use test-mode instruments until live settlement is independently verified."]} />;
+}

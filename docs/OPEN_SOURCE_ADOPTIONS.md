@@ -1,0 +1,103 @@
+# Open-source adoption ledger
+
+This file records deliberate use of maintained open-source components to replace
+fragile or misleading in-house paths. It is not a claim that every platform
+feature is production-ready.
+
+## 2026-09-25 — Password/JWT security primitives
+
+**Replaced:** a legacy password-auth helper used raw SHA-256 for passwords,
+contained a hard-coded development JWT fallback secret, accepted any non-empty
+email/password pair as a successful login, and returned success for password
+changes/resets without persisted credential updates.
+
+**Adopted primitives:**
+
+- Node.js `node:crypto` `scrypt` KDF with a per-password random salt.
+  Node.js is MIT-licensed.
+- `jose` for HS256 JWT signing/verification (already present in
+  `package.json`). Upstream: https://github.com/panva/jose — MIT license.
+
+No third-party authentication server source is copied into this repository.
+
+### Runtime contract
+
+- password hashes use an explicit versioned scrypt encoding;
+- comparisons use `timingSafeEqual`;
+- legacy raw SHA-256 hashes are rejected rather than silently accepted;
+- JWT signing requires an explicitly configured `JWT_SECRET` of at least 32
+  characters; there is no fallback secret;
+- password signup/signin/change/reset helpers fail closed until a real
+  credential store and reset-delivery flow are integrated and tested.
+
+### Limitations
+
+This hardens a legacy helper and removes fake-success behavior. It does not
+enable email/password login for the beta, does not migrate any historical
+password database, and does not claim Keycloak or another identity provider is
+provisioned. The canonical beta auth router remains the source of truth.
+
+## 2026-09-25 — Real Redis cache health
+
+**Replaced:** the health monitor previously hard-coded the cache check as
+`status: "pass"` with the message `"Cache operational"` without contacting
+any cache service.
+
+**Adopted component:** `ioredis` (already present in `package.json`).
+
+- Upstream: https://github.com/redis/ioredis
+- License: MIT
+- Integration style: package API only; no upstream source files copied into this
+  repository.
+- Runtime contract: when `REDIS_URL` is configured, health checks issue a real
+  Redis `PING` and report pass only after `PONG`.
+- Failure behavior: configured-but-unreachable Redis reports `fail`; an
+  intentionally unconfigured Redis dependency reports `warn` rather than a
+  fake success.
+- Test boundary: CI uses an injected Redis client so the integration contract is
+  deterministic without requiring a live external Redis service.
+
+### Limitations
+
+This proves the health endpoint no longer fabricates cache readiness. It does
+not yet migrate the repository's in-memory query cache or in-memory queue
+implementations to durable Redis/BullMQ storage, and it does not prove hosted
+Redis availability. Those require separate integration and failure-path tests.
+
+## 2026-09-25 — Real LLM streaming
+
+**Replaced:** the `/api/ai/code-stream` path previously waited for a complete
+LLM response and then simulated streaming by slicing the final text into fixed
+chunks with artificial delays.
+
+**Adopted component:** `openai` / `openai-node` (already present in
+`package.json`).
+
+- Upstream: https://github.com/openai/openai-node
+- License: Apache-2.0
+- Integration style: package API only; no upstream source files copied into this
+  repository.
+- Runtime contract: OpenAI-compatible `/v1/chat/completions` streaming against
+  the configured Forge base URL.
+- Disconnect behavior: client disconnect/abort is propagated upstream with an
+  `AbortSignal`.
+- Test boundary: CI uses an injected async streaming client and does not require
+  a live provider credential.
+
+### Limitations
+
+This change proves the application no longer fabricates chunks. It does not
+prove that every configured external provider supports streaming, nor does it
+claim provider uptime, model availability, billing, or external service
+certification. Hosted provider-failure and reconnect tests remain release gates.
+
+## Adoption rules
+
+1. Prefer a mature maintained library over a home-grown security, persistence,
+   queueing, streaming, or observability primitive when the license is
+   compatible and the dependency materially reduces risk.
+2. Do not wholesale-copy another product or UI into SKYCOIN4444.
+3. Record upstream repository and license.
+4. Add focused tests for the integration boundary.
+5. Keep capability claims limited to what CI and hosted verification actually
+   prove.
