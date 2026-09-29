@@ -18,6 +18,21 @@ describe("core experience integrity", () => {
     expect(hope).toContain("if (behaviorSignalsEnabled)");
     expect(hope).toContain("Signals Off");
     expect(hope).not.toContain("All analysis is local. Never stored or shared.");
+    expect(hope).toContain("Session-only memory");
+    expect(hope).toContain("mode: hopeMode");
+    expect(hope).toContain("signals: behaviorSignalsEnabled");
+    expect(hope).not.toContain('id: "therapist"');
+  });
+
+  it("keeps the HopeAI backend grounded and mode-aware", () => {
+    const router = read("server/phase6-routers.ts");
+    const engine = read("server/hope-ai-engine.ts");
+    expect(router).toContain('mode: z');
+    expect(router).toContain("mode: input.mode");
+    expect(engine).toContain("MODE_GUIDANCE");
+    expect(engine).toContain("Do not claim to know what the user did not say");
+    expect(engine).toContain("Do not claim durable memory when persistence is unavailable");
+    expect(engine).not.toContain("God First — you respect Skyler");
   });
 
   it("does not present SkyHope beta actions as verified settlement", () => {
@@ -50,6 +65,11 @@ describe("core experience integrity", () => {
     expect(social).toContain("Creator Discovery Preview");
     expect(social).not.toContain("I'm reading your feed signals");
     expect(social).not.toContain('href="/hope-ai"');
+
+    const routers = read("server/routers.ts");
+    expect(routers).toContain("export const socialRouter = router");
+    expect(routers).toContain("social: socialRouter");
+    expect(routers).toContain("toggleLike: protectedProcedure");
   });
 
   it("connects SkySchool to quiz, HopeAI, community, and SkyHope", () => {
