@@ -24,6 +24,35 @@ import {
   type DeviceCourseProgress,
 } from "@/lib/learning-progress";
 
+interface CourseLessonView {
+  id: string;
+  title: string;
+  minutes: number;
+  summary: string;
+  objectives: string[];
+  body: string[];
+}
+
+interface CourseQuestionView {
+  id: string;
+  prompt: string;
+  options: string[];
+}
+
+interface CourseView {
+  id: string;
+  title: string;
+  category: string;
+  level: "Beginner" | "Intermediate";
+  description: string;
+  outcomes: string[];
+  lessons: CourseLessonView[];
+  quiz: {
+    passingScore: number;
+    questions: CourseQuestionView[];
+  };
+}
+
 export default function SkySchool() {
   const catalogQuery = trpc.education.catalog.useQuery();
   const capabilityQuery = trpc.education.capability.useQuery();
@@ -168,8 +197,8 @@ export default function SkySchool() {
             )}
             {courseQuery.data && (
               <CourseWorkspace
-                course={courseQuery.data}
-                key={courseQuery.data.id}
+                course={courseQuery.data as CourseView}
+                key={(courseQuery.data as CourseView).id}
               />
             )}
           </section>
@@ -179,13 +208,7 @@ export default function SkySchool() {
   );
 }
 
-function CourseWorkspace({
-  course,
-}: {
-  course: NonNullable<
-    ReturnType<typeof trpc.education.course.useQuery>["data"]
-  >;
-}) {
+function CourseWorkspace({ course }: { course: CourseView }) {
   const [activeLessonId, setActiveLessonId] = useState(
     course.lessons[0]?.id ?? ""
   );
@@ -418,7 +441,7 @@ function QuizPanel({
                   const selected = answers[question.id] === optionIndex;
                   const correct = result?.correctIndex === optionIndex;
                   const wrongSelected =
-                    Boolean(result) && selected && !result.correct;
+                    result !== undefined && selected && !result.correct;
                   return (
                     <button
                       key={option}
