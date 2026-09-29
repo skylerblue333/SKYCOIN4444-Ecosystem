@@ -10,6 +10,19 @@ import {
   adminProcedure,
 } from "./_core/trpc";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+
+function legacyNumericUserId(userId: string): number {
+  const numericId = Number(userId);
+  if (!Number.isSafeInteger(numericId) || numericId < 0) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message:
+        "This legacy subsystem is not yet migrated to canonical string user IDs.",
+    });
+  }
+  return numericId;
+}
 
 // ── Phase 15: Revenue Maximization ────────────────────────────────────────────
 import {
@@ -61,7 +74,7 @@ export const creatorRevenueRouter = router({
     )
     .mutation(({ input, ctx }) =>
       creatorRevenueEngine.calculateAdRevenueSplit(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.period,
         input.totalAdRevenue,
         input.impressions,
@@ -83,13 +96,13 @@ export const creatorRevenueRouter = router({
     .mutation(({ input, ctx }) =>
       creatorRevenueEngine.createSubscriptionTier({
         ...input,
-        creatorId: ctx.user.id,
+        creatorId: legacyNumericUserId(ctx.user.id),
         isActive: true,
       })
     ),
 
   getSubscriptionTiers: protectedProcedure.query(({ ctx }) =>
-    creatorRevenueEngine.getSubscriptionTiers(ctx.user.id)
+    creatorRevenueEngine.getSubscriptionTiers(legacyNumericUserId(ctx.user.id))
   ),
 
   createPremiumVault: protectedProcedure
@@ -107,7 +120,7 @@ export const creatorRevenueRouter = router({
     .mutation(({ input, ctx }) =>
       creatorRevenueEngine.createPremiumVault({
         ...input,
-        creatorId: ctx.user.id,
+        creatorId: legacyNumericUserId(ctx.user.id),
         isActive: true,
       })
     ),
@@ -129,7 +142,7 @@ export const creatorRevenueRouter = router({
     .mutation(({ input, ctx }) =>
       creatorRevenueEngine.createPPVStream({
         ...input,
-        creatorId: ctx.user.id,
+        creatorId: legacyNumericUserId(ctx.user.id),
         status: "scheduled",
       })
     ),
@@ -157,7 +170,7 @@ export const creatorRevenueRouter = router({
     .mutation(({ input, ctx }) =>
       creatorRevenueEngine.createDigitalProduct({
         ...input,
-        creatorId: ctx.user.id,
+        creatorId: legacyNumericUserId(ctx.user.id),
         isActive: true,
       })
     ),
@@ -186,7 +199,7 @@ export const creatorRevenueRouter = router({
     .mutation(({ input, ctx }) =>
       creatorRevenueEngine.createAffiliateLink({
         ...input,
-        creatorId: ctx.user.id,
+        creatorId: legacyNumericUserId(ctx.user.id),
         isActive: true,
       })
     ),
@@ -201,17 +214,17 @@ export const creatorRevenueRouter = router({
       })
     )
     .mutation(({ input, ctx }) =>
-      creatorRevenueEngine.sendTip({ senderId: ctx.user.id, ...input })
+      creatorRevenueEngine.sendTip({ senderId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   getCreatorTips: protectedProcedure.query(({ ctx }) =>
-    creatorRevenueEngine.getCreatorTips(ctx.user.id)
+    creatorRevenueEngine.getCreatorTips(legacyNumericUserId(ctx.user.id))
   ),
 
   getTopTippers: protectedProcedure
     .input(z.object({ limit: z.number().default(10) }))
     .query(({ input, ctx }) =>
-      creatorRevenueEngine.getTopTippers(ctx.user.id, input.limit)
+      creatorRevenueEngine.getTopTippers(legacyNumericUserId(ctx.user.id), input.limit)
     ),
 });
 
@@ -246,7 +259,7 @@ export const platformRevenueRouter = router({
     .mutation(({ input, ctx }) =>
       platformRevenueEngine.createAdCampaign({
         ...input,
-        advertiserId: ctx.user.id,
+        advertiserId: legacyNumericUserId(ctx.user.id),
         status: "pending_review",
       })
     ),
@@ -276,7 +289,7 @@ export const platformRevenueRouter = router({
     .mutation(({ input, ctx }) =>
       platformRevenueEngine.promoteContent({
         ...input,
-        promoterId: ctx.user.id,
+        promoterId: legacyNumericUserId(ctx.user.id),
         status: "active",
       })
     ),
@@ -372,13 +385,13 @@ export const referralRouter = router({
     .mutation(({ input, ctx }) =>
       referralEngine.createReferralCode({
         ...input,
-        referrerId: ctx.user.id,
+        referrerId: legacyNumericUserId(ctx.user.id),
         isActive: true,
       })
     ),
 
   getMyReferralCodes: protectedProcedure.query(({ ctx }) =>
-    referralEngine.getUserReferralCodes(ctx.user.id)
+    referralEngine.getUserReferralCodes(legacyNumericUserId(ctx.user.id))
   ),
 
   recordConversion: publicProcedure
@@ -399,7 +412,7 @@ export const referralRouter = router({
     .mutation(({ input }) => referralEngine.recordConversion(input)),
 
   getMyReferralTree: protectedProcedure.query(({ ctx }) =>
-    referralEngine.getReferralTree(ctx.user.id)
+    referralEngine.getReferralTree(legacyNumericUserId(ctx.user.id))
   ),
 
   getTopReferrers: publicProcedure
@@ -421,11 +434,11 @@ export const viralGrowthRouter = router({
       })
     )
     .mutation(({ input, ctx }) =>
-      viralGrowthEngine.recordActivity(ctx.user.id, input.streakType)
+      viralGrowthEngine.recordActivity(legacyNumericUserId(ctx.user.id), input.streakType)
     ),
 
   getMyStreaks: protectedProcedure.query(({ ctx }) =>
-    viralGrowthEngine.getUserStreaks(ctx.user.id)
+    viralGrowthEngine.getUserStreaks(legacyNumericUserId(ctx.user.id))
   ),
 
   getActiveQuests: publicProcedure.query(() =>
@@ -435,7 +448,7 @@ export const viralGrowthRouter = router({
   startQuest: protectedProcedure
     .input(z.object({ questId: z.string() }))
     .mutation(({ input, ctx }) =>
-      viralGrowthEngine.startQuest(ctx.user.id, input.questId)
+      viralGrowthEngine.startQuest(legacyNumericUserId(ctx.user.id), input.questId)
     ),
 
   updateQuestProgress: protectedProcedure
@@ -448,7 +461,7 @@ export const viralGrowthRouter = router({
     )
     .mutation(({ input, ctx }) =>
       viralGrowthEngine.updateQuestProgress(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.questId,
         input.action,
         input.increment
@@ -458,11 +471,11 @@ export const viralGrowthRouter = router({
   claimQuestReward: protectedProcedure
     .input(z.object({ questId: z.string() }))
     .mutation(({ input, ctx }) =>
-      viralGrowthEngine.claimQuestReward(ctx.user.id, input.questId)
+      viralGrowthEngine.claimQuestReward(legacyNumericUserId(ctx.user.id), input.questId)
     ),
 
   getMyRewards: protectedProcedure.query(({ ctx }) =>
-    viralGrowthEngine.getUserRewards(ctx.user.id)
+    viralGrowthEngine.getUserRewards(legacyNumericUserId(ctx.user.id))
   ),
 
   claimReward: protectedProcedure
@@ -470,11 +483,11 @@ export const viralGrowthRouter = router({
     .mutation(({ input }) => viralGrowthEngine.claimReward(input.rewardId)),
 
   getMyMilestones: protectedProcedure.query(({ ctx }) =>
-    viralGrowthEngine.getCreatorMilestones(ctx.user.id)
+    viralGrowthEngine.getCreatorMilestones(legacyNumericUserId(ctx.user.id))
   ),
 
   getActiveBoosts: protectedProcedure.query(({ ctx }) =>
-    viralGrowthEngine.getActiveBoosts(ctx.user.id)
+    viralGrowthEngine.getActiveBoosts(legacyNumericUserId(ctx.user.id))
   ),
 
   getGrowthMetrics: adminProcedure.query(() =>
@@ -490,7 +503,7 @@ export const viralGrowthRouter = router({
     )
     .query(({ input, ctx }) =>
       networkExpansionEngine.generateCommunityRecommendations(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.interests,
         input.currentCommunityIds
       )
@@ -517,7 +530,7 @@ export const pushNotificationRouter = router({
       })
     )
     .mutation(({ input, ctx }) =>
-      pushNotificationEngine.registerDevice({ ...input, userId: ctx.user.id })
+      pushNotificationEngine.registerDevice({ ...input, userId: legacyNumericUserId(ctx.user.id) })
     ),
 
   deregisterDevice: protectedProcedure
@@ -542,11 +555,11 @@ export const pushNotificationRouter = router({
       })
     )
     .mutation(({ input, ctx }) =>
-      pushNotificationEngine.setNotificationPreferences(ctx.user.id, input)
+      pushNotificationEngine.setNotificationPreferences(legacyNumericUserId(ctx.user.id), input)
     ),
 
   getPreferences: protectedProcedure.query(({ ctx }) =>
-    pushNotificationEngine.getNotificationPreferences(ctx.user.id)
+    pushNotificationEngine.getNotificationPreferences(legacyNumericUserId(ctx.user.id))
   ),
 
   getDeliveryStats: adminProcedure.query(() =>
@@ -595,7 +608,7 @@ export const mobileInfraRouter = router({
     )
     .mutation(({ input, ctx }) =>
       offlineCacheEngine.cacheContent(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.contentType,
         input.contentId,
         input.data
@@ -619,14 +632,14 @@ export const mobileInfraRouter = router({
     )
     .query(({ input, ctx }) =>
       offlineCacheEngine.getCachedContent(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.contentType,
         input.contentId
       )
     ),
 
   processSyncQueue: protectedProcedure.mutation(({ ctx }) =>
-    offlineCacheEngine.processSyncQueue(ctx.user.id)
+    offlineCacheEngine.processSyncQueue(legacyNumericUserId(ctx.user.id))
   ),
 
   submitCompressionJob: protectedProcedure
@@ -640,7 +653,7 @@ export const mobileInfraRouter = router({
       })
     )
     .mutation(({ input, ctx }) =>
-      mediaCompressionEngine.submitJob({ ...input, userId: ctx.user.id })
+      mediaCompressionEngine.submitJob({ ...input, userId: legacyNumericUserId(ctx.user.id) })
     ),
 
   getCompressionStats: adminProcedure.query(() =>
@@ -681,7 +694,7 @@ export const mobileInfraRouter = router({
       })
     )
     .mutation(({ input, ctx }) =>
-      mobileAnalyticsEngine.trackEvent({ ...input, userId: ctx.user.id })
+      mobileAnalyticsEngine.trackEvent({ ...input, userId: legacyNumericUserId(ctx.user.id) })
     ),
 
   getMobilePerformanceReport: adminProcedure
@@ -704,7 +717,7 @@ export const intelligenceRouter = router({
     .query(({ input }) => intelligenceLayer.getUserProfile(input.userId)),
 
   getMyAnalyticsProfile: protectedProcedure.query(({ ctx }) =>
-    intelligenceLayer.getUserProfile(ctx.user.id)
+    intelligenceLayer.getUserProfile(legacyNumericUserId(ctx.user.id))
   ),
 
   getCreatorProfile: protectedProcedure
@@ -736,7 +749,7 @@ export const intelligenceRouter = router({
 
 export const predictionRouter = router({
   predictMyChurn: protectedProcedure.query(({ ctx }) =>
-    predictionLayer.predictChurn(ctx.user.id)
+    predictionLayer.predictChurn(legacyNumericUserId(ctx.user.id))
   ),
 
   predictUserChurn: adminProcedure
@@ -766,7 +779,7 @@ export const predictionRouter = router({
     ),
 
   predictMySuccess: protectedProcedure.query(({ ctx }) =>
-    predictionLayer.predictCreatorSuccess(ctx.user.id)
+    predictionLayer.predictCreatorSuccess(legacyNumericUserId(ctx.user.id))
   ),
 
   predictFraud: adminProcedure
@@ -836,7 +849,7 @@ export const publicAPIRouter = router({
     .mutation(({ input, ctx }) =>
       publicAPIManager.createAPIKey({
         ...input,
-        ownerId: ctx.user.id,
+        ownerId: legacyNumericUserId(ctx.user.id),
         ownerType: "developer",
         scopes: input.scopes as Parameters<
           typeof publicAPIManager.createAPIKey
@@ -845,7 +858,7 @@ export const publicAPIRouter = router({
     ),
 
   getMyAPIKeys: protectedProcedure.query(({ ctx }) =>
-    publicAPIManager.getOwnerAPIKeys(ctx.user.id)
+    publicAPIManager.getOwnerAPIKeys(legacyNumericUserId(ctx.user.id))
   ),
 
   revokeAPIKey: protectedProcedure
@@ -937,7 +950,7 @@ export const integrationsRouter = router({
       externalIntegrationEngine.connectIntegration({
         ...input,
         syncEnabled: true,
-        userId: ctx.user.id,
+        userId: legacyNumericUserId(ctx.user.id),
       })
     ),
 
@@ -948,7 +961,7 @@ export const integrationsRouter = router({
     ),
 
   getMyIntegrations: protectedProcedure.query(({ ctx }) =>
-    externalIntegrationEngine.getUserIntegrations(ctx.user.id)
+    externalIntegrationEngine.getUserIntegrations(legacyNumericUserId(ctx.user.id))
   ),
 
   syncYouTube: protectedProcedure
@@ -965,7 +978,7 @@ export const integrationsRouter = router({
     )
     .mutation(({ input, ctx }) => {
       const job = externalIntegrationEngine.queueYouTubeSync(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.integrationId,
         input.jobType
       );
@@ -986,7 +999,7 @@ export const integrationsRouter = router({
     )
     .mutation(({ input, ctx }) => {
       const job = externalIntegrationEngine.queueTwitchSync(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.integrationId,
         input.jobType
       );
@@ -1008,7 +1021,7 @@ export const integrationsRouter = router({
     )
     .mutation(({ input, ctx }) => {
       const job = externalIntegrationEngine.queueDiscordSync(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.integrationId,
         input.guildId,
         input.jobType
@@ -1029,7 +1042,7 @@ export const integrationsRouter = router({
     )
     .mutation(({ input, ctx }) => {
       const job = externalIntegrationEngine.queueCoinbaseSync(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.integrationId,
         input.jobType
       );
@@ -1050,7 +1063,7 @@ export const integrationsRouter = router({
     )
     .mutation(({ input, ctx }) => {
       const job = externalIntegrationEngine.queueOpenSeaSync(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.integrationId,
         input.jobType
       );
@@ -1084,7 +1097,7 @@ export const integrationsRouter = router({
     .mutation(({ input, ctx }) =>
       externalIntegrationEngine.scheduleCrossPlatformPost({
         ...input,
-        userId: ctx.user.id,
+        userId: legacyNumericUserId(ctx.user.id),
       })
     ),
 
