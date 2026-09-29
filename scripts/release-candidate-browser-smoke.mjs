@@ -84,7 +84,10 @@ async function waitForExpression(cdp, expression, timeoutMs = 15_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const result = await cdp.call("Runtime.evaluate", {
-      expression,
+      // This helper only needs truthiness. Coerce inside the page so a condition
+      // ending in a DOM node (for example, `&& document.querySelector(...)`)
+      // is never serialized by value through CDP.
+      expression: `Boolean(${expression})`,
       returnByValue: true,
       awaitPromise: true,
     });
