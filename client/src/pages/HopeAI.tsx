@@ -47,6 +47,20 @@ type EmotionalState =
   | "tired"
   | "neutral";
 
+type HopeMode =
+  | "companion"
+  | "coding"
+  | "business"
+  | "education"
+  | "translation"
+  | "research"
+  | "agents"
+  | "reflection"
+  | "coach"
+  | "advisor"
+  | "creative"
+  | "mentor";
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -170,7 +184,7 @@ export default function HopeAI() {
   const [graySignals, setGraySignals] = useState<GraySignal[]>([]);
   const [dominantSignal, setDominantSignal] = useState("");
   const [overallRisk, setOverallRisk] = useState(0);
-  const [hopeMode, setHopeMode] = useState("companion");
+  const [hopeMode, setHopeMode] = useState<HopeMode>("companion");
   const [topicHistory, setTopicHistory] = useState<string[]>([]);
   const [msgCount, setMsgCount] = useState(0);
 
@@ -188,21 +202,24 @@ export default function HopeAI() {
     () => `session_${Date.now()}_${Math.random().toString(36).slice(2)}`
   );
 
-  // Load chat history from DB on mount
-  const { data: savedHistory } = trpc.hopeAI.getChatHistory.useQuery(
-    { limit: 50, sessionId },
-    { staleTime: Infinity }
-  );
-
-  const saveMessage = trpc.hopeAI.saveChatMessage.useMutation();
-  const clearHistory = trpc.hopeAI.clearChatHistory.useMutation({
-    onSuccess: () => setMessages([]),
+  // Durable history is optional. The current backend explicitly reports
+  // whether persistence is configured; anonymous users remain session-only.
+  const { data: savedHistory } = trpc.hopeAI.getChatHistory.useQuery(undefined, {
+    enabled: Boolean(user),
+    staleTime: Infinity,
   });
 
-  // Restore history when loaded
+  const saveMessage = trpc.hopeAI.saveChatMessage.useMutation();
+  const persistenceConfigured = Boolean(
+    user && (savedHistory as any)?.configured === true
+  );
+  const persistedMessages = Array.isArray((savedHistory as any)?.messages)
+    ? (savedHistory as any).messages
+    : [];
+
   useEffect(() => {
-    if (Array.isArray(savedHistory) && savedHistory.length > 0 && messages.length <= 1) {
-      const restored = savedHistory.map(m => ({
+    if (persistedMessages.length > 0 && messages.length <= 1) {
+      const restored = persistedMessages.map((m: any) => ({
         id: crypto.randomUUID(),
         role: m.role as "user" | "assistant",
         content: m.content,
@@ -229,14 +246,15 @@ export default function HopeAI() {
       setMessages(prev => [...prev, msg]);
       setCurrentState(data.emotionalState as EmotionalState);
       setIsLoading(false);
-      // Persist assistant message to DB
-      saveMessage.mutate({
-        role: "assistant",
-        content: data.message,
-        tone: data.tone,
-        emotionalState: data.emotionalState,
-        sessionId,
-      });
+      if (persistenceConfigured) {
+        saveMessage.mutate({
+          role: "assistant",
+          content: data.message,
+          tone: data.tone,
+          emotionalState: data.emotionalState,
+          sessionId,
+        });
+      }
     },
     onError() {
       setIsLoading(false);
@@ -322,8 +340,9 @@ export default function HopeAI() {
     setTypingStartMs(null);
     setIsLoading(true);
     setMsgCount(c => c + 1);
-    // Persist user message to DB
-    saveMessage.mutate({ role: "user", content: userMsg.content, sessionId });
+    if (persistenceConfigured) {
+      saveMessage.mutate({ role: "user", content: userMsg.content, sessionId });
+    }
     const words = userMsg.content
       .toLowerCase()
       .split(/\s+/)
@@ -346,14 +365,17 @@ export default function HopeAI() {
       messageText: userMsg.content,
       conversationHistory: history,
       overrideTone: selectedTone === "auto" ? undefined : selectedTone,
-      signals: {
-        typingWpm,
-        backspaceRate,
-        sessionDurationMs: Date.now() - sessionStartMs,
-        timeOfDay: new Date().getHours(),
-        dayOfWeek: new Date().getDay(),
-        lastEmotionalState: currentState,
-      },
+      mode: hopeMode,
+      signals: behaviorSignalsEnabled
+        ? {
+            typingWpm,
+            backspaceRate,
+            sessionDurationMs: Date.now() - sessionStartMs,
+            timeOfDay: new Date().getHours(),
+            dayOfWeek: new Date().getDay(),
+            lastEmotionalState: currentState,
+          }
+        : undefined,
     });
   }, [
     input,
@@ -366,6 +388,8 @@ export default function HopeAI() {
     sessionStartMs,
     currentState,
     behaviorSignalsEnabled,
+    persistenceConfigured,
+    hopeMode,
   ]);
 
   const sm = STATE_META[currentState];
@@ -415,6 +439,9 @@ export default function HopeAI() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Badge variant="outline" className="hidden border-white/15 bg-white/5 text-[10px] text-white/55 sm:inline-flex">
+              {persistenceConfigured ? "History enabled" : "Session-only memory"}
+            </Badge>
             {/* Emotional State HUD */}
             <div
               className="flex items-center gap-2 rounded-full px-3 py-1.5 border border-fuchsia-500/20"
@@ -475,84 +502,18 @@ export default function HopeAI() {
           <div className="flex gap-1 overflow-x-auto scrollbar-none py-2">
             {(
               [
-                {
-                  id: "companion",
-                  label: "Companion 🇨🇳",
-                  emoji: "💜",
-                  desc: "Emotional support & chat",
-                },
-                {
-                  id: "voice",
-                  label: "Voice AI 🎤",
-                  emoji: "🎤",
-                  desc: "语音助手 · Voice Assistant",
-                },
-                {
-                  id: "coding",
-                  label: "Coding AI 💻",
-                  emoji: "💻",
-                  desc: "代码助手 · Debug & Build",
-                },
-                {
-                  id: "business",
-                  label: "Business AI 📊",
-                  emoji: "📊",
-                  desc: "商业分析 · Strategy",
-                },
-                {
-                  id: "education",
-                  label: "Education AI 🎓",
-                  emoji: "🎓",
-                  desc: "学习辅导 · Tutoring",
-                },
-                {
-                  id: "translation",
-                  label: "Translation AI 🌐",
-                  emoji: "🌐",
-                  desc: "翻译助手 · CN↔EN",
-                },
-                {
-                  id: "research",
-                  label: "Research AI 🔭",
-                  emoji: "🔭",
-                  desc: "深度研究 · Deep Research",
-                },
-                {
-                  id: "agents",
-                  label: "AI Agents 🤖",
-                  emoji: "🤖",
-                  desc: "智能体市场 · Marketplace",
-                },
-                {
-                  id: "therapist",
-                  label: "Therapist",
-                  emoji: "🧠",
-                  desc: "Deep reflection & healing",
-                },
-                {
-                  id: "coach",
-                  label: "Coach",
-                  emoji: "🔥",
-                  desc: "Goals & accountability",
-                },
-                {
-                  id: "advisor",
-                  label: "Advisor",
-                  emoji: "💡",
-                  desc: "Strategy & decisions",
-                },
-                {
-                  id: "creative",
-                  label: "Creative",
-                  emoji: "🎨",
-                  desc: "Ideas & brainstorming",
-                },
-                {
-                  id: "mentor",
-                  label: "Mentor",
-                  emoji: "⭐",
-                  desc: "Career & growth",
-                },
+                { id: "companion", label: "Companion", emoji: "💜", desc: "General support & chat" },
+                { id: "coding", label: "Coding", emoji: "💻", desc: "Debug, build & explain" },
+                { id: "business", label: "Business", emoji: "📊", desc: "Strategy & execution" },
+                { id: "education", label: "Education", emoji: "🎓", desc: "Tutoring & study help" },
+                { id: "translation", label: "Translation", emoji: "🌐", desc: "Faithful language help" },
+                { id: "research", label: "Research", emoji: "🔭", desc: "Research planning & synthesis" },
+                { id: "agents", label: "Agent Planning", emoji: "🤖", desc: "Design agent workflows" },
+                { id: "reflection", label: "Reflection", emoji: "🧠", desc: "Reflective conversation, not therapy" },
+                { id: "coach", label: "Coach", emoji: "🔥", desc: "Goals & next actions" },
+                { id: "advisor", label: "Advisor", emoji: "💡", desc: "Options & tradeoffs" },
+                { id: "creative", label: "Creative", emoji: "🎨", desc: "Ideas & brainstorming" },
+                { id: "mentor", label: "Mentor", emoji: "⭐", desc: "Frameworks & growth" },
               ] as const
             ).map(mode => (
               <button
