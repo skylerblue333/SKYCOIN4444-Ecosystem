@@ -1,5 +1,18 @@
-// @ts-nocheck
-import { useState, useRef, useCallback } from "react";
+import { useMemo, useState } from "react";
+import { Link } from "wouter";
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  Search,
+  Send,
+  Sparkles,
+  Users,
+  TrendingUp,
+  ShieldCheck,
+  Trash2,
+  RefreshCw,
+} from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -7,536 +20,449 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Link } from "wouter";
-import {
-  Heart,
-  MessageCircle,
-  Share2,
-  Users,
-  TrendingUp,
-  Flame,
-  Image,
-  Video,
-  Hash,
-  Sparkles,
-  Bookmark,
-  MoreHorizontal,
-  Repeat2,
-  Send,
-  Globe,
-  Lock,
-  UserPlus,
-  Star,
-  Zap,
-  Award,
-} from "lucide-react";
 
-const TRENDING_TAGS = [
-  { tag: "#SKY444", count: "12.4K" },
-  { tag: "#AIAgents", count: "8.9K" },
-  { tag: "#Web3OS", count: "6.2K" },
-  { tag: "#ChatToEarn", count: "5.1K" },
-  { tag: "#ShadowChat", count: "4.7K" },
-  { tag: "#DeFi2027", count: "3.2K" },
-];
-
-const SUGGESTED_CREATORS = [
-  {
-    name: "nova_ai",
-    handle: "@nova_ai",
-    followers: "44K",
-    tier: "diamond",
-    bio: "AI agent building the future",
-  },
-  {
-    name: "cipher_dev",
-    handle: "@cipher_dev",
-    followers: "28K",
-    tier: "gold",
-    bio: "Web3 developer & educator",
-  },
-  {
-    name: "prism_art",
-    handle: "@prism_art",
-    followers: "19K",
-    tier: "silver",
-    bio: "Digital artist & NFT creator",
-  },
-];
-
-const TIER_COLORS = {
-  diamond: "text-cyan-400",
-  gold: "text-yellow-400",
-  silver: "text-gray-300",
-  bronze: "text-orange-400",
-};
+type FeedMode = "latest" | "trending";
 
 export default function SocialMedia() {
   const { user } = useAuth();
-  const [postContent, setPostContent] = useState("");
-  const [activeTab, setActiveTab] = useState<
-    "all" | "following" | "trending" | "ai"
-  >("all");
-  const [selectedPost, setSelectedPost] = useState<number | null>(null);
-  const [commentContent, setCommentContent] = useState("");
-  const [postPrivacy, setPostPrivacy] = useState<"public" | "followers">(
-    "public"
-  );
-  const [expandedComments, setExpandedComments] = useState<Set<number>>(
-    new Set()
-  );
-
-  const { data: feed, refetch: refetchFeed } = trpc.social.getFeed.useQuery({
-    limit: 50,
-  });
-  const { data: trending } = trpc.social.getTrending.useQuery({ limit: 20 });
-  const { data: userStats } = trpc.social.getUserStats.useQuery(
-    { userId: user?.id || 0 },
-    { enabled: !!user }
-  );
-  const { data: postComments } = trpc.social.getComments.useQuery(
-    { postId: selectedPost || 0, limit: 20 },
-    { enabled: !!selectedPost }
-  );
-
   const utils = trpc.useUtils();
-  const createPostMutation = trpc.social.createPost.useMutation({
-    onSuccess: () => {
+  const [postContent, setPostContent] = useState("");
+  const [commentContent, setCommentContent] = useState("");
+  const [selectedPost, setSelectedPost] = useState<string | null>(null);
+  const [feedMode, setFeedMode] = useState<FeedMode>("latest");
+  const [search, setSearch] = useState("");
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+
+  const {
+    data: feed,
+    isLoading,
+    isError,
+    refetch,
+  } = trpc.post.list.useQuery({ limit: 50, offset: 0 });
+  const { data: trends } = trpc.post.trending.useQuery();
+  const { data: userStats } = trpc.user.getStats.useQuery(
+    { userId: String(user?.id ?? "") },
+    { enabled: Boolean(user?.id) }
+  );
+  const { data: comments } = trpc.post.comments.useQuery(
+    { postId: selectedPost ?? "" },
+    { enabled: Boolean(selectedPost) }
+  );
+
+  const createPost = trpc.post.create.useMutation({
+    onSuccess: async () => {
       setPostContent("");
-      utils.social.getFeed.invalidate();
-      toast.success("Post published!");
+      await Promise.all([
+        utils.post.list.invalidate(),
+        utils.post.trending.invalidate(),
+      ]);
+      toast.success("Post saved to the beta feed");
     },
+    onError: error => toast.error(error.message || "Could not save post"),
   });
-  const toggleLikeMutation = trpc.social.toggleLike.useMutation({
-    onSuccess: () => utils.social.getFeed.invalidate(),
+
+  const likePost = trpc.post.like.useMutation({
+    onSuccess: async (_data, variables) => {
+      setLikedPosts(current => new Set([...current, variables.postId]));
+      await utils.post.list.invalidate();
+    },
+    onError: error => toast.error(error.message || "Could not like post"),
   });
-  const addCommentMutation = trpc.social.addComment.useMutation({
-    onSuccess: () => {
+
+  const unlikePost = trpc.post.unlike.useMutation({
+    onSuccess: async (_data, variables) => {
+      setLikedPosts(current => {
+        const next = new Set(current);
+        next.delete(variables.postId);
+        return next;
+      });
+      await utils.post.list.invalidate();
+    },
+    onError: error => toast.error(error.message || "Could not remove like"),
+  });
+
+  const addComment = trpc.post.comment.useMutation({
+    onSuccess: async () => {
       setCommentContent("");
-      utils.social.getComments.invalidate();
+      await Promise.all([
+        utils.post.comments.invalidate(),
+        utils.post.list.invalidate(),
+      ]);
+      toast.success("Comment saved");
     },
+    onError: error => toast.error(error.message || "Could not save comment"),
   });
 
-  const displayFeed = activeTab === "trending" ? trending : feed;
-
-  const toggleComments = (postId: number) => {
-    setExpandedComments(prev => {
-      const next = new Set(prev);
-      if (next.has(postId)) {
-        next.delete(postId);
-        setSelectedPost(null);
-      } else {
-        next.add(postId);
-        setSelectedPost(postId);
+  const deletePost = trpc.post.delete.useMutation({
+    onSuccess: async result => {
+      if (!result.success) {
+        toast.error("Post was not found or is not yours");
+        return;
       }
-      return next;
-    });
+      if (selectedPost) setSelectedPost(null);
+      await Promise.all([
+        utils.post.list.invalidate(),
+        utils.post.trending.invalidate(),
+      ]);
+      toast.success("Post deleted");
+    },
+    onError: error => toast.error(error.message || "Could not delete post"),
+  });
+
+  const displayedPosts = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    const filtered = (feed ?? []).filter(post =>
+      needle ? (post.content ?? "").toLowerCase().includes(needle) : true
+    );
+
+    if (feedMode === "trending") {
+      return [...filtered].sort((a, b) => {
+        const aScore = Number(a.likes ?? 0) + Number(a.comments ?? 0) * 2;
+        const bScore = Number(b.likes ?? 0) + Number(b.comments ?? 0) * 2;
+        return bScore - aScore;
+      });
+    }
+    return filtered;
+  }, [feed, feedMode, search]);
+
+  const submitPost = () => {
+    const content = postContent.trim();
+    if (!content) return;
+    createPost.mutate({ content });
+  };
+
+  const submitComment = (postId: string) => {
+    const content = commentContent.trim();
+    if (!content) return;
+    addComment.mutate({ postId, content });
+  };
+
+  const toggleLike = (postId: string) => {
+    if (!user) {
+      toast.error("Sign in to like posts");
+      return;
+    }
+    if (likedPosts.has(postId)) unlikePost.mutate({ postId });
+    else likePost.mutate({ postId });
   };
 
   return (
-    <div className="container py-6 max-w-6xl animate-page-in">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        {/* Main Feed */}
-        <div className="space-y-4">
-          {/* Tabs */}
-          <div className="flex gap-1 bg-card/50 rounded-xl p-1 border border-border/30">
-            {(["all", "following", "trending", "ai"] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium capitalize transition-all ${activeTab === tab ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                {tab === "ai"
-                  ? "AI World"
-                  : tab === "all"
-                    ? "All"
-                    : tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
+    <div className="min-h-screen bg-background pb-24">
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <h1 className="text-3xl font-black">Sky Social</h1>
+              <Badge variant="outline" className="border-emerald-500/40 text-emerald-400">
+                persisted beta
+              </Badge>
+            </div>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              Posts, likes, and comments on this screen use the current database-backed
+              beta API. Suggested creators, fake follower counts, and simulated trending
+              totals are intentionally not shown as live data.
+            </p>
           </div>
-
-          {/* Trending Tags */}
           <div className="flex flex-wrap gap-2">
-            {TRENDING_TAGS.map(t => (
-              <button
-                key={t.tag}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/30 text-sm hover:bg-secondary transition-all"
-              >
-                <TrendingUp className="w-3 h-3 text-primary" />
-                <span className="font-medium">{t.tag}</span>
-                <span className="text-muted-foreground text-xs">{t.count}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Create Post */}
-          {user && (
-            <Card className="p-4 border-border/30 bg-card/50">
-              <div className="flex gap-3">
-                <div className="w-9 h-9 rounded-full bg-primary/20 text-primary font-bold text-sm flex items-center justify-center shrink-0">
-                  {user.name?.charAt(0) || "U"}
-                </div>
-                <div className="flex-1 space-y-3">
-                  <Textarea
-                    placeholder="What's on your mind? Share with the world..."
-                    value={postContent}
-                    onChange={e => setPostContent(e.target.value)}
-                    className="min-h-[80px] resize-none bg-background/50 border-border/30 text-sm"
-                  />
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8"
-                        onClick={() => toast.info("Image upload engineering beta")}
-                      >
-                        <Image className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8"
-                        onClick={() => toast.info("Video upload engineering beta")}
-                      >
-                        <Video className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8"
-                        onClick={() => toast.info("Add hashtag")}
-                      >
-                        <Hash className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-primary"
-                        onClick={() => toast.info("AI draft engineering beta")}
-                      >
-                        <Sparkles className="w-4 h-4" />
-                      </Button>
-                      <button
-                        onClick={() =>
-                          setPostPrivacy(p =>
-                            p === "public" ? "followers" : "public"
-                          )
-                        }
-                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/50 text-xs text-muted-foreground hover:bg-secondary transition-all"
-                      >
-                        {postPrivacy === "public" ? (
-                          <Globe className="w-3 h-3" />
-                        ) : (
-                          <Lock className="w-3 h-3" />
-                        )}
-                        {postPrivacy}
-                      </button>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        createPostMutation.mutate({ content: postContent })
-                      }
-                      disabled={
-                        !postContent.trim() || createPostMutation.isPending
-                      }
-                      className="px-4"
-                    >
-                      {createPostMutation.isPending ? "Posting..." : "Post"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {/* Feed Posts */}
-          <div className="space-y-3">
-            {(!displayFeed || displayFeed.length === 0) && (
-              <Card className="p-12 text-center border-border/30 bg-card/30">
-                <Globe className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
-                <p className="text-muted-foreground">
-                  No posts yet. Be the first to share something!
-                </p>
-              </Card>
-            )}
-            {displayFeed?.map((post: any, idx: number) => (
-              <Card
-                key={post.id || idx}
-                className="p-4 border-border/30 bg-card/50 hover:border-border/60 transition-all group"
-              >
-                <div className="flex gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary/20 text-primary font-bold text-sm flex items-center justify-center shrink-0">
-                    {String(post.userId || "U").charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div>
-                        <span className="font-semibold text-sm">
-                          User #{post.userId}
-                        </span>
-                        <span className="text-muted-foreground text-xs ml-2">
-                          {post.createdAt
-                            ? new Date(post.createdAt).toLocaleDateString()
-                            : "just now"}
-                        </span>
-                      </div>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                      >
-                        <MoreHorizontal className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                    <p className="text-sm leading-relaxed mb-3">
-                      {post.content}
-                    </p>
-                    {activeTab === "trending" && (
-                      <div className="flex items-center gap-1 mb-3">
-                        <Flame className="w-3.5 h-3.5 text-orange-400" />
-                        <span className="text-xs text-orange-400 font-medium">
-                          Trending
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] h-4 border-orange-400/30 text-orange-400"
-                        >
-                          #{idx + 1}
-                        </Badge>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-4 text-muted-foreground">
-                      <button
-                        onClick={() =>
-                          toggleLikeMutation.mutate({ postId: post.id })
-                        }
-                        className="flex items-center gap-1.5 text-xs hover:text-red-400 transition-colors"
-                      >
-                        <Heart className="w-4 h-4" />
-                        {post.likes || 0}
-                      </button>
-                      <button
-                        onClick={() => toggleComments(post.id)}
-                        className={`flex items-center gap-1.5 text-xs hover:text-primary transition-colors ${expandedComments.has(post.id) ? "text-primary" : ""}`}
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        {post.comments || 0}
-                      </button>
-                      <button className="flex items-center gap-1.5 text-xs hover:text-green-400 transition-colors">
-                        <Repeat2 className="w-4 h-4" />
-                        Repost
-                      </button>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(window.location.href);
-                          toast.success("Link copied!");
-                        }}
-                        className="flex items-center gap-1.5 text-xs hover:text-primary transition-colors"
-                      >
-                        <Share2 className="w-4 h-4" />
-                        Share
-                      </button>
-                      <button className="flex items-center gap-1.5 text-xs hover:text-yellow-400 transition-colors ml-auto">
-                        <Bookmark className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {/* Comments */}
-                    {expandedComments.has(post.id) && (
-                      <div className="mt-3 pt-3 border-t border-border/30 space-y-2">
-                        {postComments?.map((c: any) => (
-                          <div key={c.id} className="flex gap-2">
-                            <div className="w-6 h-6 rounded-full bg-secondary text-xs flex items-center justify-center shrink-0">
-                              U
-                            </div>
-                            <div className="flex-1 bg-secondary/40 rounded-lg px-3 py-2">
-                              <span className="text-xs font-medium">
-                                User #{c.userId}
-                              </span>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {c.content}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                        {user && (
-                          <div className="flex gap-2 mt-2">
-                            <div className="w-6 h-6 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center shrink-0">
-                              {user.name?.charAt(0) || "U"}
-                            </div>
-                            <div className="flex-1 flex gap-2">
-                              <input
-                                value={commentContent}
-                                onChange={e =>
-                                  setCommentContent(e.target.value)
-                                }
-                                onKeyDown={e =>
-                                  e.key === "Enter" &&
-                                  commentContent.trim() &&
-                                  addCommentMutation.mutate({
-                                    postId: post.id,
-                                    content: commentContent,
-                                  })
-                                }
-                                placeholder="Add a comment..."
-                                className="flex-1 bg-background/50 border border-border/30 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/50"
-                              />
-                              <Button
-                                size="sm"
-                                className="h-7 px-2"
-                                onClick={() =>
-                                  commentContent.trim() &&
-                                  addCommentMutation.mutate({
-                                    postId: post.id,
-                                    content: commentContent,
-                                  })
-                                }
-                              >
-                                <Send className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
+            <Link href="/communityhub">
+              <Button variant="outline" size="sm">
+                <Users className="mr-2 h-4 w-4" />
+                Communities
+              </Button>
+            </Link>
+            <Link href="/messages">
+              <Button variant="outline" size="sm">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Messages
+              </Button>
+            </Link>
+            <Link href="/hopeai">
+              <Button size="sm">
+                <Sparkles className="mr-2 h-4 w-4" />
+                HopeAI
+              </Button>
+            </Link>
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4 hidden lg:block">
-          {/* User Stats */}
-          {user && (
-            <Card className="p-4 border-border/30 bg-card/50">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold">
-                  {user.name?.charAt(0) || "U"}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+          <main className="space-y-4">
+            <Card className="border-border/40 p-4">
+              {user ? (
+                <>
+                  <Textarea
+                    value={postContent}
+                    onChange={event => setPostContent(event.target.value)}
+                    maxLength={255}
+                    placeholder="Share an update with the SKYCOIN4444 beta community..."
+                    className="min-h-24 resize-none"
+                  />
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <span className="text-xs text-muted-foreground">
+                      {postContent.length}/255 · saved only after the server confirms
+                    </span>
+                    <Button
+                      onClick={submitPost}
+                      disabled={!postContent.trim() || createPost.isPending}
+                    >
+                      <Send className="mr-2 h-4 w-4" />
+                      {createPost.isPending ? "Saving..." : "Post"}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-semibold">Read the public beta feed</p>
+                    <p className="text-sm text-muted-foreground">
+                      Sign in to create posts, like, comment, or delete your own content.
+                    </p>
+                  </div>
+                  <Link href="/signin">
+                    <Button>Sign in</Button>
+                  </Link>
                 </div>
-                <div>
-                  <p className="font-semibold text-sm">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-secondary/40 rounded-lg p-2">
-                  <p className="font-bold text-primary text-lg">
-                    {userStats?.posts || 0}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">Posts</p>
-                </div>
-                <div className="bg-secondary/40 rounded-lg p-2">
-                  <p className="font-bold text-blue-400 text-lg">
-                    {userStats?.followers || 0}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">Followers</p>
-                </div>
-                <div className="bg-secondary/40 rounded-lg p-2">
-                  <p className="font-bold text-purple-400 text-lg">
-                    {userStats?.following || 0}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">Following</p>
-                </div>
-              </div>
+              )}
             </Card>
-          )}
 
-          {/* Suggested Creators */}
-          <Card className="p-4 border-border/30 bg-card/50">
-            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              Suggested Creators
-            </h3>
-            <div className="space-y-3">
-              {SUGGESTED_CREATORS.map(c => (
-                <div key={c.name} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-xs flex items-center justify-center shrink-0">
-                    {c.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium text-xs">{c.handle}</span>
-                      <Star className={`w-3 h-3 ${TIER_COLORS[c.tier]}`} />
-                    </div>
-                    <p className="text-[10px] text-muted-foreground truncate">
-                      {c.bio}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {c.followers} followers
-                    </p>
-                  </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex gap-2">
+                {(["latest", "trending"] as const).map(mode => (
                   <Button
+                    key={mode}
                     size="sm"
-                    variant="outline"
-                    className="h-6 px-2 text-[10px] shrink-0"
-                    onClick={() => toast.success(`Following ${c.handle}`)}
+                    variant={feedMode === mode ? "default" : "outline"}
+                    onClick={() => setFeedMode(mode)}
+                    className="capitalize"
                   >
-                    <UserPlus className="w-3 h-3 mr-1" />
-                    Follow
+                    {mode === "trending" && <TrendingUp className="mr-2 h-4 w-4" />}
+                    {mode}
                   </Button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <div className="relative min-w-0 flex-1 sm:w-72">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <input
+                    value={search}
+                    onChange={event => setSearch(event.target.value)}
+                    placeholder="Filter loaded posts"
+                    className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm outline-none focus:border-primary"
+                  />
                 </div>
-              ))}
+                <Button variant="outline" size="icon" onClick={() => refetch()} aria-label="Refresh feed">
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </Card>
 
-          {/* Hope AI Widget */}
-          <Card className="p-4 border-primary/20 bg-primary/5">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <h3 className="font-semibold text-sm text-primary">Hope AI</h3>
-              <Badge className="text-[9px] h-4 bg-primary/20 text-primary border-primary/30">
-                LIVE
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mb-3">
-              I'm reading your feed signals. Your engagement pattern suggests
-              you're in discovery mode. Want me to curate your feed?
-            </p>
-            <div className="flex gap-2">
-              <Link href="/hope-ai">
-                <Button size="sm" className="h-7 text-xs flex-1">
-                  Open Hope AI
+            {isLoading && (
+              <Card className="p-8 text-center text-sm text-muted-foreground">
+                Loading persisted posts…
+              </Card>
+            )}
+
+            {isError && (
+              <Card className="border-red-500/30 p-6">
+                <p className="font-semibold text-red-400">Feed unavailable</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  The beta API did not return the feed. No demo posts are substituted.
+                </p>
+              </Card>
+            )}
+
+            {!isLoading && !isError && displayedPosts.length === 0 && (
+              <Card className="p-10 text-center">
+                <p className="font-semibold">No matching posts</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Create the first persisted post or clear the local filter.
+                </p>
+              </Card>
+            )}
+
+            {displayedPosts.map(post => {
+              const postId = String(post.id);
+              const ownsPost = user && String(post.userId) === String(user.id);
+              const isLiked = likedPosts.has(postId);
+              const createdLabel =
+                post.createdAt instanceof Date
+                  ? post.createdAt.toLocaleString()
+                  : post.createdAt
+                    ? new Date(String(post.createdAt)).toLocaleString()
+                    : "recently";
+
+              return (
+                <Card key={postId} className="border-border/40 p-4">
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold">User {String(post.userId ?? "unknown")}</p>
+                      <p className="text-xs text-muted-foreground">{createdLabel}</p>
+                    </div>
+                    {ownsPost && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={deletePost.isPending}
+                        onClick={() => deletePost.mutate({ postId })}
+                        aria-label="Delete post"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-400" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <p className="whitespace-pre-wrap break-words text-sm leading-6">
+                    {post.content ?? ""}
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/40 pt-3">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={!user || likePost.isPending || unlikePost.isPending}
+                      onClick={() => toggleLike(postId)}
+                      className={isLiked ? "text-red-400" : ""}
+                    >
+                      <Heart className={`mr-2 h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+                      {Number(post.likes ?? 0)}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSelectedPost(selectedPost === postId ? null : postId)}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      {Number(post.comments ?? 0)}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(window.location.href);
+                          toast.success("Page link copied");
+                        } catch {
+                          toast.error("Clipboard unavailable");
+                        }
+                      }}
+                    >
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Share
+                    </Button>
+                  </div>
+
+                  {selectedPost === postId && (
+                    <div className="mt-3 space-y-3 rounded-xl border border-border/40 bg-muted/20 p-3">
+                      {(comments ?? []).length === 0 ? (
+                        <p className="text-xs text-muted-foreground">No comments yet.</p>
+                      ) : (
+                        comments?.map(comment => (
+                          <div key={comment.id} className="rounded-lg bg-background/70 p-3">
+                            <p className="text-xs font-semibold">
+                              User {String(comment.userId ?? "unknown")}
+                            </p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {comment.content}
+                            </p>
+                          </div>
+                        ))
+                      )}
+                      {user && (
+                        <div className="flex gap-2">
+                          <input
+                            value={commentContent}
+                            onChange={event => setCommentContent(event.target.value)}
+                            onKeyDown={event => {
+                              if (event.key === "Enter") submitComment(postId);
+                            }}
+                            maxLength={255}
+                            placeholder="Write a comment"
+                            className="h-9 flex-1 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                          />
+                          <Button
+                            size="sm"
+                            disabled={!commentContent.trim() || addComment.isPending}
+                            onClick={() => submitComment(postId)}
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </main>
+
+          <aside className="space-y-4">
+            {user && (
+              <Card className="p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                  <h2 className="font-semibold">Your persisted stats</h2>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-lg bg-muted/30 p-2">
+                    <p className="text-xl font-bold">{Number(userStats?.posts ?? 0)}</p>
+                    <p className="text-[10px] text-muted-foreground">posts</p>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-2">
+                    <p className="text-xl font-bold">{Number(userStats?.followers ?? 0)}</p>
+                    <p className="text-[10px] text-muted-foreground">followers</p>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-2">
+                    <p className="text-xl font-bold">{Number(userStats?.following ?? 0)}</p>
+                    <p className="text-[10px] text-muted-foreground">following</p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            <Card className="p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <h2 className="font-semibold">Trending hashtags</h2>
+              </div>
+              {(trends ?? []).length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No hashtag trend data exists yet.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {trends?.map(trend => (
+                    <button
+                      key={trend.hashtag}
+                      onClick={() => setSearch(trend.hashtag)}
+                      className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left hover:bg-muted/40"
+                    >
+                      <span className="text-sm font-medium">{trend.hashtag}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {trend.mentions} posts
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <Card className="border-primary/20 bg-primary/5 p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h2 className="font-semibold">HopeAI</h2>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Open HopeAI for an explicit conversation. This social screen does not
+                claim that HopeAI is silently reading your thoughts, private activity,
+                or hidden signals.
+              </p>
+              <Link href="/hopeai">
+                <Button size="sm" className="mt-3 w-full">
+                  Open HopeAI
                 </Button>
               </Link>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs"
-                onClick={() => toast.success("Feed curated by Hope AI!")}
-              >
-                <Zap className="w-3 h-3" />
-              </Button>
-            </div>
-          </Card>
-
-          {/* Trending Tags */}
-          <Card className="p-4 border-border/30 bg-card/50">
-            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              Trending
-            </h3>
-            <div className="space-y-2">
-              {TRENDING_TAGS.map((t, i) => (
-                <div key={t.tag} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground w-4">
-                      {i + 1}
-                    </span>
-                    <span className="text-sm font-medium text-primary">
-                      {t.tag}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    {t.count}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
+            </Card>
+          </aside>
         </div>
       </div>
     </div>
