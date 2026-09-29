@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { Link } from "wouter";
 import {
   BookOpen,
   Star,
@@ -1306,15 +1307,28 @@ export default function SkySchool() {
             <div>
               <h1 className="text-5xl font-bold text-white">Sky School</h1>
               <p className="text-slate-400 text-lg mt-2">
-                Learn Web3, Coding, AI, and Hacking. Earn SKY4, XP, and
-                Certifications.
+                Learn Web3, coding, AI, and security through beta courses, lessons, projects, and quizzes.
               </p>
             </div>
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-3 mb-8 lg:grid-cols-4">
+          {[
+            { href: "/quiz", label: "Take a Quiz", note: "Test what you learned" },
+            { href: "/hopeai", label: "Ask HopeAI", note: "Get study help" },
+            { href: "/socialmedia", label: "Study Community", note: "Share progress" },
+            { href: "/charity", label: "SkyHope", note: "Explore education impact" },
+          ].map(item => (
+            <Link key={item.href} href={item.href} className="rounded-xl border border-white/10 bg-white/[0.035] p-4 transition hover:border-cyan-400/40 hover:bg-cyan-400/5">
+              <div className="font-semibold text-white">{item.label}</div>
+              <div className="mt-1 text-xs text-slate-400">{item.note}</div>
+            </Link>
+          ))}
+        </div>
+
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8 md:grid-cols-4">
           <Card className="bg-slate-900/50 border border-white/10">
             <CardContent className="p-4">
               <p className="text-slate-400 text-sm">Total Courses</p>
