@@ -5,20 +5,9 @@
  */
 
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
+import { legacyNumericUserId } from "./_core/legacy-user-id";
 import { router, protectedProcedure, publicProcedure } from "./_core/trpc";
 
-function legacyNumericUserId(userId: string): number {
-  const numericId = Number(userId);
-  if (!Number.isSafeInteger(numericId) || numericId < 0) {
-    throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message:
-        "This legacy subsystem is not yet migrated to canonical string user IDs.",
-    });
-  }
-  return numericId;
-}
 
 // ─── Phase 31: Digital Identity ───────────────────────────────────────────────
 import {
