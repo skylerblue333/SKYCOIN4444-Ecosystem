@@ -81,66 +81,6 @@ const DAO_PROPOSALS = [
   },
 ];
 
-// Preview leaderboard data. Do not present this as verified donation history.
-const LEADERBOARD = [
-  {
-    rank: 1,
-    name: "SkylerDev",
-    donated: 125000,
-    campaigns: 12,
-    badge: "Diamond Donor",
-  },
-  {
-    rank: 2,
-    name: "CryptoKing",
-    donated: 89000,
-    campaigns: 8,
-    badge: "Platinum Donor",
-  },
-  {
-    rank: 3,
-    name: "AITrader",
-    donated: 67000,
-    campaigns: 15,
-    badge: "Gold Donor",
-  },
-  {
-    rank: 4,
-    name: "NFTQueen",
-    donated: 45000,
-    campaigns: 6,
-    badge: "Gold Donor",
-  },
-  {
-    rank: 5,
-    name: "DeFiPro",
-    donated: 34000,
-    campaigns: 9,
-    badge: "Silver Donor",
-  },
-  {
-    rank: 6,
-    name: "GameDev",
-    donated: 28000,
-    campaigns: 4,
-    badge: "Silver Donor",
-  },
-  {
-    rank: 7,
-    name: "BlockchainBob",
-    donated: 22000,
-    campaigns: 7,
-    badge: "Bronze Donor",
-  },
-  {
-    rank: 8,
-    name: "CyberAlice",
-    donated: 18000,
-    campaigns: 5,
-    badge: "Bronze Donor",
-  },
-];
-
 function DonateDialog({
   campaign,
   onSuccess,
@@ -170,12 +110,12 @@ function DonateDialog({
           size="sm"
           className="w-full bg-primary hover:bg-primary/90 text-xs font-semibold"
         >
-          <Heart className="w-3 h-3 mr-1" /> Donate
+          <Heart className="w-3 h-3 mr-1" /> Record Intent
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-card border-border/50">
         <DialogHeader>
-          <DialogTitle className="text-lg">Donate to Campaign</DialogTitle>
+          <DialogTitle className="text-lg">Record Donation Intent</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-3">
           <div className="p-3 rounded-lg bg-background/50 border border-border/30">
@@ -186,7 +126,7 @@ function DonateDialog({
           </div>
           <div>
             <label className="text-sm text-muted-foreground mb-1.5 block">
-              Donation Amount (SKY444)
+              Intended Amount (SKY444)
             </label>
             <Input
               type="number"
@@ -230,7 +170,7 @@ function DonateDialog({
             ) : (
               <Heart className="w-4 h-4 mr-2" />
             )}
-            Record Beta Donation Intent
+            Record Donation Intent
           </Button>
         </div>
       </DialogContent>
@@ -303,24 +243,24 @@ function ProposalCard({ proposal }: { proposal: (typeof DAO_PROPOSALS)[0] }) {
               <Button
                 size="sm"
                 variant="outline"
-                className="text-xs h-7 text-purple-400 border-purple-500/30 hover:bg-purple-600/10"
+                disabled
+                className="text-xs h-7 text-purple-400 border-purple-500/30"
               >
-                <ThumbsUp className="w-3 h-3 mr-1" /> For
+                <ThumbsUp className="w-3 h-3 mr-1" /> Preview For
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                className="text-xs h-7 text-red-400 border-red-500/30 hover:bg-red-500/10"
+                disabled
+                className="text-xs h-7 text-red-400 border-red-500/30"
               >
-                <ThumbsDown className="w-3 h-3 mr-1" /> Against
+                <ThumbsDown className="w-3 h-3 mr-1" /> Preview Against
               </Button>
             </div>
           ) : (
-            <a href={getLoginUrl()}>
-              <Button size="sm" variant="outline" className="text-xs h-7">
-                Sign In to Vote
-              </Button>
-            </a>
+            <Button size="sm" variant="outline" className="text-xs h-7" disabled>
+              Voting Preview
+            </Button>
           ))}
       </div>
     </div>
@@ -350,13 +290,13 @@ export default function Charity() {
       color: "text-purple-400",
     },
     {
-      label: "SKY444 Raised",
+      label: "SKY444 Intent",
       value: charityStats ? String(Math.round(charityStats.totalRaised)) : "—",
       icon: Coins,
       color: "text-[oklch(0.7_0.2_60)]",
     },
     {
-      label: "Donors",
+      label: "Intent Contributors",
       value: String(charityStats?.totalDonors ?? "—"),
       icon: Users,
       color: "text-green-400",
@@ -510,10 +450,10 @@ export default function Charity() {
                         <div className="flex items-center justify-between text-xs mb-4">
                           <span className="font-mono text-primary">
                             {Number(c.raisedAmount).toLocaleString()} SKY444
-                            raised
+                            recorded as intent
                           </span>
                           <span className="text-muted-foreground">
-                            {Math.round(progress)}% of goal
+                            {Math.round(progress)}% intent-to-goal
                           </span>
                         </div>
                         {isAuthenticated ? (
@@ -525,7 +465,7 @@ export default function Charity() {
                               variant="outline"
                               className="w-full text-xs"
                             >
-                              Sign In to Donate
+                              Sign In to Record Intent
                             </Button>
                           </a>
                         )}
@@ -540,8 +480,7 @@ export default function Charity() {
                     No Active Campaigns
                   </h3>
                   <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                    Charity campaigns will be launched soon. Every donation is
-                    tracked on-chain for full transparency.
+                    No registered SkyHope beta campaigns are available yet. Live charitable settlement is not configured.
                   </p>
                 </div>
               )}
@@ -553,11 +492,10 @@ export default function Charity() {
                 <Vote className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
                   <h4 className="text-sm font-semibold mb-0.5">
-                    Charity DAO Governance
+                    Governance Preview
                   </h4>
                   <p className="text-xs text-muted-foreground">
-                    SKY444 holders vote on how charity funds are allocated. 1
-                    token = 1 vote. Proposals require 66% approval to pass.
+                    Example proposals demonstrate a future governance experience. Voting, token-weight rules, treasury execution, and fund allocation are not active in this engineering beta.
                   </p>
                 </div>
               </div>
@@ -570,223 +508,55 @@ export default function Charity() {
 
             {/* Leaderboard Tab */}
             <TabsContent value="leaderboard" className="mt-6">
-              <div className="p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 mb-6 flex items-start gap-3">
-                <Trophy className="w-5 h-5 text-yellow-400 mt-0.5 shrink-0" />
-                <div>
-                  <h4 className="text-sm font-semibold mb-0.5">
-                    Donor Leaderboard
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    Top contributors earn badges, exclusive NFTs, and governance
-                    weight multipliers. Donate to climb the ranks!
-                  </p>
-                </div>
-              </div>
-              <div className="rounded-xl border border-border/50 bg-card/80 overflow-hidden">
-                <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 p-3 border-b border-border/30 text-xs text-muted-foreground font-medium">
-                  <span>Rank</span>
-                  <span>Donor</span>
-                  <span className="text-right">Donated</span>
-                  <span className="text-right">Campaigns</span>
-                  <span className="text-right">Badge</span>
-                </div>
-                {((donorLeaderboard as any[]) || LEADERBOARD).map(donor => (
-                  <div
-                    key={donor.rank}
-                    className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 p-3 items-center border-b border-border/10 last:border-0 ${donor.rank <= 3 ? "bg-yellow-500/5" : ""}`}
-                  >
-                    <span
-                      className={`font-mono font-bold text-sm ${donor.rank === 1 ? "text-yellow-400" : donor.rank === 2 ? "text-gray-300" : donor.rank === 3 ? "text-orange-400" : "text-muted-foreground"}`}
-                    >
-                      #{donor.rank}
-                    </span>
-                    <span className="font-medium text-sm">{donor.name}</span>
-                    <span className="font-mono text-sm text-right text-primary">
-                      {(donor.donated ?? 0).toLocaleString()}
-                    </span>
-                    <span className="font-mono text-sm text-right text-muted-foreground">
-                      {donor.campaigns}
-                    </span>
-                    <Badge
-                      className={`text-[9px] ${
-                        (donor.badge || "").includes("Diamond")
-                          ? "bg-primary/10 text-primary border-primary/30"
-                          : (donor.badge || "").includes("Platinum")
-                            ? "bg-gray-200/10 text-gray-300 border-gray-300/30"
-                            : (donor.badge || "").includes("Gold")
-                              ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
-                              : (donor.badge || "").includes("Silver")
-                                ? "bg-gray-400/10 text-gray-400 border-gray-400/30"
-                                : "bg-orange-500/10 text-orange-400 border-orange-500/30"
-                      }`}
-                    >
-                      <Award className="w-2.5 h-2.5 mr-0.5" /> {donor.badge}
-                    </Badge>
+              <div className="rounded-xl border border-border/50 bg-card/80 p-6">
+                <div className="flex items-start gap-3">
+                  <Shield className="mt-0.5 h-5 w-5 shrink-0 text-purple-400" />
+                  <div>
+                    <h4 className="text-sm font-semibold">Privacy-first contributor reporting</h4>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      Public donor rankings are disabled until display-name privacy and explicit leaderboard consent are implemented. Beta donation intents are not charitable receipts or settled donations.
+                    </p>
+                    <div className="mt-4 rounded-lg border border-border/30 bg-background/40 p-3 text-xs text-muted-foreground">
+                      {(donorLeaderboard?.length ?? 0) === 0
+                        ? "No public contributor leaderboard is available."
+                        : `${donorLeaderboard?.length ?? 0} consented contributor records available.`}
+                    </div>
                   </div>
-                ))}
+                </div>
               </div>
             </TabsContent>
 
             {/* Impact Analytics Tab */}
             <TabsContent value="impact" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Impact by Category */}
-                <div className="p-5 rounded-xl border border-border/50 bg-card/80">
-                  <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-primary" /> Impact by
-                    Category
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      {
-                        category: "Education",
-                        amount: 320000,
-                        percent: 38,
-                        color: "bg-primary",
-                      },
-                      {
-                        category: "Environment",
-                        amount: 210000,
-                        percent: 25,
-                        color: "bg-purple-600",
-                      },
-                      {
-                        category: "Humanitarian",
-                        amount: 180000,
-                        percent: 21,
-                        color: "bg-red-500",
-                      },
-                      {
-                        category: "Healthcare",
-                        amount: 87000,
-                        percent: 10,
-                        color: "bg-[oklch(0.7_0.2_280)]",
-                      },
-                      {
-                        category: "Technology",
-                        amount: 50000,
-                        percent: 6,
-                        color: "bg-[oklch(0.7_0.2_60)]",
-                      },
-                    ].map(item => (
-                      <div key={item.category}>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-muted-foreground">
-                            {item.category}
-                          </span>
-                          <span className="font-mono">
-                            ${(item.amount / 1000).toFixed(0)}K ({item.percent}
-                            %)
-                          </span>
-                        </div>
-                        <div className="h-2 bg-background/50 rounded-full overflow-hidden border border-border/30">
-                          <div
-                            className={`h-full ${item.color} rounded-full`}
-                            style={{ width: `${item.percent}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {[
+                  {
+                    title: "Campaign registry",
+                    value: String(charityStats?.totalCampaigns ?? "—"),
+                    detail: "Database-backed SkyHope campaign records.",
+                  },
+                  {
+                    title: "Donation intent amount",
+                    value: charityStats ? `${Math.round(charityStats.totalRaised)} SKY444` : "—",
+                    detail: "Intent-only audit records. This is not settled or raised money.",
+                  },
+                  {
+                    title: "Settlement",
+                    value: "Not configured",
+                    detail: "No custody, token transfer, charitable receipt, or blockchain settlement is claimed.",
+                  },
+                  {
+                    title: "Public leaderboard",
+                    value: "Withheld",
+                    detail: "Contributor rankings stay private until consent and display-name controls exist.",
+                  },
+                ].map(item => (
+                  <div key={item.title} className="rounded-xl border border-border/50 bg-card/80 p-5">
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">{item.title}</div>
+                    <div className="mt-2 text-2xl font-bold">{item.value}</div>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{item.detail}</p>
                   </div>
-                </div>
-
-                {/* Recent Milestones */}
-                <div className="p-5 rounded-xl border border-border/50 bg-card/80">
-                  <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-yellow-400" /> Recent
-                    Milestones
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      {
-                        event:
-                          "Clean Water Initiative reached 5,000 beneficiaries",
-                        date: "Jun 10, 2026",
-                        icon: Globe,
-                      },
-                      {
-                        event: "100th scholarship awarded via STEM program",
-                        date: "Jun 8, 2026",
-                        icon: Award,
-                      },
-                      {
-                        event: "Emergency fund deployed to flood relief",
-                        date: "Jun 5, 2026",
-                        icon: Heart,
-                      },
-                      {
-                        event: "$500K total donations milestone reached",
-                        date: "Jun 1, 2026",
-                        icon: TrendingUp,
-                      },
-                      {
-                        event: "New partnership with UNICEF Innovation",
-                        date: "May 28, 2026",
-                        icon: HandHeart,
-                      },
-                    ].map((milestone, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-3 p-3 rounded-lg bg-background/50 border border-border/30"
-                      >
-                        <milestone.icon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                        <div>
-                          <p className="text-sm">{milestone.event}</p>
-                          <span className="text-[10px] text-muted-foreground">
-                            {milestone.date}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Transparency Report */}
-                <div className="p-5 rounded-xl border border-purple-500/20 bg-purple-600/5 md:col-span-2">
-                  <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-purple-400" /> Transparency
-                    Report
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold font-mono text-purple-400">
-                        100%
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        On-Chain Verified
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold font-mono text-primary">
-                        0%
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Admin Fees
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold font-mono text-[oklch(0.7_0.2_280)]">
-                        24h
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Avg Disbursement
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold font-mono text-[oklch(0.7_0.2_60)]">
-                        47
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Verified Partners
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-4 text-center">
-                    All charity fund flows are publicly auditable on-chain.
-                    Smart contracts ensure funds reach verified recipients
-                    without intermediaries.
-                  </p>
-                </div>
+                ))}
               </div>
             </TabsContent>
           </Tabs>
