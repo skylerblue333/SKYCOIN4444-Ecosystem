@@ -9,6 +9,7 @@ import { gamificationRouter } from "./gamification-router";
 import { hopeAIRouter } from "./phase6-routers";
 import { pricesRouter } from "./price-router";
 import { systemRouter } from "./_core/systemRouter";
+import { educationRouter } from "./education-router";
 import * as db from "./db";
 import {
   users,
@@ -91,9 +92,45 @@ export const userRouter = router({
 export const postRouter = router({
   list: publicProcedure
     .input(
-      z.object({ limit: z.number().default(10), offset: z.number().default(0) })
+      z.object({
+        limit: z.number().int().min(1).max(100).default(20),
+        offset: z.number().int().min(0).max(10_000).default(0),
+      })
     )
     .query(async ({ input }) => db.getPosts(input.limit, input.offset)),
+  following: protectedProcedure
+    .input(
+      z
+        .object({ limit: z.number().int().min(1).max(100).default(50) })
+        .optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const relationships = (await db.getFollowing(
+        String(ctx.user.id)
+      )) as Array<{ followingId: string | null }>;
+      const followingIds = relationships
+        .map((relationship: { followingId: string | null }) =>
+          relationship.followingId
+        )
+        .filter(
+          (id: string | null): id is string =>
+            typeof id === "string" && id.length > 0
+        );
+
+      if (followingIds.length === 0) return [];
+
+      const feeds = await Promise.all(
+        followingIds.map((userId: string) => db.getPostsByUser(userId))
+      );
+      return feeds
+        .flat()
+        .sort((a, b) => {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bTime - aTime;
+        })
+        .slice(0, input?.limit ?? 50);
+    }),
   trending: publicProcedure.query(async () => {
     const recentPosts = await db.getPosts(100, 0);
     const counts = new Map<string, number>();
@@ -112,17 +149,38 @@ export const postRouter = router({
       .slice(0, 20);
   }),
   create: protectedProcedure
-    .input(z.object({ content: z.string(), media: z.string().optional() }))
+    .input(
+      z.object({
+        content: z.string().trim().min(1).max(255),
+        media: z.string().url().max(2048).optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) =>
-      db.createPost(ctx.user.id, input.content, input.media)
+      db.createPost(String(ctx.user.id), input.content, input.media)
     ),
   like: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .mutation(async ({ ctx, input }) =>
       db.createLike(input.postId, String(ctx.user.id))
     ),
+  comments: publicProcedure
+    .input(
+      z.object({
+        postId: z.string().min(1).max(255),
+        limit: z.number().int().min(1).max(100).default(50),
+      })
+    )
+    .query(async ({ input }) => {
+      const rows = await db.getComments(input.postId);
+      return rows.slice(-input.limit);
+    }),
   comment: protectedProcedure
-    .input(z.object({ postId: z.string(), content: z.string().min(1).max(255) }))
+    .input(
+      z.object({
+        postId: z.string().min(1).max(255),
+        content: z.string().trim().min(1).max(255),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const comment = await db.createComment(
         input.postId,
@@ -785,6 +843,7 @@ export const appRouter = router({
   creator: userRouter,
   creatorGrowth: userRouter,
   prices: pricesRouter,
+  education: educationRouter,
   system: systemRouter,
   platform: platformRouter,
   token: tokenRouter,
