@@ -26,6 +26,22 @@ import {
 
 type FeedTab = "all" | "following";
 
+type SocialPost = {
+  id: string;
+  userId: string | null;
+  content: string | null;
+  likes: number | null;
+  comments: number | null;
+  createdAt: Date | string | null;
+};
+
+type SocialComment = {
+  id: string;
+  userId: string | null;
+  content: string | null;
+};
+
+
 export default function SocialMedia() {
   const { user, isAuthenticated } = useAuth();
   const utils = trpc.useUtils();
@@ -104,10 +120,12 @@ export default function SocialMedia() {
     onError: error => toast.error(error.message),
   });
 
-  const baseFeed =
-    activeTab === "following"
-      ? followingQuery.data ?? []
-      : feedQuery.data ?? [];
+  const allPosts = (feedQuery.data ?? []) as SocialPost[];
+  const followingPosts = (followingQuery.data ?? []) as SocialPost[];
+  const comments = (commentsQuery.data ?? []) as SocialComment[];
+
+  const baseFeed: SocialPost[] =
+    activeTab === "following" ? followingPosts : allPosts;
 
   const displayFeed = useMemo(() => {
     if (!selectedTag) return baseFeed;
@@ -120,7 +138,7 @@ export default function SocialMedia() {
   const creators = useMemo(() => {
     const ownId = String(user?.id ?? "");
     const byId = new Map<string, { id: string; posts: number }>();
-    for (const post of feedQuery.data ?? []) {
+    for (const post of allPosts) {
       const id = typeof post.userId === "string" ? post.userId : "";
       if (!id || id === ownId) continue;
       const existing = byId.get(id);
@@ -129,7 +147,7 @@ export default function SocialMedia() {
     return [...byId.values()]
       .sort((a, b) => b.posts - a.posts || a.id.localeCompare(b.id))
       .slice(0, 5);
-  }, [feedQuery.data, user?.id]);
+  }, [allPosts, user?.id]);
 
   const toggleComments = (postId: string) => {
     setSelectedPostId(current => (current === postId ? null : postId));
@@ -417,12 +435,12 @@ export default function SocialMedia() {
                                   Loading comments…
                                 </p>
                               )}
-                              {commentsQuery.data?.length === 0 && (
+                              {comments.length === 0 && (
                                 <p className="text-xs text-muted-foreground">
                                   No comments yet.
                                 </p>
                               )}
-                              {commentsQuery.data?.map(comment => (
+                              {comments.map((comment: SocialComment) => (
                                 <div
                                   key={String(comment.id)}
                                   className="rounded-xl bg-muted/35 p-3"
