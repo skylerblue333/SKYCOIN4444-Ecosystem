@@ -7,13 +7,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Star, Zap } from "lucide-react";
-import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
 
 interface CreatorSubscriptionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   creatorName?: string;
+  creatorId?: number;
 }
 
 const TIERS = [
@@ -47,7 +46,7 @@ const TIERS = [
     price: 50,
     icon: Zap,
     color: "text-yellow-400",
-    bg: "bg-yellow-500/10 border-yellow-500/30",
+    bg: "bg-yellow-400/10 border-yellow-500/30",
     features: [
       "All Premium perks",
       "1-on-1 calls",
@@ -62,24 +61,22 @@ export function CreatorSubscriptionModal({
   open,
   onOpenChange,
   creatorName = "Creator",
-  creatorId = 1,
-}: CreatorSubscriptionModalProps & { creatorId?: number }) {
+}: CreatorSubscriptionModalProps) {
   const [selected, setSelected] = useState("premium");
-
-  const subscribe = trpc.creator.subscribe.useMutation({
-    onSuccess: () => {
-      toast.success(`Subscribed to ${creatorName}!`);
-      onOpenChange(false);
-    },
-    onError: (err: any) => toast.error(err.message),
-  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Subscribe to {creatorName}</DialogTitle>
+          <DialogTitle>Support {creatorName}</DialogTitle>
         </DialogHeader>
+
+        <div className="rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100">
+          Creator subscriptions are a product preview in this engineering beta.
+          Checkout, recurring billing, and creator payouts are not configured,
+          so this screen cannot charge you or activate a paid tier.
+        </div>
+
         <div className="grid gap-3 mt-2">
           {TIERS.map(tier => {
             const Icon = tier.icon;
@@ -96,7 +93,7 @@ export function CreatorSubscriptionModal({
               >
                 {tier.popular && (
                   <span className="absolute -top-2 left-4 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">
-                    Most Popular
+                    Example tier
                   </span>
                 )}
                 <div className="flex items-center justify-between mb-2">
@@ -107,18 +104,18 @@ export function CreatorSubscriptionModal({
                   <span className="font-bold text-lg">
                     ${tier.price}
                     <span className="text-sm font-normal text-muted-foreground">
-                      /mo
+                      /mo concept
                     </span>
                   </span>
                 </div>
                 <ul className="space-y-1">
-                  {tier.features.map(f => (
+                  {tier.features.map(feature => (
                     <li
-                      key={f}
+                      key={feature}
                       className="flex items-center gap-1.5 text-xs text-muted-foreground"
                     >
                       <Check className="w-3 h-3 text-purple-400 flex-shrink-0" />
-                      {f}
+                      {feature}
                     </li>
                   ))}
                 </ul>
@@ -126,19 +123,9 @@ export function CreatorSubscriptionModal({
             );
           })}
         </div>
-        <Button
-          className="w-full mt-2"
-          onClick={() =>
-            subscribe.mutate({
-              creatorId,
-              tier: selected as "supporter" | "premium" | "vip",
-            })
-          }
-          disabled={subscribe.isPending}
-        >
-          {subscribe.isPending
-            ? "Processing..."
-            : `Subscribe — $${TIERS.find(t => t.id === selected)?.price}/mo`}
+
+        <Button className="w-full mt-2" disabled>
+          Subscriptions unavailable in engineering beta
         </Button>
       </DialogContent>
     </Dialog>
