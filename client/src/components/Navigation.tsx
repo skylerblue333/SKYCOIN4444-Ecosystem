@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ROUTE_CAPABILITIES } from "@/data/routeCatalog";
@@ -22,17 +22,18 @@ import {
 
 const primaryAreas = [
   { label: "Home", path: "/", icon: Home },
-  { label: "Ecosystem", path: "/ecosystem", icon: LayoutGrid },
+  { label: "Hope AI", path: "/hopeai", icon: Bot },
+  { label: "SkyHope", path: "/charity", icon: Heart },
   { label: "Social", path: "/socialmedia", icon: Users },
   { label: "Messages", path: "/messages", icon: MessageCircle },
-  { label: "Hope AI", path: "/hopeai", icon: Bot },\n  { label: "SkyHope", path: "/charity", icon: Heart },
-  { label: "Crypto", path: "/cryptohub", icon: Coins },
-  { label: "Gaming", path: "/gaming", icon: Gamepad2 },
   { label: "Learn", path: "/skyschool", icon: GraduationCap },
+  { label: "Gaming", path: "/gaming", icon: Gamepad2 },
+  { label: "Crypto", path: "/cryptohub", icon: Coins },
   { label: "Live", path: "/live", icon: Radio },
   { label: "Shop", path: "/marketplace", icon: ShoppingBag },
   { label: "Dating", path: "/datinghome", icon: Users },
   { label: "Enterprise", path: "/enterprise", icon: BriefcaseBusiness },
+  { label: "Ecosystem", path: "/ecosystem", icon: LayoutGrid },
 ] as const;
 
 function normalize(value: string) {
@@ -40,6 +41,7 @@ function normalize(value: string) {
 }
 
 export default function Navigation() {
+  const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
@@ -90,7 +92,7 @@ export default function Navigation() {
                   <Link
                     key={area.path}
                     href={area.path}
-                    className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white sm:text-sm"
+                    className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-xs font-medium transition sm:text-sm ${location === area.path ? "bg-purple-500/15 text-purple-200 ring-1 ring-purple-400/30" : "text-white/70 hover:bg-white/10 hover:text-white"}`}
                   >
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                     {area.label}
