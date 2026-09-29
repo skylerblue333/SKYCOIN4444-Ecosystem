@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { CoreExperienceRail } from "@/components/CoreExperienceRail";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
@@ -25,7 +26,7 @@ const GAME_CATEGORIES = [
     name: "Battle Arena",
     icon: Sword,
     color: "oklch(0.72 0.28 20)",
-    desc: "PvP combat for SKY444 prizes",
+    desc: "PvP combat beta arena",
     href: "/arcade",
   },
   {
@@ -33,24 +34,24 @@ const GAME_CATEGORIES = [
     name: "Crash",
     icon: TrendingUp,
     color: "oklch(0.72 0.28 20)",
-    desc: "Ride the multiplier — cash out before crash!",
-    href: "/game/crash",
+    desc: "Practice multiplier timing in the crash beta",
+    href: "/gamecrash",
   },
   {
     id: "slots",
     name: "Slots",
     icon: Star,
     color: "oklch(0.72 0.28 70)",
-    desc: "Spin the reels for SKY444 jackpots",
-    href: "/game/slots",
+    desc: "Beta reels with no cash-value settlement claim",
+    href: "/gameslots",
   },
   {
     id: "blackjack",
     name: "Blackjack",
     icon: Crown,
     color: "oklch(0.72 0.28 160)",
-    desc: "Beat the dealer — Split, Double Down",
-    href: "/game/blackjack",
+    desc: "Practice blackjack rules, split, and double down",
+    href: "/gameblackjack",
   },
   {
     id: "quiz",
@@ -58,38 +59,38 @@ const GAME_CATEGORIES = [
     icon: Zap,
     color: "oklch(0.72 0.28 70)",
     desc: "Test your Web3 knowledge",
-    href: "/games/crypto-quiz",
+    href: "/gamecryptoquiz",
   },
   {
     id: "tap",
     name: "Token Tap",
     icon: Coins,
     color: "oklch(0.72 0.28 305)",
-    desc: "Tap to earn SKY444",
-    href: "/games/token-tap",
+    desc: "Token interaction demo; rewards are not settled here",
+    href: "/gametokentap",
   },
   {
     id: "build",
     name: "Block Builder",
     icon: Shield,
     color: "oklch(0.72 0.28 160)",
-    desc: "Build your DeFi empire",
-    href: "/games/block-builder",
+    desc: "Build and test a DeFi strategy sandbox",
+    href: "/gameblockbuilder",
   },
   {
     id: "quest",
     name: "Quest Board",
     icon: Target,
     color: "oklch(0.72 0.28 220)",
-    desc: "Daily & weekly missions",
-    href: "/games/quest-board",
+    desc: "Daily and weekly beta missions",
+    href: "/gamefiquestboard",
   },
   {
     id: "tournament",
     name: "Tournaments",
     icon: Trophy,
     color: "oklch(0.80 0.18 70)",
-    desc: "Compete for prize pools",
+    desc: "Competition workspace; prize funding is not implied",
     href: "/tournaments",
   },
 ];
@@ -144,12 +145,12 @@ export default function Gaming() {
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                   <span className="text-[10px] text-green-400 font-bold">
-                    P2E LIVE
+                    ENGINEERING BETA
                   </span>
                 </div>
               </div>
               <p className="text-sm mt-1 desc-metallic">
-                Play games, complete quests, and earn real SKY444 tokens.
+                Play supported beta games, complete quests, and inspect token-related mechanics without implying live-value settlement.
               </p>
             </div>
           </div>
@@ -178,8 +179,8 @@ export default function Gaming() {
               },
               {
                 icon: Coins,
-                value: "∞",
-                label: "SKY444 Prizes",
+                value: "Beta",
+                label: "Token mode",
                 color: "text-cyan-400",
                 bg: "bg-cyan-500/10 border-cyan-500/20",
               },
@@ -211,6 +212,17 @@ export default function Gaming() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-10">
+        <CoreExperienceRail
+          current="games"
+          title="AI, impact, community, play, and learning"
+        />
+        <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4">
+          <p className="text-sm font-semibold text-amber-100">Game economy boundary</p>
+          <p className="mt-1 text-xs leading-relaxed text-slate-400">
+            SKY444 reward, prize, and token language on this page describes beta game mechanics.
+            This surface does not prove funded prize pools, cash value, custody, or blockchain settlement.
+          </p>
+        </div>
         {/* Game Categories */}
         <section>
           <h2 className="text-xl font-bold text-rainbow-slow mb-4 flex items-center gap-2 section-header-neon">
@@ -264,7 +276,7 @@ export default function Gaming() {
           <div className="md:col-span-2 space-y-4">
             <h2 className="text-xl font-bold text-rainbow-slow flex items-center gap-2 section-header-neon">
               <Trophy className="w-5 h-5 icon-rainbow" />
-              Live Tournaments
+              Tournaments
             </h2>
             {tournamentsLoading ? (
               <div className="space-y-3">
