@@ -108,7 +108,7 @@ async function scanRegisteredRoutes(cdp) {
 
     await cdp.call("Runtime.evaluate", {
       expression: `(() => {
-        window.history.pushState({}, "", ${JSON.stringify(route)});
+        // replaceState avoids building a ~1,000-entry same-document history chain.\n        // Chrome can reject later CDP navigation when that chain becomes too deep.\n        window.history.replaceState({}, "", ${JSON.stringify(route)});
         window.dispatchEvent(new PopStateEvent("popstate"));
         return window.location.pathname;
       })()`,
