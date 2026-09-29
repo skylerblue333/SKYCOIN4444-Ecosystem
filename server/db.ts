@@ -47,6 +47,7 @@ const {
   orders,
   reviews,
   streams,
+  charityProjects,
 } = schema;
 
 function stableId(prefix: string, ...parts: string[]) {
@@ -449,6 +450,144 @@ export async function createTransaction(data: {
     status: "pending",
     txHash: null,
   };
+}
+
+// ============ SKYHOPE / CHARITY BETA HELPERS ============
+const CHARITY_INTENT_PREFIX = "charity_intent:";
+
+function charityCampaignIdFromType(type: unknown) {
+  if (typeof type !== "string" || !type.startsWith(CHARITY_INTENT_PREFIX)) {
+    return null;
+  }
+  return type.slice(CHARITY_INTENT_PREFIX.length) || null;
+}
+
+export async function getCharityCampaigns() {
+  const projects = await db
+    .select()
+    .from(charityProjects)
+    .orderBy(desc(charityProjects.createdAt));
+
+  const intents = await db
+    .select({
+      type: transactions.type,
+      amount: transactions.amount,
+    })
+    .from(transactions)
+    .where(eq(transactions.status, "intent_only"));
+
+  const intentTotals = new Map<string, number>();
+  for (const intent of intents) {
+    const campaignId = charityCampaignIdFromType(intent.type);
+    if (!campaignId) continue;
+    intentTotals.set(
+      campaignId,
+      (intentTotals.get(campaignId) ?? 0) + Number(intent.amount ?? 0)
+    );
+  }
+
+  return projects.map((project: any) => ({
+    id: String(project.id),
+    title: project.name || "Untitled SkyHope campaign",
+    description:
+      "Registered SkyHope engineering-beta campaign. Organization verification, charitable receipts, custody, and live settlement are not configured by this record.",
+    category: "Community",
+    status: "active" as const,
+    goalAmount: Number(project.goal ?? 0),
+    raisedAmount: intentTotals.get(String(project.id)) ?? 0,
+    amountKind: "intent_only" as const,
+    createdAt: project.createdAt ?? null,
+  }));
+}
+
+export async function recordCharityDonationIntent(
+  userId: string,
+  campaignId: string,
+  amount: number
+) {
+  const [campaign] = await db
+    .select({ id: charityProjects.id })
+    .from(charityProjects)
+    .where(eq(charityProjects.id, campaignId))
+    .limit(1);
+
+  if (!campaign) {
+    return {
+      accepted: false as const,
+      status: "campaign_not_found" as const,
+      settlement: false as const,
+      intentId: null,
+    };
+  }
+
+  const id = `charity_intent_${nanoid(20)}`;
+  await db.insert(transactions).values({
+    id,
+    userId,
+    type: `${CHARITY_INTENT_PREFIX}${campaignId}`,
+    amount,
+    toUserId: null,
+    status: "intent_only",
+    txHash: null,
+  });
+
+  return {
+    accepted: true as const,
+    status: "intent_recorded" as const,
+    settlement: false as const,
+    receipt: false as const,
+    intentId: id,
+    campaignId,
+    amount,
+  };
+}
+
+export async function getCharityStats() {
+  const projects = await db
+    .select({ id: charityProjects.id })
+    .from(charityProjects);
+
+  const intents = await db
+    .select({
+      type: transactions.type,
+      userId: transactions.userId,
+      amount: transactions.amount,
+    })
+    .from(transactions)
+    .where(eq(transactions.status, "intent_only"));
+
+  const charityIntents = intents.filter(
+    intent => charityCampaignIdFromType(intent.type) !== null
+  );
+  const contributors = new Set(
+    charityIntents
+      .map(intent => intent.userId)
+      .filter((userId): userId is string => Boolean(userId))
+  );
+
+  return {
+    activeCampaigns: projects.length,
+    totalCampaigns: projects.length,
+    totalRaised: charityIntents.reduce(
+      (sum, intent) => sum + Number(intent.amount ?? 0),
+      0
+    ),
+    totalDonors: contributors.size,
+    amountKind: "intent_only" as const,
+    settlement: false as const,
+  };
+}
+
+export async function getCharityLeaderboard() {
+  // A public donor ranking is intentionally withheld until display-name privacy
+  // and explicit leaderboard consent are implemented.
+  return [] as Array<{
+    rank: number;
+    name: string;
+    donated: number;
+    campaigns: number;
+    badge: string;
+  }>;
 }
 
 // ============ WALLET HELPERS ============
