@@ -1,7 +1,5 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   CheckCircle,
   ChevronLeft,
@@ -9,388 +7,273 @@ import {
   Play,
   FileText,
   HelpCircle,
-  Video,
   MessageSquare,
-  Download,
-  Bookmark,
-  ThumbsUp,
-  Zap,
+  Save,
+  ShieldCheck,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 const LESSONS = [
-  {
-    id: 1,
-    title: "What is Blockchain?",
-    duration: "12:34",
-    completed: true,
-    type: "video",
-  },
-  {
-    id: 2,
-    title: "History & Evolution",
-    duration: "8:21",
-    completed: true,
-    type: "video",
-  },
-  {
-    id: 3,
-    title: "Cryptographic Hashing",
-    duration: "18:45",
-    completed: false,
-    type: "video",
-  },
-  {
-    id: 4,
-    title: "Consensus Mechanisms",
-    duration: "22:10",
-    completed: false,
-    type: "video",
-  },
-  {
-    id: 5,
-    title: "Proof of Work",
-    duration: "19:33",
-    completed: false,
-    type: "video",
-  },
-  {
-    id: 6,
-    title: "Proof of Stake",
-    duration: "14:22",
-    completed: false,
-    type: "video",
-  },
-  {
-    id: 7,
-    title: "Module 1 Quiz",
-    duration: "5:00",
-    completed: false,
-    type: "quiz",
-  },
-  {
-    id: 8,
-    title: "Smart Contracts Intro",
-    duration: "16:44",
-    completed: false,
-    type: "video",
-  },
-];
+  { id: 1, title: "What is Blockchain?", duration: "12:34", type: "video" },
+  { id: 2, title: "History & Evolution", duration: "8:21", type: "video" },
+  { id: 3, title: "Cryptographic Hashing", duration: "18:45", type: "video" },
+  { id: 4, title: "Consensus Mechanisms", duration: "22:10", type: "video" },
+  { id: 5, title: "Proof of Work", duration: "19:33", type: "video" },
+  { id: 6, title: "Proof of Stake", duration: "14:22", type: "video" },
+  { id: 7, title: "Module 1 Quiz", duration: "5:00", type: "quiz" },
+  { id: 8, title: "Smart Contracts Intro", duration: "16:44", type: "video" },
+] as const;
+
+const COMPLETION_KEY = "skycoin4444.learning.completed.v1";
+const notesKey = (lessonId: number) => `skycoin4444.learning.notes.${lessonId}.v1`;
+
+function loadCompletedLessonIds(): number[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(COMPLETION_KEY) ?? "[]");
+    return Array.isArray(parsed)
+      ? parsed.filter(value => Number.isInteger(value)).map(Number)
+      : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function SchoolLesson() {
-  const params = useParams<{ id: string }>();
-  const lessonId = parseInt(params.id || "3");
-  const lesson = LESSONS.find(l => l.id === lessonId) || LESSONS[2];
-  const [notes, setNotes] = useState("");
-  const [activeTab, setActiveTab] = useState<
-    "notes" | "resources" | "discussion"
-  >("notes");
-  const [completed, setCompleted] = useState(false);
-  const [showXP, setShowXP] = useState(false);
+  const params = useParams<{ id?: string }>();
+  const parsedLessonId = Number(params.id ?? "1");
+  const lessonId = Number.isInteger(parsedLessonId) && parsedLessonId > 0
+    ? parsedLessonId
+    : 1;
+  const lesson = LESSONS.find(item => item.id === lessonId) ?? LESSONS[0];
 
-  const handleComplete = () => {
-    setCompleted(true);
-    setShowXP(true);
-    setTimeout(() => setShowXP(false), 3000);
+  const [activeTab, setActiveTab] = useState<"notes" | "resources" | "discussion">("notes");
+  const [completedIds, setCompletedIds] = useState<number[]>([]);
+  const [notes, setNotes] = useState("");
+  const [notesSaved, setNotesSaved] = useState(false);
+
+  useEffect(() => {
+    setCompletedIds(loadCompletedLessonIds());
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setNotes(window.localStorage.getItem(notesKey(lesson.id)) ?? "");
+    setNotesSaved(false);
+  }, [lesson.id]);
+
+  const completedSet = useMemo(() => new Set(completedIds), [completedIds]);
+  const progress = Math.round((completedSet.size / LESSONS.length) * 100);
+  const completed = completedSet.has(lesson.id);
+
+  const markComplete = () => {
+    const next = Array.from(new Set([...completedIds, lesson.id])).sort((a, b) => a - b);
+    setCompletedIds(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(COMPLETION_KEY, JSON.stringify(next));
+    }
   };
 
-  const progress = Math.round(
-    (LESSONS.filter(l => l.completed).length / LESSONS.length) * 100
-  );
+  const saveNotes = () => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(notesKey(lesson.id), notes);
+    setNotesSaved(true);
+  };
+
+  const previousId = Math.max(1, lesson.id - 1);
+  const nextId = Math.min(LESSONS.length, lesson.id + 1);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Bar */}
-      <div className="border-b border-border/50 bg-card/50 px-4 py-2 flex items-center gap-4">
-        <Link href="/school/course/blockchain-fundamentals">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1 text-muted-foreground"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to Course
-          </Button>
-        </Link>
-        <div className="flex-1 max-w-xs">
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-            <span>Course Progress</span>
-            <span>{progress}%</span>
+    <div className="min-h-screen bg-background pb-24">
+      <div className="border-b border-border/50 bg-card/40">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center">
+          <Link href="/schooldashboard">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ChevronLeft className="h-4 w-4" />
+              Learning dashboard
+            </Button>
+          </Link>
+          <div className="flex-1">
+            <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Progress saved on this browser</span>
+              <span>{progress}%</span>
+            </div>
+            <Progress value={progress} className="h-1.5" />
           </div>
-          <Progress value={progress} className="h-1.5" />
+          <div className="flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs text-amber-300">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            beta-local progress
+          </div>
         </div>
-        <span className="text-xs text-muted-foreground hidden md:block">
-          Blockchain Fundamentals
-        </span>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="hidden lg:flex w-72 border-r border-border/50 flex-col bg-card/20">
-          <div className="p-4 border-b border-border/50">
-            <h3 className="font-semibold text-sm">Course Content</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              {LESSONS.filter(l => l.completed).length}/{LESSONS.length}{" "}
-              completed
-            </p>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            {LESSONS.map(l => (
-              <Link key={l.id} href={`/school/lesson/${l.id}`}>
-                <div
-                  className={`flex items-center gap-3 p-3 border-b border-border/20 hover:bg-card/50 cursor-pointer transition-colors ${l.id === lessonId ? "bg-primary/10 border-l-2 border-l-primary" : ""}`}
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[260px_1fr]">
+        <aside className="rounded-2xl border border-border/50 bg-card/30 p-3">
+          <h2 className="px-2 py-2 text-sm font-semibold">Blockchain Fundamentals</h2>
+          <div className="space-y-1">
+            {LESSONS.map(item => (
+              <Link key={item.id} href={`/school/lesson/${item.id}`}>
+                <button
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors ${
+                    item.id === lesson.id ? "bg-primary/10 text-primary" : "hover:bg-muted/40"
+                  }`}
                 >
-                  {l.completed ? (
-                    <CheckCircle className="h-4 w-4 text-purple-400 shrink-0" />
-                  ) : l.type === "quiz" ? (
-                    <HelpCircle className="h-4 w-4 text-yellow-400 shrink-0" />
+                  {completedSet.has(item.id) ? (
+                    <CheckCircle className="h-4 w-4 shrink-0 text-emerald-400" />
+                  ) : item.type === "quiz" ? (
+                    <HelpCircle className="h-4 w-4 shrink-0 text-amber-400" />
                   ) : (
-                    <Play className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <Play className="h-4 w-4 shrink-0 text-muted-foreground" />
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-xs font-medium truncate ${l.id === lessonId ? "text-primary" : ""}`}
-                    >
-                      {l.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {l.duration}
-                    </p>
-                  </div>
-                </div>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-medium">{item.title}</span>
+                    <span className="block text-[11px] text-muted-foreground">{item.duration}</span>
+                  </span>
+                </button>
               </Link>
             ))}
           </div>
-        </div>
+        </aside>
 
-        {/* Main */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Video */}
-          <div className="bg-zinc-950 aspect-video max-h-[60vh] flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
-            <div className="text-center relative z-10">
-              <div className="w-20 h-20 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center mx-auto mb-4 cursor-pointer hover:bg-white/20 transition-colors">
-                <Play className="h-9 w-9 text-white ml-1" />
+        <main className="space-y-5">
+          <section className="overflow-hidden rounded-2xl border border-border/50 bg-zinc-950">
+            <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-primary/10 to-purple-500/5">
+              <div className="max-w-md px-6 text-center">
+                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/10">
+                  <Play className="h-8 w-8 text-white" />
+                </div>
+                <h1 className="text-xl font-bold text-white">{lesson.title}</h1>
+                <p className="mt-2 text-sm text-white/60">
+                  Lesson player preview · no hosted media stream is claimed for this screen.
+                </p>
               </div>
-              <p className="text-white/70 text-sm">{lesson.title}</p>
-              <p className="text-white/40 text-xs mt-1">{lesson.duration}</p>
             </div>
-            {/* Progress bar */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
-              <div className="h-full bg-primary w-1/3" />
+          </section>
+
+          <section className="rounded-2xl border border-border/50 bg-card/30 p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Lesson {lesson.id} of {LESSONS.length}
+                </p>
+                <h2 className="mt-1 text-2xl font-bold">{lesson.title}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Completion on this engineering-beta screen is stored in your browser only.
+                  It is not represented as an account credential, token reward, or on-chain certificate.
+                </p>
+              </div>
+              <Button
+                onClick={markComplete}
+                disabled={completed}
+                className={completed ? "bg-emerald-500/15 text-emerald-300" : ""}
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                {completed ? "Completed on this browser" : "Mark complete"}
+              </Button>
             </div>
-          </div>
+          </section>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-3xl mx-auto">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h2 className="text-xl font-bold mb-1">{lesson.title}</h2>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      {lesson.duration}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Zap className="h-3.5 w-3.5 text-yellow-400" />
-                      +50 XP on completion
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <Bookmark className="h-3.5 w-3.5" />
-                    Save
-                  </Button>
-                  {!completed ? (
-                    <Button
-                      size="sm"
-                      className="bg-purple-600 hover:bg-purple-600 text-white gap-1"
-                      onClick={handleComplete}
-                    >
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      Mark Complete
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      className="bg-purple-600/20 text-purple-400 border border-purple-500/30 gap-1"
-                      disabled
-                    >
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      Completed!
-                    </Button>
-                  )}
-                </div>
-              </div>
+          <section className="rounded-2xl border border-border/50 bg-card/30">
+            <div className="flex border-b border-border/50 px-4 pt-2">
+              {(["notes", "resources", "discussion"] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`border-b-2 px-4 py-3 text-sm font-medium capitalize ${
+                    activeTab === tab
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
 
-              {showXP && (
-                <div className="mb-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center gap-2 text-yellow-400 text-sm font-medium animate-pulse">
-                  <Zap className="h-4 w-4" />
-                  +50 XP Earned! Keep going!
-                </div>
-              )}
-
-              <div className="flex gap-1 border-b border-border/50 mb-4">
-                {(["notes", "resources", "discussion"] as const).map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-all -mb-px capitalize ${activeTab === tab ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-
+            <div className="p-5">
               {activeTab === "notes" && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Take notes while you watch. They'll be saved to your
-                    account.
-                  </p>
+                  <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+                    <Save className="h-4 w-4" />
+                    Notes are stored only in this browser's local storage.
+                  </div>
                   <textarea
                     value={notes}
-                    onChange={e => setNotes(e.target.value)}
-                    placeholder="Start typing your notes here..."
-                    className="w-full h-40 rounded-xl border border-border/50 bg-card/50 p-4 text-sm resize-none focus:outline-none focus:border-primary/50"
+                    onChange={event => {
+                      setNotes(event.target.value);
+                      setNotesSaved(false);
+                    }}
+                    placeholder="Write private lesson notes for this browser..."
+                    className="h-44 w-full resize-none rounded-xl border border-border/50 bg-background/60 p-4 text-sm outline-none focus:border-primary"
                   />
-                  <Button
-                    size="sm"
-                    className="mt-2 bg-primary text-primary-foreground"
-                  >
-                    Save Notes
-                  </Button>
+                  <div className="mt-3 flex items-center gap-3">
+                    <Button size="sm" onClick={saveNotes}>
+                      Save notes locally
+                    </Button>
+                    {notesSaved && (
+                      <span className="text-xs text-emerald-400">Saved on this browser.</span>
+                    )}
+                  </div>
                 </div>
               )}
 
               {activeTab === "resources" && (
-                <div className="space-y-3">
-                  {[
-                    { name: "Lesson Slides.pdf", size: "2.4 MB" },
-                    { name: "Code Examples.zip", size: "1.1 MB" },
-                    { name: "Further Reading.pdf", size: "890 KB" },
-                  ].map(r => (
-                    <div
-                      key={r.name}
-                      className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card/30"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-4 w-4 text-blue-400" />
-                        <div>
-                          <p className="text-sm font-medium">{r.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {r.size}
-                          </p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" className="gap-1">
-                        <Download className="h-3.5 w-3.5" />
-                        Download
-                      </Button>
-                    </div>
-                  ))}
+                <div className="rounded-xl border border-dashed border-border p-8 text-center">
+                  <FileText className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+                  <p className="font-semibold">No downloadable resources published</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    The previous placeholder PDFs/ZIP files were removed so this beta does not imply
+                    downloads exist when no backed resource is configured.
+                  </p>
                 </div>
               )}
 
               {activeTab === "discussion" && (
-                <div className="space-y-4">
-                  {[
-                    {
-                      user: "Alex M.",
-                      text: "Great explanation of hashing! The SHA-256 example really clicked for me.",
-                      likes: 12,
-                      time: "2h ago",
-                    },
-                    {
-                      user: "Sarah K.",
-                      text: "Can someone explain the difference between SHA-256 and Keccak-256?",
-                      likes: 5,
-                      time: "4h ago",
-                    },
-                    {
-                      user: "James P.",
-                      text: "@Sarah - Keccak-256 is used in Ethereum while SHA-256 is used in Bitcoin. Both are cryptographic hash functions but with different properties.",
-                      likes: 18,
-                      time: "3h ago",
-                    },
-                  ].map((c, i) => (
-                    <div
-                      key={i}
-                      className="rounded-xl border border-border/50 bg-card/30 p-4"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold">
-                          {c.user[0]}
-                        </div>
-                        <span className="text-sm font-medium">{c.user}</span>
-                        <span className="text-xs text-muted-foreground ml-auto">
-                          {c.time}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {c.text}
-                      </p>
-                      <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                        <ThumbsUp className="h-3 w-3" />
-                        {c.likes}
-                      </button>
-                    </div>
-                  ))}
-                  <div className="flex gap-2">
-                    <input
-                      placeholder="Add a comment..."
-                      className="flex-1 rounded-lg border border-border/50 bg-card/50 px-3 py-2 text-sm focus:outline-none focus:border-primary/50"
-                    />
-                    <Button
-                      size="sm"
-                      className="bg-primary text-primary-foreground"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
+                <div className="rounded-xl border border-dashed border-border p-8 text-center">
+                  <MessageSquare className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+                  <p className="font-semibold">Lesson discussion is not connected yet</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Use the persisted social feed or community workspace instead of simulated comments.
+                  </p>
+                  <div className="mt-4 flex justify-center gap-2">
+                    <Link href="/socialmedia">
+                      <Button size="sm">Open social feed</Button>
+                    </Link>
+                    <Link href="/communityhub">
+                      <Button size="sm" variant="outline">Community hub</Button>
+                    </Link>
                   </div>
                 </div>
               )}
-
-              {/* Navigation */}
-              <div className="flex items-center justify-between mt-8 pt-4 border-t border-border/50">
-                <Link href={`/school/lesson/${Math.max(1, lessonId - 1)}`}>
-                  <Button variant="outline" className="gap-2">
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous Lesson
-                  </Button>
-                </Link>
-                <Link
-                  href={`/school/lesson/${Math.min(LESSONS.length, lessonId + 1)}`}
-                >
-                  <Button className="bg-primary text-primary-foreground gap-2">
-                    Next Lesson
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
             </div>
+          </section>
+
+          <div className="flex items-center justify-between gap-3">
+            <Link href={`/school/lesson/${previousId}`}>
+              <Button variant="outline" disabled={lesson.id === 1}>
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Previous
+              </Button>
+            </Link>
+            {lesson.type === "quiz" ? (
+              <Link href="/school/quiz">
+                <Button>
+                  Open quiz
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Link href={`/school/lesson/${nextId}`}>
+                <Button disabled={lesson.id === LESSONS.length}>
+                  Next lesson
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            )}
           </div>
-        </div>
+        </main>
       </div>
     </div>
-  );
-}
-
-function Clock({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
   );
 }
