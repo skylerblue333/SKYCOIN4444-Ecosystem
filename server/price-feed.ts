@@ -34,18 +34,6 @@ const COIN_IDS = [
   "matic-network",
 ];
 
-// SKY444 simulated token data
-const SKY444_DATA: PriceData = {
-  id: "sky444",
-  symbol: "sky444",
-  name: "SKYCOIN4444",
-  current_price: 0.0888,
-  price_change_percentage_24h: 4.44,
-  market_cap: 88_800_000,
-  total_volume: 4_440_000,
-  image: "",
-};
-
 export async function fetchLivePrices(): Promise<PriceData[]> {
   const now = Date.now();
   if (cache && now - cache.fetchedAt < CACHE_TTL) {
@@ -61,67 +49,12 @@ export async function fetchLivePrices(): Promise<PriceData[]> {
 
     if (!response.ok) throw new Error(`CoinGecko HTTP ${response.status}`);
     const data = (await response.json()) as PriceData[];
-    const withSky = [SKY444_DATA, ...data];
-    cache = { data: withSky, fetchedAt: now };
-    return withSky;
+    cache = { data, fetchedAt: now };
+    return data;
   } catch (err) {
-    console.warn("[PriceFeed] CoinGecko fetch failed, using fallback:", err);
-    // Fallback static prices
-    const fallback: PriceData[] = [
-      SKY444_DATA,
-      {
-        id: "bitcoin",
-        symbol: "btc",
-        name: "Bitcoin",
-        current_price: 69420,
-        price_change_percentage_24h: 1.23,
-        market_cap: 1_360_000_000_000,
-        total_volume: 28_000_000_000,
-        image: "",
-      },
-      {
-        id: "ethereum",
-        symbol: "eth",
-        name: "Ethereum",
-        current_price: 3880,
-        price_change_percentage_24h: 2.11,
-        market_cap: 466_000_000_000,
-        total_volume: 14_000_000_000,
-        image: "",
-      },
-      {
-        id: "solana",
-        symbol: "sol",
-        name: "Solana",
-        current_price: 172,
-        price_change_percentage_24h: -0.88,
-        market_cap: 80_000_000_000,
-        total_volume: 3_200_000_000,
-        image: "",
-      },
-      {
-        id: "binancecoin",
-        symbol: "bnb",
-        name: "BNB",
-        current_price: 598,
-        price_change_percentage_24h: 0.44,
-        market_cap: 87_000_000_000,
-        total_volume: 1_800_000_000,
-        image: "",
-      },
-      {
-        id: "cardano",
-        symbol: "ada",
-        name: "Cardano",
-        current_price: 0.48,
-        price_change_percentage_24h: -1.2,
-        market_cap: 17_000_000_000,
-        total_volume: 440_000_000,
-        image: "",
-      },
-    ];
-    if (!cache) cache = { data: fallback, fetchedAt: now };
-    return cache.data;
+    console.warn("[PriceFeed] CoinGecko fetch failed; live prices unavailable:", err);
+    // Preserve only previously verified provider data. Never manufacture a live quote.
+    return cache?.data ?? [];
   }
 }
 
