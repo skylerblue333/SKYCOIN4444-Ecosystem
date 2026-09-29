@@ -10,19 +10,7 @@ import {
   adminProcedure,
 } from "./_core/trpc";
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-
-function legacyNumericUserId(userId: string): number {
-  const numericId = Number(userId);
-  if (!Number.isSafeInteger(numericId) || numericId < 0) {
-    throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message:
-        "This legacy subsystem is not yet migrated to canonical string user IDs.",
-    });
-  }
-  return numericId;
-}
+import { legacyNumericUserId } from "./_core/legacy-user-id";
 
 // ── Phase 15: Revenue Maximization ────────────────────────────────────────────
 import {
