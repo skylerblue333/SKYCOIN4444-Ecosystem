@@ -25,13 +25,13 @@ const primaryAreas = [
   { label: "Ecosystem", path: "/ecosystem", icon: LayoutGrid },
   { label: "Social", path: "/socialmedia", icon: Users },
   { label: "Messages", path: "/messages", icon: MessageCircle },
-  { label: "Hope AI", path: "/hopeai", icon: Bot },
+  { label: "Hope AI", path: "/hopeai", icon: Bot },\n  { label: "SkyHope", path: "/charity", icon: Heart },
   { label: "Crypto", path: "/cryptohub", icon: Coins },
   { label: "Gaming", path: "/gaming", icon: Gamepad2 },
   { label: "Learn", path: "/skyschool", icon: GraduationCap },
   { label: "Live", path: "/live", icon: Radio },
   { label: "Shop", path: "/marketplace", icon: ShoppingBag },
-  { label: "Dating", path: "/datinghome", icon: Heart },
+  { label: "Dating", path: "/datinghome", icon: Users },
   { label: "Enterprise", path: "/enterprise", icon: BriefcaseBusiness },
 ] as const;
 
