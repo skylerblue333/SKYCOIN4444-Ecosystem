@@ -743,6 +743,33 @@ const moderationRouter = router({
   }),
 });
 
+// ============ SKYHOPE / CHARITY BETA PROCEDURES ============
+export const charityRouter = router({
+  campaigns: publicProcedure
+    .input(z.object({}).optional())
+    .query(async () => db.getCharityCampaigns()),
+  stats: publicProcedure.query(async () => db.getCharityStats()),
+  leaderboard: publicProcedure.query(async () => db.getCharityLeaderboard()),
+  donate: protectedProcedure
+    .input(
+      z.object({
+        campaignId: z.string().min(1).max(255),
+        amount: z.number().positive().max(1_000_000),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await db.recordCharityDonationIntent(
+        String(ctx.user.id),
+        input.campaignId,
+        input.amount
+      );
+      if (!result.accepted) {
+        throw new Error("SkyHope campaign not found; no donation intent was recorded");
+      }
+      return result;
+    }),
+});
+
 // Placeholder namespaces remain explicit and must not be treated as beta-ready.
 const placeholderRouter = router({
   stats: publicProcedure.query(async () => ({ status: "not_configured" as const })),
@@ -795,7 +822,7 @@ export const appRouter = router({
   blockchain: walletRouter,
   aiEngineer: aiRouter,
   economy: transactionRouter,
-  charity: placeholderRouter,
+  charity: charityRouter,
   trustSafety: placeholderRouter,
   ico: placeholderRouter,
   audienceLockIn: placeholderRouter,
