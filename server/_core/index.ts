@@ -215,32 +215,62 @@ async function startServer() {
     });
   });
 
-  app.get("/api/cache-stats", (_req: Request, res: Response) => {
-    const { cacheStats, getSlowQueryLog } = require("../query-cache");
-    res.json({
-      cache: cacheStats(),
-      slowQueries: getSlowQueryLog().slice(-20),
-    });
-  });
+  const requireOperationsAccess = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const configuredToken = process.env.OPERATIONS_METRICS_TOKEN;
+    if (!configuredToken) {
+      res.status(503).json({ error: "Operations endpoint not configured" });
+      return;
+    }
 
-  app.get("/api/metrics", (_req: Request, res: Response) => {
-    const mem = process.memoryUsage();
-    const cpu = process.cpuUsage();
-    res.json({
-      uptime: process.uptime(),
-      memory: {
-        heapUsedMB: Math.round(mem.heapUsed / 1024 / 1024),
-        heapTotalMB: Math.round(mem.heapTotal / 1024 / 1024),
-        rssMB: Math.round(mem.rss / 1024 / 1024),
-      },
-      cpu: {
-        userMs: Math.round(cpu.user / 1000),
-        systemMs: Math.round(cpu.system / 1000),
-      },
-      nodeVersion: process.version,
-      pid: process.pid,
-    });
-  });
+    const authorization = req.headers.authorization;
+    const suppliedToken =
+      authorization?.startsWith("Bearer ") ? authorization.slice(7) : "";
+
+    if (suppliedToken !== configuredToken) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    next();
+  };
+
+  app.get(
+    "/api/cache-stats",
+    requireOperationsAccess,
+    (_req: Request, res: Response) => {
+      const { cacheStats, getSlowQueryLog } = require("../query-cache");
+      res.json({
+        cache: cacheStats(),
+        slowQueries: getSlowQueryLog().slice(-20),
+      });
+    }
+  );
+
+  app.get(
+    "/api/metrics",
+    requireOperationsAccess,
+    (_req: Request, res: Response) => {
+      const mem = process.memoryUsage();
+      const cpu = process.cpuUsage();
+      res.json({
+        uptime: process.uptime(),
+        memory: {
+          heapUsedMB: Math.round(mem.heapUsed / 1024 / 1024),
+          heapTotalMB: Math.round(mem.heapTotal / 1024 / 1024),
+          rssMB: Math.round(mem.rss / 1024 / 1024),
+        },
+        cpu: {
+          userMs: Math.round(cpu.user / 1000),
+          systemMs: Math.round(cpu.system / 1000),
+        },
+        nodeVersion: process.version,
+      });
+    }
+  );
 
   app.post(
     "/api/stripe/webhook",
