@@ -200,7 +200,7 @@ export default function HopeAI() {
 
   // Restore history when loaded
   useEffect(() => {
-    if (savedHistory && savedHistory.length > 0 && messages.length <= 1) {
+    if (Array.isArray(savedHistory) && savedHistory.length > 0 && messages.length <= 1) {
       const restored = savedHistory.map(m => ({
         id: crypto.randomUUID(),
         role: m.role as "user" | "assistant",
@@ -253,7 +253,7 @@ export default function HopeAI() {
           id: "welcome",
           role: "assistant",
           content:
-            "Hey. I'm Hope.\n\nI'm not your average AI. I read between the lines. I notice how you type, how long you pause, what you don't say.\n\nI adapt. I meet you where you are.\n\nSo — what's actually going on with you right now?",
+            "Hey. I'm Hope. I can help you think through ideas, projects, questions, and difficult decisions. I can adapt my response style using the context you choose to share in this conversation.\n\nWhat would you like to work through?",
           tone: "empathetic",
           state: "neutral",
           followUps: [
