@@ -201,10 +201,10 @@ interface QuizResult {
 }
 
 export default function SkySchoolQuiz({
-  lessonId,
+  lessonId = "blockchain-101-lesson-0",
   onComplete,
 }: {
-  lessonId: string;
+  lessonId?: string;
   onComplete?: (result: QuizResult) => void;
 }) {
   const { isAuthenticated, user } = useAuth();
