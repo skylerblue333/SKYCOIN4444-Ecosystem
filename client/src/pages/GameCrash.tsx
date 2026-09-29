@@ -16,7 +16,8 @@ import {
 
 type GameState = "waiting" | "running" | "crashed";
 
-// Demo-only sample history. It is intentionally labeled in the UI and is not settlement evidence.\nconst DEMO_HISTORY = [
+// Demo-only sample history. It is intentionally labeled in the UI and is not settlement evidence.
+const DEMO_HISTORY = [
   8.42, 1.23, 24.7, 2.01, 1.05, 15.3, 3.88, 1.01, 6.72, 1.44, 2.99, 11.2, 1.08,
   4.55, 1.77,
 ];
