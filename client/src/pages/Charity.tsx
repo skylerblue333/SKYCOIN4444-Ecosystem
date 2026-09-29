@@ -44,7 +44,7 @@ const DAO_PROPOSALS = [
     id: "prop-1",
     title: "Allocate 50,000 SKY444 to Clean Water Initiative",
     description:
-      "Fund the deployment of water purification systems in 3 rural communities in East Africa. Partnership with WaterAid verified.",
+      "Fund the deployment of water purification systems in 3 rural communities in East Africa. Preview scenario for a future verified nonprofit partnership; no partnership is claimed by this beta.",
     category: "Environment",
     requestedAmount: 50000,
     votesFor: 847,
@@ -57,7 +57,7 @@ const DAO_PROPOSALS = [
     id: "prop-2",
     title: "Fund 100 STEM Scholarships for Underserved Youth",
     description:
-      "Provide full scholarships for coding bootcamps and university CS programs. Partnered with Code.org and local universities.",
+      "Provide full scholarships for coding bootcamps and university CS programs. Preview scenario for future education partners; no partnership is claimed by this beta.",
     category: "Education",
     requestedAmount: 120000,
     votesFor: 1203,
@@ -70,7 +70,7 @@ const DAO_PROPOSALS = [
     id: "prop-3",
     title: "Emergency Relief: Disaster Recovery Fund",
     description:
-      "Rapid-response fund for natural disaster relief. Funds distributed within 24 hours of verified events via smart contract.",
+      "Rapid-response fund for natural disaster relief. Preview scenario for a future rapid-response workflow; automated distribution is not active in this beta.",
     category: "Humanitarian",
     requestedAmount: 200000,
     votesFor: 2341,
@@ -154,13 +154,13 @@ function DonateDialog({
   const donate = trpc.charity.donate.useMutation({
     onSuccess: () => {
       toast.success(
-        `Thank you! ${amount} SKY444 donated to "${campaign.title}"`
+        `Beta donation intent recorded: ${amount} SKY444 for "${campaign.title}". This is not proof of settlement or a charitable receipt.`
       );
       setAmount("");
       setOpen(false);
       onSuccess();
     },
-    onError: () => toast.error("Failed to process donation. Please try again."),
+    onError: () => toast.error("The beta donation intent was not recorded. No settlement is implied."),
   });
 
   return (
@@ -230,7 +230,7 @@ function DonateDialog({
             ) : (
               <Heart className="w-4 h-4 mr-2" />
             )}
-            Submit Beta Donation
+            Record Beta Donation Intent
           </Button>
         </div>
       </DialogContent>
@@ -383,7 +383,7 @@ export default function Charity() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-red-500/30 bg-red-500/10 mb-6">
               <Heart className="h-3.5 w-3.5 text-red-400 animate-pulse" />
               <span className="text-xs font-bold text-red-400 tracking-wide">
-                TRANSPARENT GIVING — ON-CHAIN
+                SKYHOPE · CHARITY ENGINEERING BETA
               </span>
             </div>
             <h1 className="text-5xl md:text-6xl font-black mb-4 leading-tight text-rainbow">
@@ -391,11 +391,13 @@ export default function Charity() {
               <span className="text-gradient">Hub</span>
             </h1>
             <p className="text-lg leading-relaxed max-w-xl desc-metallic">
-              Support causes, vote on fund allocation via DAO governance, and
-              track real-world impact — all on-chain and fully transparent.
+              Explore campaigns, donation-intent flows, impact reporting, and governance previews. Live settlement, nonprofit verification, receipts, and on-chain execution require separate production verification.
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
+          <div className="mt-8 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] p-4 text-sm leading-6 text-amber-100/90">
+            <strong>Beta boundary:</strong> campaign records and database totals may be exercised in this engineering beta, but the interface does not claim regulated charitable processing, tax-deductible receipts, custody, nonprofit verification, or blockchain settlement.
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             {impactMetrics.map((metric, i) => (
               <div
                 key={metric.label}
