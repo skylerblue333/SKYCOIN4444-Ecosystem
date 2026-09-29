@@ -38,7 +38,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-// DAO Proposals for charity fund allocation
+// Preview data for the engineering beta. These are examples, not verified live campaigns or governance results.
 const DAO_PROPOSALS = [
   {
     id: "prop-1",
@@ -81,7 +81,7 @@ const DAO_PROPOSALS = [
   },
 ];
 
-// Top donors leaderboard
+// Preview leaderboard data. Do not present this as verified donation history.
 const LEADERBOARD = [
   {
     rank: 1,
@@ -211,7 +211,7 @@ function DonateDialog({
             <div className="flex items-center gap-2 text-xs text-purple-400">
               <Shield className="w-3.5 h-3.5" />
               <span>
-                100% of donations go directly to the cause. On-chain verified.
+                Beta notice: donation settlement and on-chain verification must be confirmed before treating this transaction as a real charitable contribution.
               </span>
             </div>
           </div>
@@ -230,7 +230,7 @@ function DonateDialog({
             ) : (
               <Heart className="w-4 h-4 mr-2" />
             )}
-            Confirm Donation
+            Submit Beta Donation
           </Button>
         </div>
       </DialogContent>
