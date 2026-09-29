@@ -2542,6 +2542,10 @@ const App = () => {
                   <Route path="/schooldashboard" component={SchoolDashboard} />
                   <Route path="/schoollesson" component={SchoolLesson} />
                   <Route path="/schoolquiz" component={SchoolQuiz} />
+                  <Route path="/school/course/:id" component={SchoolCourse} />
+                  <Route path="/school/lesson/:id" component={SchoolLesson} />
+                  <Route path="/school/quiz" component={SchoolQuiz} />
+                  <Route path="/learn" component={SkySchool} />
                   <Route path="/search" component={Search} />
                   <Route path="/searchanalytics" component={SearchAnalytics} />
                   <Route path="/searchhistory" component={SearchHistory} />
