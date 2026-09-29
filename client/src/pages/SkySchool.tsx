@@ -446,7 +446,7 @@ Next Steps:
 • Stay updated on developments
 
 Certificate:
-You have earned your Blockchain Fundamentals certificate!
+Preview milestone: Blockchain Fundamentals course content completed.
 Share your achievement: #BlockchainFundamentals #SKY4444`,
       },
     ],
@@ -1107,7 +1107,7 @@ export default function SkySchool() {
       return;
     }
     setEnrolledCourses(prev => new Set([...prev, courseId]));
-    toast.success("Enrolled successfully! 🎉");
+    toast.success("Added to this browser session's beta learning plan.");
   };
 
   const handleCompleteLesson = () => {
@@ -1116,9 +1116,7 @@ export default function SkySchool() {
     const completed = completedLessons[key] || new Set();
     completed.add(selectedLessonIdx);
     setCompletedLessons(prev => ({ ...prev, [key]: completed }));
-    toast.success(
-      `Lesson completed! +${Math.round(selectedCourse.xpReward / selectedCourse.lessons)} XP`
-    );
+    toast.success("Lesson marked complete for this in-page beta session.");
   };
 
   const handleNextLesson = () => {
@@ -1128,9 +1126,7 @@ export default function SkySchool() {
       setSelectedLessonIdx(selectedLessonIdx + 1);
     } else {
       handleCompleteLesson();
-      toast.success(
-        `Course completed! 🏆 +${selectedCourse.xpReward} XP, +${selectedCourse.skyReward} SKY`
-      );
+      toast.success("Course preview completed in this session. No token reward or certificate is issued by this screen.");
     }
   };
 
@@ -1306,8 +1302,7 @@ export default function SkySchool() {
             <div>
               <h1 className="text-5xl font-bold text-white">Sky School</h1>
               <p className="text-slate-400 text-lg mt-2">
-                Learn Web3, Coding, AI, and Hacking. Earn SKY4, XP, and
-                Certifications.
+                Learn Web3, coding, AI, and security through the interactive beta curriculum. Reward and credential values shown below are preview metadata unless a backed flow is explicitly verified.
               </p>
             </div>
           </div>
@@ -1406,10 +1401,10 @@ export default function SkySchool() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-yellow-400 font-semibold flex items-center gap-1">
-                          <Zap className="w-3 h-3" />+{course.skyReward} SKY
+                          <Zap className="w-3 h-3" /> planned {course.skyReward} SKY
                         </span>
                         <span className="text-xs text-purple-400 flex items-center gap-1">
-                          <Award className="w-3 h-3" />+{course.xpReward} XP
+                          <Award className="w-3 h-3" /> preview {course.xpReward} XP
                         </span>
                       </div>
                     </div>
