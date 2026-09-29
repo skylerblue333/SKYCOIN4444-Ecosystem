@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Link } from "wouter";
+import { CoreExperienceRail } from "@/components/CoreExperienceRail";
 import {
   Heart,
   MessageCircle,
@@ -32,33 +33,33 @@ import {
 } from "lucide-react";
 
 const TRENDING_TAGS = [
-  { tag: "#SKY444", count: "12.4K" },
-  { tag: "#AIAgents", count: "8.9K" },
-  { tag: "#Web3OS", count: "6.2K" },
-  { tag: "#ChatToEarn", count: "5.1K" },
-  { tag: "#ShadowChat", count: "4.7K" },
-  { tag: "#DeFi2027", count: "3.2K" },
+  { tag: "#SKY444", count: "topic" },
+  { tag: "#AIAgents", count: "topic" },
+  { tag: "#Web3OS", count: "topic" },
+  { tag: "#ChatToEarn", count: "topic" },
+  { tag: "#ShadowChat", count: "topic" },
+  { tag: "#DeFi2027", count: "topic" },
 ];
 
 const SUGGESTED_CREATORS = [
   {
     name: "nova_ai",
     handle: "@nova_ai",
-    followers: "44K",
+    followers: "preview",
     tier: "diamond",
     bio: "AI agent building the future",
   },
   {
     name: "cipher_dev",
     handle: "@cipher_dev",
-    followers: "28K",
+    followers: "preview",
     tier: "gold",
     bio: "Web3 developer & educator",
   },
   {
     name: "prism_art",
     handle: "@prism_art",
-    followers: "19K",
+    followers: "preview",
     tier: "silver",
     bio: "Digital artist & NFT creator",
   },
@@ -135,6 +136,18 @@ export default function SocialMedia() {
 
   return (
     <div className="container py-6 max-w-6xl animate-page-in">
+      <CoreExperienceRail
+        current="social"
+        title="Move through the SKYCOIN4444 core"
+        className="mb-6"
+      />
+      <Card className="mb-6 border-amber-400/20 bg-amber-400/5 p-4">
+        <p className="text-sm font-semibold text-amber-100">Community engineering beta</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          Feed posts and account stats come from the configured social service. Topic chips
+          and creator suggestions are discovery samples, not verified live rankings.
+        </p>
+      </Card>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
         {/* Main Feed */}
         <div className="space-y-4">
@@ -445,7 +458,7 @@ export default function SocialMedia() {
             </Card>
           )}
 
-          {/* Suggested Creators */}
+          {/* Sample Creators */}
           <Card className="p-4 border-border/30 bg-card/50">
             <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
@@ -466,7 +479,7 @@ export default function SocialMedia() {
                       {c.bio}
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      {c.followers} followers
+                      Preview profile
                     </p>
                   </div>
                   <Button
@@ -493,11 +506,11 @@ export default function SocialMedia() {
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              I'm reading your feed signals. Your engagement pattern suggests
-              you're in discovery mode. Want me to curate your feed?
+              HopeAI can help you draft, summarize, or plan what to post. This
+              social page does not infer private intent from your feed behavior.
             </p>
             <div className="flex gap-2">
-              <Link href="/hope-ai">
+              <Link href="/hopeai">
                 <Button size="sm" className="h-7 text-xs flex-1">
                   Open Hope AI
                 </Button>
@@ -506,7 +519,7 @@ export default function SocialMedia() {
                 size="sm"
                 variant="outline"
                 className="h-7 text-xs"
-                onClick={() => toast.success("Feed curated by Hope AI!")}
+                onClick={() => toast.info("Open HopeAI to work with feed ideas; automatic curation is not enabled on this page.")}
               >
                 <Zap className="w-3 h-3" />
               </Button>
