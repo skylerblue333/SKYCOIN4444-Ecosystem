@@ -32,33 +32,33 @@ import {
 } from "lucide-react";
 
 const TRENDING_TAGS = [
-  { tag: "#SKY444", count: "12.4K" },
-  { tag: "#AIAgents", count: "8.9K" },
-  { tag: "#Web3OS", count: "6.2K" },
-  { tag: "#ChatToEarn", count: "5.1K" },
-  { tag: "#ShadowChat", count: "4.7K" },
-  { tag: "#DeFi2027", count: "3.2K" },
+  { tag: "#SKY444", count: "Preview" },
+  { tag: "#AIAgents", count: "Preview" },
+  { tag: "#Web3OS", count: "Preview" },
+  { tag: "#ChatToEarn", count: "Preview" },
+  { tag: "#ShadowChat", count: "Preview" },
+  { tag: "#DeFi2027", count: "Preview" },
 ];
 
 const SUGGESTED_CREATORS = [
   {
     name: "nova_ai",
     handle: "@nova_ai",
-    followers: "44K",
+    followers: "Preview",
     tier: "diamond",
     bio: "AI agent building the future",
   },
   {
     name: "cipher_dev",
     handle: "@cipher_dev",
-    followers: "28K",
+    followers: "Preview",
     tier: "gold",
     bio: "Web3 developer & educator",
   },
   {
     name: "prism_art",
     handle: "@prism_art",
-    followers: "19K",
+    followers: "Preview",
     tier: "silver",
     bio: "Digital artist & NFT creator",
   },
@@ -138,6 +138,18 @@ export default function SocialMedia() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
         {/* Main Feed */}
         <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              { href: "/messages", label: "Messages" },
+              { href: "/live", label: "Live" },
+              { href: "/hopeai", label: "HopeAI" },
+              { href: "/charity", label: "SkyHope" },
+            ].map(item => (
+              <Link key={item.href} href={item.href} className="rounded-xl border border-border/30 bg-card/40 px-3 py-2 text-center text-xs font-semibold transition hover:border-primary/40 hover:bg-primary/5">
+                {item.label}
+              </Link>
+            ))}
+          </div>
           {/* Tabs */}
           <div className="flex gap-1 bg-card/50 rounded-xl p-1 border border-border/30">
             {(["all", "following", "trending", "ai"] as const).map(tab => (
@@ -445,7 +457,7 @@ export default function SocialMedia() {
             </Card>
           )}
 
-          {/* Suggested Creators */}
+          {/* Creator Discovery Preview */}
           <Card className="p-4 border-border/30 bg-card/50">
             <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
@@ -473,7 +485,7 @@ export default function SocialMedia() {
                     size="sm"
                     variant="outline"
                     className="h-6 px-2 text-[10px] shrink-0"
-                    onClick={() => toast.success(`Following ${c.handle}`)}
+                    onClick={() => toast.info("Creator follow suggestions are preview-only until discovery persistence is connected.")}
                   >
                     <UserPlus className="w-3 h-3 mr-1" />
                     Follow
@@ -489,15 +501,14 @@ export default function SocialMedia() {
               <Sparkles className="w-4 h-4 text-primary" />
               <h3 className="font-semibold text-sm text-primary">Hope AI</h3>
               <Badge className="text-[9px] h-4 bg-primary/20 text-primary border-primary/30">
-                LIVE
+                BETA
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              I'm reading your feed signals. Your engagement pattern suggests
-              you're in discovery mode. Want me to curate your feed?
+              Open HopeAI when you want help drafting, learning, or thinking through community content. HopeAI does not infer hidden intent from this feed.
             </p>
             <div className="flex gap-2">
-              <Link href="/hope-ai">
+              <Link href="/hopeai">
                 <Button size="sm" className="h-7 text-xs flex-1">
                   Open Hope AI
                 </Button>
@@ -506,7 +517,7 @@ export default function SocialMedia() {
                 size="sm"
                 variant="outline"
                 className="h-7 text-xs"
-                onClick={() => toast.success("Feed curated by Hope AI!")}
+                onClick={() => toast.info("Automatic feed curation is not enabled in this engineering beta.")}
               >
                 <Zap className="w-3 h-3" />
               </Button>

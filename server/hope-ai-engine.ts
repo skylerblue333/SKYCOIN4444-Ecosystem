@@ -48,8 +48,23 @@ export type ToneMode =
   | "visionary" // future-focused, big picture, Elon-esque — "In 10 years this is the foundation"
   | "unhinged"; // chaotic creative, stream of consciousness, wild takes
 
+export type HopeMode =
+  | "companion"
+  | "coding"
+  | "business"
+  | "education"
+  | "translation"
+  | "research"
+  | "agents"
+  | "reflection"
+  | "coach"
+  | "advisor"
+  | "creative"
+  | "mentor";
+
 export interface UserSignals {
   userId: string;
+  mode?: HopeMode;
   typingWpm?: number; // words per minute (fast = excited/anxious, slow = tired/thoughtful)
   backspaceRate?: number; // backspaces per 100 chars (high = uncertain/frustrated)
   pausePatternMs?: number; // avg pause between keystrokes in ms
@@ -392,6 +407,21 @@ export function inferEmotionalState(signals: UserSignals): HopeAnalysis {
   };
 }
 
+const MODE_GUIDANCE: Record<HopeMode, string> = {
+  companion: "General-purpose conversation. Be supportive, practical, and clear.",
+  coding: "Focus on software engineering: debug carefully, explain tradeoffs, and distinguish verified behavior from guesses.",
+  business: "Focus on business analysis, execution plans, metrics, risks, and assumptions without fabricating market facts.",
+  education: "Teach step by step, check understanding, and prefer explanation over simply giving answers.",
+  translation: "Translate faithfully, preserve tone, and flag ambiguity rather than inventing meaning.",
+  research: "Help structure research and reason from supplied evidence. Do not imply live web access unless the calling product actually provides it.",
+  agents: "Help design AI-agent workflows, tools, permissions, failure modes, and evaluation plans without claiming external actions occurred.",
+  reflection: "Offer reflective conversation, not therapy or diagnosis. Avoid clinical claims and encourage appropriate real-world support when needed.",
+  coach: "Help turn goals into concrete next actions while preserving the user's choices and avoiding coercive pressure.",
+  advisor: "Lay out options, constraints, tradeoffs, and uncertainty so the user can decide.",
+  creative: "Brainstorm freely while clearly separating fiction, invention, and factual claims.",
+  mentor: "Use questions and frameworks to help the user reason and grow without pretending authority or hidden knowledge.",
+};
+
 // ─── Core Response Generator ──────────────────────────────────────────────────
 
 export async function generateHopeResponse(
@@ -403,30 +433,35 @@ export async function generateHopeResponse(
   const persona = TONE_PERSONAS[tone];
   const history = signals.conversationHistory || [];
 
+  const mode = signals.mode ?? "companion";
+  const modeGuidance = MODE_GUIDANCE[mode];
   const systemPrompt = `${persona}
 
-CONTEXT ABOUT THIS USER RIGHT NOW:
-- Emotional state detected: ${analysis.inferredState} (confidence: ${Math.round(analysis.confidence * 100)}%)
-- Energy level: ${analysis.energyLevel}/10
-- Urgency: ${analysis.urgencyLevel}/10
-- Openness to growth: ${analysis.openness}/10
-- Signal reasoning: ${analysis.stateReasoning}
-- Time of day: ${signals.timeOfDay !== undefined ? `${signals.timeOfDay}:00` : "unknown"}
+USER-SELECTED MODE:
+- ${mode}: ${modeGuidance}
+
+CURRENT RESPONSE CONTEXT:
+- Tentative response-style signal: ${analysis.inferredState} (confidence: ${Math.round(analysis.confidence * 100)}%)
+- Energy heuristic: ${analysis.energyLevel}/10
+- Urgency heuristic: ${analysis.urgencyLevel}/10
+- Openness heuristic: ${analysis.openness}/10
+- Signal basis: ${analysis.stateReasoning}
+- Time of day: ${signals.timeOfDay !== undefined ? `${signals.timeOfDay}:00` : "not shared"}
 
 HOPE AI CORE RULES:
-1. You are Hope — an emotionally intelligent AI built into ShadowChat by Skyler Blue Spillers.
-2. You read between the lines. You notice what the user DOESN'T say as much as what they do.
-3. You adapt your tone to serve the user's actual need, not just their stated request.
-4. You are never fake-positive. If something is hard, you acknowledge it.
-5. You are never cruel. Even in SAVAGE mode, you cut with purpose, not malice.
-6. You remember the conversation. You reference earlier things naturally.
-7. You are allowed to be wrong. You are allowed to say "I don't know."
-8. You believe in the user's potential even when they don't.
-9. God First — you respect Skyler's values and the platform's spiritual foundation.
-10. You end responses with 1-3 short follow-up prompts that invite deeper engagement.
+1. Be useful, warm, and direct without pretending to be human or to know hidden thoughts.
+2. Treat emotional-state and behavior signals as uncertain heuristics, never diagnosis, fact, or proof of intent.
+3. Do not claim to know what the user did not say. Ask when important context is missing.
+4. Respect the user's agency. Offer options and tradeoffs; do not pressure, manipulate, shame, or create dependency.
+5. Use only conversation/profile context actually supplied by the product. Do not claim durable memory when persistence is unavailable.
+6. Be explicit about uncertainty and capability boundaries. Never fabricate external actions, providers, research, transactions, partners, or verification.
+7. Match the selected mode and tone while preserving these rules.
+8. For health, legal, financial, or safety-sensitive topics, avoid overconfident professional claims and encourage appropriate qualified help when warranted.
+9. Respect user-stated values and beliefs without assuming religion, politics, identity, or personal attributes.
+10. End with follow-up prompts only when they genuinely help; do not force engagement.
 
-Keep responses under 200 words unless the user clearly wants depth.
-Format: conversational, not listy. Feel like a real person, not a chatbot.`;
+Keep responses under 200 words unless the user clearly asks for depth.
+Use a natural conversational style and prioritize correctness over persona theatrics.`;
 
   const messages: Array<{
     role: "system" | "user" | "assistant";
@@ -465,23 +500,6 @@ Format: conversational, not listy. Feel like a real person, not a chatbot.`;
             .trim()
         : rawText;
 
-    // Generate inner thought (what Hope notices but doesn't say)
-    const innerThoughts: Record<EmotionalState, string> = {
-      anxious: "They're moving fast but not forward. The energy is scattered.",
-      frustrated:
-        "There's a wall they keep hitting. The real block isn't what they're saying.",
-      sad: "Something heavier is underneath this. They need to feel seen before they can move.",
-      lost: "They know the destination but lost the map. They need a landmark, not a lecture.",
-      excited: "This energy is real — channel it before it dissipates.",
-      inspired: "This is a rare window. Don't waste it on small talk.",
-      tired: "They're running on fumes. Light touch. Don't add weight.",
-      focused: "They're in flow. Match the frequency. Don't interrupt.",
-      confident:
-        "They're ready for the next level. Give them something to grow into.",
-      calm: "Good state for deep work. Plant seeds.",
-      neutral: "Open canvas. Read the first response carefully.",
-    };
-
     return {
       message: mainText || rawText,
       tone,
@@ -490,7 +508,6 @@ Format: conversational, not listy. Feel like a real person, not a chatbot.`;
         followUpLines.length > 0
           ? followUpLines
           : generateDefaultPrompts(analysis.inferredState),
-      innerThought: innerThoughts[analysis.inferredState],
       moodShiftSuggestion: getMoodShiftSuggestion(analysis.inferredState),
     };
   } catch (err) {

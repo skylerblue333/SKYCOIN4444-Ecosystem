@@ -743,6 +743,93 @@ const moderationRouter = router({
   }),
 });
 
+// ============ SOCIAL COMPATIBILITY PROCEDURES ============
+export const socialRouter = router({
+  getFeed: publicProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }))
+    .query(async ({ input }) => db.getPosts(input.limit, 0)),
+  getTrending: publicProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(100).default(20) }))
+    .query(async ({ input }) => {
+      const recent = await db.getPosts(100, 0);
+      return [...recent]
+        .sort((a: any, b: any) => {
+          const scoreA = Number(a.likes ?? 0) + Number(a.comments ?? 0) * 2;
+          const scoreB = Number(b.likes ?? 0) + Number(b.comments ?? 0) * 2;
+          if (scoreA !== scoreB) return scoreB - scoreA;
+          return String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? ""));
+        })
+        .slice(0, input.limit);
+    }),
+  getUserStats: publicProcedure
+    .input(z.object({ userId: z.union([z.string(), z.number()]) }))
+    .query(async ({ input }) => db.getUserStats(String(input.userId))),
+  getComments: publicProcedure
+    .input(
+      z.object({
+        postId: z.string().min(1).max(255),
+        limit: z.number().int().min(1).max(100).default(20),
+      })
+    )
+    .query(async ({ input }) =>
+      (await db.getComments(input.postId)).slice(0, input.limit)
+    ),
+  createPost: protectedProcedure
+    .input(z.object({ content: z.string().trim().min(1).max(5000) }))
+    .mutation(async ({ ctx, input }) =>
+      db.createPost(String(ctx.user.id), input.content)
+    ),
+  toggleLike: protectedProcedure
+    .input(z.object({ postId: z.string().min(1).max(255) }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = String(ctx.user.id);
+      const existing = await db.getLikes(input.postId);
+      const liked = existing.some(
+        (like: any) => String(like.userId) === userId
+      );
+      return liked
+        ? db.removeLike(input.postId, userId)
+        : db.createLike(input.postId, userId);
+    }),
+  addComment: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string().min(1).max(255),
+        content: z.string().trim().min(1).max(255),
+      })
+    )
+    .mutation(async ({ ctx, input }) =>
+      db.createComment(input.postId, String(ctx.user.id), input.content)
+    ),
+});
+
+// ============ SKYHOPE / CHARITY BETA PROCEDURES ============
+export const charityRouter = router({
+  campaigns: publicProcedure
+    .input(z.object({}).optional())
+    .query(async () => db.getCharityCampaigns()),
+  stats: publicProcedure.query(async () => db.getCharityStats()),
+  leaderboard: publicProcedure.query(async () => db.getCharityLeaderboard()),
+  donate: protectedProcedure
+    .input(
+      z.object({
+        campaignId: z.string().min(1).max(255),
+        amount: z.number().positive().max(1_000_000),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await db.recordCharityDonationIntent(
+        String(ctx.user.id),
+        input.campaignId,
+        input.amount
+      );
+      if (!result.accepted) {
+        throw new Error("SkyHope campaign not found; no donation intent was recorded");
+      }
+      return result;
+    }),
+});
+
 // Placeholder namespaces remain explicit and must not be treated as beta-ready.
 const placeholderRouter = router({
   stats: publicProcedure.query(async () => ({ status: "not_configured" as const })),
@@ -761,6 +848,7 @@ export const appRouter = router({
   auth: authRouter,
   post: postRouter,
   feed: postRouter,
+  social: socialRouter,
   marketplace: marketplaceRouter,
   stream: streamRouter,
   transaction: transactionRouter,
@@ -795,7 +883,7 @@ export const appRouter = router({
   blockchain: walletRouter,
   aiEngineer: aiRouter,
   economy: transactionRouter,
-  charity: placeholderRouter,
+  charity: charityRouter,
   trustSafety: placeholderRouter,
   ico: placeholderRouter,
   audienceLockIn: placeholderRouter,

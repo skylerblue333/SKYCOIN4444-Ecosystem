@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { Link } from "wouter";
 import {
   BookOpen,
   Star,
@@ -54,10 +55,6 @@ const COURSES = [
       "Master distributed ledgers, consensus mechanisms, and cryptography",
     lessons: 12,
     duration: "4h 30m",
-    xpReward: 500,
-    skyReward: 50,
-    students: 28400,
-    rating: 4.9,
     color: "oklch(0.72 0.20 200)",
     topics: [
       {
@@ -445,9 +442,9 @@ Next Steps:
 • Join blockchain communities
 • Stay updated on developments
 
-Certificate:
-You have earned your Blockchain Fundamentals certificate!
-Share your achievement: #BlockchainFundamentals #SKY4444`,
+Portfolio checkpoint:
+You completed the Blockchain Fundamentals lesson sequence in this beta.
+Formal certificate issuance and token rewards are not configured.`,
       },
     ],
   },
@@ -462,10 +459,6 @@ Share your achievement: #BlockchainFundamentals #SKY4444`,
       "From zero to production - scripts, APIs, automation, data pipelines",
     lessons: 6,
     duration: "3h 00m",
-    xpReward: 600,
-    skyReward: 60,
-    students: 45200,
-    rating: 4.9,
     color: "oklch(0.72 0.20 250)",
     topics: [
       {
@@ -753,9 +746,10 @@ Deployment:
 pip freeze > requirements.txt
 Deploy to Heroku, Railway, or Render
 
-Certificate:
-You have completed Python for Builders!
-Showcase your API project on GitHub.`,
+Portfolio checkpoint:
+You completed the Python for Builders lesson sequence in this beta.
+Formal certificate issuance and token rewards are not configured.
+You can still showcase your API project on GitHub.`,
       },
     ],
   },
@@ -769,10 +763,6 @@ Showcase your API project on GitHub.`,
     description: "Modern JS/TS from fundamentals to full-stack React apps",
     lessons: 6,
     duration: "3h 30m",
-    xpReward: 700,
-    skyReward: 70,
-    students: 52100,
-    rating: 4.9,
     color: "oklch(0.80 0.20 70)",
     topics: [
       {
@@ -1066,9 +1056,10 @@ Testing:
 • Unit tests with Jest
 • E2E tests with Cypress
 
-Certificate:
-You have completed JavaScript & React Mastery!
-Share your project on GitHub and deploy on Vercel.`,
+Portfolio checkpoint:
+You completed the JavaScript & React lesson sequence in this beta.
+Formal certificate issuance and token rewards are not configured.
+You can still share your project on GitHub.`,
       },
     ],
   },
@@ -1093,6 +1084,52 @@ export default function SkySchool() {
   const [completedLessons, setCompletedLessons] = useState<
     Record<string, Set<number>>
   >({});
+  const [progressLoaded, setProgressLoaded] = useState(false);
+  const progressStorageKey = `skyschool-progress:${String(user?.id ?? "anonymous")}`;
+
+  useEffect(() => {
+    setProgressLoaded(false);
+    try {
+      const raw = window.localStorage.getItem(progressStorageKey);
+      if (!raw) {
+        setEnrolledCourses(new Set());
+        setCompletedLessons({});
+        return;
+      }
+      const parsed = JSON.parse(raw) as {
+        enrolledCourseIds?: string[];
+        completedLessons?: Record<string, number[]>;
+      };
+      setEnrolledCourses(new Set(parsed.enrolledCourseIds ?? []));
+      setCompletedLessons(
+        Object.fromEntries(
+          Object.entries(parsed.completedLessons ?? {}).map(([courseId, lessons]) => [
+            courseId,
+            new Set(lessons),
+          ])
+        )
+      );
+    } catch {
+      setEnrolledCourses(new Set());
+      setCompletedLessons({});
+    } finally {
+      setProgressLoaded(true);
+    }
+  }, [progressStorageKey]);
+
+  useEffect(() => {
+    if (!progressLoaded) return;
+    const serializable = {
+      enrolledCourseIds: [...enrolledCourses],
+      completedLessons: Object.fromEntries(
+        Object.entries(completedLessons).map(([courseId, lessons]) => [
+          courseId,
+          [...lessons],
+        ])
+      ),
+    };
+    window.localStorage.setItem(progressStorageKey, JSON.stringify(serializable));
+  }, [progressLoaded, progressStorageKey, enrolledCourses, completedLessons]);
 
   const filtered = COURSES.filter(
     c =>
@@ -1113,12 +1150,12 @@ export default function SkySchool() {
   const handleCompleteLesson = () => {
     if (!selectedCourse) return;
     const key = selectedCourse.id;
-    const completed = completedLessons[key] || new Set();
-    completed.add(selectedLessonIdx);
-    setCompletedLessons(prev => ({ ...prev, [key]: completed }));
-    toast.success(
-      `Lesson completed! +${Math.round(selectedCourse.xpReward / selectedCourse.lessons)} XP`
-    );
+    setCompletedLessons(prev => {
+      const next = new Set(prev[key] ?? []);
+      next.add(selectedLessonIdx);
+      return { ...prev, [key]: next };
+    });
+    toast.success("Lesson marked complete on this device.");
   };
 
   const handleNextLesson = () => {
@@ -1129,7 +1166,7 @@ export default function SkySchool() {
     } else {
       handleCompleteLesson();
       toast.success(
-        `Course completed! 🏆 +${selectedCourse.xpReward} XP, +${selectedCourse.skyReward} SKY`
+        "Course lesson sequence completed on this device. Formal certificates and token/XP rewards are not configured."
       );
     }
   };
@@ -1245,13 +1282,12 @@ export default function SkySchool() {
                     <Clock className="w-4 h-4" />
                     {selectedCourse.duration}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-yellow-400" />+
-                    {selectedCourse.skyReward} SKY
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    {completed.size}/{selectedCourse.lessons} lessons marked complete
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-purple-400" />+
-                    {selectedCourse.xpReward} XP
+                  <div className="text-xs text-slate-500">
+                    Device-local beta progress
                   </div>
                 </CardContent>
               </Card>
@@ -1306,15 +1342,32 @@ export default function SkySchool() {
             <div>
               <h1 className="text-5xl font-bold text-white">Sky School</h1>
               <p className="text-slate-400 text-lg mt-2">
-                Learn Web3, Coding, AI, and Hacking. Earn SKY4, XP, and
-                Certifications.
+                Learn Web3, coding, AI, and security through beta courses, lessons, projects, and quizzes.
               </p>
             </div>
           </div>
         </div>
 
+        <div className="mb-6 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] p-4 text-sm leading-6 text-amber-100/90">
+          <strong>Learning beta:</strong> enrollment and lesson completion are stored in this browser for continuity. Formal certificates, XP awards, and SKY token rewards are not issued by this beta.
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mb-8 lg:grid-cols-4">
+          {[
+            { href: "/quiz", label: "Take a Quiz", note: "Test what you learned" },
+            { href: "/hopeai", label: "Ask HopeAI", note: "Get study help" },
+            { href: "/socialmedia", label: "Study Community", note: "Share progress" },
+            { href: "/charity", label: "SkyHope", note: "Explore education impact" },
+          ].map(item => (
+            <Link key={item.href} href={item.href} className="rounded-xl border border-white/10 bg-white/[0.035] p-4 transition hover:border-cyan-400/40 hover:bg-cyan-400/5">
+              <div className="font-semibold text-white">{item.label}</div>
+              <div className="mt-1 text-xs text-slate-400">{item.note}</div>
+            </Link>
+          ))}
+        </div>
+
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8 md:grid-cols-4">
           <Card className="bg-slate-900/50 border border-white/10">
             <CardContent className="p-4">
               <p className="text-slate-400 text-sm">Total Courses</p>
@@ -1403,15 +1456,8 @@ export default function SkySchool() {
                         {course.duration}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-yellow-400 font-semibold flex items-center gap-1">
-                          <Zap className="w-3 h-3" />+{course.skyReward} SKY
-                        </span>
-                        <span className="text-xs text-purple-400 flex items-center gap-1">
-                          <Award className="w-3 h-3" />+{course.xpReward} XP
-                        </span>
-                      </div>
+                    <div className="mb-4 text-xs text-slate-500">
+                      Beta learning progress is saved on this device.
                     </div>
                     <div className="flex gap-2">
                       {enrolledCourses.has(course.id) ? (

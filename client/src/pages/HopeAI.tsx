@@ -47,6 +47,20 @@ type EmotionalState =
   | "tired"
   | "neutral";
 
+type HopeMode =
+  | "companion"
+  | "coding"
+  | "business"
+  | "education"
+  | "translation"
+  | "research"
+  | "agents"
+  | "reflection"
+  | "coach"
+  | "advisor"
+  | "creative"
+  | "mentor";
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -166,10 +180,11 @@ export default function HopeAI() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [showGrayArea, setShowGrayArea] = useState(false);
+  const [behaviorSignalsEnabled, setBehaviorSignalsEnabled] = useState(false);
   const [graySignals, setGraySignals] = useState<GraySignal[]>([]);
   const [dominantSignal, setDominantSignal] = useState("");
   const [overallRisk, setOverallRisk] = useState(0);
-  const [hopeMode, setHopeMode] = useState("companion");
+  const [hopeMode, setHopeMode] = useState<HopeMode>("companion");
   const [topicHistory, setTopicHistory] = useState<string[]>([]);
   const [msgCount, setMsgCount] = useState(0);
 
@@ -187,21 +202,24 @@ export default function HopeAI() {
     () => `session_${Date.now()}_${Math.random().toString(36).slice(2)}`
   );
 
-  // Load chat history from DB on mount
-  const { data: savedHistory } = trpc.hopeAI.getChatHistory.useQuery(
-    { limit: 50, sessionId },
-    { staleTime: Infinity }
-  );
-
-  const saveMessage = trpc.hopeAI.saveChatMessage.useMutation();
-  const clearHistory = trpc.hopeAI.clearChatHistory.useMutation({
-    onSuccess: () => setMessages([]),
+  // Durable history is optional. The current backend explicitly reports
+  // whether persistence is configured; anonymous users remain session-only.
+  const { data: savedHistory } = trpc.hopeAI.getChatHistory.useQuery(undefined, {
+    enabled: Boolean(user),
+    staleTime: Infinity,
   });
 
-  // Restore history when loaded
+  const saveMessage = trpc.hopeAI.saveChatMessage.useMutation();
+  const persistenceConfigured = Boolean(
+    user && (savedHistory as any)?.configured === true
+  );
+  const persistedMessages = Array.isArray((savedHistory as any)?.messages)
+    ? (savedHistory as any).messages
+    : [];
+
   useEffect(() => {
-    if (savedHistory && savedHistory.length > 0 && messages.length <= 1) {
-      const restored = savedHistory.map(m => ({
+    if (persistedMessages.length > 0 && messages.length <= 1) {
+      const restored = persistedMessages.map((m: any) => ({
         id: crypto.randomUUID(),
         role: m.role as "user" | "assistant",
         content: m.content,
@@ -228,17 +246,29 @@ export default function HopeAI() {
       setMessages(prev => [...prev, msg]);
       setCurrentState(data.emotionalState as EmotionalState);
       setIsLoading(false);
-      // Persist assistant message to DB
-      saveMessage.mutate({
-        role: "assistant",
-        content: data.message,
-        tone: data.tone,
-        emotionalState: data.emotionalState,
-        sessionId,
-      });
+      if (persistenceConfigured) {
+        saveMessage.mutate({
+          role: "assistant",
+          content: data.message,
+          tone: data.tone,
+          emotionalState: data.emotionalState,
+          sessionId,
+        });
+      }
     },
     onError() {
       setIsLoading(false);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "HopeAI is temporarily unavailable. Your message is still visible in this session; try again when the beta service is ready.",
+          tone: "empathetic",
+          state: "neutral",
+          ts: Date.now(),
+        },
+      ]);
     },
   });
 
@@ -253,7 +283,7 @@ export default function HopeAI() {
           id: "welcome",
           role: "assistant",
           content:
-            "Hey. I'm Hope.\n\nI'm not your average AI. I read between the lines. I notice how you type, how long you pause, what you don't say.\n\nI adapt. I meet you where you are.\n\nSo — what's actually going on with you right now?",
+            "Hey. I'm Hope. I can help you think through ideas, projects, questions, and difficult decisions. I can adapt my response style using the context you choose to share in this conversation.\n\nWhat would you like to work through?",
           tone: "empathetic",
           state: "neutral",
           followUps: [
@@ -269,14 +299,14 @@ export default function HopeAI() {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Backspace") setBackspaceCount(c => c + 1);
-      if (!typingStartMs) setTypingStartMs(Date.now());
+      if (behaviorSignalsEnabled && e.key === "Backspace") setBackspaceCount(c => c + 1);
+      if (behaviorSignalsEnabled && !typingStartMs) setTypingStartMs(Date.now());
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSend();
       }
     },
-    [typingStartMs]
+    [behaviorSignalsEnabled, typingStartMs]
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -296,11 +326,13 @@ export default function HopeAI() {
       .filter(m => m.role !== "assistant" || m.id !== "welcome")
       .slice(-10)
       .map(m => ({ role: m.role, content: m.content }));
-    const typingWpm = typingStartMs
+    const typingWpm = behaviorSignalsEnabled && typingStartMs
       ? Math.round(charCount / 5 / ((Date.now() - typingStartMs) / 60000))
       : undefined;
     const backspaceRate =
-      charCount > 0 ? Math.round((backspaceCount / charCount) * 100) : 0;
+      behaviorSignalsEnabled && charCount > 0
+        ? Math.round((backspaceCount / charCount) * 100)
+        : undefined;
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setCharCount(0);
@@ -308,38 +340,42 @@ export default function HopeAI() {
     setTypingStartMs(null);
     setIsLoading(true);
     setMsgCount(c => c + 1);
-    // Persist user message to DB
-    saveMessage.mutate({ role: "user", content: userMsg.content, sessionId });
+    if (persistenceConfigured) {
+      saveMessage.mutate({ role: "user", content: userMsg.content, sessionId });
+    }
     const words = userMsg.content
       .toLowerCase()
       .split(/\s+/)
       .filter(w => w.length > 4);
     setTopicHistory(prev => [...prev.slice(-9), ...words.slice(0, 2)]);
-    // Fire gray area analysis in parallel
-    grayAreaMutation.mutate({
-      text: userMsg.content,
-      sessionDurationMs: Date.now() - sessionStartMs,
-      timeOfDay: new Date().getHours(),
-      dayOfWeek: new Date().getDay(),
-      typingWpm: typingStartMs
-        ? Math.round(charCount / 5 / ((Date.now() - typingStartMs) / 60000))
-        : undefined,
-      backspaceRate: charCount > 0 ? backspaceCount / charCount : 0,
-      messageCount: msgCount,
-      topicHistory,
-    });
+    // Optional behavior-signal analysis is explicit opt-in.
+    if (behaviorSignalsEnabled) {
+      grayAreaMutation.mutate({
+        text: userMsg.content,
+        sessionDurationMs: Date.now() - sessionStartMs,
+        timeOfDay: new Date().getHours(),
+        dayOfWeek: new Date().getDay(),
+        typingWpm,
+        backspaceRate: charCount > 0 ? backspaceCount / charCount : 0,
+        messageCount: msgCount,
+        topicHistory,
+      });
+    }
     chatMutation.mutate({
       messageText: userMsg.content,
       conversationHistory: history,
       overrideTone: selectedTone === "auto" ? undefined : selectedTone,
-      signals: {
-        typingWpm,
-        backspaceRate,
-        sessionDurationMs: Date.now() - sessionStartMs,
-        timeOfDay: new Date().getHours(),
-        dayOfWeek: new Date().getDay(),
-        lastEmotionalState: currentState,
-      },
+      mode: hopeMode,
+      signals: behaviorSignalsEnabled
+        ? {
+            typingWpm,
+            backspaceRate,
+            sessionDurationMs: Date.now() - sessionStartMs,
+            timeOfDay: new Date().getHours(),
+            dayOfWeek: new Date().getDay(),
+            lastEmotionalState: currentState,
+          }
+        : undefined,
     });
   }, [
     input,
@@ -351,6 +387,9 @@ export default function HopeAI() {
     backspaceCount,
     sessionStartMs,
     currentState,
+    behaviorSignalsEnabled,
+    persistenceConfigured,
+    hopeMode,
   ]);
 
   const sm = STATE_META[currentState];
@@ -394,12 +433,15 @@ export default function HopeAI() {
                   Hope AI
                 </div>
                 <div className="text-[10px] font-medium desc-metallic">
-                  Emotionally Intelligent Companion
+                  Context-aware assistant · Engineering beta
                 </div>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Badge variant="outline" className="hidden border-white/15 bg-white/5 text-[10px] text-white/55 sm:inline-flex">
+              {persistenceConfigured ? "History enabled" : "Session-only memory"}
+            </Badge>
             {/* Emotional State HUD */}
             <div
               className="flex items-center gap-2 rounded-full px-3 py-1.5 border border-fuchsia-500/20"
@@ -435,7 +477,11 @@ export default function HopeAI() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowGrayArea(!showGrayArea)}
+              onClick={() => {
+                const next = !behaviorSignalsEnabled;
+                setBehaviorSignalsEnabled(next);
+                setShowGrayArea(next);
+              }}
               className={`text-xs gap-1 ${showGrayArea ? "border-red-500/40 text-red-400 bg-red-500/10" : "border-white/20 bg-white/5 hover:bg-white/10"}`}
             >
               <Eye className="w-3 h-3" />
@@ -444,7 +490,7 @@ export default function HopeAI() {
               ) : (
                 <Unlock className="w-3 h-3" />
               )}
-              Gray Area
+              {behaviorSignalsEnabled ? "Signals On" : "Signals Off"}
             </Button>
           </div>
         </div>
@@ -456,84 +502,18 @@ export default function HopeAI() {
           <div className="flex gap-1 overflow-x-auto scrollbar-none py-2">
             {(
               [
-                {
-                  id: "companion",
-                  label: "Companion 🇨🇳",
-                  emoji: "💜",
-                  desc: "Emotional support & chat",
-                },
-                {
-                  id: "voice",
-                  label: "Voice AI 🎤",
-                  emoji: "🎤",
-                  desc: "语音助手 · Voice Assistant",
-                },
-                {
-                  id: "coding",
-                  label: "Coding AI 💻",
-                  emoji: "💻",
-                  desc: "代码助手 · Debug & Build",
-                },
-                {
-                  id: "business",
-                  label: "Business AI 📊",
-                  emoji: "📊",
-                  desc: "商业分析 · Strategy",
-                },
-                {
-                  id: "education",
-                  label: "Education AI 🎓",
-                  emoji: "🎓",
-                  desc: "学习辅导 · Tutoring",
-                },
-                {
-                  id: "translation",
-                  label: "Translation AI 🌐",
-                  emoji: "🌐",
-                  desc: "翻译助手 · CN↔EN",
-                },
-                {
-                  id: "research",
-                  label: "Research AI 🔭",
-                  emoji: "🔭",
-                  desc: "深度研究 · Deep Research",
-                },
-                {
-                  id: "agents",
-                  label: "AI Agents 🤖",
-                  emoji: "🤖",
-                  desc: "智能体市场 · Marketplace",
-                },
-                {
-                  id: "therapist",
-                  label: "Therapist",
-                  emoji: "🧠",
-                  desc: "Deep reflection & healing",
-                },
-                {
-                  id: "coach",
-                  label: "Coach",
-                  emoji: "🔥",
-                  desc: "Goals & accountability",
-                },
-                {
-                  id: "advisor",
-                  label: "Advisor",
-                  emoji: "💡",
-                  desc: "Strategy & decisions",
-                },
-                {
-                  id: "creative",
-                  label: "Creative",
-                  emoji: "🎨",
-                  desc: "Ideas & brainstorming",
-                },
-                {
-                  id: "mentor",
-                  label: "Mentor",
-                  emoji: "⭐",
-                  desc: "Career & growth",
-                },
+                { id: "companion", label: "Companion", emoji: "💜", desc: "General support & chat" },
+                { id: "coding", label: "Coding", emoji: "💻", desc: "Debug, build & explain" },
+                { id: "business", label: "Business", emoji: "📊", desc: "Strategy & execution" },
+                { id: "education", label: "Education", emoji: "🎓", desc: "Tutoring & study help" },
+                { id: "translation", label: "Translation", emoji: "🌐", desc: "Faithful language help" },
+                { id: "research", label: "Research", emoji: "🔭", desc: "Research planning & synthesis" },
+                { id: "agents", label: "Agent Planning", emoji: "🤖", desc: "Design agent workflows" },
+                { id: "reflection", label: "Reflection", emoji: "🧠", desc: "Reflective conversation, not therapy" },
+                { id: "coach", label: "Coach", emoji: "🔥", desc: "Goals & next actions" },
+                { id: "advisor", label: "Advisor", emoji: "💡", desc: "Options & tradeoffs" },
+                { id: "creative", label: "Creative", emoji: "🎨", desc: "Ideas & brainstorming" },
+                { id: "mentor", label: "Mentor", emoji: "⭐", desc: "Frameworks & growth" },
               ] as const
             ).map(mode => (
               <button
@@ -644,7 +624,7 @@ export default function HopeAI() {
             </p>
             {graySignals.length === 0 ? (
               <p className="text-[10px] text-white/20 italic">
-                Send a message to activate scan...
+                Enable Signals, then send a message to run beta analysis.
               </p>
             ) : (
               graySignals.map((sig, i) => (
@@ -664,7 +644,7 @@ export default function HopeAI() {
           <div>
             <div className="flex items-center gap-1 text-[10px] text-white/20 mb-2">
               <BarChart2 className="w-3 h-3" />
-              22 Analyzers Active
+              Experimental signal checks
             </div>
             <div className="grid grid-cols-2 gap-1">
               {[
@@ -701,7 +681,7 @@ export default function HopeAI() {
             </div>
           </div>
           <p className="text-[9px] text-white/15 leading-relaxed pt-2 border-t border-white/5">
-            All analysis is local. Never stored or shared.
+            Optional signal analysis is off by default. When enabled, message text and derived session or typing signals are sent to the beta backend for analysis. Results are experimental, not diagnosis or fact.
           </p>
         </div>
       )}
@@ -709,6 +689,21 @@ export default function HopeAI() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          {messages.length <= 1 && (
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { href: "/charity", label: "Give with SkyHope", note: "Explore verified-beta charity paths" },
+                { href: "/skyschool", label: "Learn", note: "Courses, lessons and quizzes" },
+                { href: "/socialmedia", label: "Community", note: "Open the persisted social feed" },
+                { href: "/gaming", label: "Play", note: "Demo-first game arcade" },
+              ].map(action => (
+                <Link key={action.href} href={action.href} className="rounded-xl border border-white/10 bg-white/[0.035] p-3 transition hover:border-fuchsia-400/40 hover:bg-fuchsia-500/10">
+                  <div className="text-sm font-semibold text-white">{action.label}</div>
+                  <div className="mt-1 text-xs leading-relaxed text-white/45">{action.note}</div>
+                </Link>
+              ))}
+            </div>
+          )}
           {messages.map(msg => (
             <div
               key={msg.id}

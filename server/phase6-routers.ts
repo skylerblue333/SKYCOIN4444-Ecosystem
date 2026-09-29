@@ -314,6 +314,22 @@ export const hopeAIRouter = router({
           )
           .optional(),
         overrideTone: z.string().optional(),
+        mode: z
+          .enum([
+            "companion",
+            "coding",
+            "business",
+            "education",
+            "translation",
+            "research",
+            "agents",
+            "reflection",
+            "coach",
+            "advisor",
+            "creative",
+            "mentor",
+          ])
+          .optional(),
         signals: z
           .object({
             typingWpm: z.number().optional(),
@@ -344,6 +360,7 @@ export const hopeAIRouter = router({
       }
       const userSignals = {
         userId: ctx.user ? String(ctx.user.id) : "anonymous",
+        mode: input.mode,
         messageText: input.messageText,
         typingWpm: inputSignals.typingWpm,
         backspaceRate: inputSignals.backspaceRate,
@@ -364,7 +381,9 @@ export const hopeAIRouter = router({
         tone: hopeResponse.tone,
         emotionalState: analysis.inferredState,
         followUpPrompts: hopeResponse.followUpPrompts,
-        innerThought: `Detected: ${analysis.inferredState} (${Math.round(analysis.confidence * 100)}%) | Tone: ${hopeResponse.tone}`,
+        innerThought: input.signals
+          ? `Experimental response-style signal: ${analysis.inferredState} (${Math.round(analysis.confidence * 100)}%)`
+          : undefined,
         signalsRead: inputSignals,
       };
     }),
