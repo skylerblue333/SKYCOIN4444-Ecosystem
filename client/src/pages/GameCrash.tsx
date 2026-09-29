@@ -482,8 +482,8 @@ export default function GameCrash() {
               <div className="flex items-start gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 text-yellow-500 shrink-0 mt-0.5" />
                 <p className="text-[10px] text-yellow-600">
-                  Provably fair game. House edge 4%. Play responsibly. SKY444 is
-                  a platform token, not real currency.
+                  Demo simulation only. Outcomes are generated client-side and are not
+                  cryptographically verifiable or eligible for real-money settlement.
                 </p>
               </div>
             </div>
