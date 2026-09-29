@@ -105,15 +105,22 @@ export const postRouter = router({
         .optional()
     )
     .query(async ({ ctx, input }) => {
-      const relationships = await db.getFollowing(String(ctx.user.id));
+      const relationships = (await db.getFollowing(
+        String(ctx.user.id)
+      )) as Array<{ followingId: string | null }>;
       const followingIds = relationships
-        .map(relationship => relationship.followingId)
-        .filter((id): id is string => typeof id === "string" && id.length > 0);
+        .map((relationship: { followingId: string | null }) =>
+          relationship.followingId
+        )
+        .filter(
+          (id: string | null): id is string =>
+            typeof id === "string" && id.length > 0
+        );
 
       if (followingIds.length === 0) return [];
 
       const feeds = await Promise.all(
-        followingIds.map(userId => db.getPostsByUser(userId))
+        followingIds.map((userId: string) => db.getPostsByUser(userId))
       );
       return feeds
         .flat()
