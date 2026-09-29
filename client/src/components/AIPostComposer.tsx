@@ -30,7 +30,7 @@ export function AIPostComposer({ onPost }: AIPostComposerProps) {
       return;
     }
     setAiLoading(true);
-    // Simulate AI hashtag + content suggestions
+    // Generate deterministic local hashtag suggestions from the draft.
     await new Promise(r => setTimeout(r, 800));
     const words = content.toLowerCase().split(/\s+/);
     const tags = words
@@ -55,13 +55,13 @@ export function AIPostComposer({ onPost }: AIPostComposerProps) {
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-2 mb-1">
         <Sparkles className="w-4 h-4 text-primary" />
-        <span className="text-sm font-semibold">AI Post Composer</span>
+        <span className="text-sm font-semibold">Post Composer</span>
       </div>
 
       <Textarea
         value={content}
         onChange={e => setContent(e.target.value.slice(0, maxChars))}
-        placeholder="What's on your mind? Let AI help you craft the perfect post..."
+        placeholder="What's on your mind?"
         className="min-h-[100px] resize-none bg-background"
       />
 
@@ -89,7 +89,7 @@ export function AIPostComposer({ onPost }: AIPostComposerProps) {
         </div>
       </div>
 
-      {/* AI Suggestions */}
+      {/* Hashtag suggestions */}
       {suggestions.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {suggestions.map(tag => (
@@ -117,11 +117,11 @@ export function AIPostComposer({ onPost }: AIPostComposerProps) {
           ) : (
             <Sparkles className="w-3.5 h-3.5 mr-1" />
           )}
-          AI Enhance
+          Hashtag Suggestions
         </Button>
         <Button
           size="sm"
-          onClick={() => createPost.mutate({ content, type: "text" })}
+          onClick={() => createPost.mutate({ content })}
           disabled={!content.trim() || createPost.isPending}
           className="flex-1"
         >
