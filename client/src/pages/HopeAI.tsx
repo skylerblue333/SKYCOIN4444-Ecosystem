@@ -166,6 +166,7 @@ export default function HopeAI() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [showGrayArea, setShowGrayArea] = useState(false);
+  const [behaviorSignalsEnabled, setBehaviorSignalsEnabled] = useState(false);
   const [graySignals, setGraySignals] = useState<GraySignal[]>([]);
   const [dominantSignal, setDominantSignal] = useState("");
   const [overallRisk, setOverallRisk] = useState(0);
@@ -239,6 +240,17 @@ export default function HopeAI() {
     },
     onError() {
       setIsLoading(false);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "HopeAI is temporarily unavailable. Your message is still visible in this session; try again when the beta service is ready.",
+          tone: "empathetic",
+          state: "neutral",
+          ts: Date.now(),
+        },
+      ]);
     },
   });
 
@@ -269,14 +281,14 @@ export default function HopeAI() {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Backspace") setBackspaceCount(c => c + 1);
-      if (!typingStartMs) setTypingStartMs(Date.now());
+      if (behaviorSignalsEnabled && e.key === "Backspace") setBackspaceCount(c => c + 1);
+      if (behaviorSignalsEnabled && !typingStartMs) setTypingStartMs(Date.now());
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSend();
       }
     },
-    [typingStartMs]
+    [behaviorSignalsEnabled, typingStartMs]
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -296,11 +308,13 @@ export default function HopeAI() {
       .filter(m => m.role !== "assistant" || m.id !== "welcome")
       .slice(-10)
       .map(m => ({ role: m.role, content: m.content }));
-    const typingWpm = typingStartMs
+    const typingWpm = behaviorSignalsEnabled && typingStartMs
       ? Math.round(charCount / 5 / ((Date.now() - typingStartMs) / 60000))
       : undefined;
     const backspaceRate =
-      charCount > 0 ? Math.round((backspaceCount / charCount) * 100) : 0;
+      behaviorSignalsEnabled && charCount > 0
+        ? Math.round((backspaceCount / charCount) * 100)
+        : undefined;
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setCharCount(0);
@@ -315,19 +329,19 @@ export default function HopeAI() {
       .split(/\s+/)
       .filter(w => w.length > 4);
     setTopicHistory(prev => [...prev.slice(-9), ...words.slice(0, 2)]);
-    // Fire gray area analysis in parallel
-    grayAreaMutation.mutate({
-      text: userMsg.content,
-      sessionDurationMs: Date.now() - sessionStartMs,
-      timeOfDay: new Date().getHours(),
-      dayOfWeek: new Date().getDay(),
-      typingWpm: typingStartMs
-        ? Math.round(charCount / 5 / ((Date.now() - typingStartMs) / 60000))
-        : undefined,
-      backspaceRate: charCount > 0 ? backspaceCount / charCount : 0,
-      messageCount: msgCount,
-      topicHistory,
-    });
+    // Optional behavior-signal analysis is explicit opt-in.
+    if (behaviorSignalsEnabled) {
+      grayAreaMutation.mutate({
+        text: userMsg.content,
+        sessionDurationMs: Date.now() - sessionStartMs,
+        timeOfDay: new Date().getHours(),
+        dayOfWeek: new Date().getDay(),
+        typingWpm,
+        backspaceRate: charCount > 0 ? backspaceCount / charCount : 0,
+        messageCount: msgCount,
+        topicHistory,
+      });
+    }
     chatMutation.mutate({
       messageText: userMsg.content,
       conversationHistory: history,
@@ -351,6 +365,7 @@ export default function HopeAI() {
     backspaceCount,
     sessionStartMs,
     currentState,
+    behaviorSignalsEnabled,
   ]);
 
   const sm = STATE_META[currentState];
@@ -394,7 +409,7 @@ export default function HopeAI() {
                   Hope AI
                 </div>
                 <div className="text-[10px] font-medium desc-metallic">
-                  Emotionally Intelligent Companion
+                  Context-aware assistant · Engineering beta
                 </div>
               </div>
             </div>
@@ -435,7 +450,11 @@ export default function HopeAI() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowGrayArea(!showGrayArea)}
+              onClick={() => {
+                const next = !behaviorSignalsEnabled;
+                setBehaviorSignalsEnabled(next);
+                setShowGrayArea(next);
+              }}
               className={`text-xs gap-1 ${showGrayArea ? "border-red-500/40 text-red-400 bg-red-500/10" : "border-white/20 bg-white/5 hover:bg-white/10"}`}
             >
               <Eye className="w-3 h-3" />
@@ -444,7 +463,7 @@ export default function HopeAI() {
               ) : (
                 <Unlock className="w-3 h-3" />
               )}
-              Gray Area
+              {behaviorSignalsEnabled ? "Signals On" : "Signals Off"}
             </Button>
           </div>
         </div>
@@ -644,7 +663,7 @@ export default function HopeAI() {
             </p>
             {graySignals.length === 0 ? (
               <p className="text-[10px] text-white/20 italic">
-                Send a message to activate scan...
+                Enable Signals, then send a message to run beta analysis.
               </p>
             ) : (
               graySignals.map((sig, i) => (
@@ -664,7 +683,7 @@ export default function HopeAI() {
           <div>
             <div className="flex items-center gap-1 text-[10px] text-white/20 mb-2">
               <BarChart2 className="w-3 h-3" />
-              22 Analyzers Active
+              Experimental signal checks
             </div>
             <div className="grid grid-cols-2 gap-1">
               {[
@@ -701,7 +720,7 @@ export default function HopeAI() {
             </div>
           </div>
           <p className="text-[9px] text-white/15 leading-relaxed pt-2 border-t border-white/5">
-            All analysis is local. Never stored or shared.
+            Optional signal analysis is off by default. When enabled, message text and derived session or typing signals are sent to the beta backend for analysis. Results are experimental, not diagnosis or fact.
           </p>
         </div>
       )}
@@ -709,6 +728,21 @@ export default function HopeAI() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          {messages.length <= 1 && (
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { href: "/charity", label: "Give with SkyHope", note: "Explore verified-beta charity paths" },
+                { href: "/skyschool", label: "Learn", note: "Courses, lessons and quizzes" },
+                { href: "/socialmedia", label: "Community", note: "Open the persisted social feed" },
+                { href: "/gaming", label: "Play", note: "Demo-first game arcade" },
+              ].map(action => (
+                <Link key={action.href} href={action.href} className="rounded-xl border border-white/10 bg-white/[0.035] p-3 transition hover:border-fuchsia-400/40 hover:bg-fuchsia-500/10">
+                  <div className="text-sm font-semibold text-white">{action.label}</div>
+                  <div className="mt-1 text-xs leading-relaxed text-white/45">{action.note}</div>
+                </Link>
+              ))}
+            </div>
+          )}
           {messages.map(msg => (
             <div
               key={msg.id}
