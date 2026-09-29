@@ -52,8 +52,11 @@ function createCdpClient(wsUrl) {
     const waiter = pending.get(message.id);
     if (!waiter) return;
     pending.delete(message.id);
-    if (message.error) waiter.reject(new Error(JSON.stringify(message.error)));
-    else waiter.resolve(message.result);
+    if (message.error) {
+      waiter.reject(
+        new Error(`CDP ${waiter.method} failed: ${JSON.stringify(message.error)}`)
+      );
+    } else waiter.resolve(message.result);
   });
 
   const opened = new Promise((resolve, reject) => {
@@ -67,7 +70,7 @@ function createCdpClient(wsUrl) {
       await opened;
       const id = nextId++;
       return new Promise((resolve, reject) => {
-        pending.set(id, { resolve, reject });
+        pending.set(id, { resolve, reject, method });
         ws.send(JSON.stringify({ id, method, params }));
       });
     },
@@ -381,10 +384,21 @@ try {
     );
   }
 
-  await cdp.call("Page.navigate", { url: `${baseUrl}/` });
+  // Stay inside the already-proven SPA session after the exhaustive route walk.
+  // A hard Page.navigate after ~1,000 route transitions can trip a Chrome CDP
+  // "Object reference chain is too long" protocol error even though every route
+  // rendered successfully. Reset the SPA location without rebuilding document history.
+  await cdp.call("Runtime.evaluate", {
+    expression: `(() => {
+      window.history.replaceState({}, "", "/");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+      return window.location.pathname;
+    })()`,
+    returnByValue: true,
+  });
   await waitForExpression(
     cdp,
-    `document.readyState === "complete" && window.location.pathname === "/" && document.querySelector("#main-content")`
+    `window.location.pathname === "/" && document.querySelector("#main-content")`
   );
 
   const screenshot = await cdp.call("Page.captureScreenshot", {
