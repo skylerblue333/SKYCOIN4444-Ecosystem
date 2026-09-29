@@ -28,6 +28,7 @@ import {
 } from "../drizzle/schema.js";
 import { eq, gte, sql, count } from "drizzle-orm";
 import { invokeLLM } from "./_core/llm.js";
+import { behaviorSignalActivityTimestamp } from "./behavior-signal-time.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -146,7 +147,7 @@ export class EmergentEconomyEngine {
         total: count(),
       })
       .from(userBehaviorSignals)
-      .where(gte(userBehaviorSignals.recordedAt, since))
+      .where(gte(behaviorSignalActivityTimestamp, since))
       .groupBy(userBehaviorSignals.signalType);
 
     const signalMap = new Map(
