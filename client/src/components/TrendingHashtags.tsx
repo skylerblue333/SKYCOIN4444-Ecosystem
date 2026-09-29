@@ -3,22 +3,11 @@ import { TrendingUp, Hash, Flame } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export function TrendingHashtags() {
-  const { data: trends } = trpc.feed.trends.useQuery(undefined, {
+  const { data: trends } = trpc.feed.trending.useQuery(undefined, {
     staleTime: 60_000,
   });
 
-  const fallback = [
-    { hashtag: "#skycoin4444", mentions: 4444 },
-    { hashtag: "#defi", mentions: 2891 },
-    { hashtag: "#web3", mentions: 2341 },
-    { hashtag: "#nft", mentions: 1876 },
-    { hashtag: "#crypto", mentions: 1543 },
-    { hashtag: "#blockchain", mentions: 1201 },
-    { hashtag: "#ai", mentions: 987 },
-    { hashtag: "#gamefi", mentions: 743 },
-  ];
-
-  const items = (trends && trends.length > 0 ? trends : fallback).slice(0, 8);
+  const items = (trends ?? []).slice(0, 8);
 
   return (
     <div className="bg-card border border-border rounded-xl p-4">
@@ -27,10 +16,14 @@ export function TrendingHashtags() {
         <h3 className="font-semibold text-sm">Trending Now</h3>
       </div>
       <div className="space-y-2">
-        {items.map((item, i) => (
+        {items.length === 0 ? (
+          <p className="px-2 py-2 text-xs text-muted-foreground">
+            No hashtag activity has been recorded yet.
+          </p>
+        ) : items.map((item, i) => (
           <Link
-            key={i}
-            href={`/search?q=${encodeURIComponent((item as any).hashtag)}`}
+            key={item.hashtag}
+            href={`/search?q=${encodeURIComponent(item.hashtag)}`}
           >
             <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
               <div className="flex items-center gap-2">
@@ -40,11 +33,11 @@ export function TrendingHashtags() {
                   <Hash className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                 )}
                 <span className="text-sm font-medium group-hover:text-primary transition-colors">
-                  {(item as any).hashtag}
+                  {item.hashtag}
                 </span>
               </div>
               <span className="text-xs text-muted-foreground">
-                {((item as any).mentions as number).toLocaleString()}
+                {item.mentions.toLocaleString()}
               </span>
             </div>
           </Link>
