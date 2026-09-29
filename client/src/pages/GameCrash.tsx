@@ -16,7 +16,8 @@ import {
 
 type GameState = "waiting" | "running" | "crashed";
 
-const HISTORY_MOCK = [
+// Demo-only sample history. It is intentionally labeled in the UI and is not settlement evidence.
+const DEMO_HISTORY = [
   8.42, 1.23, 24.7, 2.01, 1.05, 15.3, 3.88, 1.01, 6.72, 1.44, 2.99, 11.2, 1.08,
   4.55, 1.77,
 ];
@@ -53,7 +54,7 @@ export default function GameCrash() {
   const [cashedOut, setCashedOut] = useState(false);
   const [cashedOutAt, setCashedOutAt] = useState(0);
   const [countdown, setCountdown] = useState(5);
-  const [history, setHistory] = useState(HISTORY_MOCK);
+  const [history, setHistory] = useState(DEMO_HISTORY);
   const [balance, setBalance] = useState(1000);
   const [players, setPlayers] = useState([
     { name: "SkyWhale", bet: 500, cashedAt: null as number | null },
@@ -65,7 +66,7 @@ export default function GameCrash() {
   const crashPointRef = useRef(1.0);
 
   const generateCrashPoint = () => {
-    // Provably fair: house edge ~4%, crash point between 1.00 and ~100x
+    // Demo simulation only. Production outcomes must be generated and committed server-side.
     const r = Math.random();
     if (r < 0.04) return 1.0; // instant crash 4% of time
     return Math.max(1.0, 0.99 / (1 - r));
@@ -187,7 +188,7 @@ export default function GameCrash() {
               CRASH
             </h1>
             <p className="text-slate-500 text-sm">
-              Provably fair · Cash out before it crashes
+              Demo simulation · No real-money settlement · Cash out before it crashes
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -481,8 +482,8 @@ export default function GameCrash() {
               <div className="flex items-start gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 text-yellow-500 shrink-0 mt-0.5" />
                 <p className="text-[10px] text-yellow-600">
-                  Provably fair game. House edge 4%. Play responsibly. SKY444 is
-                  a platform token, not real currency.
+                  Demo simulation only. Outcomes are generated client-side and are not
+                  cryptographically verifiable or eligible for real-money settlement.
                 </p>
               </div>
             </div>
