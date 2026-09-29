@@ -1,4 +1,4 @@
-import { router, protectedProcedure } from "./server/_core/trpc";
+import { router, protectedProcedure } from "./_core/trpc";
 import { z } from "zod";
 import * as datingIntegration from "./dating-integration-hub";
 import * as datingPhotos from "./dating-photos";
