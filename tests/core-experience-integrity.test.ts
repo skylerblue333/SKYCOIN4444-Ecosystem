@@ -23,9 +23,25 @@ describe("core experience integrity", () => {
   it("does not present SkyHope beta actions as verified settlement", () => {
     const charity = read("client/src/pages/Charity.tsx");
     expect(charity).toContain("SKYHOPE · CHARITY ENGINEERING BETA");
-    expect(charity).toContain("Record Beta Donation Intent");
+    expect(charity).toContain("Record Donation Intent");
     expect(charity).toContain("Beta boundary:");
     expect(charity).not.toContain("TRANSPARENT GIVING — ON-CHAIN");
+    expect(charity).not.toContain("On-Chain Verified");
+    expect(charity).not.toContain("All charity fund flows are publicly auditable on-chain.");
+    expect(charity).toContain("Intent Contributors");
+  });
+
+  it("backs SkyHope with a durable intent-only router rather than the placeholder namespace", () => {
+    const routers = read("server/routers.ts");
+    const db = read("server/db.ts");
+    expect(routers).toContain("export const charityRouter = router");
+    expect(routers).toContain("charity: charityRouter");
+    expect(routers).not.toContain("charity: placeholderRouter");
+    expect(db).toContain('CHARITY_INTENT_PREFIX = "charity_intent:"');
+    expect(db).toContain('status: "intent_only"');
+    expect(db).toContain("settlement: false");
+    expect(db).toContain("receipt: false");
+    expect(db).toContain("txHash: null");
   });
 
   it("removes fabricated social inference and links to the canonical HopeAI route", () => {
