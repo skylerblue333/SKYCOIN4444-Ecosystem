@@ -112,17 +112,30 @@ export const postRouter = router({
       .slice(0, 20);
   }),
   create: protectedProcedure
-    .input(z.object({ content: z.string(), media: z.string().optional() }))
+    .input(
+      z.object({
+        content: z.string().trim().min(1).max(255),
+        media: z.string().max(255).optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) =>
-      db.createPost(ctx.user.id, input.content, input.media)
+      db.createPost(String(ctx.user.id), input.content, input.media)
     ),
   like: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .mutation(async ({ ctx, input }) =>
       db.createLike(input.postId, String(ctx.user.id))
     ),
+  comments: publicProcedure
+    .input(z.object({ postId: z.string().min(1) }))
+    .query(async ({ input }) => db.getComments(input.postId)),
   comment: protectedProcedure
-    .input(z.object({ postId: z.string(), content: z.string().min(1).max(255) }))
+    .input(
+      z.object({
+        postId: z.string().min(1),
+        content: z.string().trim().min(1).max(255),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const comment = await db.createComment(
         input.postId,
@@ -131,6 +144,11 @@ export const postRouter = router({
       );
       return { success: true, comment };
     }),
+  unlike: protectedProcedure
+    .input(z.object({ postId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) =>
+      db.removeLike(input.postId, String(ctx.user.id))
+    ),
   delete: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .mutation(async ({ ctx, input }) =>
