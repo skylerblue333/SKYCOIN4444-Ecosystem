@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -1060,12 +1060,12 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const App = () => {
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } =
     useCommandPalette();
+  const [location] = useLocation();
 
   return (
     <ThemeProvider defaultTheme="dark">
       <TooltipProvider>
-        <ErrorBoundary>
-          <div className="flex min-h-screen flex-col">
+        <div className="flex min-h-screen flex-col">
             <a
               href="#main-content"
               className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[10000] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-lg"
@@ -1074,7 +1074,8 @@ const App = () => {
             </a>
             <EcosystemAreaStatus />
             <Navigation />
-            <main id="main-content" className="flex-1">
+            <ErrorBoundary key={location}>
+              <main id="main-content" className="flex-1">
               <Suspense
                 fallback={
                   <div className="min-h-[70vh] bg-background px-4 py-10" aria-busy="true" aria-live="polite">
@@ -2996,7 +2997,8 @@ const App = () => {
                   <Route component={NotFound} />
                 </Switch>
               </Suspense>
-            </main>
+              </main>
+            </ErrorBoundary>
             {/* Bottom Navigation */}
             <MobileBottomNav />
             <BottomTabBar />
@@ -3015,8 +3017,7 @@ const App = () => {
             />
             {/* Toast Notifications */}
             <Toaster />
-          </div>
-        </ErrorBoundary>
+        </div>
       </TooltipProvider>
     </ThemeProvider>
   );
