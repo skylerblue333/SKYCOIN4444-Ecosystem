@@ -3,19 +3,8 @@
  * Attention Engine, Creator Empire, Economic Moat, AI Autonomy, Ecosystem Lock-In
  */
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
+import { legacyNumericUserId } from "./_core/legacy-user-id";
 
-function legacyNumericUserId(userId: string): number {
-  const numericId = Number(userId);
-  if (!Number.isSafeInteger(numericId) || numericId < 0) {
-    throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message:
-        "This legacy subsystem is not yet migrated to canonical string user IDs.",
-    });
-  }
-  return numericId;
-}
 import { router, publicProcedure, protectedProcedure } from "./_core/trpc";
 import {
   feedIntelligenceV2,
