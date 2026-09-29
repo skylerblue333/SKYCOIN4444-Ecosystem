@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { CoreExperienceRail } from "@/components/CoreExperienceRail";
 import {
   BookOpen,
   Star,
@@ -1108,7 +1107,7 @@ export default function SkySchool() {
       return;
     }
     setEnrolledCourses(prev => new Set([...prev, courseId]));
-    toast.success("Enrolled for this beta session. 🎉");
+    toast.success("Enrolled successfully! 🎉");
   };
 
   const handleCompleteLesson = () => {
@@ -1130,7 +1129,7 @@ export default function SkySchool() {
     } else {
       handleCompleteLesson();
       toast.success(
-        `Course completed! 🏆 +${selectedCourse.xpReward} local XP. SKY reward values are a beta exercise and are not settled here.`
+        `Course completed! 🏆 +${selectedCourse.xpReward} XP, +${selectedCourse.skyReward} SKY`
       );
     }
   };
@@ -1144,11 +1143,6 @@ export default function SkySchool() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6">
         <div className="max-w-6xl mx-auto">
-          <CoreExperienceRail
-            current="learn"
-            title="Keep HopeAI and SkyHope connected to learning"
-            className="mb-6"
-          />
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <Button
@@ -1252,7 +1246,8 @@ export default function SkySchool() {
                     {selectedCourse.duration}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-yellow-400" /> Demo {selectedCourse.skyReward} SKY
+                    <Zap className="w-4 h-4 text-yellow-400" />+
+                    {selectedCourse.skyReward} SKY
                   </div>
                   <div className="flex items-center gap-2">
                     <Award className="w-4 h-4 text-purple-400" />+
@@ -1304,18 +1299,6 @@ export default function SkySchool() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6">
       <div className="max-w-7xl mx-auto">
-        <CoreExperienceRail
-          current="learn"
-          title="Keep HopeAI and SkyHope connected to learning"
-          className="mb-6"
-        />
-        <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4">
-          <p className="text-sm font-semibold text-amber-100">Learning engineering beta</p>
-          <p className="mt-1 text-xs leading-relaxed text-slate-400">
-            Curriculum and local XP support guided practice. SKY token reward values are demo
-            learning mechanics unless a configured settlement service explicitly proves otherwise.
-          </p>
-        </div>
         {/* Header */}
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-4">
@@ -1323,8 +1306,8 @@ export default function SkySchool() {
             <div>
               <h1 className="text-5xl font-bold text-white">Sky School</h1>
               <p className="text-slate-400 text-lg mt-2">
-                Learn Web3, coding, and AI with guided lessons, local beta progress,
-                quizzes, and direct access to HopeAI tutoring.
+                Learn Web3, Coding, AI, and Hacking. Earn SKY4, XP, and
+                Certifications.
               </p>
             </div>
           </div>
@@ -1423,7 +1406,7 @@ export default function SkySchool() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-yellow-400 font-semibold flex items-center gap-1">
-                          <Zap className="w-3 h-3" /> Demo {course.skyReward} SKY
+                          <Zap className="w-3 h-3" />+{course.skyReward} SKY
                         </span>
                         <span className="text-xs text-purple-400 flex items-center gap-1">
                           <Award className="w-3 h-3" />+{course.xpReward} XP
