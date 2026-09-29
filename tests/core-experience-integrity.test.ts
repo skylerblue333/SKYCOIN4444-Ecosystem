@@ -78,5 +78,11 @@ describe("core experience integrity", () => {
     expect(school).toContain('href: "/hopeai"');
     expect(school).toContain('href: "/socialmedia"');
     expect(school).toContain('href: "/charity"');
+    expect(school).toContain("window.localStorage");
+    expect(school).toContain("Device-local beta progress");
+    expect(school).toContain("Formal certificates, XP awards, and SKY token rewards are not issued by this beta.");
+    expect(school).not.toContain("selectedCourse.skyReward");
+    expect(school).not.toContain("selectedCourse.xpReward");
+    expect(school).not.toContain("You have earned your Blockchain Fundamentals certificate!");
   });
 });
