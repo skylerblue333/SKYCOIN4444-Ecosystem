@@ -16,14 +16,14 @@ const LESSON_COUNT = 8;
 const COMPLETION_KEY = "skycoin4444.learning.completed.v1";
 
 function readCompletedLessons(): number[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined") return Array<number>();
   try {
     const parsed = JSON.parse(window.localStorage.getItem(COMPLETION_KEY) ?? "[]");
     return Array.isArray(parsed)
       ? parsed.filter(value => Number.isInteger(value) && value >= 1 && value <= LESSON_COUNT).map(Number)
       : [];
   } catch {
-    return [];
+    return Array<number>();
   }
 }
 
