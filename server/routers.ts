@@ -94,7 +94,23 @@ export const postRouter = router({
       z.object({ limit: z.number().default(10), offset: z.number().default(0) })
     )
     .query(async ({ input }) => db.getPosts(input.limit, input.offset)),
-  trending: publicProcedure.query(async () => []),
+  trending: publicProcedure.query(async () => {
+    const recentPosts = await db.getPosts(100, 0);
+    const counts = new Map<string, number>();
+
+    for (const post of recentPosts) {
+      const content = typeof post.content === "string" ? post.content : "";
+      for (const match of content.matchAll(/#[A-Za-z0-9_]+/g)) {
+        const hashtag = match[0].toLowerCase();
+        counts.set(hashtag, (counts.get(hashtag) ?? 0) + 1);
+      }
+    }
+
+    return [...counts.entries()]
+      .map(([hashtag, mentions]) => ({ hashtag, mentions }))
+      .sort((a, b) => b.mentions - a.mentions || a.hashtag.localeCompare(b.hashtag))
+      .slice(0, 20);
+  }),
   create: protectedProcedure
     .input(z.object({ content: z.string(), media: z.string().optional() }))
     .mutation(async ({ ctx, input }) =>
