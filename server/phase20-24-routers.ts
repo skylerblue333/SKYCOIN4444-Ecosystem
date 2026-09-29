@@ -3,6 +3,8 @@
  * Attention Engine, Creator Empire, Economic Moat, AI Autonomy, Ecosystem Lock-In
  */
 import { z } from "zod";
+import { legacyNumericUserId } from "./_core/legacy-user-id";
+
 import { router, publicProcedure, protectedProcedure } from "./_core/trpc";
 import {
   feedIntelligenceV2,
@@ -37,7 +39,7 @@ export const attentionRouter = router({
   rankFeed: protectedProcedure
     .input(z.object({ posts: z.array(z.any()) }))
     .query(({ ctx, input }) =>
-      feedIntelligenceV2.rankFeed(ctx.user.id, input.posts)
+      feedIntelligenceV2.rankFeed(legacyNumericUserId(ctx.user.id), input.posts)
     ),
 
   recordWatchTime: protectedProcedure
@@ -50,7 +52,7 @@ export const attentionRouter = router({
     )
     .mutation(({ ctx, input }) =>
       feedIntelligenceV2.recordWatchTime(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.postId,
         input.creatorId,
         input.seconds
@@ -73,7 +75,7 @@ export const attentionRouter = router({
     )
     .mutation(({ ctx, input }) =>
       feedIntelligenceV2.recordInteraction(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.creatorId,
         input.type as any
       )
@@ -82,11 +84,11 @@ export const attentionRouter = router({
   getTopCreatorsByAffinity: protectedProcedure
     .input(z.object({ limit: z.number().default(10) }))
     .query(({ ctx, input }) =>
-      feedIntelligenceV2.getTopCreatorsByAffinity(ctx.user.id, input.limit)
+      feedIntelligenceV2.getTopCreatorsByAffinity(legacyNumericUserId(ctx.user.id), input.limit)
     ),
 
   startSession: protectedProcedure.mutation(({ ctx }) =>
-    feedIntelligenceV2.startSession(ctx.user.id)
+    feedIntelligenceV2.startSession(legacyNumericUserId(ctx.user.id))
   ),
 
   recordSessionView: protectedProcedure
@@ -110,7 +112,7 @@ export const attentionRouter = router({
     .mutation(({ input }) => feedIntelligenceV2.endSession(input.sessionId)),
 
   getSessionMetrics: protectedProcedure.query(({ ctx }) =>
-    feedIntelligenceV2.getSessionMetrics(ctx.user.id)
+    feedIntelligenceV2.getSessionMetrics(legacyNumericUserId(ctx.user.id))
   ),
 
   // Addiction Loops
@@ -121,11 +123,11 @@ export const attentionRouter = router({
   claimDailyDrop: protectedProcedure
     .input(z.object({ dropId: z.string() }))
     .mutation(({ ctx, input }) =>
-      addictionLoopsEngine.claimDailyDrop(ctx.user.id, input.dropId)
+      addictionLoopsEngine.claimDailyDrop(legacyNumericUserId(ctx.user.id), input.dropId)
     ),
 
   getEngagementLadder: protectedProcedure.query(({ ctx }) =>
-    addictionLoopsEngine.getOrCreateLadder(ctx.user.id)
+    addictionLoopsEngine.getOrCreateLadder(legacyNumericUserId(ctx.user.id))
   ),
 
   getLeaderboard: publicProcedure
@@ -145,13 +147,13 @@ export const creatorEmpireRouter = router({
   getFanProfile: protectedProcedure
     .input(z.object({ fanUserId: z.number() }))
     .query(({ ctx, input }) =>
-      creatorCRM.getFanProfile(ctx.user.id, input.fanUserId)
+      creatorCRM.getFanProfile(legacyNumericUserId(ctx.user.id), input.fanUserId)
     ),
 
   getCreatorFans: protectedProcedure
     .input(z.object({ segment: z.string().optional() }))
     .query(({ ctx, input }) =>
-      creatorCRM.getCreatorFans(ctx.user.id, input.segment)
+      creatorCRM.getCreatorFans(legacyNumericUserId(ctx.user.id), input.segment)
     ),
 
   createSubscriberSegment: protectedProcedure
@@ -185,7 +187,7 @@ export const creatorEmpireRouter = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      creatorCRM.createMonetizationFunnel({ creatorId: ctx.user.id, ...input })
+      creatorCRM.createMonetizationFunnel({ creatorId: legacyNumericUserId(ctx.user.id), ...input })
     ),
 
   generatePayoutForecast: protectedProcedure
@@ -197,7 +199,7 @@ export const creatorEmpireRouter = router({
     )
     .mutation(({ ctx, input }) =>
       creatorCRM.generatePayoutForecast(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.month,
         input.historicalRevenue as Record<string, number>
       )
@@ -206,7 +208,7 @@ export const creatorEmpireRouter = router({
   getPayoutForecast: protectedProcedure
     .input(z.object({ month: z.string() }))
     .query(({ ctx, input }) =>
-      creatorCRM.getPayoutForecast(ctx.user.id, input.month)
+      creatorCRM.getPayoutForecast(legacyNumericUserId(ctx.user.id), input.month)
     ),
 
   createCampaignPlanner: protectedProcedure
@@ -225,7 +227,7 @@ export const creatorEmpireRouter = router({
     )
     .mutation(({ ctx, input }) =>
       creatorCRM.createCampaignPlanner({
-        creatorId: ctx.user.id,
+        creatorId: legacyNumericUserId(ctx.user.id),
         campaignName: input.campaignName,
         campaignType: input.campaignType as any,
         status: "active",
@@ -257,7 +259,7 @@ export const creatorEmpireRouter = router({
     )
     .mutation(({ ctx, input }) =>
       hiringMarketplace.postJob({
-        creatorId: ctx.user.id,
+        creatorId: legacyNumericUserId(ctx.user.id),
         title: input.title,
         description: input.description,
         jobType: input.jobType as any,
@@ -287,14 +289,14 @@ export const creatorEmpireRouter = router({
     .mutation(({ ctx, input }) =>
       hiringMarketplace.applyToJob({
         jobId: input.jobId,
-        applicantId: ctx.user.id,
+        applicantId: legacyNumericUserId(ctx.user.id),
         coverLetter: input.coverLetter,
         proposedRate: input.proposedRate,
       })
     ),
 
   getCreatorTeam: protectedProcedure.query(({ ctx }) =>
-    hiringMarketplace.getCreatorTeam(ctx.user.id)
+    hiringMarketplace.getCreatorTeam(legacyNumericUserId(ctx.user.id))
   ),
 
   // Creator Expansion
@@ -308,7 +310,7 @@ export const creatorEmpireRouter = router({
     )
     .mutation(({ ctx, input }) =>
       creatorExpansionEngine.queueSyndication({
-        creatorId: ctx.user.id,
+        creatorId: legacyNumericUserId(ctx.user.id),
         contentId: input.contentId,
         contentType: input.contentType as any,
         targetPlatforms: input.targetPlatforms as any,
@@ -321,7 +323,7 @@ export const creatorEmpireRouter = router({
     )
     .mutation(({ ctx, input }) =>
       creatorExpansionEngine.queueAutoClip(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.streamId,
         input.streamDurationSeconds
       )
@@ -339,7 +341,7 @@ export const creatorEmpireRouter = router({
     )
     .mutation(({ ctx, input }) =>
       creatorExpansionEngine.queueAutoTranslation(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.contentId,
         input.contentType as any,
         input.sourceLang,
@@ -379,7 +381,7 @@ export const economicMoatRouter = router({
     .query(({ input }) => tokenUtilityEngine.getTokenVelocity(input.currency)),
 
   getGovernanceToken: protectedProcedure.query(({ ctx }) =>
-    tokenUtilityEngine.getGovernanceToken(ctx.user.id)
+    tokenUtilityEngine.getGovernanceToken(legacyNumericUserId(ctx.user.id))
   ),
 
   getActiveProposals: publicProcedure.query(() =>
@@ -397,7 +399,7 @@ export const economicMoatRouter = router({
     .mutation(({ ctx, input }) =>
       tokenUtilityEngine.castVote(
         input.proposalId,
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.vote,
         input.comment
       )
@@ -413,7 +415,7 @@ export const economicMoatRouter = router({
     .mutation(({ ctx, input }) =>
       liquidityEngine.addLiquidity(
         input.poolId,
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.amountA,
         input.amountB
       )
@@ -422,7 +424,7 @@ export const economicMoatRouter = router({
   removeLiquidity: protectedProcedure
     .input(z.object({ poolId: z.string(), lpTokens: z.number() }))
     .mutation(({ ctx, input }) =>
-      liquidityEngine.removeLiquidity(input.poolId, ctx.user.id, input.lpTokens)
+      liquidityEngine.removeLiquidity(input.poolId, legacyNumericUserId(ctx.user.id), input.lpTokens)
     ),
 
   stakeTokens: protectedProcedure
@@ -432,7 +434,7 @@ export const economicMoatRouter = router({
     .mutation(({ ctx, input }) =>
       liquidityEngine.stakeTokens(
         input.poolId,
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.amount,
         input.lockDays
       )
@@ -441,7 +443,7 @@ export const economicMoatRouter = router({
   claimStakingRewards: protectedProcedure
     .input(z.object({ poolId: z.string() }))
     .mutation(({ ctx, input }) =>
-      liquidityEngine.claimRewards(input.poolId, ctx.user.id)
+      liquidityEngine.claimRewards(input.poolId, legacyNumericUserId(ctx.user.id))
     ),
 
   // NFT Utility
@@ -454,18 +456,18 @@ export const economicMoatRouter = router({
     )
     .query(({ ctx, input }) =>
       nftUtilityEngine.checkAccess(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.accessType,
         input.resourceId
       )
     ),
 
   getUserNFTPasses: protectedProcedure.query(({ ctx }) =>
-    nftUtilityEngine.getHolderPasses(ctx.user.id)
+    nftUtilityEngine.getHolderPasses(legacyNumericUserId(ctx.user.id))
   ),
 
   getCreatorMemberships: protectedProcedure.query(({ ctx }) =>
-    nftUtilityEngine.getCreatorMemberships(ctx.user.id)
+    nftUtilityEngine.getCreatorMemberships(legacyNumericUserId(ctx.user.id))
   ),
 
   getEconomicMoatMetrics: publicProcedure.query(() =>
@@ -554,7 +556,7 @@ export const aiAutonomyRouter = router({
 export const ecosystemLockInRouter = router({
   // Unified Identity
   getMyIdentity: protectedProcedure.query(({ ctx }) =>
-    unifiedIdentityEngine.getIdentity(ctx.user.id)
+    unifiedIdentityEngine.getIdentity(legacyNumericUserId(ctx.user.id))
   ),
 
   updateIdentity: protectedProcedure
@@ -575,7 +577,7 @@ export const ecosystemLockInRouter = router({
   linkWallet: protectedProcedure
     .input(z.object({ walletAddress: z.string() }))
     .mutation(({ ctx, input }) =>
-      unifiedIdentityEngine.linkWallet(ctx.user.id, input.walletAddress)
+      unifiedIdentityEngine.linkWallet(legacyNumericUserId(ctx.user.id), input.walletAddress)
     ),
 
   searchIdentities: publicProcedure
@@ -585,22 +587,22 @@ export const ecosystemLockInRouter = router({
     ),
 
   getVerifications: protectedProcedure.query(({ ctx }) =>
-    unifiedIdentityEngine.getVerifications(ctx.user.id)
+    unifiedIdentityEngine.getVerifications(legacyNumericUserId(ctx.user.id))
   ),
 
   // Cross-System Persistence
   getActivityGraph: protectedProcedure.query(({ ctx }) =>
-    crossSystemPersistence.getActivityGraph(ctx.user.id)
+    crossSystemPersistence.getActivityGraph(legacyNumericUserId(ctx.user.id))
   ),
 
   getEntityLinks: protectedProcedure
     .input(z.object({ system: z.string().optional() }))
     .query(({ ctx, input }) =>
-      crossSystemPersistence.getEntityLinks(ctx.user.id, input.system)
+      crossSystemPersistence.getEntityLinks(legacyNumericUserId(ctx.user.id), input.system)
     ),
 
   getPlatformValueScore: protectedProcedure.query(({ ctx }) =>
-    crossSystemPersistence.calculatePlatformValueScore(ctx.user.id)
+    crossSystemPersistence.calculatePlatformValueScore(legacyNumericUserId(ctx.user.id))
   ),
 
   getTopValueUsers: publicProcedure
@@ -622,33 +624,33 @@ export const ecosystemLockInRouter = router({
     )
     .mutation(({ ctx, input }) =>
       migrationResistanceEngine.requestVaultExport(
-        ctx.user.id,
+        legacyNumericUserId(ctx.user.id),
         input.exportType
       )
     ),
 
   getMyExports: protectedProcedure.query(({ ctx }) =>
-    migrationResistanceEngine.getCreatorExports(ctx.user.id)
+    migrationResistanceEngine.getCreatorExports(legacyNumericUserId(ctx.user.id))
   ),
 
   getAudienceGraph: protectedProcedure.query(({ ctx }) => {
-    const existing = migrationResistanceEngine.getAudienceGraph(ctx.user.id);
+    const existing = migrationResistanceEngine.getAudienceGraph(legacyNumericUserId(ctx.user.id));
     return (
-      existing ?? migrationResistanceEngine.generateAudienceGraph(ctx.user.id)
+      existing ?? migrationResistanceEngine.generateAudienceGraph(legacyNumericUserId(ctx.user.id))
     );
   }),
 
   getMonetizationHistory: protectedProcedure.query(({ ctx }) =>
-    migrationResistanceEngine.getMonetizationHistory(ctx.user.id)
+    migrationResistanceEngine.getMonetizationHistory(legacyNumericUserId(ctx.user.id))
   ),
 
   getContentOwnershipProofs: protectedProcedure.query(({ ctx }) =>
-    migrationResistanceEngine.getCreatorContentProofs(ctx.user.id)
+    migrationResistanceEngine.getCreatorContentProofs(legacyNumericUserId(ctx.user.id))
   ),
 
   getTrustHistory: protectedProcedure.query(({ ctx }) => {
-    const existing = migrationResistanceEngine.getTrustHistory(ctx.user.id);
-    return existing ?? migrationResistanceEngine.buildTrustHistory(ctx.user.id);
+    const existing = migrationResistanceEngine.getTrustHistory(legacyNumericUserId(ctx.user.id));
+    return existing ?? migrationResistanceEngine.buildTrustHistory(legacyNumericUserId(ctx.user.id));
   }),
 
   getEcosystemLockInMetrics: publicProcedure.query(() =>
