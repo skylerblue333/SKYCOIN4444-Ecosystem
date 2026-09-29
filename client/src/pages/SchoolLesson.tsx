@@ -29,14 +29,14 @@ const COMPLETION_KEY = "skycoin4444.learning.completed.v1";
 const notesKey = (lessonId: number) => `skycoin4444.learning.notes.${lessonId}.v1`;
 
 function loadCompletedLessonIds(): number[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined") return Array<number>();
   try {
     const parsed = JSON.parse(window.localStorage.getItem(COMPLETION_KEY) ?? "[]");
     return Array.isArray(parsed)
       ? parsed.filter(value => Number.isInteger(value)).map(Number)
       : [];
   } catch {
-    return [];
+    return Array<number>();
   }
 }
 
