@@ -1282,13 +1282,12 @@ export default function SkySchool() {
                     <Clock className="w-4 h-4" />
                     {selectedCourse.duration}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-yellow-400" />+
-                    {selectedCourse.skyReward} SKY
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    {completed.size}/{selectedCourse.lessons} lessons marked complete
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-purple-400" />+
-                    {selectedCourse.xpReward} XP
+                  <div className="text-xs text-slate-500">
+                    Device-local beta progress
                   </div>
                 </CardContent>
               </Card>
