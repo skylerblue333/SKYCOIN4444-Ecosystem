@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { Link } from "wouter";
 
 export function LivePriceTicker() {
-  const { data: prices } = trpc.prices.live.useQuery(undefined, {
+  const { data: prices } = trpc.prices.list.useQuery(undefined, {
     refetchInterval: 60_000,
     staleTime: 30_000,
   });
