@@ -19,8 +19,11 @@ import {
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
-function formatSKY(amount: number) {
-  return amount.toLocaleString("en-US", {
+function formatSKY(amount: unknown) {
+  const numericAmount = Number(amount ?? 0);
+  const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+
+  return safeAmount.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

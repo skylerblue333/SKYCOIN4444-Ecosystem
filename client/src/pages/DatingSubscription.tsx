@@ -51,20 +51,55 @@ export default function DatingSubscription() {
   const loadPlans = async () => {
     try {
       const response = await fetch("/api/dating/subscription/plans");
+      if (!response.ok) {
+        setPlans([]);
+        return;
+      }
       const data = await response.json();
-      setPlans(data || []);
+      const nextPlans = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.plans)
+          ? data.plans
+          : [];
+      setPlans(
+        nextPlans.map((plan: any) => ({
+          ...plan,
+          price: Number(plan?.price ?? 0),
+          features:
+            plan?.features && typeof plan.features === "object"
+              ? plan.features
+              : {},
+        }))
+      );
     } catch (error) {
       console.error("Failed to load plans:", error);
+      setPlans([]);
     }
   };
 
   const loadCurrentSubscription = async () => {
     try {
       const response = await fetch("/api/dating/subscription");
+      if (!response.ok) {
+        setCurrentSubscription(null);
+        return;
+      }
       const data = await response.json();
-      setCurrentSubscription(data);
+      if (data && typeof data === "object" && typeof data.tier === "string") {
+        setCurrentSubscription({
+          ...data,
+          price: Number(data.price ?? 0),
+          features:
+            data.features && typeof data.features === "object"
+              ? data.features
+              : {},
+        });
+      } else {
+        setCurrentSubscription(null);
+      }
     } catch (error) {
       console.error("Failed to load subscription:", error);
+      setCurrentSubscription(null);
     } finally {
       setLoading(false);
     }
@@ -123,6 +158,19 @@ export default function DatingSubscription() {
           </p>
         </div>
 
+        {plans.length === 0 && (
+          <Card className="mb-8 border-amber-300 bg-amber-50 p-6">
+            <h2 className="text-lg font-semibold text-amber-900">
+              Subscription checkout is not configured in this engineering beta
+            </h2>
+            <p className="mt-2 text-sm text-amber-800">
+              This screen remains available, but it will not claim a paid plan,
+              charge a card, or redirect to checkout until a verified billing
+              integration is connected.
+            </p>
+          </Card>
+        )}
+
         {/* Current Subscription Info */}
         {currentSubscription && (
           <Card className="mb-8 p-6 bg-gradient-to-r from-pink-100 to-purple-100 border-2 border-pink-300">
@@ -142,7 +190,7 @@ export default function DatingSubscription() {
               <div className="text-right">
                 <p className="text-sm text-gray-600">Monthly Price</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  ${currentSubscription.price.toFixed(2)}
+                  ${Number(currentSubscription.price ?? 0).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -182,7 +230,7 @@ export default function DatingSubscription() {
                     </h3>
                   </div>
                   <div className="text-3xl font-bold text-gray-900">
-                    ${plan.price.toFixed(2)}
+                    ${Number(plan.price ?? 0).toFixed(2)}
                     <span className="text-sm text-gray-600 font-normal">
                       /month
                     </span>
@@ -265,8 +313,8 @@ export default function DatingSubscription() {
                 What payment methods do you accept?
               </h3>
               <p className="text-gray-600">
-                We accept all major credit cards (Visa, Mastercard, American
-                Express) and digital wallets through Stripe.
+                Payment methods are not advertised in this engineering beta
+                until a verified checkout provider is configured.
               </p>
             </div>
 

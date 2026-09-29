@@ -536,6 +536,7 @@ jobs:
             release-candidate-evidence.json
             rc-browser-smoke.json
             rc-browser-smoke.png
+            rc-route-smoke.json
             rc-runtime.log
             RELEASE_CANDIDATE.md
             RELEASE_NOTES_v1.0.0-beta.1.md

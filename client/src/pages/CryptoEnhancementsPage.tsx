@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Coins, Zap, Wallet } from "lucide-react"; // Using lucide-react for icons
+import { ArrowRight, Coins, Zap, Wallet } from "lucide-react";
 
 const CryptoEnhancementsPage = () => {
   return (

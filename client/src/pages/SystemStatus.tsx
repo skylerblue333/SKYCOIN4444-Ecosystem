@@ -57,6 +57,11 @@ interface HistoryPoint {
   status: number;
 }
 
+function finiteNumber(value: unknown, fallback = 0): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 const StatusIcon = ({ status }: { status: string }) => {
   if (status === "ok" || status === "healthy")
     return <CheckCircle className="w-5 h-5 text-green-400" />;
@@ -108,8 +113,69 @@ export default function SystemStatus() {
         fetch("/api/health"),
         fetch("/api/metrics"),
       ]);
-      const healthData: HealthData = await healthRes.json();
-      const metricsData: MetricsData = await metricsRes.json();
+      const healthPayload: any = await healthRes.json();
+      const metricsPayload: any = await metricsRes.json();
+      const healthStatus =
+        healthPayload?.status === "ok" || healthPayload?.status === "healthy"
+          ? "ok"
+          : healthPayload?.status === "degraded"
+            ? "degraded"
+            : "down";
+      const healthData: HealthData = {
+        status: healthStatus,
+        timestamp:
+          typeof healthPayload?.timestamp === "string"
+            ? healthPayload.timestamp
+            : new Date().toISOString(),
+        uptime: finiteNumber(healthPayload?.uptime),
+        environment:
+          typeof healthPayload?.environment === "string"
+            ? healthPayload.environment
+            : "production",
+        services: {
+          database: {
+            status:
+              healthPayload?.services?.database?.status ??
+              healthPayload?.checks?.database?.status ??
+              "unknown",
+            latencyMs: finiteNumber(
+              healthPayload?.services?.database?.latencyMs ??
+                healthPayload?.checks?.database?.responseTime
+            ),
+          },
+          server: {
+            status: healthPayload?.services?.server?.status ?? "unknown",
+            memoryMB: finiteNumber(
+              healthPayload?.services?.server?.memoryMB ??
+                metricsPayload?.memory?.heapUsedMB
+            ),
+            rssMB: finiteNumber(
+              healthPayload?.services?.server?.rssMB ??
+                metricsPayload?.memory?.rssMB
+            ),
+          },
+        },
+      };
+      const metricsData: MetricsData | null =
+        metricsRes.ok && metricsPayload?.memory && metricsPayload?.cpu
+          ? {
+              uptime: finiteNumber(metricsPayload.uptime),
+              memory: {
+                heapUsedMB: finiteNumber(metricsPayload.memory.heapUsedMB),
+                heapTotalMB: finiteNumber(metricsPayload.memory.heapTotalMB),
+                rssMB: finiteNumber(metricsPayload.memory.rssMB),
+              },
+              cpu: {
+                userMs: finiteNumber(metricsPayload.cpu.userMs),
+                systemMs: finiteNumber(metricsPayload.cpu.systemMs),
+              },
+              nodeVersion:
+                typeof metricsPayload.nodeVersion === "string"
+                  ? metricsPayload.nodeVersion
+                  : "unknown",
+              pid: finiteNumber(metricsPayload.pid),
+            }
+          : null;
       setHealth(healthData);
       setMetrics(metricsData);
       setLastUpdated(new Date());
@@ -118,7 +184,7 @@ export default function SystemStatus() {
         const point: HistoryPoint = {
           time: new Date().toLocaleTimeString(),
           latency: healthData.services.database.latencyMs,
-          memory: metricsData.memory.heapUsedMB,
+          memory: metricsData?.memory.heapUsedMB ?? 0,
           status: healthData.status === "ok" ? 1 : 0,
         };
         return [...prev.slice(-19), point];

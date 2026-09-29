@@ -6,7 +6,6 @@ import { StatCard } from "@/components/StatCard";
 import {
   BarChart3,
   TrendingUp,
-  DollarSign,
   Coins,
   PieChart,
   ArrowRight,
@@ -26,24 +25,9 @@ const TOKENOMICS = [
 ];
 
 const METRICS = [
-  {
-    icon: Coins,
-    label: "Total Supply",
-    value: "444,444,444",
-    color: "primary" as const,
-  },
-  {
-    icon: Flame,
-    label: "Burned",
-    value: "12,345,678",
-    color: "destructive" as const,
-  },
-  {
-    icon: Lock,
-    label: "Staked",
-    value: "89,234,567",
-    color: "success" as const,
-  },
+  { icon: Coins, label: "Total Supply", value: "444,444,444", color: "primary" as const },
+  { icon: Flame, label: "Burned", value: "12,345,678", color: "destructive" as const },
+  { icon: Lock, label: "Staked", value: "89,234,567", color: "success" as const },
   { icon: Users, label: "Holders", value: "24,891", color: "accent" as const },
 ];
 
@@ -54,18 +38,15 @@ export default function Economics() {
         backHref="/token"
         icon={BarChart3}
         title="Token Economics"
-        subtitle="SKY444 tokenomics, distribution, and live market data"
-        badge="Live"
+        subtitle="SKY444 tokenomics, distribution, and market overview"
+        badge="Beta preview"
       />
+      <div className="mb-6">
+        <Badge variant="outline">Illustrative beta figures — not live market data</Badge>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {METRICS.map(m => (
-          <StatCard
-            key={m.label}
-            icon={m.icon}
-            label={m.label}
-            value={m.value}
-            color={m.color}
-          />
+          <StatCard key={m.label} icon={m.icon} label={m.label} value={m.value} color={m.color} />
         ))}
       </div>
       <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -79,15 +60,10 @@ export default function Economics() {
               <div key={t.label}>
                 <div className="flex justify-between text-sm mb-1">
                   <span>{t.label}</span>
-                  <span className="font-mono text-muted-foreground">
-                    {t.pct}%
-                  </span>
+                  <span className="font-mono text-muted-foreground">{t.pct}%</span>
                 </div>
                 <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${t.color} rounded-full transition-all duration-700`}
-                    style={{ width: `${t.pct}%` }}
-                  />
+                  <div className={`h-full ${t.color} rounded-full transition-all duration-700`} style={{ width: `${t.pct}%` }} />
                 </div>
               </div>
             ))}
@@ -96,16 +72,14 @@ export default function Economics() {
         <div className="card p-6">
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
-            Price History
+            Market Data
           </h3>
           <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
             <div className="text-center">
               <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-30" />
-              <p>Live chart loading...</p>
+              <p>Live price history is not configured for this beta.</p>
               <Link href="/trading">
-                <Button size="sm" className="mt-3 btn-primary">
-                  View Trading
-                </Button>
+                <Button size="sm" className="mt-3 btn-primary">View Trading</Button>
               </Link>
             </div>
           </div>
@@ -119,11 +93,11 @@ export default function Economics() {
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
           {[
             { label: "Governance Voting", href: "/governance" },
-            { label: "Staking Rewards", href: "/staking" },
+            { label: "Staking", href: "/staking" },
             { label: "Marketplace Payments", href: "/marketplace" },
             { label: "Premium Features", href: "/subscriptions" },
             { label: "Charity Donations", href: "/charity" },
-            { label: "Gaming Rewards", href: "/arcade" },
+            { label: "Gaming", href: "/arcade" },
           ].map(u => (
             <Link key={u.label} href={u.href}>
               <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer">

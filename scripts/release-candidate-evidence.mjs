@@ -10,6 +10,7 @@ const requiredFiles = [
   "dist/index.js",
   "rc-browser-smoke.json",
   "rc-browser-smoke.png",
+  "rc-route-smoke.json",
   "rc-input/typecheck/typecheck.log",
   "rc-input/wave6/wave6-load-report.json",
   "rc-input/runtime/runtime-smoke.log",
@@ -28,6 +29,7 @@ async function sha256(file) {
 }
 
 const browser = JSON.parse(await readFile("rc-browser-smoke.json", "utf8"));
+const routeSmoke = JSON.parse(await readFile("rc-route-smoke.json", "utf8"));
 const load = JSON.parse(
   await readFile("rc-input/wave6/wave6-load-report.json", "utf8")
 );
@@ -37,6 +39,9 @@ const typeDebtBaseline = Number(
 
 if (!browser.freshProfile || !browser.sessionSurvivedReload) {
   throw new Error("Clean-browser RC evidence is incomplete");
+}
+if (routeSmoke.failed !== 0 || routeSmoke.total < 900) {
+  throw new Error(`Registered-route RC evidence is incomplete: ${routeSmoke.failed}/${routeSmoke.total} failed`);
 }
 if ((load?.http || []).some(check => check.failed !== 0)) {
   throw new Error("Wave 6 load evidence contains HTTP failures");
@@ -76,6 +81,7 @@ const manifest = {
     runtimeSmokeAndResilience: "passed-via-needs",
     dockerImage: "passed-via-needs",
     cleanBrowserFreshAccount: "passed",
+    registeredRouteBrowserSmoke: `passed-${routeSmoke.passed}-of-${routeSmoke.total}`,
     wave6LoadEvidence: "verified",
     wave7HostedDeploymentRollback: wave7HostedProven ? "verified" : "pending",
   },
@@ -84,6 +90,8 @@ const manifest = {
     freshProfile: browser.freshProfile,
     sessionSurvivedReload: browser.sessionSurvivedReload,
     finalPath: browser.finalPath,
+    registeredRoutesChecked: routeSmoke.total,
+    registeredRoutesPassed: routeSmoke.passed,
   },
   resilience: {
     duplicatePersistedRows: load.duplicateMutation.persistedRows,
