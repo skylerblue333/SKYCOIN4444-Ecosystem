@@ -125,10 +125,14 @@ export function ActionDrawer({
 
   const sendTx = trpc.wallet.send.useMutation({
     onSuccess: data => {
+      if (!data.success) {
+        toast.error("Transfer unavailable in this engineering beta", {
+          description: data.reason,
+        });
+        return;
+      }
       setStep("done");
-      toast.success("Transaction sent!", {
-        description: `TX: ${(data as any)?.txHash?.slice(0, 16)}...`,
-      });
+      toast.success("Transaction sent!");
     },
     onError: err =>
       toast.error("Transaction failed", { description: err.message }),
@@ -151,10 +155,9 @@ export function ActionDrawer({
       return;
     }
     sendTx.mutate({
-      to: recipientUsername || "platform",
+      currency: "SKY444",
       amount: Number(amount),
-      token: "SKY444",
-      description: note || `${activeAction} via ShadowChat`,
+      toAddress: recipientUsername || "platform",
     });
   };
 
@@ -255,11 +258,9 @@ export function ActionDrawer({
                   SKY
                 </span>
               </div>
-              {amount && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  ≈ ${(Number(amount) * 0.042).toFixed(2)} USD
-                </div>
-              )}
+              <div className="text-xs text-muted-foreground mt-1">
+                External settlement is disabled until a verified transfer provider is configured.
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium mb-1.5 block">
